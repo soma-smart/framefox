@@ -1,12 +1,11 @@
-# src/core/request.py
 from flask import request
 
 
 class Request:
     """Classe qui encapsule les informations d'une requête HTTP."""
 
-    def __init__(self, flask_request):
-        self._request = flask_request
+    def __init__(self):
+        self._request = request
 
     @property
     def method(self):
@@ -47,10 +46,6 @@ class Request:
     def cookies(self):
         """Retourne les cookies de la requête."""
         return self._request.cookies
-
-    def get_json(self, force=False, silent=False, cache=False):
-        """Retourne le JSON de la requête de manière propre."""
-        return self._request.get_json(force=force, silent=silent, cache=cache)
 
     def is_json(self):
         """Vérifie si le type de contenu est JSON."""

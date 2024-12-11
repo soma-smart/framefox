@@ -1,5 +1,5 @@
 
-from src.core.abstract_controller import AbstractController
+from src.core.controller.abstract_controller import AbstractController
 
 
 class ProductController(AbstractController):
@@ -9,5 +9,4 @@ class ProductController(AbstractController):
 
     def get_products(self):
 
-        self.redirect("https://www.google.com")
         return self.jsonify({"products": ["Product 1", "Product 2"]})

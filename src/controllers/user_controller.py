@@ -1,6 +1,6 @@
 
 
-from src.core.abstract_controller import AbstractController
+from src.core.controller.abstract_controller import AbstractController
 
 
 class UserController(AbstractController):
