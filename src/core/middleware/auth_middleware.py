@@ -1,0 +1,102 @@
+
+import re
+import logging
+from flask import request, jsonify
+
+
+class AuthMiddleware:
+    """
+    Middleware for handling authentication and authorization.
+
+    Attributes:
+        access_control (list): List of access control rules.
+        role_hierarchy (dict): Dictionary defining role inheritance.
+        flattened_roles (dict): Dictionary with flattened role hierarchy for easy checking.
+        logger (logging.Logger): Logger instance for logging.
+
+    Methods:
+        define_role_hierarchy():
+            Defines the role hierarchy where roles inherit from other roles.
+
+        build_role_hierarchy():
+            Builds a flattened hierarchy of roles for easy checking.
+
+        __call__(func):
+            Middleware function that wraps the given function to enforce access control.
+
+        get_required_roles(path):
+            Retrieves the required roles for a given path based on access control rules.
+
+        get_current_user():
+            Retrieves the current user. This method should be implemented to fetch user details.
+
+        has_required_role(user, required_roles):
+            Checks if the user has any of the required roles.
+    """
+
+    def __init__(self, access_control):
+        self.access_control = access_control
+        self.role_hierarchy = self.define_role_hierarchy()
+        self.flattened_roles = self.build_role_hierarchy()
+        self.logger = logging.getLogger(__name__)
+
+    def define_role_hierarchy(self):
+
+        return {
+            "ROLE_ADMIN": ["ROLE_USER"],
+            # You can add other hierarchies here
+        }
+
+    def build_role_hierarchy(self):
+        hierarchy = {}
+        for role, inherits in self.role_hierarchy.items():
+            hierarchy[role] = set(inherits + [role])
+        return hierarchy
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            path = request.path
+            self.logger.debug(f"Request path: {path}")
+            required_roles = self.get_required_roles(path)
+            self.logger.debug(f"Required roles: {required_roles}")
+
+            if required_roles:
+                user = self.get_current_user()
+                self.logger.debug(f"Current user roles: {
+                                  user.get('roles', [])}")
+                if not user or not self.has_required_role(user, required_roles):
+                    self.logger.warning(f"Access forbidden for path: {
+                                        path} with roles: {user.get('roles', [])}")
+                    return jsonify({"error": "Forbidden"}), 403
+
+            return func(*args, **kwargs)
+        return wrapper
+
+    def get_required_roles(self, path):
+        for rule in self.access_control:
+            pattern = rule.get('path')
+            roles = rule.get('roles', "")
+            if isinstance(roles, str):
+                roles = [roles]  # Convert the role to a list
+            elif isinstance(roles, list):
+                pass  # Already a list
+            else:
+                roles = []
+
+            if re.match(pattern, path):
+                return roles
+        return None
+
+    def get_current_user(self):
+        # Implement the logic to get the current user
+        # For example, from a JWT token or a session
+        return {"roles": ["ROLE_USER"]}  # Static example
+
+    def has_required_role(self, user, required_roles):
+        user_roles = set(user.get("roles", []))
+        expanded_roles = set()
+        for role in user_roles:
+            expanded_roles.update(self.flattened_roles.get(role, {role}))
+        self.logger.debug(f"Expanded user roles: {expanded_roles}")
+        self.logger.debug(f"Required roles: {required_roles}")
+        return bool(expanded_roles.intersection(required_roles))
