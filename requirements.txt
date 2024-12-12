@@ -1,3 +1,5 @@
 Flask
 python-dotenv
 pyYAML
+SQLAlchemy
+flask_sqlalchemy
