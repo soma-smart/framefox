@@ -73,6 +73,7 @@ class ItemTestsController(AbstractController):
         - A JSON response with a status code 404 if the item does not exist.
         """
         item = ItemTestRepository().get_by_id(id)
+        print(item)
         if item:
             return jsonify(item.to_dict()), 200
         else:
@@ -87,10 +88,14 @@ class ItemTestsController(AbstractController):
           or an error message and a status code 400 if the input is invalid.
         """
         data = request.get_json()
-        if not data or 'name' not in data:  # Automatiser la vérification des champs
+        required_fields = ItemTest.required_fields()
+
+        if not data or not all(field in data for field in required_fields):
             return InvalidInputException("Invalid input")
 
-        item = ItemTest(name=data['name'])
+        item_data = {field: data[field]
+                     for field in ItemTest.__table__.columns.keys() if field in data}
+        item = ItemTest(**item_data)
         try:
             ItemTestRepository().add(item)
         except ValueError as e:
