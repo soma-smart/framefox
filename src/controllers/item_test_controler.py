@@ -1,5 +1,5 @@
 
-from flask import request, jsonify, abort
+from flask import request, jsonify
 from src.core.controller.abstract_controller import AbstractController
 from src.repository.item_test_repository import ItemTestRepository
 from src.entity.item_test import ItemTest
@@ -88,16 +88,13 @@ class ItemTestsController(AbstractController):
         """
         data = request.get_json()
         if not data or 'name' not in data:  # Automatiser la vérification des champs
-            # abort(400, description="Invalid input")
-            # raise ValueError("Invalid input")
-            # return Response('{"error": "Invalid input"}', status=400, mimetype='application/json')
             return InvalidInputException("Invalid input")
 
         item = ItemTest(name=data['name'])
         try:
             ItemTestRepository().add(item)
         except ValueError as e:
-            abort(400, description=str(e))
+            InvalidInputException(str(e))
         finally:
             return jsonify(item.to_dict()), 201
 
