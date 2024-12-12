@@ -6,6 +6,10 @@ class AbstractEntity(db.Model):
     __abstract__ = True
     __metaclass__ = ModelABCMeta
 
+    @classmethod
+    def __declare_last__(cls):
+        cls.__tablename__ = cls.__name__
+
     def __repr__(self):
         column_values = ', '.join(f"{column.name}={getattr(
             self, column.name)}" for column in self.__table__.columns)

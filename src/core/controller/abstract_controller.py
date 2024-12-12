@@ -1,5 +1,5 @@
 
-from flask import redirect, render_template, flash, jsonify
+from flask import redirect, render_template, flash, jsonify, request
 
 
 class AbstractController:
@@ -32,3 +32,7 @@ class AbstractController:
     def jsonify(self, data, status=200, **kwargs):
         """Renvoie une réponse JSON."""
         return jsonify(data), status
+
+    def request(self):
+        """Renvoie l'objet de requête actuel."""
+        return request

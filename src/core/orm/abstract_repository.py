@@ -5,7 +5,14 @@ from src.core.orm.config.database import db
 
 class AbstractRepository(ABC):
     """
-    Abstract base class for repositories.
+    AbstractRepository provides the following methods:
+
+    - find(id): Retrieve an entity by its ID.
+    - find_all(): Retrieve all entities.
+    - add(entity): Add a new entity.
+    - update(entity): Update an existing entity.
+    - delete(entity): Delete an entity.
+    - find_by(criteria): Retrieve entities based on specific criteria.
     """
 
     def __init__(self, model):

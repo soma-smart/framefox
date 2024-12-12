@@ -1,5 +1,3 @@
-
-from flask import request, jsonify
 from src.core.controller.abstract_controller import AbstractController
 from src.repository.item_test_repository import ItemTestRepository
 from src.entity.item_test import ItemTest
@@ -67,7 +65,7 @@ class ItemTestsController(AbstractController):
         - A JSON response containing a list of items and a status code 200.
         """
         items = ItemTestRepository().find_all()
-        return jsonify([item.to_dict() for item in items]), 200
+        return self.jsonify([item.to_dict() for item in items], 200)
 
     def get_item_by_id(self, id):
         """
@@ -83,9 +81,9 @@ class ItemTestsController(AbstractController):
         item = ItemTestRepository().find(id)
         print(item)
         if item:
-            return jsonify(item.to_dict()), 200
+            return self.jsonify(item.to_dict(), 200)
         else:
-            return jsonify({"message": "Item not found"}), 404
+            return self.jsonify({"message": "Item not found"}, 404)
 
     def find_items(self):
         """
@@ -100,14 +98,14 @@ class ItemTestsController(AbstractController):
         Raises:
             None
         """
-        data = request.get_json()
+        data = self.request().get_json()
         criteria = data.get('criteria', {})
         order_by = data.get('order_by', None)
         limit = data.get('limit', None)
         offset = data.get('offset', None)
 
         items = ItemTestRepository().find_by(criteria, order_by, limit, offset)
-        return jsonify([item.to_dict() for item in items]), 200
+        return self.jsonify([item.to_dict() for item in items], 200)
 
     def add_item(self):
         """
@@ -117,7 +115,7 @@ class ItemTestsController(AbstractController):
         - A JSON response containing the added item data and a status code 201 if the item is added successfully,
           or an error message and a status code 400 if the input is invalid.
         """
-        data = request.get_json()
+        data = self.request().get_json()
         required_fields = ItemTest.required_fields()
 
         if not data or not all(field in data for field in required_fields):
@@ -131,7 +129,7 @@ class ItemTestsController(AbstractController):
         except ValueError as e:
             InvalidInputException(str(e))
         finally:
-            return jsonify(item.to_dict()), 201
+            return self.jsonify(item.to_dict(), 201)
 
     def delete_item(self, id):
         """
@@ -144,8 +142,8 @@ class ItemTestsController(AbstractController):
         - A JSON response with a success message and a status code 200 if the item is deleted successfully,
           or None and a status code 200 if the item does not exist.
         """
-        item = ItemTestRepository().get_by_id(id)
+        item = ItemTestRepository().find(id)
         if item is None:
-            return jsonify(None), 200
+            return self.jsonify(None, 200)
         ItemTestRepository().delete(item)
-        return jsonify({"message": "Item deleted"}), 200
+        return self.jsonify({"message": "Item deleted"}, 200)
