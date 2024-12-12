@@ -1,4 +1,4 @@
-from src.core.orm.config.abstract_repository import AbstractRepository
+from src.core.orm.abstract_repository import AbstractRepository
 from src.entity.item_test import ItemTest
 
 
