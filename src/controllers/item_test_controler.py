@@ -1,8 +1,9 @@
 
 from flask import request, jsonify, abort
 from src.core.controller.abstract_controller import AbstractController
-from src.core.orm.repository.item_test_repository import ItemTestRepository
-from src.core.orm.entity.item_test import ItemTest
+from src.repository.item_test_repository import ItemTestRepository
+from src.entity.item_test import ItemTest
+from src.core.exception.invalid_input_exception import InvalidInputException
 
 
 class ItemTestsController(AbstractController):
@@ -86,8 +87,11 @@ class ItemTestsController(AbstractController):
           or an error message and a status code 400 if the input is invalid.
         """
         data = request.get_json()
-        if not data or 'name' not in data:
-            abort(400, description="Invalid input")
+        if not data or 'name' not in data:  # Automatiser la vérification des champs
+            # abort(400, description="Invalid input")
+            # raise ValueError("Invalid input")
+            # return Response('{"error": "Invalid input"}', status=400, mimetype='application/json')
+            return InvalidInputException("Invalid input")
 
         item = ItemTest(name=data['name'])
         try:
