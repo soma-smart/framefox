@@ -1,5 +1,8 @@
-Flask
+fastapi
+uvicorn
 python-dotenv
 pyYAML
 SQLAlchemy
-flask_sqlalchemy
+starlette
+
+

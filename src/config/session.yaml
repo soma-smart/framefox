@@ -1,0 +1,6 @@
+# Configuration des sessions pour l'application
+
+session:
+  secret_key: "${SESSION_SECRET_KEY}" # Remplacez par une clé secrète sécurisée
+  type: "filesystem" # Type de stockage des sessions (filesystem, redis, etc.)
+  # Ajoutez d'autres paramètres de session si nécessaire
