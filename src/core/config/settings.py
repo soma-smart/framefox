@@ -1,56 +1,65 @@
-
 import yaml
 import os
 import re
+from dotenv import load_dotenv
+
+env_path = os.path.join(os.getcwd(), '.env')
+load_dotenv(dotenv_path=env_path)
 
 
 class Settings:
     """
-    A class to manage application settings loaded from YAML configuration files.
+    Settings class for loading and managing application configuration.
 
     Attributes:
-        config (dict): A dictionary to store the merged configuration data.
+        ENV_VAR_PATTERN (re.Pattern): Regular expression pattern to match environment variables in the format ${VAR_NAME}.
+        app_env (str): The application environment, default is 'prod'.
+        config (dict): Dictionary to store the loaded configuration.
 
     Methods:
         __init__(config_folder='../../config'):
-            Initializes the Settings instance and loads configurations from the specified folder.
+            Initializes the Settings object and loads configurations from the specified folder.
 
         load_configs(config_folder):
-            Loads and merges configuration files from the specified folder.
-            Args:
-                config_folder (str): The relative path to the configuration folder.
-            Raises:
-                FileNotFoundError: If the configuration folder does not exist.
+            Loads configuration files from the specified folder and merges them into the config attribute.
 
         merge_dicts(base, new):
             Recursively merges two dictionaries.
-            Args:
-                base (dict): The base dictionary to merge into.
-                new (dict): The new dictionary to merge from.
 
-        is_auth_enabled:
-            Checks if authentication is enabled in the configuration.
-            Returns:
-                bool: True if authentication is enabled, False otherwise.
+        replace_env_variables(data):
+            Recursively replaces environment variable placeholders in the configuration data with their actual values.
 
-        access_control:
-            Retrieves the access control settings from the configuration.
-            Returns:
-                list: A list of access control rules.
+        get_env_variable(match):
+            Retrieves the value of an environment variable given a regex match object.
+
+    Properties:
+        database_uri (str): Returns the database URI from the configuration, default is 'sqlite:///app.db'.
+        database_echo (bool): Returns True if the application environment is 'dev', otherwise False.
+        orm_config (dict): Returns the ORM configuration from the configuration.
+        is_auth_enabled (bool): Returns True if authentication is enabled in the configuration, otherwise False.
+        access_control (list): Returns the access control configuration from the configuration.
+        session_secret_key (str): Returns the session secret key from the configuration, default is 'default_secret'.
+        session_type (str): Returns the session type from the configuration, default is 'filesystem'.
+        session_max_age (int): Returns the session max age from the configuration, default is 3600 seconds.
+        session_same_site (str): Returns the session same site policy from the configuration, default is 'lax'.
+        session_https_only (bool): Returns True if sessions are HTTPS only, otherwise False.
+        cors_config (dict): Returns the CORS configuration from the configuration.
+        debug_mode (bool): Returns True if the application environment is 'dev', otherwise False.
     """
-
-    # Pattern pour détecter les placeholders ${VAR}
     ENV_VAR_PATTERN = re.compile(r'\$\{(\w+)\}')
 
     def __init__(self, config_folder='../../config'):
+
+        self.app_env = os.getenv('APP_ENV', 'prod')
+
         self.config = {}
         self.load_configs(config_folder)
 
     def load_configs(self, config_folder):
         config_path = os.path.join(os.path.dirname(__file__), config_folder)
         if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Le dossier de configuration '{
-                                    config_folder}' n'existe pas.")
+            raise FileNotFoundError(f"""Configuration file '{
+                                    config_folder}' does not exist""")
 
         for filename in os.listdir(config_path):
             if filename.endswith('.yaml') or filename.endswith('.yml'):
@@ -68,10 +77,6 @@ class Settings:
                 base[key] = value
 
     def replace_env_variables(self, data):
-        """
-        Remplace les placeholders ${VAR} par les valeurs des variables d'environnement correspondantes.
-        Parcourt récursivement la structure de données.
-        """
         if isinstance(data, dict):
             return {k: self.replace_env_variables(v) for k, v in data.items()}
         elif isinstance(data, list):
@@ -82,15 +87,21 @@ class Settings:
             return data
 
     def get_env_variable(self, match):
-        """
-        Remplace le match par la valeur de la variable d'environnement ou par une chaîne vide si non définie.
-        """
         var_name = match.group(1)
         value = os.getenv(var_name, '')
-        if not value:
-            print(f"Warning: La variable d'environnement '{
-                  var_name}' n'est pas définie.")
         return value
+
+    @property
+    def database_uri(self):
+        return self.config.get('database', {}).get('uri', 'sqlite:///app.db')
+
+    @property
+    def database_echo(self):
+        return self.app_env == 'dev'
+
+    @property
+    def orm_config(self):
+        return self.config.get('database', {})
 
     @property
     def is_auth_enabled(self):
@@ -109,9 +120,21 @@ class Settings:
         return self.config.get('session', {}).get('type', 'filesystem')
 
     @property
-    def database_uri(self):
-        return self.config.get('database', {}).get('uri', 'sqlite:///app.db')
+    def session_max_age(self):
+        return self.config.get('session', {}).get('max_age', 3600)
 
     @property
-    def database_echo(self):
-        return self.config.get('database', {}).get('echo', False)
+    def session_same_site(self):
+        return self.config.get('session', {}).get('same_site', 'lax')
+
+    @property
+    def session_https_only(self):
+        return self.config.get('session', {}).get('https_only', True)
+
+    @property
+    def cors_config(self):
+        return self.config.get('cors', {})
+
+    @property
+    def debug_mode(self):
+        return self.app_env == 'dev'

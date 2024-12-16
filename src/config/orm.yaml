@@ -3,4 +3,6 @@
 database:
   uri: "${DATABASE_URI}" # Replace with your database URI (e.g., PostgreSQL, MySQL)
   echo: false # Enables SQL logging (useful for development)
+  autocommit: false
+  autoflush: false
   # Add other configuration parameters if necessary

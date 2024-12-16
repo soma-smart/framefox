@@ -1,0 +1,18 @@
+# Configuration de l'application
+
+cors:
+  allow_origins:
+    - "http://localhost"
+    - "http://localhost:8000"
+  allow_credentials: true
+  allow_methods:
+    - "*"
+  allow_headers:
+    - "*"
+
+session:
+  secret_key: "${SESSION_SECRET_KEY}"
+  type: "filesystem"
+  max_age: 3600
+  same_site: "lax"
+  https_only: true

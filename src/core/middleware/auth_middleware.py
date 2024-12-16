@@ -77,6 +77,4 @@ class AuthMiddleware(BaseHTTPMiddleware):
         expanded_roles = set()
         for role in user_roles:
             expanded_roles.update(self.flattened_roles.get(role, {role}))
-        self.logger.debug(f"Expanded user roles: {expanded_roles}")
-        self.logger.debug(f"Required roles: {required_roles}")
         return bool(expanded_roles.intersection(required_roles))
