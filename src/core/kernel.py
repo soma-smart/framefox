@@ -1,13 +1,11 @@
 import os
 
 from fastapi import FastAPI
-
-from dotenv import load_dotenv
-from fastapi.middleware.cors import CORSMiddleware
 from src.core.routing.router import register_controllers
 from src.core.config.settings import Settings
-from src.core.middleware.auth_middleware import AuthMiddleware
-# from src.core.models import db
+from src.core.middleware.middleware_manager import MiddlewareManager
+from src.core.orm.database import Database
+from src.core.logging.logger import Logger
 
 
 class Kernel:
@@ -20,44 +18,38 @@ class Kernel:
 
     def __init__(self):
         if not hasattr(self, 'initialized'):
-            # Charger les variables d'environnement depuis le fichier .env
-            load_dotenv()
-            self.app = FastAPI()
+            # Instancier les paramètres de configuration
+            self.settings = Settings()
+
+            # Utiliser les paramètres pour configurer l'application FastAPI
+            self.app = FastAPI(debug=self.settings.debug_mode)
+
+            # Configurer le logger
+            self.logger = Logger().get_logger()
+
+            # Configurer l'application
             self.setup_app()
             self.initialized = True
 
+
     def setup_app(self):
-        settings = Settings()
-
-        # Configurer CORS
-        self.app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-
-        # Configurer SQLAlchemy
-        self.app.state.database_uri = settings.database_uri
-        self.app.state.database_echo = settings.database_echo
-
-        # Initialiser SQLAlchemy
-        # db.init_app(self.app)
-
 
         # Configurer les middlewares
-        if settings.is_auth_enabled:
-            self.app.add_middleware(
-                AuthMiddleware, access_control=settings.access_control)
+        middleware_manager = MiddlewareManager(self.app, self.settings)
+        middleware_manager.setup_middlewares()
+
+        # Initialiser la base de données
+        self.database = Database(self.settings)
 
         # Enregistrer les contrôleurs
         register_controllers(self.app)
 
         # Configuration de la base de données
-        database_url = os.getenv('DATABASE_URL')
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-        self.app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#         database_url = os.getenv('DATABASE_URL')
+#         self.app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+#         self.app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+             # Initialiser la base de données
+        self.database = Database(self.settings)
 
         # Initialisation de la base de données
         db.init_app(self.app)

@@ -8,4 +8,5 @@ class ProductController(AbstractController):
                        self.get_products, methods=["GET"])
 
     async def get_products(self):
+
         return self.json({"products": ["Product 1", "Product 2"]})
