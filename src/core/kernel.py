@@ -1,5 +1,7 @@
 import os
+
 from fastapi import FastAPI
+
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.routing.router import register_controllers
@@ -43,6 +45,7 @@ class Kernel:
         # Initialiser SQLAlchemy
         # db.init_app(self.app)
 
+
         # Configurer les middlewares
         if settings.is_auth_enabled:
             self.app.add_middleware(
@@ -50,3 +53,16 @@ class Kernel:
 
         # Enregistrer les contrôleurs
         register_controllers(self.app)
+
+        # Configuration de la base de données
+        database_url = os.getenv('DATABASE_URL')
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+        self.app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+        # Initialisation de la base de données
+        db.init_app(self.app)
+
+        # Initialiser et enregistrer les contrôleurs
+        router = Router(self.app)
+        router.register_controllers()
+
