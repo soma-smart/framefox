@@ -1,6 +1,7 @@
 from abc import ABC
+from sqlalchemy.orm import Session
+from src.core.orm.config.database import SessionLocal
 from sqlalchemy import asc, desc
-from src.core.orm.config.database import db
 
 
 class AbstractRepository(ABC):
@@ -9,41 +10,25 @@ class AbstractRepository(ABC):
 
     - find(id): Retrieve an entity by its ID.
     - find_all(): Retrieve all entities.
+    - find_by(criteria): Retrieve entities based on specific criteria.
     - add(entity): Add a new entity.
     - update(entity): Update an existing entity.
     - delete(entity): Delete an entity.
-    - find_by(criteria): Retrieve entities based on specific criteria.
     """
 
     def __init__(self, model):
-        """
-        Initializes the repository with the given model.
-
-        Args:
-            model: The model class associated with the repository.
-        """
+        self.db: Session = SessionLocal()
         self.model = model
+        self.create_model = self.model.generate_models_create()
+        self.response_model = self.model.generate_models_response()
+
+    def find(self, entity_id: int):
+        return self.db.query(self.model).filter(
+            self.model.id == entity_id).first()
 
     def find_all(self):
-        """
-        Retrieves all items from the repository.
-
-        Returns:
-            A list of all items in the repository.
-        """
-        return self.model.query.all()
-
-    def find(self, id):
-        """
-        Retrieves an item from the repository by its ID.
-
-        Args:
-            id: The ID of the item to retrieve.
-
-        Returns:
-            The item with the specified ID, or None if not found.
-        """
-        return self.model.query.get(id)
+        entities = self.db.query(self.model).all()
+        return [self.response_model.from_orm(entity) for entity in entities]
 
     def find_by(self, criteria, order_by=None, limit=None, offset=None):
         """
@@ -58,7 +43,7 @@ class AbstractRepository(ABC):
         Returns:
             A list of items that match the specified criteria.
         """
-        query = self.model.query.filter_by(**criteria)
+        query = self.db.query(self.model).filter_by(**criteria)
 
         if order_by:
             for key, value in order_by.items():
@@ -75,22 +60,32 @@ class AbstractRepository(ABC):
 
         return query.all()
 
-    def add(self, item):
-        """
-        Adds an item to the repository.
+    def update(self, entity_id: int, entity):
+        db_entity = self.db.query(self.model).filter(
+            self.model.id == entity_id).first()
+        if db_entity:
+            for key, value in entity.dict().items():
+                setattr(db_entity, key, value)
+            self.db.commit()
+            self.db.refresh(db_entity)
+            return db_entity
+        return None
 
-        Args:
-            item: The item to add.
-        """
-        db.session.add(item)
-        db.session.commit()
+    def add(self, entity):
+        db_entity = self.model(**entity.dict())
+        self.db.add(db_entity)
+        self.db.commit()
+        self.db.refresh(db_entity)
+        return db_entity
 
-    def delete(self, item):
-        """
-        Deletes an item from the repository.
+    def delete(self, entity_id: int):
+        db_entity = self.db.query(self.model).filter(
+            self.model.id == entity_id).first()
+        if db_entity:
+            self.db.delete(db_entity)
+            self.db.commit()
+            return db_entity
+        return None
 
-        Args:
-            item: The item to delete.
-        """
-        db.session.delete(item)
-        db.session.commit()
+    def __del__(self):
+        self.db.close()

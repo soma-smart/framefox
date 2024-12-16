@@ -39,7 +39,12 @@ class AbstractEntity(Base):
                            for col in entity_class.__table__.columns}
         response_model_name = f"{entity_class.__name__}Response"
 
+        # response_model_class = create_model(
+        #     response_model_name, **response_fields)
         response_model_class = create_model(
-            response_model_name, **response_fields)
+            response_model_name, **response_fields,
+            __config__=type(
+                'Config', (), {'orm_mode': True, 'from_attributes': True})
+        )
 
         return response_model_class
