@@ -1,10 +1,12 @@
 from abc import ABC
 from sqlalchemy.orm import Session
-from src.core.orm.config.database import SessionLocal
 from sqlalchemy import asc, desc
+from injectable import Autowired, autowired, inject
+from src.core.orm.entity_manager import EntityManager
 
 
 class AbstractRepository(ABC):
+
     """
     AbstractRepository provides the following methods:
 
@@ -12,12 +14,12 @@ class AbstractRepository(ABC):
     - find_all(): Retrieve all entities.
     - find_by(criteria): Retrieve entities based on specific criteria.
     - add(entity): Add a new entity.
-    - update(entity): Update an existing entity.
+    - update(entity): Update an existing entity. 
     - delete(entity): Delete an entity.
     """
-
-    def __init__(self, model):
-        self.db: Session = SessionLocal()
+    @autowired
+    def __init__(self, model, entity_manager: Autowired(EntityManager)):
+        self.db: Session = entity_manager.get_session()
         self.model = model
         self.create_model = self.model.generate_models_create()
         self.response_model = self.model.generate_models_response()
