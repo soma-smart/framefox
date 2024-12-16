@@ -1,27 +1,52 @@
 import os
-from flask import Flask
+from fastapi import FastAPI
 from dotenv import load_dotenv
-from src.core.routing.router import Router
+from fastapi.middleware.cors import CORSMiddleware
+from src.core.routing.router import register_controllers
+from src.core.config.settings import Settings
+from src.core.middleware.auth_middleware import AuthMiddleware
+# from src.core.models import db
 
 
 class Kernel:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(Kernel, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
     def __init__(self):
-        # Charger les variables d'environnement depuis le fichier .env
-        load_dotenv()
-        self.app = Flask(__name__)
-        self.setup_app()
+        if not hasattr(self, 'initialized'):
+            # Charger les variables d'environnement depuis le fichier .env
+            load_dotenv()
+            self.app = FastAPI()
+            self.setup_app()
+            self.initialized = True
 
     def setup_app(self):
-        # Récupérer la variable d'environnement APP_ENV
-        app_env = os.getenv('APP_ENV', 'prod')
-        debug_mode = True if app_env == 'dev' else False
+        settings = Settings()
 
-        # Configurer l'application Flask
-        self.app.config['DEBUG'] = debug_mode
+        # Configurer CORS
+        self.app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
-        # Initialiser et enregistrer les contrôleurs
-        router = Router(self.app)
-        router.register_controllers()
+        # Configurer SQLAlchemy
+        self.app.state.database_uri = settings.database_uri
+        self.app.state.database_echo = settings.database_echo
 
-    def run(self):
-        self.app.run(debug=self.app.config['DEBUG'])
+        # Initialiser SQLAlchemy
+        # db.init_app(self.app)
+
+        # Configurer les middlewares
+        if settings.is_auth_enabled:
+            self.app.add_middleware(
+                AuthMiddleware, access_control=settings.access_control)
+
+        # Enregistrer les contrôleurs
+        register_controllers(self.app)

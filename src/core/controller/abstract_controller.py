@@ -1,34 +1,42 @@
-
-from flask import redirect, render_template, flash, jsonify
+from fastapi import APIRouter, Request
+from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
 
 
 class AbstractController:
     """Classe de base pour tous les contrôleurs."""
 
     def __init__(self):
-        self.routes = []
+        self.router = APIRouter()
 
-    def add_route(self, path, endpoint, view_func, methods=["GET"]):
-        """Ajoute une route à la liste des routes du contrôleur."""
-        self.routes.append({
-            "path": path,
-            "endpoint": endpoint,
-            "view_func": view_func,
-            "methods": methods,
-        })
+    def add_route(self, path: str, endpoint: str, view_func, methods=["GET"]):
+        """Ajoute une route à l'APIRouter."""
+        for method in methods:
+            if method == "GET":
+                self.router.get(path, name=endpoint)(view_func)
+            elif method == "POST":
+                self.router.post(path, name=endpoint)(view_func)
+            elif method == "PUT":
+                self.router.put(path, name=endpoint)(view_func)
+            elif method == "DELETE":
+                self.router.delete(path, name=endpoint)(view_func)
 
-    def redirect(self, location, code=302):
+    def redirect(self, location: str, code: int = 302):
         """Redirige vers une URL spécifique."""
-        return redirect(location, code)
+        return RedirectResponse(url=location, status_code=code)
 
-    def render_template(self, template_name, **context):
-        """Rend une vue Flask avec des variables de contexte."""
-        return render_template(template_name, **context)
+    def render(self, request: Request, template_name: str, **context):
+        """Rend une vue avec des variables de contexte."""
+        templates = Jinja2Templates(directory="templates")
+        context["request"] = request
+        return templates.TemplateResponse(template_name, context)
 
-    def flash(self, message, category="message"):
+    def flash(self, message: str, category: str = "message"):
         """Ajoute un message flash à la session."""
-        flash(message, category)
+        # FastAPI ne supporte pas nativement les messages flash comme Flask.
+        # Vous pouvez implémenter une solution personnalisée si nécessaire.
+        pass
 
-    def jsonify(self, data, status=200, **kwargs):
+    def json(self, data: dict, status: int = 200):
         """Renvoie une réponse JSON."""
-        return jsonify(data), status
+        return JSONResponse(content=data, status_code=status)

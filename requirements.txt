@@ -1,3 +1,6 @@
-Flask
+fastapi
+uvicorn
 python-dotenv
 pyYAML
+SQLAlchemy
+starlette
