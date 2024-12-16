@@ -1,4 +1,5 @@
 import os
+
 from fastapi import FastAPI
 from src.core.routing.router import register_controllers
 from src.core.config.settings import Settings
@@ -30,7 +31,9 @@ class Kernel:
             self.setup_app()
             self.initialized = True
 
+
     def setup_app(self):
+
         # Configurer les middlewares
         middleware_manager = MiddlewareManager(self.app, self.settings)
         middleware_manager.setup_middlewares()
@@ -40,3 +43,18 @@ class Kernel:
 
         # Enregistrer les contrôleurs
         register_controllers(self.app)
+
+        # Configuration de la base de données
+#         database_url = os.getenv('DATABASE_URL')
+#         self.app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+#         self.app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+             # Initialiser la base de données
+        self.database = Database(self.settings)
+
+        # Initialisation de la base de données
+        db.init_app(self.app)
+
+        # Initialiser et enregistrer les contrôleurs
+        router = Router(self.app)
+        router.register_controllers()
+

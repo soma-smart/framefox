@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -40,3 +41,5 @@ class AbstractController:
     def json(self, data: dict, status: int = 200):
         """Renvoie une réponse JSON."""
         return JSONResponse(content=data, status_code=status)
+
+

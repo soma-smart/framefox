@@ -3,4 +3,7 @@ uvicorn
 python-dotenv
 pyYAML
 SQLAlchemy
+flask_sqlalchemy
+fastapi
+uvicorn
 starlette
