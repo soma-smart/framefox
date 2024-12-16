@@ -7,3 +7,4 @@ flask_sqlalchemy
 fastapi
 uvicorn
 starlette
+injectable==4.0.1

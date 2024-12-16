@@ -2,11 +2,13 @@ import yaml
 import os
 import re
 from dotenv import load_dotenv
+from injectable import injectable
 
 env_path = os.path.join(os.getcwd(), '.env')
 load_dotenv(dotenv_path=env_path)
 
 
+@injectable
 class Settings:
     """
     Settings class for loading and managing application configuration.
@@ -48,7 +50,7 @@ class Settings:
     """
     ENV_VAR_PATTERN = re.compile(r'\$\{(\w+)\}')
 
-    def __init__(self, config_folder='../../config'):
+    def __init__(self, config_folder='../../../config'):
 
         self.app_env = os.getenv('APP_ENV', 'prod')
 
