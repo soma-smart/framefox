@@ -5,4 +5,4 @@ from src.entity.user import User
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 # Crée la table User dans la base de données
-User.create_table()
+User.create_table(engine)

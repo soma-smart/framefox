@@ -23,10 +23,25 @@ class AbstractRepository(ABC):
         self.response_model = self.model.generate_models_response()
 
     def find(self, entity_id: int):
+        """
+        Find an entity by its ID.
+
+        Args:
+            entity_id (int): The ID of the entity to find.
+
+        Returns:
+            The entity with the specified ID, or None if not found.
+        """
         return self.db.query(self.model).filter(
             self.model.id == entity_id).first()
 
     def find_all(self):
+        """
+        Retrieve all entities from the database.
+
+        Returns:
+            List: A list of entities.
+        """
         entities = self.db.query(self.model).all()
         return [self.response_model.from_orm(entity) for entity in entities]
 
@@ -61,6 +76,16 @@ class AbstractRepository(ABC):
         return query.all()
 
     def update(self, entity_id: int, entity):
+        """
+        Update an entity in the database.
+
+        Args:
+            entity_id (int): The ID of the entity to update.
+            entity: The updated entity object.
+
+        Returns:
+            The updated entity object if it exists in the database, otherwise None.
+        """
         db_entity = self.db.query(self.model).filter(
             self.model.id == entity_id).first()
         if db_entity:
@@ -72,6 +97,18 @@ class AbstractRepository(ABC):
         return None
 
     def add(self, entity):
+        """
+        Add a new entity to the repository.
+
+        Args:
+            entity: The entity object to be added.
+
+        Returns:
+            The added entity object.
+
+        Raises:
+            None.
+        """
         db_entity = self.model(**entity.dict())
         self.db.add(db_entity)
         self.db.commit()
@@ -79,6 +116,14 @@ class AbstractRepository(ABC):
         return db_entity
 
     def delete(self, entity_id: int):
+        """Delete an entity from the database.
+
+        Args:
+            entity_id (int): The ID of the entity to be deleted.
+
+        Returns:
+            The deleted entity if it exists, otherwise None.
+        """
         db_entity = self.db.query(self.model).filter(
             self.model.id == entity_id).first()
         if db_entity:
@@ -88,4 +133,17 @@ class AbstractRepository(ABC):
         return None
 
     def __del__(self):
+        """Destructor method for the AbstractRepository class.
+
+        This method is automatically called when the object is about to be destroyed.
+        It closes the database connection.
+
+        Note:
+            It is generally recommended to explicitly close the database connection
+            using the `close()` method before the object is destroyed.
+
+        Raises:
+            Any exceptions raised by the `close()` method of the database connection.
+
+        """
         self.db.close()
