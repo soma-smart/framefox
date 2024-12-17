@@ -1,4 +1,4 @@
-
+from typing import Annotated
 from fastapi import FastAPI
 from injectable import autowired, Autowired, load_injection_container
 from src.core.routing.router import Router
@@ -7,10 +7,8 @@ from src.core.logging.logger import Logger
 from src.core.config.settings import Settings
 
 
-load_injection_container()
-
-
 class Kernel:
+    load_injection_container()
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -19,20 +17,16 @@ class Kernel:
         return cls._instance
 
     @autowired
-    def __init__(self, settings: Autowired(Settings)):
+    def __init__(self, settings: Annotated[Settings, Autowired]):
         self.settings = settings
-        if not hasattr(self, 'initialized'):
-            # Utiliser les paramètres pour configurer l'application FastAPI
+        if not hasattr(self, "initialized"):
             self.app = FastAPI(debug=self.settings.debug_mode)
-            # Configurer le logger
             self.logger = Logger().get_logger()
-            # Configurer l'application
             self.setup_app()
             self.initialized = True
 
     def setup_app(self):
-        # Configurer les middlewares
-        middleware_manager = MiddlewareManager(self.app, self.settings)
+        middleware_manager = MiddlewareManager(self.app)
         middleware_manager.setup_middlewares()
-        # Enregistrer les contrôleurs
-        Router.register_controllers(self.app)
+        router = Router(self.app)
+        router.register_controllers()

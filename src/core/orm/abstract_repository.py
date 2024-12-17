@@ -1,12 +1,12 @@
 from abc import ABC
+from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy import asc, desc
-from injectable import Autowired, autowired, inject
+from injectable import Autowired, autowired
 from src.core.orm.entity_manager import EntityManager
 
 
 class AbstractRepository(ABC):
-
     """
     AbstractRepository provides the following methods:
 
@@ -14,11 +14,12 @@ class AbstractRepository(ABC):
     - find_all(): Retrieve all entities.
     - find_by(criteria): Retrieve entities based on specific criteria.
     - add(entity): Add a new entity.
-    - update(entity): Update an existing entity. 
+    - update(entity): Update an existing entity.
     - delete(entity): Delete an entity.
     """
+
     @autowired
-    def __init__(self, model, entity_manager: Autowired(EntityManager)):
+    def __init__(self, model, entity_manager: Annotated[EntityManager, Autowired]):
         self.db: Session = entity_manager.get_session()
         self.model = model
         self.create_model = self.model.generate_models_create()
@@ -34,8 +35,7 @@ class AbstractRepository(ABC):
         Returns:
             The entity with the specified ID, or None if not found.
         """
-        return self.db.query(self.model).filter(
-            self.model.id == entity_id).first()
+        return self.db.query(self.model).filter(self.model.id == entity_id).first()
 
     def find_all(self):
         """
@@ -64,9 +64,9 @@ class AbstractRepository(ABC):
 
         if order_by:
             for key, value in order_by.items():
-                if value.lower() == 'asc':
+                if value.lower() == "asc":
                     query = query.order_by(asc(getattr(self.model, key)))
-                elif value.lower() == 'desc':
+                elif value.lower() == "desc":
                     query = query.order_by(desc(getattr(self.model, key)))
 
         if limit:
@@ -88,8 +88,7 @@ class AbstractRepository(ABC):
         Returns:
             The updated entity object if it exists in the database, otherwise None.
         """
-        db_entity = self.db.query(self.model).filter(
-            self.model.id == entity_id).first()
+        db_entity = self.db.query(self.model).filter(self.model.id == entity_id).first()
         if db_entity:
             for key, value in entity.dict().items():
                 setattr(db_entity, key, value)
@@ -126,8 +125,7 @@ class AbstractRepository(ABC):
         Returns:
             The deleted entity if it exists, otherwise None.
         """
-        db_entity = self.db.query(self.model).filter(
-            self.model.id == entity_id).first()
+        db_entity = self.db.query(self.model).filter(self.model.id == entity_id).first()
         if db_entity:
             self.db.delete(db_entity)
             self.db.commit()

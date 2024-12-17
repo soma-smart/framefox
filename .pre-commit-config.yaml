@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.12.0
+  #   hooks:
+  #     - id: mypy
+  #       args:
+  #         [
+  #           --config-file=.config-py/setup.cfg,
+  #           --explicit-package-bases,
+  #           --install-types,
+  #           --non-interactive,
+  #         ]

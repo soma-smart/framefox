@@ -16,9 +16,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         logger (logging.Logger): Logger instance for logging.
     """
 
-    def __init__(self, app, access_control):
+    def __init__(self, app, settings):
         super().__init__(app)
-        self.access_control = access_control
+
+        self.access_control = settings.access_control
         self.role_hierarchy = self.define_role_hierarchy()
         self.flattened_roles = self.build_role_hierarchy()
         self.logger = logging.getLogger(__name__)
@@ -45,8 +46,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
             user = self.get_current_user(request)
             self.logger.debug(f"Current user roles: {user.get('roles', [])}")
             if not user or not self.has_required_role(user, required_roles):
-                self.logger.warning(f"Access forbidden for path: {
-                                    path} with roles: {user.get('roles', [])}")
+                self.logger.warning(
+                    f"Access forbidden for path: {
+                        path} with roles: {user.get('roles', [])}"
+                )
                 return JSONResponse({"error": "Forbidden"}, status_code=403)
 
         response = await call_next(request)
@@ -54,12 +57,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     def get_required_roles(self, path):
         for rule in self.access_control:
-            pattern = rule.get('path')
-            roles = rule.get('roles', "")
+            pattern = rule.get("path")
+            roles = rule.get("roles", "")
             if isinstance(roles, str):
-                roles = [roles]  # Convert the role to a list
+                roles = [roles]
             elif isinstance(roles, list):
-                pass  # Already a list
+                pass
             else:
                 roles = []
 
@@ -69,7 +72,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     def get_current_user(self, request: Request):
         # Implement the logic to get the current user
-        # For example, from a JWT token or a session
         return {"roles": ["ROLE_USER"]}  # Static example
 
     def has_required_role(self, user, required_roles):
