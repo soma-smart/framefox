@@ -4,4 +4,4 @@ __pycache__/
 var/
 venv/
 instance/
-
+.mypy_cache/

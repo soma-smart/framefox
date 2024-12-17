@@ -13,7 +13,7 @@
 
 # def main():
 #     # Créer une connexion à la base de données SQLite
-#     engine = create_engine("sqlite:///db.sqlite3", echo=True)
+#     engine = create_engine("sqlite:///app.db", echo=True)
 
 #     # Créer les tables définies dans Base
 #     Base.metadata.create_all(engine)
