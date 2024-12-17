@@ -1,10 +1,31 @@
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.requests import Request
-from starlette.responses import Response
 import logging
+
+from fastapi import Request
+from starlette.middleware.sessions import SessionMiddleware
 
 
 class CustomSessionMiddleware(SessionMiddleware):
+    """
+    CustomSessionMiddleware is a middleware class that extends the SessionMiddleware to provide custom session handling.
+
+    Attributes:
+        logger (logging.Logger): Logger instance for logging session activities.
+
+    Methods:
+        __init__(app, settings):
+            Initializes the middleware with the given application and settings.
+
+        dispatch(request: Request, call_next):
+            Handles the incoming request, manages session expiration, and sets the session cookie in the response.
+
+            Args:
+                request (Request): The incoming request object.
+                call_next: The next middleware or route handler to call.
+
+            Returns:
+                Response: The response object after processing the request.
+    """
+
     def __init__(self, app, settings):
         super().__init__(
             app,
@@ -17,20 +38,20 @@ class CustomSessionMiddleware(SessionMiddleware):
         self.logger = logging.getLogger(__name__)
 
     async def dispatch(self, request: Request, call_next):
-        # Journaliser l'accès à la session
+
         self.logger.info(f"Session accessed for path: {request.url.path}")
 
-        # Vérifier l'expiration de la session
         session = request.session
         if "last_activity" in session:
-            if (request.state.time - session["last_activity"]).total_seconds() > self.max_age:
+            if (
+                request.state.time - session["last_activity"]
+            ).total_seconds() > self.max_age:
                 session.clear()
                 self.logger.info("Session expired and cleared.")
         session["last_activity"] = request.state.time
 
         response = await call_next(request)
 
-        # Ajouter des en-têtes de sécurité pour les cookies
         response.set_cookie(
             key=self.session_cookie,
             value=request.cookies.get(self.session_cookie),

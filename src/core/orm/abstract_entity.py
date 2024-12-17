@@ -21,11 +21,11 @@ class AbstractEntity(Base):
     @classmethod
     def generate_models_create(cls):
         """
-            Generate the create model class.
+        Generate the create model class.
 
-            Returns:
-                The create model class.
-            """
+        Returns:
+            The create model class.
+        """
         create_model_class = cls.generate_create_model(cls)
         return create_model_class
 
@@ -62,8 +62,11 @@ class AbstractEntity(Base):
         Returns:
             class: The create model class.
         """
-        fields = {col.name: (col.type.python_type, ...)
-                  for col in entity_class.__table__.columns if col.name != 'id'}
+        fields = {
+            col.name: (col.type.python_type, ...)
+            for col in entity_class.__table__.columns
+            if col.name != "id"
+        }
         create_model_name = f"{entity_class.__name__}Create"
 
         create_model_class = create_model(create_model_name, **fields)
@@ -80,14 +83,17 @@ class AbstractEntity(Base):
         Returns:
             The response model class.
         """
-        response_fields = {col.name: (col.type.python_type, ...)
-                           for col in entity_class.__table__.columns}
+        response_fields = {
+            col.name: (col.type.python_type, ...)
+            for col in entity_class.__table__.columns
+        }
         response_model_name = f"{entity_class.__name__}Response"
 
         response_model_class = create_model(
-            response_model_name, **response_fields,
-            __config__=type(
-                'Config', (), {'orm_mode': True, 'from_attributes': True})
+            response_model_name,
+            **response_fields,
+            # __config__=type("Config", (), {"orm_mode": True, "from_attributes": True}),
+            __config__=type("Config", (), {"from_attributes": True}),
         )
 
         return response_model_class

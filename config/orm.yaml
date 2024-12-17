@@ -1,7 +1,7 @@
 # ORM configuration for the application
 
 database:
-  uri: "${DATABASE_URL}" # Replace with your database URI (e.g., PostgreSQL, MySQL)
+  url: "${DATABASE_URL}" # Replace with your database URI (e.g., PostgreSQL, MySQL)
   echo: false # Enables SQL logging (useful for development)
   autocommit: false
   autoflush: false

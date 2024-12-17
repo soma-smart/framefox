@@ -1,5 +1,3 @@
-# Configuration de l'application
-
 cors:
   allow_origins:
     - "http://localhost"
