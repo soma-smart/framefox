@@ -53,8 +53,6 @@ class Settings:
 
     def __init__(self, config_folder="../../../config"):
 
-        self.app_env = os.getenv("APP_ENV", "prod")
-
         self.config = {}
         self.load_configs(config_folder)
 
@@ -97,20 +95,20 @@ class Settings:
         return value
 
     @property
+    def debug_mode(self):
+        return self.config.get("application", {}).get("env")
+
+    @property
+    def database_echo(self):
+        return self.config.get("application", {}).get("env")
+
+    @property
     def database_url(self):
         return self.config.get("database", {}).get("url")
 
     @property
-    def database_echo(self):
-        return self.app_env == "dev"
-
-    @property
     def orm_config(self):
         return self.config.get("database", {})
-
-    @property
-    def is_auth_enabled(self):
-        return self.config.get("security", {}).get("enabled", False)
 
     @property
     def access_control(self):
@@ -118,28 +116,42 @@ class Settings:
 
     @property
     def session_secret_key(self):
-        return self.config.get("session", {}).get("secret_key", "default_secret")
+        return (
+            self.config.get("application", {})
+            .get("session", {})
+            .get("secret_key", "default_secret")
+        )
 
     @property
     def session_type(self):
-        return self.config.get("session", {}).get("type", "filesystem")
+        return (
+            self.config.get("application", {})
+            .get("session", {})
+            .get("type", "filesystem")
+        )
 
     @property
     def session_max_age(self):
-        return self.config.get("session", {}).get("max_age", 3600)
+        return (
+            self.config.get("application", {}).get("session", {}).get("max_age", 3600)
+        )
 
     @property
     def session_same_site(self):
-        return self.config.get("session", {}).get("same_site", "lax")
+        return (
+            self.config.get("application", {})
+            .get("session", {})
+            .get("same_site", "lax")
+        )
 
     @property
     def session_https_only(self):
-        return self.config.get("session", {}).get("https_only", True)
+        return (
+            self.config.get("application", {})
+            .get("session", {})
+            .get("https_only", True)
+        )
 
     @property
     def cors_config(self):
-        return self.config.get("cors", {})
-
-    @property
-    def debug_mode(self):
-        return self.app_env == "dev"
+        return self.config.get("application", {}).get("cors", {})
