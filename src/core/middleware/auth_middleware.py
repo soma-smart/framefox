@@ -38,7 +38,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
-        self.logger.debug(f"Request path: {path}")
+
+        if not self.access_control:
+            self.logger.info("Access control is disabled.")
+            return await call_next(request)
+
         required_roles = self.get_required_roles(path)
         self.logger.debug(f"Required roles: {required_roles}")
 

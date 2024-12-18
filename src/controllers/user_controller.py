@@ -11,8 +11,4 @@ class UserController(AbstractController):
 
         Session.set("last_visited", "/users")
 
-        user_repository = UserRepository().find_all()
-
-        return self.render(
-            "users.html", {"users": user_repository, "title": "user list"}
-        )
+        return self.render("users.html", {"title": "user list"})
