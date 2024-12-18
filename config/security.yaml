@@ -10,6 +10,6 @@ security:
     # - { path: ^/admin, roles: ROLE_ADMIN }  # Only users with ROLE_ADMIN can access paths starting with /admin
     # - { path: ^/profile, roles: ROLE_USER }  # Only users with ROLE_USER can access paths starting with /profile
 
-    # - { path: ^/users, roles: ROLE_USER }
-    # - { path: ^/products, roles: ROLE_USER }
+    - { path: ^/users, roles: ROLE_USER }
+    - { path: ^/products, roles: ROLE_ADMIN }
     # - { path: ^/vue, roles: ROLE_USER }

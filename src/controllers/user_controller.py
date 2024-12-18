@@ -6,6 +6,11 @@ from src.core.session.session import Session
 
 class UserController(AbstractController):
 
+    @Route("/vue", "get_vue", methods=["GET"])
+    async def get_vue(self):
+
+        return self.json({"message": "Hello, Vue!"})
+
     @Route("/users", "get_users", methods=["GET"])
     async def get_users(self):
 

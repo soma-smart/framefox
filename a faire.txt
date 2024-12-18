@@ -1,0 +1,15 @@
+
+
+
+
+
+
+modules
+
+evenement /formulaire/validation /console terminal/securité
+
+
+
+-----------------
+commande terminal
+debug router - permet de voir la liste des route disponible
