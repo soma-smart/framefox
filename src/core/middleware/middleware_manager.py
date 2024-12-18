@@ -1,10 +1,12 @@
 from injectable import autowired, Autowired
 from typing import Annotated
 from src.core.config.settings import Settings
-from src.core.middleware.auth_middleware import AuthMiddleware
-from src.core.middleware.request_middleware import RequestMiddleware
-from src.core.middleware.custom_cors_middleware import CustomCORSMiddleware
-from src.core.middleware.custom_session_middleware import CustomSessionMiddleware
+from src.core.middleware.middlewares.auth_middleware import AuthMiddleware
+from src.core.middleware.middlewares.request_middleware import RequestMiddleware
+from src.core.middleware.middlewares.custom_cors_middleware import CustomCORSMiddleware
+from src.core.middleware.middlewares.custom_session_middleware import (
+    CustomSessionMiddleware,
+)
 
 
 class MiddlewareManager:
@@ -27,6 +29,6 @@ class MiddlewareManager:
 
     def setup_middlewares(self):
         self.app.add_middleware(RequestMiddleware)
-        # self.app.add_middleware(AuthMiddleware, self.settings)
-        self.app.add_middleware(CustomSessionMiddleware, self.settings)
-        self.app.add_middleware(CustomCORSMiddleware, self.settings)
+        self.app.add_middleware(AuthMiddleware, settings=self.settings)
+        self.app.add_middleware(CustomSessionMiddleware, settings=self.settings)
+        self.app.add_middleware(CustomCORSMiddleware, settings=self.settings)

@@ -2,6 +2,7 @@ import logging
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from src.core.request.request_stack import RequestStack
+from src.core.events.decorator.dispatch_event import DispatchEvent
 
 
 class RequestMiddleware(BaseHTTPMiddleware):
@@ -24,13 +25,16 @@ class RequestMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app):
         super().__init__(app)
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("REQUEST")
 
+    @DispatchEvent(
+        event_before="kernel.request_received", event_after="kernel.finish_request"
+    )
     async def dispatch(self, request: Request, call_next):
         RequestStack.set_request(request)
         self.logger.info(
             f"Incoming request: {
-                         request.method} {request.url.path}"
+                request.method} {request.url.path}"
         )
         # self.logger.info(f"Headers: {request.headers}")
         self.logger.info(f"Client: {request.client}")

@@ -5,8 +5,11 @@ injectable==4.0.1
 sqlmodel==0.0.22
 python-dotenv==1.0.1
 pyYAML==6.0.2
+colorlog==6.9.0
+pydantic-settings==2.7.0
 jinja2==3.1.4
-sqlmodel==0.0.22
+
+
 
 
 

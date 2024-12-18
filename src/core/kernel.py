@@ -6,6 +6,9 @@ from src.core.middleware.middleware_manager import MiddlewareManager
 from src.core.logging.logger import Logger
 from src.core.config.settings import Settings
 
+# Importer l'instance globale
+from src.core.events.event_dispatcher import dispatcher
+
 
 class Kernel:
     load_injection_container()
@@ -22,11 +25,15 @@ class Kernel:
         if not hasattr(self, "initialized"):
             self.app = FastAPI(debug=self.settings.debug_mode)
             self.logger = Logger().get_logger()
+
+            dispatcher.load_listeners()
+
+            # Configurer les middlewares
             self.setup_app()
             self.initialized = True
 
     def setup_app(self):
-        middleware_manager = MiddlewareManager(self.app)
+        middleware_manager = MiddlewareManager(self.app, self.settings)
         middleware_manager.setup_middlewares()
         router = Router(self.app)
         router.register_controllers()

@@ -1,47 +1,121 @@
-# logger.py
 import logging
+import logging.config
 import os
+from colorlog import ColoredFormatter
 
 
 class Logger:
-    """
-    A Logger class that sets up logging for the application.
-
-    Attributes:
-        logger (logging.Logger): The root logger instance.
-
-    Methods:
-        __init__(): Initializes the Logger instance, sets up file and stream handlers, and configures the formatter.
-        get_logger(): Returns the root logger instance.
-    """
-
     def __init__(self):
+        self.configure_logging()
+        # Nom par défaut pour votre application
+        self.logger = logging.getLogger("Application")
+
+    def configure_logging(self):
         log_dir = os.path.join(os.path.dirname(__file__), "../../../var/log")
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "app.log")
 
-        # Get the root logger
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.DEBUG)
+        LOG_LEVEL = "DEBUG"
 
-        # Create a file handler
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.DEBUG)
+        # Formatter pour les logs colorés de l'application
+        color_formatter_app = {
+            "()": "colorlog.ColoredFormatter",
+            "format": "%(white)s[%(reset)s%(green)sApplication%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(yellow)s%(name)s%(reset)s  %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "log_colors": {
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red",
+            },
+            "style": "%",
+        }
 
-        # Create a stream handler (console)
-        stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(logging.DEBUG)
+        # Formatter pour les logs colorés du serveur Uvicorn
+        color_formatter_server = {
+            "()": "colorlog.ColoredFormatter",
+            "format": "%(white)s[%(reset)s%(green)sServer%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "log_colors": {
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red",
+            },
+            "style": "%",
+        }
 
-        # Create a formatter and add it to the handlers
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        file_handler.setFormatter(formatter)
-        stream_handler.setFormatter(formatter)
+        # Formatter pour les logs de fichier
+        file_formatter = {
+            "format": "[Application] %(asctime)s | %(levelname)s | %(name)s  %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        }
 
-        # Add the handlers to the root logger
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(stream_handler)
+        # Configuration du logging
+        logging_config = {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "colored_app": color_formatter_app,
+                "colored_server": color_formatter_server,
+                "file": file_formatter,
+            },
+            "handlers": {
+                "console_app": {
+                    "class": "logging.StreamHandler",
+                    "formatter": "colored_app",
+                    "level": LOG_LEVEL,
+                },
+                "console_server": {
+                    "class": "logging.StreamHandler",
+                    "formatter": "colored_server",
+                    "level": LOG_LEVEL,
+                },
+                "file": {
+                    "class": "logging.FileHandler",
+                    "formatter": "file",
+                    "level": LOG_LEVEL,
+                    "filename": log_file,
+                },
+            },
+            "root": {
+                "handlers": ["console_app", "file"],
+                "level": LOG_LEVEL,
+            },
+            "loggers": {
+                # Logger de l'application
+                "Application": {
+                    "handlers": ["console_app", "file"],
+                    "level": LOG_LEVEL,
+                    "propagate": False,
+                },
+                # Loggers de Uvicorn
+                "uvicorn": {
+                    "handlers": ["console_server", "file"],
+                    "level": LOG_LEVEL,
+                    "propagate": False,
+                },
+                "uvicorn.error": {
+                    "handlers": ["console_server", "file"],
+                    "level": LOG_LEVEL,
+                    "propagate": False,
+                },
+                "uvicorn.access": {
+                    "handlers": ["console_server", "file"],
+                    "level": LOG_LEVEL,
+                    "propagate": False,
+                },
+                # Vous pouvez ajouter d'autres loggers personnalisés ici si nécessaire
+            },
+        }
 
-    def get_logger(self):
-        return self.logger
+        # Appliquer la configuration
+        logging.config.dictConfig(logging_config)
+
+    def get_logger(self, name=None):
+        if name:
+            return logging.getLogger(name)
+        else:
+            return self.logger

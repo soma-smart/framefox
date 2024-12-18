@@ -35,7 +35,7 @@ class CustomSessionMiddleware(SessionMiddleware):
             same_site=settings.session_same_site,
             https_only=settings.session_https_only,
         )
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("SESSION")
 
     async def dispatch(self, request: Request, call_next):
 
