@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String
+from sqlmodel import Field
 from src.core.orm.abstract_entity import AbstractEntity
 
 
-class User(AbstractEntity):
+class User(AbstractEntity, table=True):
     """
     Example
     """
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
+    id: int = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
