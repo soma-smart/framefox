@@ -1,5 +1,5 @@
 import importlib
-import logging
+
 from pathlib import Path
 from fastapi import FastAPI
 from src.core.controller.abstract_controller import AbstractController
@@ -9,7 +9,6 @@ import inspect
 class Router:
     def __init__(self, app: FastAPI):
         self.app = app
-        self.logger = logging.getLogger(__name__)
 
     def register_controllers(self):
         """
