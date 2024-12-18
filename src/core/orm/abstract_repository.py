@@ -1,10 +1,8 @@
 from abc import ABC
 from typing import Annotated, Type, TypeVar, List, Optional
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import SQLModel, Session, select, asc, desc
 from injectable import Autowired, autowired
 from src.core.orm.entity_manager import EntityManager
-
-from sqlalchemy import asc, desc
 
 T = TypeVar("T", bound=SQLModel)
 

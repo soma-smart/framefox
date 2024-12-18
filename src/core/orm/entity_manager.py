@@ -4,7 +4,7 @@ from injectable import injectable, autowired, Autowired
 from sqlmodel import create_engine, Session
 from src.core.config.settings import Settings
 
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.orm import sessionmaker
 
 
 @injectable
@@ -26,14 +26,15 @@ class EntityManager:
 
     @autowired
     def __init__(self, settings: Annotated[Settings, Autowired]):
-        self.engine = create_engine(settings.database_url)
-        self.SessionLocal = sessionmaker(
-            autocommit=settings.orm_config.get("autocommit", False),
-            autoflush=settings.orm_config.get("autoflush", False),
-            bind=self.engine,
-            class_=Session
-        )
+        self.engine = create_engine(settings.database_url, echo=True)
+        # self.SessionLocal = sessionmaker(
+        #     autocommit=settings.orm_config.get("autocommit", False),
+        #     autoflush=settings.orm_config.get("autoflush", False),
+        #     bind=self.engine,
+        #     class_=Session
+        # )
         self.logger = logging.getLogger(__name__)
 
     def get_session(self) -> Session:
-        return self.SessionLocal()
+        # return self.SessionLocal()
+        return Session(self.engine)
