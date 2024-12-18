@@ -27,6 +27,6 @@ class MiddlewareManager:
 
     def setup_middlewares(self):
         self.app.add_middleware(RequestMiddleware)
-        self.app.add_middleware(AuthMiddleware, self.settings)
+        # self.app.add_middleware(AuthMiddleware, self.settings)
         self.app.add_middleware(CustomSessionMiddleware, self.settings)
         self.app.add_middleware(CustomCORSMiddleware, self.settings)
