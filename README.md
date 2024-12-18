@@ -55,7 +55,7 @@ uvicorn main:app --reload
 ```
 
 
-### Controller
+## Controller
 
 The main purpose of this framework is to make most functionalities easy to use. Controllers in this framework inherit from the AbstractController class, which provides several useful methods and integrates with the routing system.
 
@@ -123,13 +123,19 @@ class UserController(AbstractController):
 In this example, the UserController class defines a route for the `/users` path that responds to GET requests. The get_users method uses the flash, Session, and render methods provided by the AbstractController to manage flash messages, session data, and template rendering.
 
 
-### Entity & Repository
+
 
 
 
 ### RequestStack Class
 
 The `RequestStack` class allows you to manage request-specific data throughout the lifecycle of a request.
+
+
+
+### Entity & Repository
+
+
 
 ## Configuration
 
@@ -138,5 +144,3 @@ Application configurations are defined in the `config` folder. The configuration
 - `application.yaml`: General application settings.
 - `orm.yaml`: ORM (Object-Relational Mapping) settings.
 - `security.yaml`: Security settings including authentication and authorization.
-
-
