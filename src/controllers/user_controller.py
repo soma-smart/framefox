@@ -1,7 +1,7 @@
 from src.core.routing.decorator.route import Route
 from src.repository.user_repository import UserRepository
 from src.core.controller.abstract_controller import AbstractController
-from src.core.session.session import Session
+# from src.core.session.session import Session
 from typing import Optional, Dict
 
 
@@ -19,12 +19,13 @@ class UserController(AbstractController):
     async def search_users(
         self,
         criteria: Dict[str, str],
-        order_by: Optional[Dict[str, str]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        # order_by: Optional[Dict[str, str]] = None,
+        # limit: Optional[int] = None,
+        # offset: Optional[int] = None,
     ):
-        users = UserRepository().find_by(
-            criteria, order_by, limit, offset)
+        # users = UserRepository().find_by(
+        #     criteria, order_by, limit, offset)
+        users = UserRepository().find_by(criteria)
         return users
 
     @Route("/users/{id}", "get_user", methods=["GET"])
@@ -33,11 +34,13 @@ class UserController(AbstractController):
 
     @Route("/users", "create_user", methods=["POST"])
     async def create_user(self, user: UserRepository().create_model):
-        return UserRepository().add(user)
+        # return UserRepository().add(user)
+        user_instance = UserRepository().model(**user.dict())
+        return UserRepository().add(user_instance)
 
-    @Route("/users/{id}", "update_user", methods=["PUT"])
-    async def update_user(self, id: int, user: UserRepository().create_model):
-        return UserRepository().update(id, user)
+    # @Route("/users/{id}", "update_user", methods=["PUT"])
+    # async def update_user(self, id: int, user: UserRepository().create_model):
+    #     return UserRepository().update(id, user)
 
     @Route("/users/{id}", "delete_user", methods=["DELETE"])
     async def delete_user(self, id: int):
