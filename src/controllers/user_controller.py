@@ -9,10 +9,8 @@ class UserController(AbstractController):
     Example
     """
 
-    @Route("/vue", "get_vue", methods=["GET"])
-    async def get_vue(self):
-
-        return self.json({"message": "Hello, Vue!"})
+    def __init__(self):
+        super().__init__()
 
     @Route("/users", "get_users", methods=["GET"])
     async def get_users(self):
@@ -41,7 +39,8 @@ class UserController(AbstractController):
     @Route("/users", "create_user", methods=["POST"])
     async def create_user(self, user: UserRepository().create_model):
         user_instance = UserRepository().model(**user.dict())
-        return UserRepository().add(user_instance)
+        UserRepository().add(user_instance)
+        return None
 
     @Route("/users/{id}", "update_user", methods=["PUT"])
     async def update_user(self, id: int, user: UserRepository().create_model):
