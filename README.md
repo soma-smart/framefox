@@ -131,11 +131,123 @@ In this example, the UserController class defines a route for the `/users` path 
 
 The `RequestStack` class allows you to manage request-specific data throughout the lifecycle of a request.
 
+### Entity
+Entities are business objects that represent the application's data and are typically mapped to database tables. They are very easy to use due to their inheritance from the AbstractEntity class. Here is an example of a user entity:
+```python
+from sqlmodel import Field
+from src.core.orm.abstract_entity import AbstractEntity
+from datetime import datetime
+
+class User(AbstractEntity, table=True):
+    """
+    Example entity representing a user.
+    """
+
+    id: int = Field(default=None, primary_key=True, description="The unique identifier of the user.")
+    name: str = Field(index=True, description="The name of the user.")
+    email: str = Field(index=True, description="The email address of the user.")
+    age: int = Field(default=None, description="The age of the user.")
+    created_at: datetime = Field(default=datetime.utcnow, description="The timestamp when the user was created.")
+```
+AbstractEntity is based on Pydantic, so it implements dynamic model creation that simplifies data validation. To use it, simply use:
+```python
+User.generate_create_model()
+```
+Will see later how to use it with a controller.
+
+### Repository
+The repository inherits from the AbstractRepository, making its creation very easy. The idea is to simply connect the repository to the corresponding entit. Here is an example of UserRepository :
+```python
+from src.core.orm.abstract_repository import AbstractRepository
+from src.entity.user import User
 
 
-### Entity & Repository
+class UserRepository(AbstractRepository):
+    def __init__(self):
+        super().__init__(User)
+```
+Due to its ineritance, the repository implement many features such as :
+- find(id): Retrieve an entity by its ID.
+- find_all(): Retrieve all entities.
+- find_by(criteria): Retrieve entities based on specific criteria.
+- add(entity): Add a new entity.
+- update(entity): Update an existing entity.
+- delete(entity): Delete an entity.
+
+### Use repository with controllers
+Thanks to repository and pydantic it is super easy to create a controller that refines routes. Here is an example of UserController that illustrate all features of UserRepository and the Pydantic data validation :
+```python
+from src.core.routing.decorator.route import Route
+from src.repository.user_repository import UserRepository
+from src.core.controller.abstract_controller import AbstractController
+from typing import Optional, Dict
 
 
+class UserController(AbstractController):
+    """
+    Example
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    @Route("/users", "get_users", methods=["GET"])
+    async def get_users(self):
+        return UserRepository().find_all()
+
+    @Route("/users/search", "search_users", methods=["POST"])
+    async def search_users(
+        self,
+        criteria: Dict[str, str],
+        order_by: Optional[Dict[str, str]] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ):
+        users = UserRepository().find_by(
+            criteria, order_by, limit, offset)
+        return users
+
+    @Route("/users/{id}", "get_user", methods=["GET"])
+    async def get_user(self, id: int):
+        return UserRepository().find(id)
+
+    @Route("/users", "create_user", methods=["POST"])
+    async def create_user(self, user: UserRepository().create_model):
+        user_instance = UserRepository().model(**user.dict())
+        UserRepository().add(user_instance)
+        return None
+
+    @Route("/users/{id}", "update_user", methods=["PUT"])
+    async def update_user(self, id: int, user: UserRepository().create_model):
+        return UserRepository().update(id, user)
+
+    @Route("/users/{id}", "delete_user", methods=["DELETE"])
+    async def delete_user(self, id: int):
+        return UserRepository().delete(id)
+
+```
+Let's detail a bit this route :
+```python
+    @Route("/users", "create_user", methods=["POST"])
+    async def create_user(self, user: UserRepository().create_model):
+        user_instance = UserRepository().model(**user.dict())
+        UserRepository().add(user_instance)
+        return None
+```
+This line define the route by using the @Route decorator
+```python
+    @Route("/users", "create_user", methods=["POST"])
+```
+This function requires a user to do its magic. The user is a Pydantic creation model that validates if you give the correct data for user creation. In our example, at least the name and email are required:
+```python
+    async def create_user(self, user: UserRepository().create_model):
+```
+After all, the user object is instantiated and added to the database:
+```python
+        user_instance = UserRepository().model(**user.dict())
+        UserRepository().add(user_instance)
+        return None
+```
 
 ## Configuration
 
