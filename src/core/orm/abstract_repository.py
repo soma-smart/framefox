@@ -1,6 +1,6 @@
 from abc import ABC
 from typing import Annotated, Type, TypeVar, List, Optional
-from sqlmodel import SQLModel, Session, select, asc, desc
+from sqlmodel import SQLModel, select, asc, desc
 from injectable import Autowired, autowired
 from src.core.orm.entity_manager import EntityManager
 
@@ -26,56 +26,96 @@ class AbstractRepository(ABC):
         self.create_model = self.model.generate_create_model()
         # self.response_model = self.model.generate_models_response()
 
-    def get_session(self) -> Session:
-        return self.entity_manager.get_session()
-
     def find(self, id: int) -> Optional[T]:
-        with self.get_session() as session:
-            return session.get(self.model, id)
+        """
+        Retrieve an entity by its ID.
+
+        Args:
+            id (int): The ID of the entity.
+
+        Returns:
+            Optional[T]: The retrieved entity, or None if not found.
+        """
+        return self.entity_manager.get_entity(self.model, id)
 
     def find_all(self) -> List[T]:
-        with self.get_session() as session:
-            statement = select(self.model)
-            return session.exec(statement).all()
+        """
+        Retrieve all entities.
+
+        Returns:
+            List[T]: A list of all entities.
+        """
+        statement = select(self.model)
+        return self.entity_manager.exec_statement(statement)
 
     def find_by(self, criteria, order_by=None, limit=None, offset=None) -> List[T]:
-        with self.get_session() as session:
-            statement = select(self.model).filter_by(**criteria)
-            if order_by:
-                for field, direction in order_by.items():
-                    if direction.lower() == 'asc':
-                        statement = statement.order_by(
-                            asc(getattr(self.model, field)))
-                    elif direction.lower() == 'desc':
-                        statement = statement.order_by(
-                            desc(getattr(self.model, field)))
+        """
+        Retrieve entities based on specific criteria.
 
-            if limit is not None:
-                statement = statement.limit(limit)
+        Args:
+            criteria: The criteria to filter the entities.
+            order_by: The field(s) to order the entities by.
+            limit: The maximum number of entities to retrieve.
+            offset: The number of entities to skip.
 
-            if offset is not None:
-                statement = statement.offset(offset)
-            return session.exec(statement).all()
+        Returns:
+            List[T]: A list of entities that match the criteria.
+        """
+        statement = select(self.model).filter_by(**criteria)
+        if order_by:
+            for field, direction in order_by.items():
+                if direction.lower() == 'asc':
+                    statement = statement.order_by(
+                        asc(getattr(self.model, field)))
+                elif direction.lower() == 'desc':
+                    statement = statement.order_by(
+                        desc(getattr(self.model, field)))
+
+        if limit is not None:
+            statement = statement.limit(limit)
+
+        if offset is not None:
+            statement = statement.offset(offset)
+        return self.entity_manager.exec_statement(statement)
 
     def add(self, entity: T) -> None:
-        with self.get_session() as session:
-            session.add(entity)
-            session.commit()
+        """
+        Add a new entity.
+
+        Args:
+            entity (T): The entity to add.
+        """
+        with self.entity_manager.get_session() as session:
+            self.entity_manager.persist(session, entity)
+            self.entity_manager.commit(session)
 
     def update(self, entity_id: int, entity: T) -> None:
-        with self.get_session() as session:
+        """
+        Update an existing entity.
+
+        Args:
+            entity_id (int): The ID of the entity to update.
+            entity (T): The updated entity.
+        """
+        with self.entity_manager.get_session() as session:
             db_entity = session.query(self.model).get(entity_id)
             if entity:
                 for key, value in entity.dict().items():
                     setattr(db_entity, key, value)
-                session.commit()
-                session.refresh(db_entity)
+                self.entity_manager.commit(session)
+                self.entity_manager.refresh(session, db_entity)
                 return db_entity
             return None
 
     def delete(self, entity_id: int) -> None:
-        with self.get_session() as session:
+        """
+        Delete an entity.
+
+        Args:
+            entity_id (int): The ID of the entity to delete.
+        """
+        with self.entity_manager.get_session() as session:
             entity = session.query(self.model).get(entity_id)
             if entity:
-                session.delete(entity)
-                session.commit()
+                self.entity_manager.delete(session, entity)
+                self.entity_manager.commit(session)
