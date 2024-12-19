@@ -156,7 +156,8 @@ User.generate_create_model()
 Will see later how to use it with a controller.
 
 ### Repository
-The repository inherits from the AbstractRepository, making its creation very easy. The idea is to simply connect the repository to the corresponding entit. Here is an example of UserRepository :
+A repository is a design pattern that encapsulates data access logic, centralizing data operations and promoting modular, testable, and maintainable code by abstracting the data access layer.
+The repository inherits from the AbstractRepository, making its creation very easy. The idea is to simply connect the repository to the corresponding entity. Here is an example of UserRepository :
 ```python
 from src.core.orm.abstract_repository import AbstractRepository
 from src.entity.user import User
