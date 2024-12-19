@@ -9,6 +9,9 @@ modules
 evenement /formulaire/validation /console terminal/securité
 
 
+entityvalueresolver
+token csrf
+
 
 -----------------
 commande terminal

@@ -1,5 +1,4 @@
 from fastapi.middleware.cors import CORSMiddleware
-from src.core.config.settings import Settings
 
 
 class CustomCORSMiddleware(CORSMiddleware):
