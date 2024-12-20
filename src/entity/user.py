@@ -7,4 +7,5 @@ class User(AbstractEntity, table=True):
     Example
     """
 
+    id: int = Field(default=None, primary_key=True)
     name: str = Field(index=True)

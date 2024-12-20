@@ -1,13 +1,11 @@
 from sqlmodel import SQLModel
 from typing import Type, List
 from pydantic import BaseModel, create_model
-from sqlmodel import Field, inspect
+from sqlmodel import inspect
 
 
 class AbstractEntity(SQLModel):
     __abstract__ = True
-
-    id: int = Field(default=None, primary_key=True)
 
     # @declared_attr
     # def __tablename__(cls):
