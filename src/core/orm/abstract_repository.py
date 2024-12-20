@@ -23,12 +23,12 @@ class AbstractRepository(ABC):
         self.create_model = self.model.generate_create_model()
         # self.response_model = self.model.generate_models_response()
 
-    def find(self, id: int) -> Optional[T]:
+    def find(self, id) -> Optional[T]:
         """
         Retrieve an entity by its ID.
 
         Args:
-            id (int): The ID of the entity.
+            id: The keys of an entity.
 
         Returns:
             Optional[T]: The retrieved entity, or None if not found.

@@ -39,9 +39,9 @@ class EntityManager:
         Args:
             entity: The entity to persist.
         """
-        db_entity = self.find(type(entity), entity.id)
+        db_entity = self.find_existing_entity(entity)
         if db_entity:
-            self.update(db_entity, entity)
+            self.session.merge(entity)
         else:
             self.session.add(entity)
 
@@ -55,18 +55,6 @@ class EntityManager:
         if self.session.object_session(entity) is not self.session:
             entity = self.session.merge(entity)
         self.session.delete(entity)
-
-    def update(self, db_entity, entity) -> None:
-        """
-        Updates an entity in the session.
-
-        Args:
-            db_entity: The entity in the session to update.
-            entity: The updated entity.
-        """
-        if entity:
-            for key, value in entity.dict().items():
-                setattr(db_entity, key, value)
 
     def refresh(self, entity) -> None:
         """
@@ -86,12 +74,26 @@ class EntityManager:
         """
         return self.session.exec(statement).all()
 
-    def find(self, entity, id) -> None:
+    def find(self, entity, primary_keys) -> None:
         """
         Retrieves an entity from the session by its ID.
 
         Args:
             entity: The entity class.
-            id: The ID of the entity.
+            primary_keys (dict): The primary keys with values of the entity.
         """
-        return self.session.get(entity, id)
+        return self.session.get(entity, primary_keys)
+
+    def find_existing_entity(self, entity):
+        """
+        Find an existing entity in the database based on its primary keys.
+
+        Args:
+            entity: The entity object to search for.
+
+        Returns:
+            The found entity object, or None if not found.
+        """
+        primary_keys = entity.get_primary_keys()
+        keys = {key: getattr(entity, key) for key in primary_keys}
+        return self.find(entity.__class__, keys)

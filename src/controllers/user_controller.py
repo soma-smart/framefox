@@ -26,9 +26,9 @@ class UserController(AbstractController):
             criteria, order_by, limit, offset)
         return users
 
-    @Route("/users/{id}", "get_user", methods=["GET"])
-    async def get_user(self, id: int):
-        return UserRepository().find(id)
+    @Route("/users/find", "get_user", methods=["POST"])
+    async def get_user(self, keys_formula: User.generate_find_model()):
+        return UserRepository().find(keys_formula.dict())
 
     @Route("/users", "create_user", methods=["POST"])
     async def create_user(self, user: User):
@@ -36,20 +36,13 @@ class UserController(AbstractController):
         self.entity_manager.persist(user_instance)
         self.entity_manager.commit()
 
-    @Route("/users/{id}", "update_user", methods=["PUT"])
-    async def update_user(self, id: int, user: UserRepository().create_model):
-        user_instance = UserRepository().find(id)
-        self.entity_manager.persist(user_instance)
+    @Route("/users", "update_user", methods=["PUT"])
+    async def update_user(self, user: User):
+        self.entity_manager.persist(user)
         self.entity_manager.commit()
 
     @Route("/users/{id}", "delete_user", methods=["DELETE"])
     async def delete_user(self, id: int):
         user_instance = UserRepository().find(id)
         self.entity_manager.delete(user_instance)
-        self.entity_manager.commit()
-
-    @Route('/test', 'test', methods=['GET'])
-    async def test(self):
-        user = User(name='test')
-        self.entity_manager.persist(user)
         self.entity_manager.commit()
