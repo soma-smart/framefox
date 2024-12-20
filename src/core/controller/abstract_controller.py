@@ -5,10 +5,16 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from src.core.request.request_stack import RequestStack
 from src.core.session.session import Session
 
+from injectable import Autowired, autowired
+from typing import Annotated
+from src.core.orm.entity_manager import EntityManager
+
 
 class AbstractController:
-    def __init__(self):
+    @autowired
+    def __init__(self, entity_manager: Annotated[EntityManager, Autowired]):
         self.router = APIRouter()
+        self.entity_manager = entity_manager
 
     def redirect(self, location: str, code: int = 302):
         """Redirects to a specific URL."""

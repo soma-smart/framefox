@@ -8,75 +8,74 @@ from src.core.config.settings import Settings
 @injectable
 class EntityManager:
     """
-    EntityManager is responsible for managing the database sessions and engine.
+    The EntityManager class provides methods for managing entities in a session.
+
+    Args:
+        settings (Annotated[Settings, Autowired]): The settings object containing the database URL.
 
     Attributes:
-        engine (Engine): SQLModel engine instance created with the provided database URI.
-        SessionLocal (sessionmaker): SQLModel session factory configured with the provided settings.
+        engine: The database engine.
+        logger: The logger object.
+        session: The session object.
 
-    Methods:
-        __init__(settings: Autowired(Settings)):
-            Initializes the EntityManager with the given settings.
-
-        get_session() -> Session:
-            Creates and returns a new SQLModel session.
     """
 
     @autowired
     def __init__(self, settings: Annotated[Settings, Autowired]):
         self.engine = create_engine(settings.database_url, echo=True)
         self.logger = logging.getLogger(__name__)
+        self.session = Session(self.engine)
 
-    def get_session(self) -> Session:
-        """
-        Returns a new SQLModel session.
-
-        Returns:
-            Session: The newly created session.
-        """
-        return Session(self.engine)
-
-    def commit(self, session: Session) -> None:
+    def commit(self) -> None:
         """
         Commits the changes made in the session.
-
-        Args:
-            session (Session): The session to commit.
         """
-        session.commit()
+        self.session.commit()
 
-    def persist(self, session: Session, entity) -> None:
+    def persist(self, entity) -> None:
         """
         Persists an entity in the session.
 
         Args:
-            session (Session): The session to persist the entity in.
             entity: The entity to persist.
         """
-        session.add(entity)
-        session.flush()
+        db_entity = self.find(type(entity), entity.id)
+        if db_entity:
+            self.update(db_entity, entity)
+        else:
+            self.session.add(entity)
 
-    def delete(self, session: Session, entity) -> None:
+    def delete(self, entity) -> None:
         """
         Deletes an entity from the session.
 
         Args:
-            session (Session): The session to delete the entity from.
             entity: The entity to delete.
         """
-        session.delete(entity)
-        session.flush()
+        if self.session.object_session(entity) is not self.session:
+            entity = self.session.merge(entity)
+        self.session.delete(entity)
 
-    def refresh(self, session: Session, entity) -> None:
+    def update(self, db_entity, entity) -> None:
+        """
+        Updates an entity in the session.
+
+        Args:
+            db_entity: The entity in the session to update.
+            entity: The updated entity.
+        """
+        if entity:
+            for key, value in entity.dict().items():
+                setattr(db_entity, key, value)
+
+    def refresh(self, entity) -> None:
         """
         Refreshes the state of an entity in the session.
 
         Args:
-            session (Session): The session to refresh the entity in.
             entity: The entity to refresh.
         """
-        session.refresh(entity)
-        session.flush()
+        self.refresh(entity)
 
     def exec_statement(self, statement) -> None:
         """
@@ -84,23 +83,15 @@ class EntityManager:
 
         Args:
             statement: The SQL statement to execute.
-
-        Returns:
-            None
         """
-        with self.get_session() as session:
-            return session.exec(statement).all()
+        return self.session.exec(statement).all()
 
-    def get_entity(self, entity, id) -> None:
+    def find(self, entity, id) -> None:
         """
         Retrieves an entity from the session by its ID.
 
         Args:
             entity: The entity class.
             id: The ID of the entity.
-
-        Returns:
-            None
         """
-        with self.get_session() as session:
-            return session.get(entity, id)
+        return self.session.get(entity, id)
