@@ -3,11 +3,9 @@ from src.core.routing.decorator.route import Route
 from src.core.session.session import Session
 
 
-class ProductController(AbstractController):
+class TestController(AbstractController):
 
-    @Route("/products{id}", "get_products", methods=["GET"])
-    async def get_products(self, id):
-
-        print(id)
+    @Route("/test", "get_test", methods=["GET"])
+    async def get_test(self):
 
         return self.json({"products": ["Product 1", "Product 2"]})
