@@ -12,4 +12,5 @@ security:
 
     - { path: ^/users, roles: ROLE_USER }
     - { path: ^/products, roles: ROLE_ADMIN }
-    - { path: ^/prout, roles: ROLE_ADMIN }
+    - { path: ^/test2, roles: ROLE_USER }
+    - { path: ^/test3, roles: ROLE_ADMIN }

@@ -1,37 +1,43 @@
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlmodel import SQLModel, create_engine, Session
+from src.entity.user import User
+from passlib.context import CryptContext
+import os
+from dotenv import load_dotenv
+from sqlalchemy.exc import OperationalError
 
-Base = declarative_base()
+# Charger les variables d'environnement
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///app.db")
+
+engine = create_engine(DATABASE_URL, echo=True)
 
 
-class User(Base):
-    __tablename__ = "user"
+def create_db_and_user():
+    try:
+        # Créer les tables définies dans les modèles SQLModel
+        SQLModel.metadata.create_all(engine)
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
+        # Initialiser une session
+        with Session(engine) as session:
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            hashed_password = pwd_context.hash("test")  # Mot de passe : test
 
-
-def main():
-    # Créer une connexion à la base de données SQLite
-    engine = create_engine("sqlite:///app.db", echo=True)
-
-    # Créer les tables définies dans Base
-    Base.metadata.create_all(engine)
-
-    # Créer une session
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    # Ajouter des utilisateurs
-    users = [User(name="Alice"), User(name="Bob"), User(name="Charlie")]
-
-    session.add_all(users)
-    session.commit()
-
-    # Vérifier les données ajoutées
-    for user in session.query(User).all():
-        print(f"User ID: {user.id}, Name: {user.name}")
+            # Créer un utilisateur de test
+            user = User(
+                name="Test User",
+                email="test@test.fr",
+                password=hashed_password,
+                roles=["ROLE_USER"],
+            )
+            session.add(user)
+            session.commit()
+            print("Utilisateur créé avec succès.")
+    except OperationalError as e:
+        print(
+            f"Erreur lors de la création de la base de données ou de l'utilisateur : {e}"
+        )
 
 
 if __name__ == "__main__":
-    main()
+    create_db_and_user()
