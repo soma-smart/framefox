@@ -12,6 +12,7 @@ evenement /formulaire/validation /console terminal/securité
 entityvalueresolver
 token csrf
 
+reunir tout le cache a un seul endroit
 
 -----------------
 commande terminal

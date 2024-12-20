@@ -1,13 +1,12 @@
 import logging
 import logging.config
 import os
-from colorlog import ColoredFormatter
+from src.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
 
 
 class Logger:
     def __init__(self):
         self.configure_logging()
-        # Nom par défaut pour votre application
         self.logger = logging.getLogger("Application")
 
     def configure_logging(self):
@@ -17,7 +16,6 @@ class Logger:
 
         LOG_LEVEL = "DEBUG"
 
-        # Formatter pour les logs colorés de l'application
         color_formatter_app = {
             "()": "colorlog.ColoredFormatter",
             "format": "%(white)s[%(reset)s%(green)sApplication%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(yellow)s%(name)s%(reset)s  %(message)s",
@@ -32,7 +30,6 @@ class Logger:
             "style": "%",
         }
 
-        # Formatter pour les logs colorés du serveur Uvicorn
         color_formatter_server = {
             "()": "colorlog.ColoredFormatter",
             "format": "%(white)s[%(reset)s%(green)sServer%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(message)s",
@@ -47,13 +44,16 @@ class Logger:
             "style": "%",
         }
 
-        # Formatter pour les logs de fichier
         file_formatter = {
             "format": "[Application] %(asctime)s | %(levelname)s | %(name)s  %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         }
+        file_sqlmodel_formatter = {
+            "()": SQLModelFormatter,
+            "format": "[Application] %(asctime)s | %(levelname)s | %(name)s  %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        }
 
-        # Configuration du logging
         logging_config = {
             "version": 1,
             "disable_existing_loggers": False,
@@ -61,6 +61,7 @@ class Logger:
                 "colored_app": color_formatter_app,
                 "colored_server": color_formatter_server,
                 "file": file_formatter,
+                "file_sqlmodel": file_sqlmodel_formatter,
             },
             "handlers": {
                 "console_app": {
@@ -74,10 +75,22 @@ class Logger:
                     "level": LOG_LEVEL,
                 },
                 "file": {
-                    "class": "logging.FileHandler",
+                    "class": "logging.handlers.RotatingFileHandler",
                     "formatter": "file",
                     "level": LOG_LEVEL,
                     "filename": log_file,
+                    "maxBytes": 5 * 1024 * 1024,
+                    "backupCount": 3,
+                    "encoding": "utf8",
+                },
+                "file_sqlmodel": {
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "formatter": "file_sqlmodel",
+                    "level": LOG_LEVEL,
+                    "filename": log_file,
+                    "maxBytes": 5 * 1024 * 1024,
+                    "backupCount": 3,
+                    "encoding": "utf8",
                 },
             },
             "root": {
@@ -107,11 +120,13 @@ class Logger:
                     "level": LOG_LEVEL,
                     "propagate": False,
                 },
-                # Vous pouvez ajouter d'autres loggers personnalisés ici si nécessaire
+                "sqlalchemy.engine.Engine": {
+                    "handlers": ["file_sqlmodel"],
+                    "level": "INFO",
+                    "propagate": True,
+                },
             },
         }
-
-        # Appliquer la configuration
         logging.config.dictConfig(logging_config)
 
     def get_logger(self, name=None):

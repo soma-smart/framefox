@@ -97,6 +97,12 @@ class Settings:
         return value
 
     @property
+    def cache_dir(self):
+        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
+        os.makedirs(cache_path, exist_ok=True)
+        return cache_path
+
+    @property
     def database_url(self):
         return self.config.get("database", {}).get("url")
 

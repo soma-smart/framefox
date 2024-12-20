@@ -12,4 +12,4 @@ security:
 
     - { path: ^/users, roles: ROLE_USER }
     - { path: ^/products, roles: ROLE_ADMIN }
-    # - { path: ^/vue, roles: ROLE_USER }
+    - { path: ^/prout, roles: ROLE_ADMIN }
