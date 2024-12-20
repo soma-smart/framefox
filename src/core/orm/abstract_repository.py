@@ -14,9 +14,6 @@ class AbstractRepository(ABC):
     - find(id): Retrieve an entity by its ID.
     - find_all(): Retrieve all entities.
     - find_by(criteria): Retrieve entities based on specific criteria.
-    - add(entity): Add a new entity.
-    - update(entity): Update an existing entity.
-    - delete(entity): Delete an entity.
     """
 
     @autowired
@@ -36,7 +33,7 @@ class AbstractRepository(ABC):
         Returns:
             Optional[T]: The retrieved entity, or None if not found.
         """
-        return self.entity_manager.get_entity(self.model, id)
+        return self.entity_manager.find(self.model, id)
 
     def find_all(self) -> List[T]:
         """
@@ -77,45 +74,3 @@ class AbstractRepository(ABC):
         if offset is not None:
             statement = statement.offset(offset)
         return self.entity_manager.exec_statement(statement)
-
-    def add(self, entity: T) -> None:
-        """
-        Add a new entity.
-
-        Args:
-            entity (T): The entity to add.
-        """
-        with self.entity_manager.get_session() as session:
-            self.entity_manager.persist(session, entity)
-            self.entity_manager.commit(session)
-
-    def update(self, entity_id: int, entity: T) -> None:
-        """
-        Update an existing entity.
-
-        Args:
-            entity_id (int): The ID of the entity to update.
-            entity (T): The updated entity.
-        """
-        with self.entity_manager.get_session() as session:
-            db_entity = session.query(self.model).get(entity_id)
-            if entity:
-                for key, value in entity.dict().items():
-                    setattr(db_entity, key, value)
-                self.entity_manager.commit(session)
-                self.entity_manager.refresh(session, db_entity)
-                return db_entity
-            return None
-
-    def delete(self, entity_id: int) -> None:
-        """
-        Delete an entity.
-
-        Args:
-            entity_id (int): The ID of the entity to delete.
-        """
-        with self.entity_manager.get_session() as session:
-            entity = session.query(self.model).get(entity_id)
-            if entity:
-                self.entity_manager.delete(session, entity)
-                self.entity_manager.commit(session)

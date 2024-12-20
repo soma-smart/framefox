@@ -1,5 +1,6 @@
 from src.core.routing.decorator.route import Route
 from src.repository.user_repository import UserRepository
+from src.entity.user import User
 from src.core.controller.abstract_controller import AbstractController
 from typing import Optional, Dict
 
@@ -9,15 +10,8 @@ class UserController(AbstractController):
     Example
     """
 
-    def __init__(self):
-        super().__init__()
-
     @Route("/users", "get_users", methods=["GET"])
     async def get_users(self):
-
-        # Session.set("last_visited", "/users")
-
-        # return self.render("users.html", {"title": "user list"})
         return UserRepository().find_all()
 
     @Route("/users/search", "search_users", methods=["POST"])
@@ -37,15 +31,25 @@ class UserController(AbstractController):
         return UserRepository().find(id)
 
     @Route("/users", "create_user", methods=["POST"])
-    async def create_user(self, user: UserRepository().create_model):
+    async def create_user(self, user: User):
         user_instance = UserRepository().model(**user.dict())
-        UserRepository().add(user_instance)
-        return None
+        self.entity_manager.persist(user_instance)
+        self.entity_manager.commit()
 
     @Route("/users/{id}", "update_user", methods=["PUT"])
     async def update_user(self, id: int, user: UserRepository().create_model):
-        return UserRepository().update(id, user)
+        user_instance = UserRepository().find(id)
+        self.entity_manager.persist(user_instance)
+        self.entity_manager.commit()
 
     @Route("/users/{id}", "delete_user", methods=["DELETE"])
     async def delete_user(self, id: int):
-        return UserRepository().delete(id)
+        user_instance = UserRepository().find(id)
+        self.entity_manager.delete(user_instance)
+        self.entity_manager.commit()
+
+    @Route('/test', 'test', methods=['GET'])
+    async def test(self):
+        user = User(name='test')
+        self.entity_manager.persist(user)
+        self.entity_manager.commit()
