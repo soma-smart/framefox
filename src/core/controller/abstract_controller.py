@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, JSONResponse
 
 from src.core.request.request_stack import RequestStack
-from src.core.session.session import Session
+from src.core.request.session.session import Session
 
 from injectable import Autowired, autowired
 from typing import Annotated

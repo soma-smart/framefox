@@ -1,11 +1,14 @@
 from sqlmodel import Field
 from src.core.orm.abstract_entity import AbstractEntity
+from typing import List
+from sqlalchemy import Column, JSON
 
 
 class User(AbstractEntity, table=True):
-    """
-    Example
-    """
-
     id: int = Field(default=None, primary_key=True)
     name: str = Field(index=True)
+    email: str = Field(index=True, unique=True)
+    password: str = Field()
+    roles: List[str] = Field(
+        default_factory=lambda: ["ROLE_USER"], sa_column=Column(JSON)
+    )
