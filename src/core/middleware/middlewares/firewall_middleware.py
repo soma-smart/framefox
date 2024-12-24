@@ -1,35 +1,30 @@
 import re
 import logging
-from fastapi import Request, Response
+
 from starlette.middleware.base import BaseHTTPMiddleware
-from src.core.security.token_manager import TokenManager
 from src.core.events.decorator.dispatch_event import DispatchEvent
+from src.core.security.handlers.firewall_handler import FirewallHandler
+from fastapi import Request
+from src.core.request.cookie_manager import CookieManager
 
 
 class FirewallMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware for handling authentication and authorization.
-
-    Attributes:
-        access_control (list): List of access control rules.
-        role_hierarchy (dict): Dictionary defining role inheritance.
-        flattened_roles (dict): Dictionary with flattened role hierarchy for easy checking.
-        logger (logging.Logger): Logger instance for logging.
-    """
 
     def __init__(self, app, settings):
         super().__init__(app)
+        self.settings = settings
+        self.logger = logging.getLogger("FIREWALL")
+        self.cookie_manager = CookieManager()
 
-        self.access_control = settings.access_control
+        self.handler = FirewallHandler(
+            cookie_manager=self.cookie_manager, logger=self.logger, settings=settings
+        )
+
         self.role_hierarchy = self.define_role_hierarchy()
-        self.flattened_roles = self.build_role_hierarchy()
-        self.logger = logging.getLogger("AUTH")
-        self.token_manager = TokenManager(settings)
 
     def define_role_hierarchy(self):
         return {
             "ROLE_ADMIN": ["ROLE_USER"],
-            # You can add other hierarchies here
         }
 
     def build_role_hierarchy(self):
@@ -39,8 +34,8 @@ class FirewallMiddleware(BaseHTTPMiddleware):
         return hierarchy
 
     def get_required_roles(self, path):
-        self.logger.debug(f"Évaluation des rôles requis pour le chemin: {path}")
-        for rule in self.access_control:
+        self.logger.debug(f"Evaluating required roles for path: {path}")
+        for rule in self.settings.access_control:
             pattern = rule.get("path")
             roles = rule.get("roles", "")
             if isinstance(roles, str):
@@ -52,67 +47,32 @@ class FirewallMiddleware(BaseHTTPMiddleware):
 
             if re.match(pattern, path):
                 self.logger.debug(
-                    f"Chemin {path} correspond au pattern {
-                                  pattern} avec les rôles {roles}"
+                    f"Path {path} matches pattern {pattern} with roles {roles}"
                 )
                 return roles
-        self.logger.debug(
-            f"Aucune règle de contrôle d'accès ne correspond au chemin: {path}"
-        )
+        self.logger.debug(f"No access control rules match the path: {path}")
         return None
-
-    def get_current_user(self, request: Request):
-        token = request.cookies.get("access_token")
-        if not token:
-            return None
-
-        payload = self.token_manager.decode_token(token)
-        if not payload:
-            return None
-
-        roles = payload.get("roles", [])
-        return {"roles": roles}
-
-    def has_required_role(self, user_roles, required_roles):
-        self.logger.debug(
-            f"Vérification des rôles de l'utilisateur: {
-                          user_roles} contre les rôles requis: {required_roles}"
-        )
-        expanded_roles = set()
-        for role in user_roles:
-            expanded_roles.update(self.flattened_roles.get(role, {role}))
-        self.logger.debug(f"Rôles étendus de l'utilisateur: {expanded_roles}")
-        has_role = bool(expanded_roles.intersection(required_roles))
-        self.logger.debug(
-            f"L'utilisateur {'a' if has_role else 'n\'a pas'} les rôles requis."
-        )
-        return has_role
 
     @DispatchEvent(event_before="auth.auth_attempt", event_after="auth.auth_result")
     async def dispatch(self, request: Request, call_next):
         """
-        Middleware pour gérer l'authentification avec dispatching d'événements.
+        Main middleware to handle authentication and authorization.
         """
         path = request.url.path
+        method = request.method
 
-        if not self.access_control:
-            self.logger.info("Access control is disabled.")
-            return await call_next(request)
+        if self.settings.access_control:
+            if method == "GET" and path == self.settings.login_path:
+                return await self.handler.handle_login_get(request, call_next)
+            if method == "POST" and path == self.settings.login_path:
+                return await self.handler.handle_login_post(request)
 
-        required_roles = self.get_required_roles(path)
+            required_roles = self.get_required_roles(path)
+            if required_roles:
+                return await self.handler.handle_authorization(
+                    request, required_roles, call_next
+                )
+        else:
+            self.logger.info("No access control rules are defined.")
 
-        if required_roles:
-            token = request.cookies.get("access_token")
-            if token:
-                payload = self.token_manager.decode_token(token)
-                if payload and self.has_required_role(
-                    payload.get("roles", []), required_roles
-                ):
-                    response = await call_next(request)
-                    return response
-
-            self.logger.warning(f"Accès interdit pour le chemin: {path}")
-            return Response(content="Forbidden", status_code=403)
-
-        response = await call_next(request)
-        return response
+        return await call_next(request)

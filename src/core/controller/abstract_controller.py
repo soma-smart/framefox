@@ -14,6 +14,7 @@ class AbstractController:
     @autowired
     def __init__(self, entity_manager: Annotated[EntityManager, Autowired]):
         self.router = APIRouter()
+
         self.entity_manager = entity_manager
 
     def redirect(self, location: str, code: int = 302):

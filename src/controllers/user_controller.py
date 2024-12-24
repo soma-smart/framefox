@@ -22,8 +22,7 @@ class UserController(AbstractController):
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ):
-        users = UserRepository().find_by(
-            criteria, order_by, limit, offset)
+        users = UserRepository().find_by(criteria, order_by, limit, offset)
         return users
 
     @Route("/users/find", "get_user", methods=["POST"])

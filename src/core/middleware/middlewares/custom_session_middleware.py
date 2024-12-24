@@ -29,11 +29,11 @@ class CustomSessionMiddleware(SessionMiddleware):
     def __init__(self, app, settings):
         super().__init__(
             app,
-            secret_key=settings.session_secret_key,
+            secret_key=settings.cookie_secret_key,
             session_cookie="session_id",
-            max_age=settings.session_max_age,
-            same_site=settings.session_same_site,
-            https_only=settings.session_https_only,
+            max_age=settings.cookie_max_age,
+            same_site=settings.cookie_same_site,
+            https_only=settings.cookie_http_only,
         )
         self.logger = logging.getLogger("SESSION")
 
