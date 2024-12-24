@@ -125,6 +125,11 @@ class Logger:
                     "level": "INFO",
                     "propagate": True,
                 },
+                "python_multipart": {
+                    "handlers": ["file"],
+                    "level": "WARNING",
+                    "propagate": False,
+                },
             },
         }
         logging.config.dictConfig(logging_config)

@@ -17,7 +17,9 @@ class AbstractRepository(ABC):
     """
 
     @autowired
-    def __init__(self, model: Type[T], entity_manager: Annotated[EntityManager, Autowired]):
+    def __init__(
+        self, model: Type[T], entity_manager: Annotated[EntityManager, Autowired]
+    ):
         self.model = model
         self.entity_manager = entity_manager
         self.create_model = self.model.generate_create_model()
@@ -61,12 +63,10 @@ class AbstractRepository(ABC):
         statement = select(self.model).filter_by(**criteria)
         if order_by:
             for field, direction in order_by.items():
-                if direction.lower() == 'asc':
-                    statement = statement.order_by(
-                        asc(getattr(self.model, field)))
-                elif direction.lower() == 'desc':
-                    statement = statement.order_by(
-                        desc(getattr(self.model, field)))
+                if direction.lower() == "asc":
+                    statement = statement.order_by(asc(getattr(self.model, field)))
+                elif direction.lower() == "desc":
+                    statement = statement.order_by(desc(getattr(self.model, field)))
 
         if limit is not None:
             statement = statement.limit(limit)

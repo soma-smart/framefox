@@ -96,11 +96,15 @@ class Settings:
         value = os.getenv(var_name, "")
         return value
 
+    # ------------------------------ cache ------------------------------
+
     @property
     def cache_dir(self):
         cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
+
+    # ------------------------------ database ------------------------------
 
     @property
     def database_url(self):
@@ -114,29 +118,71 @@ class Settings:
     def orm_config(self):
         return self.config.get("database", {})
 
+    # ------------------------------ security ------------------------------
+
     @property
     def access_control(self):
         return self.config.get("security", {}).get("access_control", [])
 
     @property
-    def session_secret_key(self):
-        return self.config.get("session", {}).get("secret_key", "default_secret")
+    def authenticator(self):
+        return (
+            self.config.get("security", {})
+            .get("firewalls", {})
+            .get("main", {})
+            .get("form_login", {})
+            .get("authenticator", "")
+        )
 
     @property
-    def session_type(self):
-        return self.config.get("session", {}).get("type", "filesystem")
+    def login_path(self):
+        return (
+            self.config.get("security", {})
+            .get("firewalls", {})
+            .get("main", {})
+            .get("login_path", "")
+        )
 
     @property
-    def session_max_age(self):
-        return self.config.get("session", {}).get("max_age", 3600)
+    def login_redirect_route(self):
+        return (
+            self.config.get("security", {})
+            .get("firewalls", {})
+            .get("main", {})
+            .get("login_redirect_route", "")
+        )
+
+    # ------------------------------ session ------------------------------
 
     @property
-    def session_same_site(self):
-        return self.config.get("session", {}).get("same_site", "lax")
+    def cookie_secret_key(self):
+        return self.config.get("cookie", {}).get("secret_key", "default_secret")
 
     @property
-    def session_https_only(self):
-        return self.config.get("session", {}).get("https_only", True)
+    def cookie_type(self):
+        return self.config.get("cookie", {}).get("type", "filesystem")
+
+    @property
+    def cookie_max_age(self):
+        return self.config.get("cookie", {}).get("max_age", 3600)
+
+    @property
+    def cookie_same_site(self):
+        return self.config.get("cookie", {}).get("same_site", "lax")
+
+    @property
+    def cookie_secure(self):
+        return self.config.get("cookie", {}).get("secure", True)
+
+    @property
+    def cookie_http_only(self):
+        return self.config.get("cookie", {}).get("http_only", True)
+
+    @property
+    def cookie_path(self):
+        return self.config.get("cookie", {}).get("path", "/")
+
+    # ------------------------------ cors ------------------------------
 
     @property
     def cors_config(self):

@@ -10,9 +10,11 @@ application:
     allow_headers:
       - "*"
 
-  session:
-    secret_key: "${SESSION_SECRET_KEY}"
+  cookie:
+    secret_key: "${COOKIE_SECRET_KEY}"
     type: "filesystem"
     max_age: 3600
-    same_site: "lax"
-    https_only: true
+    secure: true
+    http_only: true
+    same_site: "strict" # "strict", "lax", "none"
+    path: "/"
