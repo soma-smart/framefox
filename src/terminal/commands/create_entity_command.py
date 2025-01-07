@@ -12,8 +12,14 @@ class CreateEntityCommand(AbstractCommand):
         self.repository_path = r"src/repository"
 
     def execute(self, name: str):
+        """
+        Create the entity and the associated repository.
+
+        Args:
+            name (str): The name of the entity to be created in snake case.
+        """
         if not ClassNameManager.is_snake_case(name):
-            print("Invalid class name. Must be in snake_case.")
+            print("Invalid name. Must be in snake_case.")
             return
         self.create_entity(name)
         self.create_repository(name)
