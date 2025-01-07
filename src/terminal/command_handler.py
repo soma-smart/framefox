@@ -5,7 +5,7 @@ from src.terminal.commands.abstract_command import AbstractCommand
 from src.terminal.commands.unsupported_command import UnsupportedCommand
 
 
-class InteractiveTerminal:
+class CommandHandler:
     def __init__(self):
         self.commands = {}
 
