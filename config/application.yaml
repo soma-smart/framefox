@@ -1,5 +1,8 @@
 application:
   env: "${APP_ENV}"
+  template_dir: "templates"
+  openapi_url: /openapi.json
+  redoc_url: /redoc
   cors:
     allow_origins:
       - "http://localhost"

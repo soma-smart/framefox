@@ -34,7 +34,8 @@ class Passport:
         self.csrf_token_badge = csrf_token_badge
         self.user: Optional[User] = None
 
-    async def authenticate_user(self, user_repository: UserRepository) -> bool:
+    async def authenticate_user(self) -> bool:
+        user_repository = UserRepository()
         self.user = await self.user_badge.get_user(user_repository)
         if not self.user:
             return False

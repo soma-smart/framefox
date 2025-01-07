@@ -7,7 +7,8 @@
 {% block content %}
 
 	<form action="/login" method="post">
-		<input type="hidden" name="csrf_token" value="{{ request.cookies._csrf_token }}">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
 		<input type="email" name="email" required>
 		<input type="password" name="password" required>
 		<button type="submit">Connexion</button>
