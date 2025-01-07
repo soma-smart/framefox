@@ -48,6 +48,7 @@ class CreateEntityCommand(AbstractCommand):
         data = {
             "entity_class_name": CreateEntityCommand.create_entity_class_name(name),
             "repository_class_name": CreateEntityCommand.create_repository_class_name(name),
+            "snake_case_name": name,
         }
         FileCreator().create_file(
             self.repository_template,
