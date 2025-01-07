@@ -31,6 +31,8 @@ class AddPropertyCommand(AbstractCommand):
 
     @staticmethod
     def modify_entity(file_path: str, property_name: str, property_type: str):
+        if not AddPropertyCommand.check_property_type(property_type):
+            return
         # Lire le contenu du fichier
         with open(file_path, 'r') as file:
             content = file.readlines()
@@ -50,3 +52,11 @@ class AddPropertyCommand(AbstractCommand):
         # Écrire le contenu modifié dans le fichier
         with open(file_path, 'w') as file:
             file.writelines(content)
+
+    @staticmethod
+    def check_property_type(property_type: str):
+        if property_type not in ['str', 'int', 'float', 'bool', 'list', 'tuple', 'dict', 'set']:
+            print(
+                "\033[91mInvalid property type. Must be one of the valid Python types.\033[0m")
+            return False
+        return True
