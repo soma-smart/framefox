@@ -27,11 +27,11 @@ class CreateEntityCommand(AbstractCommand):
             return
 
         self.create_entity(name)
-        # self.create_repository(name)
+        self.create_repository(name)
 
         signature = inspect.signature(self.add_property_command.execute)
         param_list = [param.name for param in signature.parameters.values()]
-        self.request_property_to_entity(name, param_list)
+        self.request_n_add_property_to_entity(name, param_list)
 
     def create_entity(self, name: str):
         data = {
@@ -56,7 +56,7 @@ class CreateEntityCommand(AbstractCommand):
             data
         )
 
-    def request_property_to_entity(self, name: str, param_list: list):
+    def request_n_add_property_to_entity(self, name: str, param_list: list):
         while True:
             print(
                 "Do you want to add a property to the entity? If yes, enter its name. Otherwise, press enter."

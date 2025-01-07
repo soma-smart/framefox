@@ -7,7 +7,7 @@ class AddPropertyCommand(AbstractCommand):
         super().__init__('add_property')
         self.entity_folder = r"src/entity"
 
-    def execute(self, name: str, property_name: str, property_type: str):
+    def execute(self, name: str, property_name: str, property_type: str, optional: str):
         """
         Add a property to an entity.
 
@@ -15,6 +15,7 @@ class AddPropertyCommand(AbstractCommand):
             name (str): The name of the entity in snake case.
             property_name (str): The name of the property to add.
             property_type (str): The type of the property to add.
+            optional (str): Whether the property is optional.
         """
         if not ClassNameManager.is_snake_case(name):
             print("Invalid name. Must be in snake_case.")
@@ -24,14 +25,17 @@ class AddPropertyCommand(AbstractCommand):
             AddPropertyCommand.modify_entity(
                 file_path=file_path,
                 property_name=property_name,
-                property_type=property_type
+                property_type=property_type,
+                optional=optional
             )
         except FileNotFoundError:
             print(f"Entity {name} not found")
 
     @staticmethod
-    def modify_entity(file_path: str, property_name: str, property_type: str):
+    def modify_entity(file_path: str, property_name: str, property_type: str, optional: str):
         if not AddPropertyCommand.check_property_type(property_type):
+            return
+        if not AddPropertyCommand.check_optional(optional):
             return
         # Lire le contenu du fichier
         with open(file_path, 'r') as file:
@@ -45,9 +49,12 @@ class AddPropertyCommand(AbstractCommand):
                 class_found = True
             if 'Field' in line:
                 last_line = i
-        if class_found:
+        if class_found and optional == 'no':
             content.insert(
                 last_line + 1, f'    {property_name}: {property_type} = Field()\n')
+        if class_found and optional == 'yes':
+            content.insert(
+                last_line + 1, f'    {property_name}: Optional[{property_type}] = Field()\n')
 
         # Écrire le contenu modifié dans le fichier
         with open(file_path, 'w') as file:
@@ -58,5 +65,13 @@ class AddPropertyCommand(AbstractCommand):
         if property_type not in ['str', 'int', 'float', 'bool', 'list', 'tuple', 'dict', 'set']:
             print(
                 "\033[91mInvalid property type. Must be one of the valid Python types.\033[0m")
+            return False
+        return True
+
+    @staticmethod
+    def check_optional(optional: str):
+        if optional not in ['yes', 'no']:
+            print(
+                "\033[91mInvalid optional value type. Must be one yes or no.\033[0m")
             return False
         return True
