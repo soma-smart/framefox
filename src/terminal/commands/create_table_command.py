@@ -10,8 +10,6 @@ from src.terminal.commands.abstract_command import AbstractCommand
 from src.core.config.settings import Settings
 from src.terminal.common.database_url_parser import DatabaseUrlParser
 
-# Cette class doit bugger quand la table n'existe pas
-
 
 class CreateTableCommand(AbstractCommand):
     @autowired

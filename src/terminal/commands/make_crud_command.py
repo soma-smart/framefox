@@ -1,13 +1,17 @@
 from src.terminal.commands.abstract_command import AbstractCommand
 from src.terminal.common.file_creator import FileCreator
 from src.terminal.common.class_name_manager import ClassNameManager
+from src.terminal.common.model_checker import ModelChecker
+from src.terminal.common.input_manager import InputManager
 
 
 class MakeCrudCommand(AbstractCommand):
     def __init__(self):
         super().__init__('make_crud')
-        self.controler_template = r"controller_template.jinja2"
+        self.api_controller_template = r"api_crud_controller_template.jinja2"
+        self.templated_controller_template = r"api_crud_controller_template.jinja2"
         self.controllers_path = r'src/controllers'
+        self.input_choices = ['api', 'templated']
 
     def execute(self, entity_name: str):
         """
@@ -17,8 +21,16 @@ class MakeCrudCommand(AbstractCommand):
             entity_name (str): The name of the entity in snake_case.
         """
         if not ClassNameManager.is_snake_case(entity_name):
-            print("Invalid name. Must be in snake_case.")
+            print("\033[91mInvalid name. Must be in snake_case.\033[0m")
             return
+        if not ModelChecker().check_entity_and_repository(entity_name):
+            print("\033[91mFailed to create controller.\033[0m")
+            return
+        print("What type of controller do you want to create?")
+        user_input = InputManager.wait_input(
+            self.input_choices,
+            'controller type'
+        )
         entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
         class_name = f"{entity_class_name}Controller"
         data = {
@@ -29,10 +41,18 @@ class MakeCrudCommand(AbstractCommand):
             "entity_class_name": entity_class_name,
             "entity_name": entity_name,
         }
-        # print(data)
-        FileCreator().create_file(
-            self.controler_template,
-            self.controllers_path,
-            f"{entity_name}_controller",
-            data
-        )
+        if user_input == 'api':
+            FileCreator().create_file(
+                self.api_controller_template,
+                self.controllers_path,
+                f"{entity_name}_controller",
+                data
+            )
+        else:
+            FileCreator().create_file(
+                self.templated_controller_template,
+                self.controllers_path,
+                f"{entity_name}_controller",
+                data
+            )
+        print("\033[92m" + f"Controller '{class_name}' created." + "\033[0m")
