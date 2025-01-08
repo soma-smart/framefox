@@ -3,6 +3,7 @@ from src.terminal.command_handler import CommandHandler
 
 
 class Terminal:
+
     def __init__(self):
         self.arg_parser = ArgumentParser()
         self.command_handler = CommandHandler()
