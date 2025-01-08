@@ -22,7 +22,7 @@ class CreateDbCommand(AbstractCommand):
 
     def execute(self):
         """
-        Analyser le DATABASE_URL pour déduire le type de db à créer selon les choix :
+        Analyze the DATABASE_URL to determine the type of database to create based on the choices:
             SQLite
             PostgreSQL
             MySQL
@@ -46,7 +46,7 @@ class CreateDbCommand(AbstractCommand):
     @staticmethod
     def create_db_sqlite(database_url: str):
         create_engine(database_url, echo=True)
-        print("Base de données créée avec succès.")
+        print("Database created successfully.")
 
     @staticmethod
     def create_db_postgresql(user: str, password: str, host: str, port: int, database: str):
@@ -62,10 +62,10 @@ class CreateDbCommand(AbstractCommand):
         cursor.execute(
             f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
         if cursor.fetchone():
-            print(f"La base de données '{database}' existe déjà.")
+            print(f"The database '{database}' already exists.")
         else:
             cursor.execute(f"CREATE DATABASE {database};")
-            print(f"Base de données '{database}' créée avec succès.")
+            print(f"Database '{database}' created successfully.")
         cursor.close()
         connection.close()
 
@@ -82,10 +82,10 @@ class CreateDbCommand(AbstractCommand):
         cursor.execute(f"SHOW DATABASES LIKE '{database}';")
         result = cursor.fetchone()
         if result:
-            print(f"La base de données '{database}' existe déjà.")
+            print(f"The database '{database}' already exists.")
         else:
             cursor.execute(f"CREATE DATABASE {database};")
-            print(f"Base de données '{database}' créée avec succès.")
+            print(f"Database '{database}' created successfully.")
         cursor.close()
         connection.close()
 

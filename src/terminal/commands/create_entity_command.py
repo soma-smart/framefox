@@ -28,6 +28,7 @@ class CreateEntityCommand(AbstractCommand):
 
         self.create_entity(name)
         self.create_repository(name)
+        print("Entity and repository created successfully.")
 
         signature = inspect.signature(self.add_property_command.execute)
         param_list = [param.name for param in signature.parameters.values()]

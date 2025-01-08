@@ -28,6 +28,7 @@ class AddPropertyCommand(AbstractCommand):
                 property_type=property_type,
                 optional=optional
             )
+            print("Property added successfully.")
         except FileNotFoundError:
             print(f"Entity {name} not found")
 
