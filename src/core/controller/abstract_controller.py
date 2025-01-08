@@ -1,9 +1,9 @@
 from fastapi import APIRouter
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import RedirectResponse, JSONResponse
 
-from src.core.request.request_stack import RequestStack
+from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
+
 from src.core.request.session.session import Session
+from src.core.templates.template_renderer import TemplateRenderer
 
 from injectable import Autowired, autowired
 from typing import Annotated
@@ -12,9 +12,13 @@ from src.core.orm.entity_manager import EntityManager
 
 class AbstractController:
     @autowired
-    def __init__(self, entity_manager: Annotated[EntityManager, Autowired]):
+    def __init__(
+        self,
+        entity_manager: Annotated[EntityManager, Autowired],
+        template_renderer: Annotated[TemplateRenderer, Autowired],
+    ):
         self.router = APIRouter()
-
+        self.template_renderer = template_renderer
         self.entity_manager = entity_manager
 
     def redirect(self, location: str, code: int = 302):
@@ -27,16 +31,14 @@ class AbstractController:
         flash_messages.append({"message": message, "category": category})
         Session.set("flash_messages", flash_messages)
 
-    def render(self, template_name: str, context_list: list):
-        """Renders a view with context variables."""
-        templates = Jinja2Templates(directory="templates")
-        context = dict(context_list)
-        request = RequestStack.get_request()
-        context["request"] = request
+    def render(self, template_name: str, context: dict):
+        """Renders a view with context variables, including CSRF token."""
         if Session.has("flash_messages"):
             context["messages"] = Session.get("flash_messages")
             Session.remove("flash_messages")
-        return templates.TemplateResponse(template_name, context)
+
+        content = self.template_renderer.render(template_name, context)
+        return HTMLResponse(content=content, status_code=200, media_type="text/html")
 
     def json(self, data: dict, status: int = 200):
         """Returns a JSON response."""

@@ -9,13 +9,12 @@ security:
       login_path: /login
       login_redirect_route: /users
       logout_path: /logout
-
   access_control:
     # Access control rules define which roles have access to specific paths.
     # Each rule consists of a path pattern and the roles that are allowed to access it.
 
     # Example:
-    # - { path: ^/admin, roles: ROLE_ADMIN }  # Only users with ROLE_ADMIN can access paths starting with /admin
+    # - { path: ^/admin, roles: ROLE_ADMIN }  # Only users with ROLE_ADMIN can access  paths starting with /admin
     # - { path: ^/profile, roles: ROLE_USER }  # Only users with ROLE_USER can access paths starting with /profile
 
     - { path: ^/users, roles: ROLE_USER }

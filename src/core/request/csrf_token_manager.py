@@ -19,10 +19,12 @@ class CsrfTokenManager:
 
     def __init__(self, prefix: str = "csrf_"):
         self.prefix = prefix
-        self.token = self.generate_token()
 
     def generate_token(self) -> str:
         return f"{self.prefix}{secrets.token_urlsafe(32)}"
 
     def get_token(self) -> str:
-        return self.token
+        return self.generate_token()
+
+    def validate_token(self, token1: str, token2: str) -> bool:
+        return secrets.compare_digest(token1, token2)

@@ -30,7 +30,11 @@ class Kernel:
     def __init__(self, settings: Annotated[Settings, Autowired]):
         self.settings = settings
         if not hasattr(self, "initialized"):
-            self.app = FastAPI(debug=self.settings.debug_mode)
+            self.app = FastAPI(
+                debug=self.settings.debug_mode,
+                openapi_url=self.settings.openapi_url,
+                redoc_url=self.settings.redoc_url,
+            )
 
             self.app.add_exception_handler(
                 DebugException, DebugHandler.debug_exception_handler

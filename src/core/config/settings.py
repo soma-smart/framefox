@@ -183,11 +183,26 @@ class Settings:
         return self.config.get("cookie", {}).get("path", "/")
 
     # ------------------------------ cors ------------------------------
+    @property
+    def openapi_url(self):
+        if self.app_env == "dev":
+            return self.config.get("application", {}).get("openapi_url", None)
+        return None
+
+    @property
+    def redoc_url(self):
+        if self.app_env == "dev":
+            return self.config.get("application", {}).get("redoc_url", None)
+        return None
 
     @property
     def cors_config(self):
-        return self.config.get("cors", {})
+        return self.config.get("application", {}).get("cors", {})
 
     @property
     def debug_mode(self):
         return self.app_env == "dev"
+
+    @property
+    def template_dir(self):
+        return self.config.get("application", {}).get("template_dir", "templates")
