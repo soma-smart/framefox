@@ -28,8 +28,8 @@ class MakeCrudCommand(AbstractCommand):
             return
         print("What type of controller do you want to create?")
         user_input = InputManager.wait_input(
-            self.input_choices,
-            'controller type'
+            type='controller type',
+            choices=self.input_choices
         )
         entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
         class_name = f"{entity_class_name}Controller"

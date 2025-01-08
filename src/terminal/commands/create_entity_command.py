@@ -2,6 +2,7 @@ from src.terminal.commands.abstract_command import AbstractCommand
 from src.terminal.commands.add_property_command import AddPropertyCommand
 from src.terminal.common.class_name_manager import ClassNameManager
 from src.terminal.common.file_creator import FileCreator
+from src.terminal.common.input_manager import InputManager
 
 import inspect
 
@@ -63,8 +64,8 @@ class CreateEntityCommand(AbstractCommand):
             print(
                 "Do you want to add a property to the entity? If yes, enter its name. Otherwise, press enter."
             )
-            property_name = input("property_name: ")
-            if property_name == "":
+            property_name = InputManager.wait_input("property_name")
+            if property_name == '':
                 break
             param_dict = {
                 'name': name,
@@ -72,7 +73,13 @@ class CreateEntityCommand(AbstractCommand):
             for param in param_list:
                 if param == 'name' or param == 'property_name':
                     continue
-                input_value = input(f"{param}: ")
+                choices = self.add_property_command.get_choices(param)
+                default = self.add_property_command.get_default(param)
+                input_value = InputManager.wait_input(
+                    input_type=param,
+                    choices=choices,
+                    default=default
+                )
                 param_dict[param] = input_value
             self.add_property_command.execute(**param_dict)
             print("\n")

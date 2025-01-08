@@ -6,6 +6,9 @@ class AddPropertyCommand(AbstractCommand):
     def __init__(self):
         super().__init__('add_property')
         self.entity_folder = r"src/entity"
+        self.property_types = ['str', 'int', 'float',
+                               'bool', 'list', 'tuple', 'dict', 'set']
+        self.optional = ['yes', 'no']
 
     def execute(self, name: str, property_name: str, property_type: str, optional: str):
         """
@@ -22,7 +25,7 @@ class AddPropertyCommand(AbstractCommand):
             return
         try:
             file_path = self.entity_folder + '/' + name + '.py'
-            AddPropertyCommand.modify_entity(
+            self.modify_entity(
                 file_path=file_path,
                 property_name=property_name,
                 property_type=property_type,
@@ -32,17 +35,15 @@ class AddPropertyCommand(AbstractCommand):
         except FileNotFoundError:
             print(f"Entity {name} not found")
 
-    @staticmethod
-    def modify_entity(file_path: str, property_name: str, property_type: str, optional: str):
-        if not AddPropertyCommand.check_property_type(property_type):
+    def modify_entity(self, file_path: str, property_name: str, property_type: str, optional: str):
+        if not self.check_property_type(property_type):
             return
         if not AddPropertyCommand.check_optional(optional):
             return
-        # Lire le contenu du fichier
+
         with open(file_path, 'r') as file:
             content = file.readlines()
 
-        # Trouver la classe de l'entité et ajouter la nouvelle propriété
         class_found = False
         last_line = 0
         for i, line in enumerate(content):
@@ -57,13 +58,11 @@ class AddPropertyCommand(AbstractCommand):
             content.insert(
                 last_line + 1, f'    {property_name}: Optional[{property_type}] = Field()\n')
 
-        # Écrire le contenu modifié dans le fichier
         with open(file_path, 'w') as file:
             file.writelines(content)
 
-    @staticmethod
-    def check_property_type(property_type: str):
-        if property_type not in ['str', 'int', 'float', 'bool', 'list', 'tuple', 'dict', 'set']:
+    def check_property_type(self, property_type: str):
+        if property_type not in self.property_types:
             print(
                 "\033[91mInvalid property type. Must be one of the valid Python types.\033[0m")
             return False
@@ -76,3 +75,17 @@ class AddPropertyCommand(AbstractCommand):
                 "\033[91mInvalid optional value type. Must be one yes or no.\033[0m")
             return False
         return True
+
+    def get_choices(self, category: str):
+        if category == 'property_type':
+            return self.property_types
+        if category == 'optional':
+            return self.optional
+        else:
+            return None
+
+    def get_default(self, category: str):
+        if category == 'optional':
+            return 'no'
+        else:
+            return None
