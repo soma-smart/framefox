@@ -6,37 +6,37 @@ from src.entity.{{ entity_file_name }} import {{ entity_class_name }}
 
 
 class {{ controller_class_name }}(AbstractController):
-    @Route("/{{ entities_name }}", "get_{{ entities_name }}", methods=["GET"])
-    async def get_{{ entities_name }}(self):
+    @Route("/{{ entity_name }}", "get_all_{{ entity_name }}", methods=["GET"])
+    async def get_all_{{ entity_name }}(self):
         return {{ repository_class_name }}().find_all()
 
-    @Route("/{{ entities_name }}/search", "search_{{ entities_name }}", methods=["POST"])
-    async def search_{{ entities_name }}(
+    @Route("/{{ entity_name }}/search", "search_several_{{ entity_name }}", methods=["POST"])
+    async def search_several_{{ entity_name }}(
         self,
         criteria: Dict[str, str],
         order_by: Optional[Dict[str, str]] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ):
-        {{ entities_name }} = {{ repository_class_name }}().find_by(criteria, order_by, limit, offset)
-        return {{ entities_name }}
+        entities = {{ repository_class_name }}().find_by(criteria, order_by, limit, offset)
+        return entities
 
-    @Route("/{{ entities_name }}/find", "get_{{ entity_name }}", methods=["POST"])
+    @Route("/{{ entity_name }}/find", "get_{{ entity_name }}", methods=["POST"])
     async def get_{{ entity_name }}(self, keys_formula: {{ entity_class_name }}.generate_find_model()):
         return {{ repository_class_name }}().find(keys_formula.dict())
 
-    @Route("/{{ entities_name }}", "create_{{ entity_name }}", methods=["POST"])
-    async def create_{{ entity_name }}(self, {{ entity_name }}: {{ entity_class_name }}):
+    @Route("/{{ entity_name }}", "create_{{ entity_name }}", methods=["POST"])
+    async def create_{{ entity_name }}(self, {{ entity_name }}: {{ entity_class_name }}.generate_create_model()):
         entity_instance = {{ repository_class_name }}().model(**{{ entity_name }}.dict())
         self.entity_manager.persist(entity_instance)
         self.entity_manager.commit()
 
-    @Route("/{{ entities_name }}", "update_{{ entity_name }}", methods=["PUT"])
+    @Route("/{{ entity_name }}", "update_{{ entity_name }}", methods=["PUT"])
     async def update_{{ entity_name }}(self, {{ entity_name }}: {{ entity_class_name }}):
         self.entity_manager.persist({{ entity_name }})
         self.entity_manager.commit()
 
-    @Route("/{{ entities_name }}/{id}", "delete_{{ entity_name }}", methods=["DELETE"])
+    @Route("/{{ entity_name }}/{id}", "delete_{{ entity_name }}", methods=["DELETE"])
     async def delete_{{ entity_name }}(self, id: int):
         entity_instance = {{ repository_class_name }}().find(id)
         self.entity_manager.delete(entity_instance)
