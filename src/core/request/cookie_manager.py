@@ -9,7 +9,7 @@ class CookieManager:
     def __init__(self, settings: Annotated[Settings, Autowired]):
         self.settings = settings
 
-    def set_response_cookie(self, response: Response, key: str, token: str):
+    def set_cookie(self, response: Response, key: str, value: str):
         """
         Définit le cookie d'accès JWT.
 
@@ -20,7 +20,9 @@ class CookieManager:
         """
         return response.set_cookie(
             key=key,
-            value=token,
+            value=value,
+            expires=10,
+            # max_age=self.settings.cookie_max_age,
             httponly=self.settings.cookie_http_only,
             secure=self.settings.cookie_secure,
             samesite=self.settings.cookie_same_site,

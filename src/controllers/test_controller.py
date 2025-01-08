@@ -4,7 +4,7 @@ from src.core.routing.decorator.route import Route
 
 class TestController(AbstractController):
 
-    # @Route("/test", "get_test", methods=["GET"])
+    @Route("/test", "get_test", methods=["GET"])
     async def get_test(self):
 
         return self.json({"products": ["Product 1", "Product 2"]})

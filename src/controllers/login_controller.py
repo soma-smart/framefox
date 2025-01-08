@@ -8,3 +8,8 @@ class LoginController(AbstractController):
     async def login(self):
 
         return self.render("login.html", {})
+
+    @Route("/logout", "logout", methods=["GET"])
+    async def logout(self):
+
+        return self.redirect("/")

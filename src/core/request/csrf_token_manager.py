@@ -1,4 +1,5 @@
 import secrets
+from fastapi import Request
 
 
 class CsrfTokenManager:
@@ -7,7 +8,6 @@ class CsrfTokenManager:
 
     Attributes:
         prefix (str): The prefix to be used for the CSRF token.
-        token (str): The generated CSRF token.
 
     Methods:
         generate_token() -> str:
@@ -15,6 +15,9 @@ class CsrfTokenManager:
 
         get_token() -> str:
             Returns the current CSRF token.
+
+        validate_token(request: Request) -> bool:
+            Retrieves the CSRF token from cookies and form data in the request and validates them.
     """
 
     def __init__(self, prefix: str = "csrf_"):
@@ -26,5 +29,8 @@ class CsrfTokenManager:
     def get_token(self) -> str:
         return self.generate_token()
 
-    def validate_token(self, token1: str, token2: str) -> bool:
-        return secrets.compare_digest(token1, token2)
+    async def validate_token(self, request: Request) -> bool:
+        csrf_token_cookie = request.cookies.get("csrf_token")
+        form = await request.form()
+        csrf_token_form = form.get("csrf_token")
+        return secrets.compare_digest(csrf_token_cookie, csrf_token_form)

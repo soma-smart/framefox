@@ -1,5 +1,5 @@
-from typing import Optional
-
+from typing import Optional, List
+import logging
 from src.core.security.passport.user_badge import UserBadge
 from src.core.security.passport.password_credentials import PasswordCredentials
 from src.core.security.passport.csrf_token_badge import CsrfTokenBadge
@@ -33,10 +33,35 @@ class Passport:
         self.password_credentials = password_credentials
         self.csrf_token_badge = csrf_token_badge
         self.user: Optional[User] = None
+        self.roles: List[str] = []
+        self.logger = logging.getLogger("PASSPORT")
 
     async def authenticate_user(self) -> bool:
+        if self.user:
+            self.logger.debug(
+                "User directly set, no database query needed.")
+            self.roles = self.user.roles
+            return True
+
+        if not self.user_badge:
+            self.logger.debug(
+                "No user_badge provided and no user set.")
+            return False
+
         user_repository = UserRepository()
         self.user = await self.user_badge.get_user(user_repository)
         if not self.user:
+            self.logger.warning("User not found in the database.")
             return False
-        return self.password_credentials.verify(self.user.password)
+
+        if self.password_credentials:
+            authenticated = self.password_credentials.verify(
+                self.user.password)
+            if not authenticated:
+                self.logger.warning("Password verification failed.")
+                return False
+
+        self.roles = self.user.roles
+        self.logger.debug(
+            f"User authenticated with roles: {self.roles}")
+        return True

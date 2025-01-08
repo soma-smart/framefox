@@ -9,6 +9,7 @@ class User(AbstractEntity, table=True):
     name: str = Field(index=True)
     email: str = Field(index=True, unique=True)
     password: str = Field()
+    # user_identifier: str = email
     roles: List[str] = Field(
         default_factory=lambda: ["ROLE_USER"], sa_column=Column(JSON)
     )

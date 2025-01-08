@@ -9,6 +9,12 @@ security:
       login_path: /login
       login_redirect_route: /users
       logout_path: /logout
+
+    api:
+      token_auth:
+        authenticator: src.core.security.authenticator.api_token_authenticator.ApiTokenAuthenticator
+      login_path: /api/login
+      logout_path: /api/logout
   access_control:
     # Access control rules define which roles have access to specific paths.
     # Each rule consists of a path pattern and the roles that are allowed to access it.

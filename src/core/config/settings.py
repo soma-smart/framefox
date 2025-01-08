@@ -10,11 +10,11 @@ load_dotenv(dotenv_path=env_path)
 
 @injectable
 class Settings:
-    """
+    """ 
     Settings class for loading and managing application configuration.
 
     Attributes:
-        ENV_VAR_PATTERN (re.Pattern): Regular expression pattern to match environment variables in the format ${VAR_NAME}.
+        ENV_VAR_PATTERN (re.Pattern): Regular  expression pattern to match environment variables in the format ${VAR_NAME}.
         app_env (str): The application environment, default is 'prod'.
         config (dict): Dictionary to store the loaded configuration.
 
@@ -100,7 +100,8 @@ class Settings:
 
     @property
     def cache_dir(self):
-        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(
+            os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 
@@ -125,14 +126,12 @@ class Settings:
         return self.config.get("security", {}).get("access_control", [])
 
     @property
-    def authenticator(self):
-        return (
-            self.config.get("security", {})
-            .get("firewalls", {})
-            .get("main", {})
-            .get("form_login", {})
-            .get("authenticator", "")
-        )
+    def firewalls(self):
+        return self.config.get("security", {}).get("firewalls", {})
+
+    def get_firewall_config(self, firewall_name: str):
+        firewalls = self.firewalls
+        return firewalls.get(firewall_name, {})
 
     @property
     def login_path(self):

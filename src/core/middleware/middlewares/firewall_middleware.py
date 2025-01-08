@@ -21,7 +21,7 @@ class FirewallMiddleware(BaseHTTPMiddleware):
         Main middleware to handle authentication and authorization.
         """
         if self.settings.access_control:
-            auth_response = await self.handler.handle_authentication(request)
+            auth_response = await self.handler.handle_authentication(request, call_next)
             if auth_response:
                 return auth_response
             return await self.handler.handle_authorization(request, call_next)
