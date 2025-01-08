@@ -1,10 +1,10 @@
 from typing import Annotated
 from injectable import autowired, Autowired
-from sqlmodel import create_engine
+from sqlmodel import create_engine, SQLModel
 import pymysql
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from urllib.parse import urlparse
+from src.terminal.common.database_url_parser import DatabaseUrlParser
 from src.terminal.commands.abstract_command import AbstractCommand
 from src.core.config.settings import Settings
 
@@ -32,12 +32,12 @@ class CreateDbCommand(AbstractCommand):
                 if db_type == "sqlite":
                     CreateDbCommand.create_db_sqlite(self.database_url)
                 elif db_type == "postgresql":
-                    user, password, host, port, database = CreateDbCommand.parse_database_url(
+                    _, user, password, host, port, database = DatabaseUrlParser.parse_database_url(
                         self.database_url)
                     CreateDbCommand.create_db_postgresql(
                         user, password, host, port, database)
                 elif db_type == "mysql":
-                    user, password, host, port, database = CreateDbCommand.parse_database_url(
+                    _, user, password, host, port, database = DatabaseUrlParser.parse_database_url(
                         self.database_url)
                     CreateDbCommand.create_db_mysql(
                         user, password, host, port, database)
@@ -45,7 +45,8 @@ class CreateDbCommand(AbstractCommand):
 
     @staticmethod
     def create_db_sqlite(database_url: str):
-        create_engine(database_url, echo=True)
+        engine = create_engine(database_url, echo=True)
+        SQLModel.metadata.create_all(engine)
         print("Database created successfully.")
 
     @staticmethod
@@ -88,17 +89,3 @@ class CreateDbCommand(AbstractCommand):
             print(f"Database '{database}' created successfully.")
         cursor.close()
         connection.close()
-
-    @staticmethod
-    def parse_database_url(database_url: str):
-        # Analyse l'URL
-        parsed_url = urlparse(database_url)
-
-        # Récupère les composants nécessaires
-        user = parsed_url.username
-        password = parsed_url.password
-        host = parsed_url.hostname
-        port = parsed_url.port
-        database = parsed_url.path[1:]
-
-        return user, password, host, port, database
