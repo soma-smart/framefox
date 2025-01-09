@@ -3,6 +3,7 @@ from src.terminal.commands.add_property_command import AddPropertyCommand
 from src.terminal.common.class_name_manager import ClassNameManager
 from src.terminal.common.file_creator import FileCreator
 from src.terminal.common.input_manager import InputManager
+from src.terminal.common.model_checker import ModelChecker
 
 import inspect
 
@@ -27,10 +28,13 @@ class CreateEntityCommand(AbstractCommand):
             print("Invalid name. Must be in snake_case.")
             return
 
-        self.create_entity(name)
-        self.create_repository(name)
-        print("Entity and repository created successfully.")
-
+        does_entity_exist = ModelChecker().check_entity_and_repository(name)
+        if not does_entity_exist:
+            self.create_entity(name)
+            self.create_repository(name)
+            print("Entity and repository created successfully.")
+        else:
+            print("Entity already exists.")
         signature = inspect.signature(self.add_property_command.execute)
         param_list = [param.name for param in signature.parameters.values()]
         self.request_n_add_property_to_entity(name, param_list)
