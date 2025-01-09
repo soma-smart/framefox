@@ -9,10 +9,10 @@ from src.terminal.commands.abstract_command import AbstractCommand
 from src.core.config.settings import Settings
 
 
-class CreateDbCommand(AbstractCommand):
+class OrmCreateDbCommand(AbstractCommand):
     @autowired
     def __init__(self, settings: Annotated[Settings, Autowired]):
-        super().__init__('create_db')
+        super().__init__('orm_create_db')
         self.db_types = [
             "sqlite",
             "postgresql",
@@ -30,16 +30,16 @@ class CreateDbCommand(AbstractCommand):
         for db_type in self.db_types:
             if db_type in self.database_url:
                 if db_type == "sqlite":
-                    CreateDbCommand.create_db_sqlite(self.database_url)
+                    OrmCreateDbCommand.create_db_sqlite(self.database_url)
                 elif db_type == "postgresql":
                     _, user, password, host, port, database = DatabaseUrlParser.parse_database_url(
                         self.database_url)
-                    CreateDbCommand.create_db_postgresql(
+                    OrmCreateDbCommand.create_db_postgresql(
                         user, password, host, port, database)
                 elif db_type == "mysql":
                     _, user, password, host, port, database = DatabaseUrlParser.parse_database_url(
                         self.database_url)
-                    CreateDbCommand.create_db_mysql(
+                    OrmCreateDbCommand.create_db_mysql(
                         user, password, host, port, database)
                 break
 

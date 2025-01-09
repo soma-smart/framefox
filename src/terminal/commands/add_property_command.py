@@ -1,6 +1,7 @@
 from src.terminal.commands.abstract_command import AbstractCommand
 from src.terminal.common.class_name_manager import ClassNameManager
 from src.terminal.common.model_checker import ModelChecker
+from src.terminal.common.input_manager import InputManager
 
 
 class AddPropertyCommand(AbstractCommand):
@@ -8,7 +9,7 @@ class AddPropertyCommand(AbstractCommand):
         super().__init__('add_property')
         self.entity_folder = r"src/entity"
         self.property_types = ['str', 'int', 'float',
-                               'bool', 'list', 'tuple', 'dict', 'set']
+                               'bool', 'list', 'tuple', 'dict', 'datetime']
         self.optional = ['yes', 'no']
 
     def execute(self, name: str, property_name: str, property_type: str, optional: str):
@@ -45,6 +46,13 @@ class AddPropertyCommand(AbstractCommand):
         if not AddPropertyCommand.check_optional(optional):
             return
 
+        input_length = None
+        if property_type == 'str':
+            input_length = InputManager.wait_input(
+                input_type='str_length',
+                default=32
+            )
+
         with open(file_path, 'r') as file:
             content = file.readlines()
 
@@ -55,12 +63,21 @@ class AddPropertyCommand(AbstractCommand):
                 class_found = True
             if 'Field' in line:
                 last_line = i
-        if class_found and optional == 'no':
-            content.insert(
-                last_line + 1, f'    {property_name}: {property_type} = Field()\n')
-        if class_found and optional == 'yes':
-            content.insert(
-                last_line + 1, f'    {property_name}: Optional[{property_type}] = Field()\n')
+        # if class_found and optional == 'no':
+        #     content.insert(
+        #         last_line + 1, f'    {property_name}: {property_type} = Field()\n')
+        # if class_found and optional == 'yes':
+        #     content.insert(
+        #         last_line + 1, f'    {property_name}: Optional[{property_type}] = Field()\n')
+        if class_found:
+            AddPropertyCommand.insert_field(
+                content=content,
+                last_line=last_line,
+                property_name=property_name,
+                property_type=property_type,
+                optional=optional,
+                str_length=input_length
+            )
 
         with open(file_path, 'w') as file:
             file.writelines(content)
@@ -93,3 +110,16 @@ class AddPropertyCommand(AbstractCommand):
             return 'no'
         else:
             return None
+
+    @staticmethod
+    def insert_field(content, last_line, property_name, property_type, optional, str_length=None):
+        if str_length:
+            base_field = f'Field(max_length={str_length})'
+        else:
+            base_field = 'Field()'
+        if optional == 'no':
+            content.insert(
+                last_line + 1, f'    {property_name}: {property_type} = {base_field}\n')
+        else:
+            content.insert(
+                last_line + 1, f'    {property_name}: Optional[{property_type}] = {base_field}\n')

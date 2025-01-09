@@ -5,9 +5,9 @@ from src.terminal.common.model_checker import ModelChecker
 from src.terminal.common.input_manager import InputManager
 
 
-class MakeCrudCommand(AbstractCommand):
+class CreateCrudCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('make_crud')
+        super().__init__('create_crud')
         self.api_controller_template = r"api_crud_controller_template.jinja2"
         self.templated_controller_template = r"api_crud_controller_template.jinja2"
         self.controllers_path = r'src/controllers'

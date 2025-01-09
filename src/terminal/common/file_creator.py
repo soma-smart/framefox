@@ -5,7 +5,7 @@ class FileCreator:
     def __init__(self):
         self.template_path = r"src/terminal/templates"
 
-    def create_file(self, template: str, path: str, name: str, data: str):
+    def create_file(self, template: str, path: str, name: str, data: str, format: str = "py"):
         """
         Create a file using a template.
 
@@ -14,6 +14,7 @@ class FileCreator:
             path (str): The path where the file will be created.
             name (str): The name of the file (without extension).
             data (str): The data to be rendered in the template.
+            format (str): The file format (default is "py").
 
         Returns:
             None
@@ -26,6 +27,9 @@ class FileCreator:
         code = template.render(data)
 
         # Write to a Python file
-        output_file = f"{path}/{name}.py"
+        if format == "py":
+            output_file = f"{path}/{name}.py"
+        else:
+            output_file = f"{path}/{name}"
         with open(output_file, "w") as file:
             file.write(code)
