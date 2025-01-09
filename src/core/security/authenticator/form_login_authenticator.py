@@ -22,8 +22,6 @@ class FormLoginAuthenticator(AbstractAuthenticator, AuthenticatorInterface):
 
     def on_auth_success(self, token: str) -> RedirectResponse:
         """
-        Handles the logic after a successful authentication.
+        Handles the logic after a successful authentication. 
         """
-        return RedirectResponse(
-            self.settings.login_redirect_route, status_code=303
-        )
+        return RedirectResponse(url="/", status_code=303)

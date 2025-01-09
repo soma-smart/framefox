@@ -1,4 +1,5 @@
 import logging
+import inspect
 
 from typing import Dict, Optional, Type, Annotated
 from fastapi import Request
@@ -11,7 +12,10 @@ from injectable import Autowired, autowired
 from src.core.config.settings import Settings
 from src.core.request.cookie_manager import CookieManager
 from src.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+
 import importlib
+from src.core.request.session.session import Session
+from src.core.request.session.session_manager import SessionManager
 
 
 class FirewallHandler:
@@ -21,6 +25,7 @@ class FirewallHandler:
         logger: logging.Logger,
         settings: Settings,
         template_renderer: Annotated[TemplateRenderer, Autowired],
+
     ):
         self.logger = logger
         self.settings = settings
@@ -29,28 +34,27 @@ class FirewallHandler:
         self.cookie_manager = CookieManager()
         self.csrf_manager = CsrfTokenManager(prefix="csrf_")
         self.access_manager = AccessManager(settings, logger)
+        self.session_manager = SessionManager()
         self.authenticators = self.load_authenticators()
 
     def load_authenticators(self) -> Dict[str, AuthenticatorInterface]:
         authenticators = {}
         firewalls = self.settings.firewalls
         for firewall_name, config in firewalls.items():
-            for auth_type, auth_config in config.items():
-                if isinstance(auth_config, dict) and 'authenticator' in auth_config:
-                    authenticator_path = auth_config['authenticator']
-                    try:
-                        module_path, class_name = authenticator_path.rsplit(
-                            ".", 1)
-                        module = importlib.import_module(module_path)
-                        AuthenticatorClass: Type[AuthenticatorInterface] = getattr(
-                            module, class_name)
-                        authenticator_instance = AuthenticatorClass()
-                        authenticators[firewall_name] = authenticator_instance
-                        self.logger.debug(f"Authenticator {class_name} loaded for firewall '{
-                                          firewall_name}'.")
-                    except (ImportError, AttributeError) as e:
-                        self.logger.error(f"Error loading authenticator '{
-                                          authenticator_path}' for firewall '{firewall_name}': {e}")
+            authenticator_path = config.get('authenticator')
+            if authenticator_path:
+                try:
+                    module_path, class_name = authenticator_path.rsplit(".", 1)
+                    module = importlib.import_module(module_path)
+                    AuthenticatorClass: Type[AuthenticatorInterface] = getattr(
+                        module, class_name)
+                    signature = inspect.signature(AuthenticatorClass.__init__)
+
+                    authenticator_instance = AuthenticatorClass()
+                    authenticators[firewall_name] = authenticator_instance
+                except (ImportError, AttributeError) as e:
+                    self.logger.error(f"Error loading authenticator '{
+                                      authenticator_path}' for firewall '{firewall_name}': {e}")
         return authenticators
 
     async def handle_authentication(self, request: Request, call_next) -> Optional[Response]:
@@ -62,15 +66,14 @@ class FirewallHandler:
             login_path = firewall_config.get("login_path")
             logout_path = firewall_config.get("logout_path")
 
-            # Gestion de la déconnexion
             if logout_path and request.url.path.startswith(logout_path):
-                return await self.handle_logout(request, firewall_config, call_next)
+                return await self.handle_logout(request, firewall_config, firewall_name, call_next)
 
             if request.url.path.startswith(login_path):
                 if request.method == "GET":
                     return await self.handle_get_request(authenticator, firewall_config)
                 elif request.method == "POST":
-                    return await self.handle_post_request(request, authenticator, firewall_config)
+                    return await self.handle_post_request(request, authenticator, firewall_config, firewall_name)
 
         return None
 
@@ -89,7 +92,7 @@ class FirewallHandler:
         self.logger.debug("CSRF token set in the cookie.")
         return response
 
-    async def handle_post_request(self, request: Request, authenticator: AuthenticatorInterface, firewall_config: Dict) -> Optional[Response]:
+    async def handle_post_request(self, request: Request, authenticator: AuthenticatorInterface, firewall_config: Dict, firewall_name: str) -> Optional[Response]:
         """
         Handles POST requests for login.
         """
@@ -100,7 +103,7 @@ class FirewallHandler:
             self.logger.error("CSRF validation failed.")
             return Response(content="Invalid CSRF token", status_code=400)
 
-        passport = await authenticator.authenticate_request(request)
+        passport = await authenticator.authenticate_request(request, firewall_name)
         if passport:
             token = self.token_manager.create_token(
                 user=passport.user,
@@ -109,10 +112,11 @@ class FirewallHandler:
                 roles=(passport.user.roles if passport.user.roles else []),
             )
             response = authenticator.on_auth_success(token)
-            self.cookie_manager.set_cookie(
-                response=response, key="access_token", value=token)
+            Session.set('access_token', token)
+
             self.logger.info(
-                "Authentication successful and token added to the cookie.")
+                "Authentication successful and token added to the session.")
+            self.cookie_manager.delete_cookie(response, "csrf_token")
             return response
         return Response(content="Authentication failed", status_code=400)
 
@@ -124,8 +128,7 @@ class FirewallHandler:
             request.url.path)
         if not required_roles:
             return await call_next(request)
-
-        token = request.cookies.get("access_token")
+        token = Session.get('access_token')
         if token:
             payload = self.token_manager.decode_token(token)
             if payload:
@@ -141,13 +144,29 @@ class FirewallHandler:
         self.logger.warning(f"Access forbidden for path: {request.url.path}")
         return Response(content="Forbidden", status_code=403)
 
-    async def handle_logout(self, request: Request, firewall_config: Dict, call_next) -> Response:
-        """
-        Handles user logout by deleting the access_token cookie.
-        """
+    async def handle_logout(self, request: Request, firewall_config: Dict, firewall_name: str, call_next) -> Response:
+        session_id = request.cookies.get("session_id")
+        if session_id:
+            self.session_manager.delete_session(session_id)
 
-        response = await call_next(request)
-        response.delete_cookie(
-            key="access_token", httponly=True, secure=True, samesite="Lax")
-        self.logger.info("User logged out.")
+        print(session_id)
+
+        Session.remove('access_token')
+        Session.flush()
+
+        if firewall_name == "main":
+            response = await call_next(request)
+        else:
+            accept_header = request.headers.get("accept", "")
+            if "application/json" in accept_header:
+                response = JSONResponse(
+                    content={"message": "Logout successfully"}, status_code=200)
+            else:
+                response = RedirectResponse(url="/login", status_code=302)
+
+        self.cookie_manager.delete_cookie(response, "session_id")
+        self.cookie_manager.delete_cookie(response, "csrf_token")
+        self.cookie_manager.delete_cookie(response, "access_token")
+
+        self.logger.info("User logged out and session deleted")
         return response

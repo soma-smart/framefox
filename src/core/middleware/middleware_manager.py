@@ -4,9 +4,7 @@ from src.core.config.settings import Settings
 from src.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
 from src.core.middleware.middlewares.request_middleware import RequestMiddleware
 from src.core.middleware.middlewares.custom_cors_middleware import CustomCORSMiddleware
-from src.core.middleware.middlewares.custom_session_middleware import (
-    CustomSessionMiddleware,
-)
+from src.core.middleware.middlewares.session_middleware import SessionMiddleware
 
 
 class MiddlewareManager:
@@ -28,8 +26,10 @@ class MiddlewareManager:
         self.settings = settings
 
     def setup_middlewares(self):
+        # self.app.add_middleware(HTTPSRedirectMiddleware)
         self.app.add_middleware(RequestMiddleware)
 
         self.app.add_middleware(FirewallMiddleware, settings=self.settings)
-        self.app.add_middleware(CustomSessionMiddleware, settings=self.settings)
+        self.app.add_middleware(SessionMiddleware,
+                                settings=self.settings)
         self.app.add_middleware(CustomCORSMiddleware, settings=self.settings)

@@ -3,6 +3,8 @@ import os
 import re
 from dotenv import load_dotenv
 from injectable import injectable
+from typing import Type, Any, Optional
+import importlib
 
 env_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path=env_path)
@@ -134,22 +136,8 @@ class Settings:
         return firewalls.get(firewall_name, {})
 
     @property
-    def login_path(self):
-        return (
-            self.config.get("security", {})
-            .get("firewalls", {})
-            .get("main", {})
-            .get("login_path", "")
-        )
-
-    @property
-    def login_redirect_route(self):
-        return (
-            self.config.get("security", {})
-            .get("firewalls", {})
-            .get("main", {})
-            .get("login_redirect_route", "")
-        )
+    def providers(self):
+        return self.config.get("security", {}).get("providers", {})
 
     # ------------------------------ session ------------------------------
 
@@ -181,7 +169,7 @@ class Settings:
     def cookie_path(self):
         return self.config.get("cookie", {}).get("path", "/")
 
-    # ------------------------------ cors ------------------------------
+    # ------------------------------ application ------------------------------
     @property
     def openapi_url(self):
         if self.app_env == "dev":
@@ -205,3 +193,7 @@ class Settings:
     @property
     def template_dir(self):
         return self.config.get("application", {}).get("template_dir", "templates")
+
+    @property
+    def session_file_path(self):
+        return self.config.get("application", {}).get("session_file_path", "var/session/sessions.json")

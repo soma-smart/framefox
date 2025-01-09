@@ -2,17 +2,22 @@
 # It defines the security settings and access control rules.
 
 security:
+  providers:
+    # User provider is responsible for loading user data from the database.
+    app_user_provider:
+      entity:
+        class: src.entity.user.User
+        property: email
+
   firewalls:
     main:
-      form_login:
-        authenticator: src.core.security.authenticator.form_login_authenticator.FormLoginAuthenticator
+      provider: app_user_provider
+      authenticator: src.core.security.authenticator.form_login_authenticator.FormLoginAuthenticator
       login_path: /login
-      login_redirect_route: /users
       logout_path: /logout
 
     api:
-      token_auth:
-        authenticator: src.core.security.authenticator.api_token_authenticator.ApiTokenAuthenticator
+      authenticator: src.core.security.authenticator.api_token_authenticator.ApiTokenAuthenticator
       login_path: /api/login
       logout_path: /api/logout
   access_control:
@@ -25,5 +30,5 @@ security:
 
     - { path: ^/users, roles: ROLE_USER }
     - { path: ^/products, roles: ROLE_ADMIN }
-    - { path: ^/test2, roles: ROLE_USER }
-    - { path: ^/test3, roles: ROLE_ADMIN }
+    # - { path: ^/test2, roles: ROLE_USER }
+    # - { path: ^/test3, roles: ROLE_ADMIN }
