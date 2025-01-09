@@ -11,10 +11,10 @@ from src.core.config.settings import Settings
 from src.terminal.common.database_url_parser import DatabaseUrlParser
 
 
-class CreateTableCommand(AbstractCommand):
+class OrmMigrateDbCommand(AbstractCommand):
     @autowired
     def __init__(self, settings: Annotated[Settings, Autowired]):
-        super().__init__('create_table')
+        super().__init__('orm_migrate_db_table')
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"
         self.base_model = "AbstractEntity"
@@ -23,11 +23,11 @@ class CreateTableCommand(AbstractCommand):
         """
         Create tables in the database.
         """
-        if not CreateTableCommand.database_exists(self.database_url):
+        if not OrmMigrateDbCommand.database_exists(self.database_url):
             print("The database doesnt exist. Create it firts.")
             return
         try:
-            CreateTableCommand.create_sqlmodel_tables_from_directory(
+            OrmMigrateDbCommand.create_sqlmodel_tables_from_directory(
                 directory=self.entity_directory,
                 database_url=self.database_url,
                 base_model=self.base_model
@@ -106,7 +106,7 @@ class CreateTableCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".py"):
                     filepath = os.path.join(root, file)
-                    classes = CreateTableCommand.find_sqlmodel_classes_in_file(
+                    classes = OrmMigrateDbCommand.find_sqlmodel_classes_in_file(
                         filepath, base_model)
 
                     if classes:
@@ -130,14 +130,14 @@ class CreateTableCommand(AbstractCommand):
         Raises:
             None
         """
-        sqlmodel_classes = CreateTableCommand.find_sqlmodel_classes_in_directory(
+        sqlmodel_classes = OrmMigrateDbCommand.find_sqlmodel_classes_in_directory(
             directory, base_model)
 
         if sqlmodel_classes:
             engine = create_engine(database_url, echo=True)
 
             for filepath, classes in sqlmodel_classes.items():
-                module = CreateTableCommand.import_module_from_file(filepath)
+                module = OrmMigrateDbCommand.import_module_from_file(filepath)
 
                 # Create tables for all SQLModel classes
                 for class_name in classes:
