@@ -1,5 +1,5 @@
 from typing import Optional
-from src.repository.user_repository import UserRepository
+
 from src.entity.user import User
 
 
@@ -11,18 +11,17 @@ class UserBadge:
     ----------
     user_identifier : str
         A string representing the user's identifier, typically an email.
-
-    Methods
-    -------
-    get_user(user_repository: UserRepository) -> Optional[User]:
-        Asynchronously retrieves a user from the user repository based on the user identifier.
+    user_identifier_property : str
+        The property used to identify the user (e.g., 'email', 'username').
     """
 
-    def __init__(self, user_identifier: str):
+    def __init__(self, user_identifier: str, user_identifier_property: str = "email"):
         self.user_identifier = user_identifier
+        self.user_identifier_property = user_identifier_property
 
-    async def get_user(self, user_repository: UserRepository) -> Optional[User]:
-        user = user_repository.find_by({"email": self.user_identifier})
+    async def get_user(self, repository) -> Optional[User]:
+        user = repository.find_by(
+            {self.user_identifier_property: self.user_identifier})
         if user:
             return user[0]
         return None

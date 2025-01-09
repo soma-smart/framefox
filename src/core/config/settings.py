@@ -3,6 +3,8 @@ import os
 import re
 from dotenv import load_dotenv
 from injectable import injectable
+from typing import Type, Any, Optional
+import importlib
 
 env_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path=env_path)
@@ -10,11 +12,11 @@ load_dotenv(dotenv_path=env_path)
 
 @injectable
 class Settings:
-    """
+    """ 
     Settings class for loading and managing application configuration.
 
     Attributes:
-        ENV_VAR_PATTERN (re.Pattern): Regular expression pattern to match environment variables in the format ${VAR_NAME}.
+        ENV_VAR_PATTERN (re.Pattern): Regular  expression pattern to match environment variables in the format ${VAR_NAME}.
         app_env (str): The application environment, default is 'prod'.
         config (dict): Dictionary to store the loaded configuration.
 
@@ -100,7 +102,8 @@ class Settings:
 
     @property
     def cache_dir(self):
-        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(
+            os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 
@@ -125,32 +128,16 @@ class Settings:
         return self.config.get("security", {}).get("access_control", [])
 
     @property
-    def authenticator(self):
-        return (
-            self.config.get("security", {})
-            .get("firewalls", {})
-            .get("main", {})
-            .get("form_login", {})
-            .get("authenticator", "")
-        )
+    def firewalls(self):
+        return self.config.get("security", {}).get("firewalls", {})
+
+    def get_firewall_config(self, firewall_name: str):
+        firewalls = self.firewalls
+        return firewalls.get(firewall_name, {})
 
     @property
-    def login_path(self):
-        return (
-            self.config.get("security", {})
-            .get("firewalls", {})
-            .get("main", {})
-            .get("login_path", "")
-        )
-
-    @property
-    def login_redirect_route(self):
-        return (
-            self.config.get("security", {})
-            .get("firewalls", {})
-            .get("main", {})
-            .get("login_redirect_route", "")
-        )
+    def providers(self):
+        return self.config.get("security", {}).get("providers", {})
 
     # ------------------------------ session ------------------------------
 
@@ -182,7 +169,7 @@ class Settings:
     def cookie_path(self):
         return self.config.get("cookie", {}).get("path", "/")
 
-    # ------------------------------ cors ------------------------------
+    # ------------------------------ application ------------------------------
     @property
     def openapi_url(self):
         if self.app_env == "dev":
@@ -206,3 +193,7 @@ class Settings:
     @property
     def template_dir(self):
         return self.config.get("application", {}).get("template_dir", "templates")
+
+    @property
+    def session_file_path(self):
+        return self.config.get("application", {}).get("session_file_path", "var/session/sessions.json")

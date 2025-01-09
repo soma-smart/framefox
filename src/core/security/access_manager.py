@@ -23,7 +23,7 @@ class AccessManager:
             if re.match(pattern, path):
                 self.logger.debug(
                     f"Path {path} matches pattern {
-                                  pattern} with roles {roles}"
+                        pattern} with roles {roles}"
                 )
                 return roles
         return []
@@ -32,10 +32,9 @@ class AccessManager:
         """
         Checks if the user has at least one of the required roles.
         """
-        # self.logger.debug(f"Checking user roles: {
-        #                   user_roles} against required roles: {required_roles}")
         has_role = any(role in user_roles for role in required_roles)
         self.logger.debug(
-            f"The user {'has' if has_role else 'does not have'} the required roles."
+            f"The user {
+                'has' if has_role else 'does not have'} the required roles."
         )
         return has_role

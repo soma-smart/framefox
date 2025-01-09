@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi.responses import Response
 from injectable import Autowired, autowired
 from src.core.config.settings import Settings
@@ -9,20 +9,46 @@ class CookieManager:
     def __init__(self, settings: Annotated[Settings, Autowired]):
         self.settings = settings
 
-    def set_response_cookie(self, response: Response, key: str, token: str):
+    def set_cookie(
+        self,
+        response: Response,
+        key: str,
+        value: str,
+        max_age: Optional[int] = None,
+        expires: Optional[str] = None,
+        secure: Optional[bool] = None,
+    ):
         """
-        Définit le cookie d'accès JWT.
+        Définit un cookie de manière sécurisée avec possibilité de surcharger `max_age`.
 
         Args:
             response (Response): La réponse HTTP.
-            token (str): Le token JWT à définir.
-            secure (bool, optional): Indique si le cookie doit être sécurisé. Par défaut à False.
+            key (str): La clé du cookie.
+            value (str): La valeur du cookie.
+            max_age (int, optional): Durée de vie du cookie en secondes. Par défaut, utilise `settings.cookie_max_age`.
+            expires (str, optional): Date d'expiration du cookie au format HTTP. Facultatif.
+            secure (bool, optional): Indique si le cookie doit être sécurisé. Par défaut, utilise `settings.cookie_secure`.
         """
-        return response.set_cookie(
+        response.set_cookie(
             key=key,
-            value=token,
+            value=value,
+            max_age=max_age if max_age is not None else self.settings.cookie_max_age,
+            expires=expires,
             httponly=self.settings.cookie_http_only,
-            secure=self.settings.cookie_secure,
+            secure=secure if secure is not None else self.settings.cookie_secure,
             samesite=self.settings.cookie_same_site,
+            path=self.settings.cookie_path,
+        )
+
+    def delete_cookie(self, response: Response, key: str):
+        """
+        Supprime un cookie de manière sécurisée.
+
+        Args:
+            response (Response): La réponse HTTP.
+            key (str): La clé du cookie à supprimer.
+        """
+        response.delete_cookie(
+            key=key,
             path=self.settings.cookie_path,
         )

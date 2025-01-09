@@ -1,4 +1,7 @@
+# python
+
 from src.core.request.request_stack import RequestStack
+import uuid
 
 
 class Session:
@@ -30,25 +33,33 @@ class Session:
     @staticmethod
     def get(key, default=None):
         request = RequestStack.get_request()
-        return request.session.get(key, default)
+        return request.state.session_data.get(key, default)
 
     @staticmethod
     def set(key, value):
         request = RequestStack.get_request()
-        request.session[key] = value
+        if not request.state.session_id:
+            request.state.session_data = {}
+            request.state.session_id = str(uuid.uuid4())
+        request.state.session_data[key] = value
 
     @staticmethod
     def has(key):
         request = RequestStack.get_request()
-        return key in request.session
+        return key in request.state.session_data
 
     @staticmethod
     def remove(key):
         request = RequestStack.get_request()
-        if key in request.session:
-            del request.session[key]
+        if key in request.state.session_data:
+            del request.state.session_data[key]
 
     @staticmethod
     def flush():
         request = RequestStack.get_request()
-        request.session.clear()
+        request.state.session_data.clear()
+
+    @staticmethod
+    def get_all():
+        request = RequestStack.get_request()
+        return request.state.session_data

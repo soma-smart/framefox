@@ -3,6 +3,7 @@ application:
   template_dir: "templates"
   openapi_url: /openapi.json
   redoc_url: /redoc
+  session_file_path: var/session/sessions.json
   cors:
     allow_origins:
       - "http://localhost"
@@ -16,7 +17,7 @@ application:
   cookie:
     secret_key: "${COOKIE_SECRET_KEY}"
     type: "filesystem"
-    max_age: 3600
+    max_age: 10
     secure: true
     http_only: true
     same_site: "strict" # "strict", "lax", "none"
