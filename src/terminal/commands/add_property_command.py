@@ -1,5 +1,6 @@
 from src.terminal.commands.abstract_command import AbstractCommand
 from src.terminal.common.class_name_manager import ClassNameManager
+from src.terminal.common.model_checker import ModelChecker
 
 
 class AddPropertyCommand(AbstractCommand):
@@ -22,6 +23,9 @@ class AddPropertyCommand(AbstractCommand):
         """
         if not ClassNameManager.is_snake_case(name):
             print("Invalid name. Must be in snake_case.")
+            return
+        if not ModelChecker().check_entity_and_repository(name):
+            print("\033[91mFailed to create controller.\033[0m")
             return
         try:
             file_path = self.entity_folder + '/' + name + '.py'
