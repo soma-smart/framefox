@@ -1,4 +1,4 @@
-from src.core.orm.abstract_repository import AbstractRepository
+from framefox.core.orm.abstract_repository import AbstractRepository
 from src.entity.user import User
 
 

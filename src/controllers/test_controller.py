@@ -1,6 +1,6 @@
-from src.core.controller.abstract_controller import AbstractController
-from src.core.routing.decorator.route import Route
-from src.core.request.session.session import Session
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
+from framefox.core.request.session.session import Session
 
 
 class TestController(AbstractController):
@@ -8,7 +8,7 @@ class TestController(AbstractController):
     @Route("/test", "get_test", methods=["GET"])
     async def get_test(self):
         Session.set("test", "test")
-        return self.json({'ok': True})
+        return self.json({"ok": True})
 
     @Route("/test2", "post_test", methods=["GET"])
     async def post_test(self):

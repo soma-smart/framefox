@@ -12,12 +12,12 @@ security:
   firewalls:
     main:
       provider: app_user_provider
-      authenticator: src.core.security.authenticator.form_login_authenticator.FormLoginAuthenticator
+      authenticator: framefox.core.security.authenticator.form_login_authenticator.FormLoginAuthenticator
       login_path: /login
       logout_path: /logout
 
     api:
-      authenticator: src.core.security.authenticator.api_token_authenticator.ApiTokenAuthenticator
+      authenticator: framefox.core.security.authenticator.api_token_authenticator.ApiTokenAuthenticator
       login_path: /api/login
       logout_path: /api/logout
   access_control:

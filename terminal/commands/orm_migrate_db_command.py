@@ -7,14 +7,14 @@ import psycopg2
 import pymysql
 from sqlmodel import create_engine
 from terminal.commands.abstract_command import AbstractCommand
-from src.core.config.settings import Settings
+from framefox.core.config.settings import Settings
 from terminal.common.database_url_parser import DatabaseUrlParser
 
 
 class OrmMigrateDbCommand(AbstractCommand):
     @autowired
     def __init__(self, settings: Annotated[Settings, Autowired]):
-        super().__init__('orm_migrate_db')
+        super().__init__("orm_migrate_db")
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"
         self.base_model = "AbstractEntity"
@@ -30,7 +30,7 @@ class OrmMigrateDbCommand(AbstractCommand):
             OrmMigrateDbCommand.create_sqlmodel_tables_from_directory(
                 directory=self.entity_directory,
                 database_url=self.database_url,
-                base_model=self.base_model
+                base_model=self.base_model,
             )
             print("Tables created successfully.")
         except Exception as e:
@@ -107,7 +107,8 @@ class OrmMigrateDbCommand(AbstractCommand):
                 if file.endswith(".py"):
                     filepath = os.path.join(root, file)
                     classes = OrmMigrateDbCommand.find_sqlmodel_classes_in_file(
-                        filepath, base_model)
+                        filepath, base_model
+                    )
 
                     if classes:
                         sqlmodel_classes_found[filepath] = classes
@@ -131,7 +132,8 @@ class OrmMigrateDbCommand(AbstractCommand):
             None
         """
         sqlmodel_classes = OrmMigrateDbCommand.find_sqlmodel_classes_in_directory(
-            directory, base_model)
+            directory, base_model
+        )
 
         if sqlmodel_classes:
             engine = create_engine(database_url, echo=True)
@@ -160,8 +162,8 @@ class OrmMigrateDbCommand(AbstractCommand):
         Returns:
             bool: True if the database exists, False otherwise.
         """
-        scheme, user, password, host, port, database = DatabaseUrlParser.parse_database_url(
-            db_url
+        scheme, user, password, host, port, database = (
+            DatabaseUrlParser.parse_database_url(db_url)
         )
 
         # SQLite
@@ -183,8 +185,7 @@ class OrmMigrateDbCommand(AbstractCommand):
                 )
                 connection.autocommit = True
                 cursor = connection.cursor()
-                cursor.execute(
-                    f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
+                cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
                 exists = cursor.fetchone() is not None
 
                 cursor.close()

@@ -1,5 +1,5 @@
-from src.core.controller.abstract_controller import AbstractController
-from src.core.routing.decorator.route import Route
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
 
 
 class LoginController(AbstractController):
