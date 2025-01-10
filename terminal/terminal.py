@@ -1,5 +1,5 @@
-from src.terminal.argument_parser import ArgumentParser
-from src.terminal.command_handler import CommandHandler
+from terminal.argument_parser import ArgumentParser
+from terminal.command_handler import CommandHandler
 
 
 class Terminal:

@@ -6,15 +6,15 @@ import importlib.util
 import psycopg2
 import pymysql
 from sqlmodel import create_engine
-from src.terminal.commands.abstract_command import AbstractCommand
+from terminal.commands.abstract_command import AbstractCommand
 from src.core.config.settings import Settings
-from src.terminal.common.database_url_parser import DatabaseUrlParser
+from terminal.common.database_url_parser import DatabaseUrlParser
 
 
 class OrmMigrateDbCommand(AbstractCommand):
     @autowired
     def __init__(self, settings: Annotated[Settings, Autowired]):
-        super().__init__('orm_migrate_db_table')
+        super().__init__('orm_migrate_db')
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"
         self.base_model = "AbstractEntity"

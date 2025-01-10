@@ -1,6 +1,6 @@
-from src.terminal.commands.abstract_command import AbstractCommand
-from src.terminal.common.class_name_manager import ClassNameManager
-from src.terminal.common.file_creator import FileCreator
+from terminal.commands.abstract_command import AbstractCommand
+from terminal.common.class_name_manager import ClassNameManager
+from terminal.common.file_creator import FileCreator
 
 
 class CreateControllerCommand(AbstractCommand):
@@ -12,6 +12,12 @@ class CreateControllerCommand(AbstractCommand):
         self.view_template = r'view_template.jinja2'
 
     def execute(self, name: str):
+        """
+        Create a simple controller with a exemple route and view.
+
+        Args:
+            name (str): The name of the controller.
+        """
         if not ClassNameManager.is_snake_case(name):
             print("\033[91mInvalid name. Must be in snake_case.\033[0m")
             return

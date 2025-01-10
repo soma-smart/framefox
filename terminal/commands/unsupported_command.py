@@ -1,4 +1,4 @@
-from src.terminal.commands.abstract_command import AbstractCommand
+from terminal.commands.abstract_command import AbstractCommand
 
 
 class UnsupportedCommand(AbstractCommand):

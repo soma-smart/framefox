@@ -1,6 +1,6 @@
-from src.terminal.commands.abstract_command import AbstractCommand
-from src.terminal.commands.unsupported_command import UnsupportedCommand
-from src.terminal.command_handler import CommandHandler
+from terminal.commands.abstract_command import AbstractCommand
+from terminal.commands.unsupported_command import UnsupportedCommand
+from terminal.command_handler import CommandHandler
 
 import textwrap
 

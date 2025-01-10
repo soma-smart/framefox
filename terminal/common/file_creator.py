@@ -3,7 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 
 class FileCreator:
     def __init__(self):
-        self.template_path = r"src/terminal/templates"
+        self.template_path = r"terminal/templates"
 
     def create_file(self, template: str, path: str, name: str, data: str, format: str = "py"):
         """

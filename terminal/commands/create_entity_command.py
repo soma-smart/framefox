@@ -1,9 +1,9 @@
-from src.terminal.commands.abstract_command import AbstractCommand
-from src.terminal.commands.add_property_command import AddPropertyCommand
-from src.terminal.common.class_name_manager import ClassNameManager
-from src.terminal.common.file_creator import FileCreator
-from src.terminal.common.input_manager import InputManager
-from src.terminal.common.model_checker import ModelChecker
+from terminal.commands.abstract_command import AbstractCommand
+from terminal.commands.add_property_command import AddPropertyCommand
+from terminal.common.class_name_manager import ClassNameManager
+from terminal.common.file_creator import FileCreator
+from terminal.common.input_manager import InputManager
+from terminal.common.model_checker import ModelChecker
 
 import inspect
 
