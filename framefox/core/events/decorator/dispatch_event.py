@@ -1,6 +1,5 @@
-# src/core/events/decorators/dispatch_event.py
-
 from functools import wraps
+
 from framefox.core.events.event_dispatcher import dispatcher
 
 

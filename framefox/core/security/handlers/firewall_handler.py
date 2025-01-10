@@ -4,18 +4,17 @@ from injectable import Autowired, autowired
 from typing import Dict, Optional, Type, Annotated
 from fastapi import Request
 from fastapi.responses import Response, HTMLResponse, JSONResponse, RedirectResponse
+import importlib
+
 from framefox.core.security.token_manager import TokenManager
 from framefox.core.request.csrf_token_manager import CsrfTokenManager
 from framefox.core.security.access_manager import AccessManager
 from framefox.core.templates.template_renderer import TemplateRenderer
-
 from framefox.core.config.settings import Settings
 from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.security.authenticator.authenticator_interface import (
     AuthenticatorInterface,
 )
-
-import importlib
 from framefox.core.request.session.session import Session
 from framefox.core.request.session.session_manager import SessionManager
 
@@ -150,7 +149,8 @@ class FirewallHandler:
         """
         Handles authorization using the AccessManager class.
         """
-        required_roles = self.access_manager.get_required_roles(request.url.path)
+        required_roles = self.access_manager.get_required_roles(
+            request.url.path)
         if not required_roles:
             return await call_next(request)
         token = Session.get("access_token")
@@ -161,7 +161,8 @@ class FirewallHandler:
                 if self.access_manager.is_allowed(user_roles, required_roles):
                     return await call_next(request)
                 else:
-                    self.logger.warning("User does not have the required roles.")
+                    self.logger.warning(
+                        "User does not have the required roles.")
             else:
                 self.logger.warning("Invalid token payload.")
 

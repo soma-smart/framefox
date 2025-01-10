@@ -2,6 +2,7 @@ import importlib
 import logging
 from typing import Optional, Tuple, Any, Annotated
 from injectable import injectable, autowired, Autowired
+
 from framefox.core.config.settings import Settings
 
 
@@ -36,7 +37,7 @@ class EntityUserProvider:
         if not entity_class_path or not property_name:
             self.logger.error(
                 f"Incomplete configuration for provider '{
-                              provider_name}'."
+                    provider_name}'."
             )
             return None
 
@@ -53,6 +54,6 @@ class EntityUserProvider:
         except (ImportError, AttributeError) as e:
             self.logger.error(
                 f"Error loading repository for entity '{
-                              entity_class_path}': {e}"
+                    entity_class_path}': {e}"
             )
             return None

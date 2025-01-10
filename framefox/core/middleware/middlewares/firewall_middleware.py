@@ -1,6 +1,7 @@
 import logging
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from framefox.core.events.decorator.dispatch_event import DispatchEvent
 from framefox.core.security.handlers.firewall_handler import FirewallHandler
 

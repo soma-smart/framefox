@@ -1,12 +1,12 @@
 import importlib
 from typing import Annotated
-import os
 from pathlib import Path
 from fastapi import FastAPI
-from framefox.core.controller.abstract_controller import AbstractController
 import inspect
-from framefox.core.config.settings import Settings
 from injectable import autowired, Autowired
+
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.config.settings import Settings
 
 
 class Router:

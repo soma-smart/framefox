@@ -1,5 +1,6 @@
 from fastapi import Request
 from fastapi.responses import HTMLResponse
+
 from framefox.core.debug.exception.debug_exception import DebugException
 
 

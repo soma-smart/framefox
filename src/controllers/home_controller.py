@@ -1,7 +1,7 @@
+from fastapi import Request
+
 from framefox.core.controller.abstract_controller import AbstractController
 from framefox.core.routing.decorator.route import Route
-from fastapi import Request
-from framefox.core.request.session.session import Session
 
 
 class HomeController(AbstractController):

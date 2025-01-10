@@ -2,6 +2,7 @@ import logging
 from typing import Optional, Annotated
 from fastapi import Request, HTTPException
 from injectable import Autowired, autowired
+
 from framefox.core.config.settings import Settings
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.token_manager import TokenManager
@@ -32,7 +33,8 @@ class AbstractAuthenticator:
                 )
 
                 passport.provider_info = (
-                    {"repository": provider_info[0], "property": provider_info[1]}
+                    {"repository": provider_info[0],
+                        "property": provider_info[1]}
                     if provider_info
                     else None
                 )

@@ -1,8 +1,8 @@
 from jinja2 import Environment, FileSystemLoader
-
-from framefox.core.config.settings import Settings
 from injectable import Autowired, injectable, autowired
 from typing import Annotated
+
+from framefox.core.config.settings import Settings
 
 
 @injectable

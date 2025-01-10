@@ -1,5 +1,4 @@
 from typing import Annotated
-
 from fastapi import FastAPI
 from injectable import autowired, Autowired, load_injection_container
 

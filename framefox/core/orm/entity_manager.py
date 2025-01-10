@@ -2,6 +2,7 @@ from typing import Annotated
 import logging
 from injectable import injectable, autowired, Autowired
 from sqlmodel import create_engine, Session
+
 from framefox.core.config.settings import Settings
 
 
