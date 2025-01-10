@@ -3,7 +3,7 @@ application:
   template_dir: "templates"
   openapi_url: /openapi.json
   redoc_url: /redoc
-  session_file_path: var/session/sessions.json
+
   cors:
     allow_origins:
       - "http://localhost"
@@ -13,6 +13,10 @@ application:
       - "*"
     allow_headers:
       - "*"
+
+  session:
+    name: "session_id"
+    file_path: var/session/sessions.json
 
   cookie:
     secret_key: "${COOKIE_SECRET_KEY}"

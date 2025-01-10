@@ -12,7 +12,7 @@ load_dotenv(dotenv_path=env_path)
 
 @injectable
 class Settings:
-    """ 
+    """
     Settings class for loading and managing application configuration.
 
     Attributes:
@@ -102,8 +102,7 @@ class Settings:
 
     @property
     def cache_dir(self):
-        cache_path = os.path.join(
-            os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 
@@ -195,5 +194,9 @@ class Settings:
         return self.config.get("application", {}).get("template_dir", "templates")
 
     @property
+    def session_cookie_name(self):
+        return self.config.get("application", {}).get("session").get("name", None)
+
+    @property
     def session_file_path(self):
-        return self.config.get("application", {}).get("session_file_path", "var/session/sessions.json")
+        return self.config.get("application", {}).get("session").get("file_path", None)
