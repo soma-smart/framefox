@@ -1,5 +1,5 @@
 import uvicorn
-from src.core.kernel import Kernel
+from framefox.core.kernel import Kernel
 
 app = Kernel().app
 

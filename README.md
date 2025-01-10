@@ -64,8 +64,8 @@ The main purpose of this framework is to make most functionalities easy to use. 
 Using the Route decorator class helps you define routes directly above your controller methods, making routing straightforward and intuitive. Every HTTP method is available.
 
 ```python
-from src.core.controller.abstract_controller import AbstractController
-from src.core.routing.decorator.route import Route
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
 
 class HomeController(AbstractController):
 
@@ -92,9 +92,9 @@ The AbstractController class provides several methods that can be used in your c
 Here is an example of a controller that uses the AbstractController methods:
 
 ```python
-from src.core.controller.abstract_controller import AbstractController
-from src.core.routing.decorator.route import Route
-from src.core.session.session import Session
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
+from framefox.core.session.session import Session
 from src.repository.user_repository import UserRepository
 
 class UserController(AbstractController):
@@ -135,7 +135,7 @@ The `RequestStack` class allows you to manage request-specific data throughout t
 Entities are business objects that represent the application's data and are typically mapped to database tables. They are very easy to use due to their inheritance from the AbstractEntity class. Here is an example of a user entity:
 ```python
 from sqlmodel import Field
-from src.core.orm.abstract_entity import AbstractEntity
+from framefox.core.orm.abstract_entity import AbstractEntity
 from datetime import datetime
 
 class User(AbstractEntity, table=True):
@@ -159,7 +159,7 @@ Will see later how to use it with a controller.
 A repository is a design pattern that encapsulates data access logic, centralizing data operations and promoting modular, testable, and maintainable code by abstracting the data access layer.
 The repository inherits from the AbstractRepository, making its creation very easy. The idea is to simply connect the repository to the corresponding entity. Here is an example of UserRepository :
 ```python
-from src.core.orm.abstract_repository import AbstractRepository
+from framefox.core.orm.abstract_repository import AbstractRepository
 from src.entity.user import User
 
 
@@ -178,9 +178,9 @@ Due to its ineritance, the repository implement many features such as :
 ### Use repository with controllers
 Thanks to repository and pydantic it is super easy to create a controller that refines routes. Here is an example of UserController that illustrate all features of UserRepository and the Pydantic data validation :
 ```python
-from src.core.routing.decorator.route import Route
+from framefox.core.routing.decorator.route import Route
 from src.repository.user_repository import UserRepository
-from src.core.controller.abstract_controller import AbstractController
+from framefox.core.controller.abstract_controller import AbstractController
 from typing import Optional, Dict
 
 
