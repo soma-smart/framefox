@@ -1,7 +1,7 @@
-from src.terminal.commands.abstract_command import AbstractCommand
-from src.terminal.common.class_name_manager import ClassNameManager
-from src.terminal.common.model_checker import ModelChecker
-from src.terminal.common.input_manager import InputManager
+from terminal.commands.abstract_command import AbstractCommand
+from terminal.common.class_name_manager import ClassNameManager
+from terminal.common.model_checker import ModelChecker
+from terminal.common.input_manager import InputManager
 
 
 class AddPropertyCommand(AbstractCommand):
@@ -63,12 +63,6 @@ class AddPropertyCommand(AbstractCommand):
                 class_found = True
             if 'Field' in line:
                 last_line = i
-        # if class_found and optional == 'no':
-        #     content.insert(
-        #         last_line + 1, f'    {property_name}: {property_type} = Field()\n')
-        # if class_found and optional == 'yes':
-        #     content.insert(
-        #         last_line + 1, f'    {property_name}: Optional[{property_type}] = Field()\n')
         if class_found:
             AddPropertyCommand.insert_field(
                 content=content,

@@ -1,5 +1,5 @@
 import os
-from src.terminal.common.class_name_manager import ClassNameManager
+from terminal.common.class_name_manager import ClassNameManager
 
 
 class ModelChecker:

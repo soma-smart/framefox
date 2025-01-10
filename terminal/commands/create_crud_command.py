@@ -1,8 +1,8 @@
-from src.terminal.commands.abstract_command import AbstractCommand
-from src.terminal.common.file_creator import FileCreator
-from src.terminal.common.class_name_manager import ClassNameManager
-from src.terminal.common.model_checker import ModelChecker
-from src.terminal.common.input_manager import InputManager
+from terminal.commands.abstract_command import AbstractCommand
+from terminal.common.file_creator import FileCreator
+from terminal.common.class_name_manager import ClassNameManager
+from terminal.common.model_checker import ModelChecker
+from terminal.common.input_manager import InputManager
 
 
 class CreateCrudCommand(AbstractCommand):
@@ -28,7 +28,7 @@ class CreateCrudCommand(AbstractCommand):
             return
         print("What type of controller do you want to create?")
         user_input = InputManager.wait_input(
-            type='controller type',
+            input_type='controller type',
             choices=self.input_choices
         )
         entity_class_name = ClassNameManager.snake_to_pascal(entity_name)

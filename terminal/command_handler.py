@@ -1,8 +1,8 @@
 import os
 import importlib.util
 
-from src.terminal.commands.abstract_command import AbstractCommand
-from src.terminal.commands.unsupported_command import UnsupportedCommand
+from terminal.commands.abstract_command import AbstractCommand
+from terminal.commands.unsupported_command import UnsupportedCommand
 
 
 class CommandHandler:
@@ -12,7 +12,7 @@ class CommandHandler:
     def register_command(self, command):
         self.commands[command.name] = command
 
-    def load_commands(self, commands_dir='src/terminal/commands'):
+    def load_commands(self, commands_dir='terminal/commands'):
         for filename in os.listdir(commands_dir):
             if filename.endswith('_command.py'):
                 module_name = filename[:-3]

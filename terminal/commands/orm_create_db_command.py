@@ -4,8 +4,8 @@ from sqlmodel import create_engine, SQLModel
 import pymysql
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from src.terminal.common.database_url_parser import DatabaseUrlParser
-from src.terminal.commands.abstract_command import AbstractCommand
+from terminal.common.database_url_parser import DatabaseUrlParser
+from terminal.commands.abstract_command import AbstractCommand
 from src.core.config.settings import Settings
 
 
