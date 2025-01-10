@@ -4,6 +4,7 @@ import os
 from typing import Dict, Optional, Annotated
 import logging
 from injectable import autowired, Autowired
+
 from framefox.core.config.settings import Settings
 
 
@@ -72,7 +73,8 @@ class SessionManager:
         """Cleans up expired sessions"""
         sessions = self.load_sessions()
         current_time = datetime.now(timezone.utc).timestamp()
-        expired = [sid for sid, s in sessions.items() if s["expires_at"] < current_time]
+        expired = [sid for sid, s in sessions.items() if s["expires_at"]
+                   < current_time]
 
         if expired:
             for sid in expired:

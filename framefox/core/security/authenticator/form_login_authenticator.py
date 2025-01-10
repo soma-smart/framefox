@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import Request
 from fastapi.responses import RedirectResponse
+
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.passport.user_badge import UserBadge
 from framefox.core.security.passport.password_credentials import PasswordCredentials

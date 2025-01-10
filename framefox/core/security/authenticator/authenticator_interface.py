@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from fastapi import Request
 from typing import Optional
+
 from framefox.core.security.passport.passport import Passport
 
 

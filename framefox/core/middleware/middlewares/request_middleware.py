@@ -1,13 +1,13 @@
 import logging
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from framefox.core.request.request_stack import RequestStack
-from framefox.core.events.decorator.dispatch_event import DispatchEvent
-import uuid
-from framefox.core.request.cookie_manager import CookieManager
 from injectable import autowired, Autowired
 from typing import Annotated
+
 from framefox.core.config.settings import Settings
+from framefox.core.request.request_stack import RequestStack
+from framefox.core.events.decorator.dispatch_event import DispatchEvent
+from framefox.core.request.cookie_manager import CookieManager
 
 
 class RequestMiddleware(BaseHTTPMiddleware):

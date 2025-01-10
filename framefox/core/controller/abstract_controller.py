@@ -1,12 +1,10 @@
 from fastapi import APIRouter
-
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
+from injectable import Autowired, autowired
+from typing import Annotated
 
 from framefox.core.request.session.session import Session
 from framefox.core.templates.template_renderer import TemplateRenderer
-
-from injectable import Autowired, autowired
-from typing import Annotated
 from framefox.core.orm.entity_manager import EntityManager
 
 

@@ -1,5 +1,6 @@
 from injectable import autowired, Autowired
 from typing import Annotated
+
 from framefox.core.config.settings import Settings
 from framefox.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
 from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
