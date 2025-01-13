@@ -1,6 +1,6 @@
-from terminal.commands.abstract_command import AbstractCommand
-from terminal.common.class_name_manager import ClassNameManager
-from terminal.common.file_creator import FileCreator
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.common.class_name_manager import ClassNameManager
+from framefox.terminal.common.file_creator import FileCreator
 
 
 class CreateControllerCommand(AbstractCommand):

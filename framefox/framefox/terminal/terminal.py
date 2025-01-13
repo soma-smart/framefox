@@ -1,5 +1,5 @@
-from terminal.argument_parser import ArgumentParser
-from terminal.command_handler import CommandHandler
+from framefox.terminal.argument_parser import ArgumentParser
+from framefox.terminal.command_handler import CommandHandler
 
 
 class Terminal:

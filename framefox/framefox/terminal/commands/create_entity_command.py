@@ -1,9 +1,9 @@
-from terminal.commands.abstract_command import AbstractCommand
-from terminal.commands.add_property_command import AddPropertyCommand
-from terminal.common.class_name_manager import ClassNameManager
-from terminal.common.file_creator import FileCreator
-from terminal.common.input_manager import InputManager
-from terminal.common.model_checker import ModelChecker
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.commands.add_property_command import AddPropertyCommand
+from framefox.terminal.common.class_name_manager import ClassNameManager
+from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.model_checker import ModelChecker
 
 import inspect
 

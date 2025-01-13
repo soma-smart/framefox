@@ -1,4 +1,4 @@
-from terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 
 class UnsupportedCommand(AbstractCommand):

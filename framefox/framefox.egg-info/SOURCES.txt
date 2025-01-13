@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+setup.py
+framefox/__init__.py
+framefox/call_terminal.py
+framefox/cli.py
+framefox.egg-info/PKG-INFO
+framefox.egg-info/SOURCES.txt
+framefox.egg-info/dependency_links.txt
+framefox.egg-info/entry_points.txt
+framefox.egg-info/requires.txt
+framefox.egg-info/top_level.txt
