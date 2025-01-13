@@ -1,9 +1,14 @@
 from jinja2 import Environment, FileSystemLoader
 
+import importlib.resources as pkg_resources
+import framefox.terminal
+
 
 class FileCreator:
     def __init__(self):
-        self.template_path = r"framefox/framefox/terminal/templates"
+        # self.template_path = r"framefox/framefox/terminal/templates"
+        self.template_path = pkg_resources.files(
+            framefox.terminal).joinpath('templates')
 
     def create_file(self, template: str, path: str, name: str, data: str, format: str = "py"):
         """
@@ -21,7 +26,8 @@ class FileCreator:
         """
         # Load the template from a file
         env = Environment(loader=FileSystemLoader(self.template_path))
-        # env = self.load_all_templates()
+        # env = self.create_environment()
+        # print(env.list_templates())
         template = env.get_template(template)
 
         # Render the template with the data
@@ -34,17 +40,3 @@ class FileCreator:
             output_file = f"{path}/{name}"
         with open(output_file, "w") as file:
             file.write(code)
-
-    def load_all_templates(self):
-        """
-        Load all templates from the template directory.
-
-        Returns:
-            dict: A dictionary with all templates.
-        """
-        env = Environment(loader=FileSystemLoader(self.template_path))
-        templates = {}
-        for template in env.list_templates():
-            templates[template] = env.get_template(template)
-        print(templates)
-        return templates

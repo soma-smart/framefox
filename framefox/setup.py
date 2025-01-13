@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="framefox",
-    version="0.1.6",
+    version="0.1.10",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -17,5 +17,10 @@ setup(
     },
     package_data={
         '': ['*.py'],
+        'framefox': [
+            'terminal/templates/*',
+            'terminal/templates/**/*',
+            'terminal/commands/*',
+            'terminal/common/*'],
     },
 )

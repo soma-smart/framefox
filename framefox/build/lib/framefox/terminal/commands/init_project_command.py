@@ -1,6 +1,6 @@
 import os
 from framefox.terminal.commands.abstract_command import AbstractCommand
-# from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.file_creator import FileCreator
 
 
 class InitProjectCommand(AbstractCommand):
@@ -30,9 +30,9 @@ class InitProjectCommand(AbstractCommand):
         # Create usefull files
         # .env, main.py, requirements.txt
         # template: str, path: str, name: str, data: str, format: str = "py"
-        # FileCreator().create_file(
-        #     template="init_files/main.jinja2",
-        #     path=".",
-        #     name="main",
-        #     data=None
-        # )
+        FileCreator().create_file(
+            template="init_files/main.jinja2",
+            path=".",
+            name="test_main",
+            data={},
+        )
