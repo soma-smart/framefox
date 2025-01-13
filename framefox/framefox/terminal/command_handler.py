@@ -1,18 +1,18 @@
 import os
 import importlib.util
+import typer
 
-from terminal.commands.abstract_command import AbstractCommand
-from terminal.commands.unsupported_command import UnsupportedCommand
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.commands.unsupported_command import UnsupportedCommand
 
 
 class CommandHandler:
-    def __init__(self):
-        self.commands = {}
+    @staticmethod
+    def register_command(app: typer.Typer, command_instance):
+        app.command(name=command_instance.name)(command_instance.execute)
 
-    def register_command(self, command):
-        self.commands[command.name] = command
-
-    def load_commands(self, commands_dir='terminal/commands'):
+    @staticmethod
+    def load_commands(app: typer.Typer, commands_dir='framefox/framefox/terminal/commands'):
         for filename in os.listdir(commands_dir):
             if filename.endswith('_command.py'):
                 module_name = filename[:-3]
@@ -26,8 +26,4 @@ class CommandHandler:
                     if isinstance(cls, type) and \
                             issubclass(cls, AbstractCommand) and \
                             (cls is not AbstractCommand and cls is not UnsupportedCommand):
-                        self.register_command(cls())
-
-    def run(self, command_name, args):
-        command = self.commands.get(command_name, UnsupportedCommand())
-        command.execute(*args)
+                        CommandHandler.register_command(app, cls())

@@ -1,17 +1,15 @@
 from framefox.core.orm.abstract_repository import AbstractRepository
-from src.entity.user import User
+from src.entity.{{ snake_case_name }} import {{ entity_class_name }}
 
 
-class UserRepository(AbstractRepository):
+class {{ repository_class_name }}(AbstractRepository):
     def __init__(self):
-        super().__init__(User)
+        super().__init__({{ entity_class_name }})
 
     ###########
     # build your own query by using the QueryBuilder
     ###########
-
     # def get_user_by_email(self, email: str):
-
     #     query_builder = self.get_query_builder()
     #     return (
     #         query_builder
@@ -19,3 +17,4 @@ class UserRepository(AbstractRepository):
     #         .where(self.model.email == email)
     #         .first()
     #     )
+{% raw %}{% endraw %}

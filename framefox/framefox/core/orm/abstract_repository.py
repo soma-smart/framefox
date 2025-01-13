@@ -2,7 +2,9 @@ from abc import ABC
 from typing import Annotated, Type, TypeVar, List, Optional
 from sqlmodel import SQLModel, select, asc, desc
 from injectable import Autowired, autowired
+
 from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.orm.query_builder import QueryBuilder
 
 T = TypeVar("T", bound=SQLModel)
 
@@ -18,7 +20,7 @@ class AbstractRepository(ABC):
 
     @autowired
     def __init__(
-        self, model: Type[T], entity_manager: Annotated[EntityManager, Autowired]
+        self, model: Type[T], entity_manager: Annotated[EntityManager, Autowired],
     ):
         self.model = model
         self.entity_manager = entity_manager
@@ -64,9 +66,11 @@ class AbstractRepository(ABC):
         if order_by:
             for field, direction in order_by.items():
                 if direction.lower() == "asc":
-                    statement = statement.order_by(asc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        asc(getattr(self.model, field)))
                 elif direction.lower() == "desc":
-                    statement = statement.order_by(desc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        desc(getattr(self.model, field)))
 
         if limit is not None:
             statement = statement.limit(limit)
@@ -74,3 +78,12 @@ class AbstractRepository(ABC):
         if offset is not None:
             statement = statement.offset(offset)
         return self.entity_manager.exec_statement(statement)
+
+    def get_query_builder(self) -> QueryBuilder:
+        """
+        Retrieve an instance of QueryBuilder for the specific entity of the repository.
+
+        Returns:
+            QueryBuilder: An instance configured for the repository's entity.
+        """
+        return QueryBuilder(entity_manager=self.entity_manager, model=self.model)

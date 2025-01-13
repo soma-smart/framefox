@@ -6,9 +6,9 @@ import importlib.util
 import psycopg2
 import pymysql
 from sqlmodel import create_engine
-from terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 from framefox.core.config.settings import Settings
-from terminal.common.database_url_parser import DatabaseUrlParser
 
 
 class OrmMigrateDbCommand(AbstractCommand):
@@ -185,7 +185,8 @@ class OrmMigrateDbCommand(AbstractCommand):
                 )
                 connection.autocommit = True
                 cursor = connection.cursor()
-                cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
+                cursor.execute(
+                    f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
                 exists = cursor.fetchone() is not None
 
                 cursor.close()

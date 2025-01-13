@@ -4,8 +4,8 @@ from sqlmodel import create_engine, SQLModel
 import pymysql
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from terminal.common.database_url_parser import DatabaseUrlParser
-from terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.common.database_url_parser import DatabaseUrlParser
+from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.core.config.settings import Settings
 
 
@@ -24,6 +24,8 @@ class OrmCreateDbCommand(AbstractCommand):
             MySQL
         """
         for db_type in self.db_types:
+            print(db_type)
+            print(self.database_url)
             if db_type in self.database_url:
                 if db_type == "sqlite":
                     OrmCreateDbCommand.create_db_sqlite(self.database_url)
@@ -58,7 +60,8 @@ class OrmCreateDbCommand(AbstractCommand):
         )
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = connection.cursor()
-        cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
+        cursor.execute(
+            f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
         if cursor.fetchone():
             print(f"The database '{database}' already exists.")
         else:

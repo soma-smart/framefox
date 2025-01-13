@@ -1,5 +1,5 @@
 import os
-from terminal.common.class_name_manager import ClassNameManager
+from framefox.terminal.common.class_name_manager import ClassNameManager
 
 
 class ModelChecker:

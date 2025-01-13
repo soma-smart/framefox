@@ -53,7 +53,7 @@ class Settings:
 
     ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
 
-    def __init__(self, config_folder="../../../config"):
+    def __init__(self, config_folder="../config"):
 
         self.app_env = os.getenv("APP_ENV", "prod")
 
@@ -102,7 +102,8 @@ class Settings:
 
     @property
     def cache_dir(self):
-        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(
+            os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 

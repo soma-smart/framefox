@@ -2,13 +2,20 @@ from framefox.core.controller.abstract_controller import AbstractController
 from framefox.core.routing.decorator.route import Route
 from framefox.core.request.session.session import Session
 
+from sqlalchemy import text
+
 
 class TestController(AbstractController):
 
     @Route("/test", "get_test", methods=["GET"])
     async def get_test(self):
-        Session.set("test", "test")
-        return self.json({"ok": True})
+        external_session = self.entity_manager.external_connection(
+            "sqlite:///app.db")
+
+        query = text('SELECT * FROM user')
+        result = external_session.execute(query).mappings().all()
+
+        return self.json(users)
 
     @Route("/test2", "post_test", methods=["GET"])
     async def post_test(self):

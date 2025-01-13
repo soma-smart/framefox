@@ -2,6 +2,7 @@ from typing import Annotated
 import logging
 from injectable import injectable, autowired, Autowired
 from sqlmodel import create_engine, Session
+
 from framefox.core.config.settings import Settings
 
 
@@ -25,6 +26,20 @@ class EntityManager:
         self.engine = create_engine(settings.database_url, echo=True)
         self.logger = logging.getLogger(__name__)
         self.session = Session(self.engine)
+
+    def external_connection(self, database_url: str) -> Session:
+        """
+        Creates a new session with a different database URL.
+
+        Args:
+            database_url (str): The database URL to connect to.
+
+        Returns:
+            Session: A new SQLModel session.
+        """
+        new_engine = create_engine(database_url, echo=True)
+        new_session = Session(new_engine)
+        return new_session
 
     def commit(self) -> None:
         """
@@ -63,7 +78,7 @@ class EntityManager:
         Args:
             entity: The entity to refresh.
         """
-        self.refresh(entity)
+        self.session.refresh(entity)
 
     def exec_statement(self, statement) -> None:
         """
