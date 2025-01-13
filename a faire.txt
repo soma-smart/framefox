@@ -17,3 +17,5 @@ reunir tout le cache a un seul endroit
 -----------------
 commande terminal
 debug router - permet de voir la liste des route disponible
+
+S'occuper des certificats TLS pour éviter le problème de requete HTTPS alors que HTTP attendu
