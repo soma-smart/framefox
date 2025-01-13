@@ -175,6 +175,18 @@ Due to its ineritance, the repository implement many features such as :
 - update(entity): Update an existing entity.
 - delete(entity): Delete an entity.
 
+
+
+# External DB 
+
+```python
+external_session = self.entity_manager.external_connection(
+            "sqlite:///app.db")
+
+query = text('SELECT * FROM user')
+result = external_session.execute(query).mappings().all()
+```
+
 ### Use repository with controllers
 Thanks to repository and pydantic it is super easy to create a controller that refines routes. Here is an example of UserController that illustrate all features of UserRepository and the Pydantic data validation :
 ```python

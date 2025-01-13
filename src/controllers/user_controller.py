@@ -1,8 +1,10 @@
-from framefox.core.routing.decorator.route import Route
-from src.repository.user_repository import UserRepository
-from src.entity.user import User
-from framefox.core.controller.abstract_controller import AbstractController
 from typing import Optional, Dict
+
+from src.entity.user import User
+from src.repository.user_repository import UserRepository
+
+from framefox.core.routing.decorator.route import Route
+from framefox.core.controller.abstract_controller import AbstractController
 
 
 class UserController(AbstractController):
@@ -12,7 +14,7 @@ class UserController(AbstractController):
 
     @Route("/users", "get_users", methods=["GET"])
     async def get_users(self):
-        return UserRepository().find_all()
+        return UserRepository().get_user_by_email("test@test.fr")
 
     @Route("/users/search", "search_users", methods=["POST"])
     async def search_users(
