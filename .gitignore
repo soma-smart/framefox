@@ -5,3 +5,5 @@ var/
 venv/
 instance/
 .mypy_cache/
+
+*.egg-info/
