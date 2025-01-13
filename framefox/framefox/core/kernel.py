@@ -1,5 +1,4 @@
 from typing import Annotated
-
 from fastapi import FastAPI
 from injectable import autowired, Autowired, load_injection_container
 
@@ -13,9 +12,10 @@ from framefox.core.debug.handler.debug_handler import DebugHandler
 from framefox.core.debug.exception.debug_exception import DebugException
 
 
+INITIALIZED = False
+
+
 class Kernel:
-    setup_pp_debug()
-    load_injection_container()
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -23,10 +23,10 @@ class Kernel:
             cls._instance = super(Kernel, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    @autowired
-    def __init__(self, settings: Annotated[Settings, Autowired]):
-        self.settings = settings
-        if not hasattr(self, "initialized"):
+    def __init__(self):
+        self.settings = Settings()
+        global INITIALIZED
+        if not INITIALIZED:
             self.app = FastAPI(
                 debug=self.settings.debug_mode,
                 openapi_url=self.settings.openapi_url,
@@ -42,9 +42,12 @@ class Kernel:
             dispatcher.load_listeners()
 
             self.setup_app()
-            self.initialized = True
+
+            INITIALIZED = True
 
     def setup_app(self):
+        setup_pp_debug()
+        load_injection_container()
         middleware_manager = MiddlewareManager(self.app, self.settings)
         middleware_manager.setup_middlewares()
         router = Router(self.app)
