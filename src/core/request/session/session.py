@@ -1,7 +1,16 @@
-# python
+import uuid
+<<<<<<< Updated upstream:src/core/request/session/session.py
+=======
 
+from framefox.core.request.request_stack import RequestStack
+>>>>>>> Stashed changes:framefox/core/request/session/session.py
+
+<<<<<<< Updated upstream:src/core/request/session/session.py
 from src.core.request.request_stack import RequestStack
 import uuid
+=======
+from framefox.core.request.request_stack import RequestStack
+>>>>>>> Stashed changes:framefox/core/request/session/session.py
 
 
 class Session:

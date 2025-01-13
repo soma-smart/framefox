@@ -1,9 +1,26 @@
 import importlib
+<<<<<<< Updated upstream:src/core/routing/router.py
+<<<<<<< Updated upstream:src/core/routing/router.py
 
 from pathlib import Path
 from fastapi import FastAPI
 from src.core.controller.abstract_controller import AbstractController
 import inspect
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/routing/router.py
+from typing import Annotated
+from pathlib import Path
+from fastapi import FastAPI
+import inspect
+from injectable import autowired, Autowired
+>>>>>>> Stashed changes:framefox/core/routing/router.py
+
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.config.settings import Settings
+
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.config.settings import Settings
 
 
 class Router:

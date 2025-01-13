@@ -1,13 +1,23 @@
 from fastapi import APIRouter
-
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
+from injectable import Autowired, autowired
+from typing import Annotated
 
+<<<<<<< Updated upstream:src/core/controller/abstract_controller.py
+<<<<<<< Updated upstream:src/core/controller/abstract_controller.py
 from src.core.request.session.session import Session
 from src.core.templates.template_renderer import TemplateRenderer
 
 from injectable import Autowired, autowired
 from typing import Annotated
 from src.core.orm.entity_manager import EntityManager
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/controller/abstract_controller.py
+from framefox.core.request.session.session import Session
+from framefox.core.templates.template_renderer import TemplateRenderer
+from framefox.core.orm.entity_manager import EntityManager
+>>>>>>> Stashed changes:framefox/core/controller/abstract_controller.py
 
 
 class AbstractController:
@@ -31,7 +41,7 @@ class AbstractController:
         flash_messages.append({"message": message, "category": category})
         Session.set("flash_messages", flash_messages)
 
-    def render(self, template_name: str, context: dict):
+    def render(self, template_name: str, **context: dict):
         """Renders a view with context variables, including CSRF token."""
         if Session.has("flash_messages"):
             context["messages"] = Session.get("flash_messages")

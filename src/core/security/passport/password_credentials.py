@@ -1,4 +1,4 @@
-from passlib.context import CryptContext
+from framefox.core.security.password.password_hasher import PasswordHasher
 
 
 class PasswordCredentials:
@@ -19,8 +19,8 @@ class PasswordCredentials:
     """
 
     def __init__(self, raw_password: str):
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self.password_hasher = PasswordHasher()
         self.raw_password = raw_password
 
     def verify(self, hashed_password: str) -> bool:
-        return self.pwd_context.verify(self.raw_password, hashed_password)
+        return self.password_hasher.verify_password(self.raw_password, hashed_password)

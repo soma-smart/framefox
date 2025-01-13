@@ -3,8 +3,6 @@ import os
 import re
 from dotenv import load_dotenv
 from injectable import injectable
-from typing import Type, Any, Optional
-import importlib
 
 env_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path=env_path)
@@ -16,7 +14,8 @@ class Settings:
     Settings class for loading and managing application configuration.
 
     Attributes:
-        ENV_VAR_PATTERN (re.Pattern): Regular  expression pattern to match environment variables in the format ${VAR_NAME}.
+        ENV_VAR_PATTERN (re.Pattern): Regular  expression pattern to match environment
+                                    variables in the format ${VAR_NAME}.
         app_env (str): The application environment, default is 'prod'.
         config (dict): Dictionary to store the loaded configuration.
 

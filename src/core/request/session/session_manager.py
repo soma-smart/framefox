@@ -4,7 +4,15 @@ import os
 from typing import Dict, Optional, Annotated
 import logging
 from injectable import autowired, Autowired
+<<<<<<< Updated upstream:src/core/request/session/session_manager.py
+<<<<<<< Updated upstream:src/core/request/session/session_manager.py
 from src.core.config.settings import Settings
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/request/session/session_manager.py
+
+from framefox.core.config.settings import Settings
+>>>>>>> Stashed changes:framefox/core/request/session/session_manager.py
 
 
 class SessionManager:
@@ -76,7 +84,8 @@ class SessionManager:
         """Cleans up expired sessions"""
         sessions = self.load_sessions()
         current_time = datetime.now(timezone.utc).timestamp()
-        expired = [sid for sid, s in sessions.items() if s["expires_at"] < current_time]
+        expired = [sid for sid, s in sessions.items() if s["expires_at"]
+                   < current_time]
 
         if expired:
             for sid in expired:

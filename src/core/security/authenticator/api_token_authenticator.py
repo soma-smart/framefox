@@ -2,12 +2,29 @@ from typing import Optional
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+<<<<<<< Updated upstream:src/core/security/authenticator/api_token_authenticator.py
+<<<<<<< Updated upstream:src/core/security/authenticator/api_token_authenticator.py
 from src.core.security.passport.passport import Passport
 from src.core.security.passport.user_badge import UserBadge
 from src.entity.user import User
 from src.core.security.authenticator.abstract_authenticator import AbstractAuthenticator
 from src.core.security.authenticator.authenticator_interface import AuthenticatorInterface
 from src.core.request.session.session import Session
+=======
+from src.entity.user import User
+=======
+from src.entity.user import User
+>>>>>>> Stashed changes:framefox/core/security/authenticator/api_token_authenticator.py
+
+from framefox.core.security.passport.passport import Passport
+from framefox.core.security.authenticator.abstract_authenticator import (
+    AbstractAuthenticator,
+)
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
+from framefox.core.request.session.session import Session
+>>>>>>> Stashed changes:framefox/core/security/authenticator/api_token_authenticator.py
 
 
 class ApiTokenAuthenticator(AbstractAuthenticator, AuthenticatorInterface):

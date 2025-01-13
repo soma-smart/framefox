@@ -1,8 +1,18 @@
 from typing import Optional, List, Dict
 import logging
+<<<<<<< Updated upstream:src/core/security/passport/passport.py
+<<<<<<< Updated upstream:src/core/security/passport/passport.py
 from src.core.security.passport.user_badge import UserBadge
 from src.core.security.passport.password_credentials import PasswordCredentials
 from src.core.security.passport.csrf_token_badge import CsrfTokenBadge
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/security/passport/passport.py
+
+from framefox.core.security.passport.user_badge import UserBadge
+from framefox.core.security.passport.password_credentials import PasswordCredentials
+from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
+>>>>>>> Stashed changes:framefox/core/security/passport/passport.py
 
 from src.entity.user import User
 

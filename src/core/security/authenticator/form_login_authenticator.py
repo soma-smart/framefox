@@ -1,12 +1,29 @@
 from typing import Optional
 from fastapi import Request
 from fastapi.responses import RedirectResponse
+<<<<<<< Updated upstream:src/core/security/authenticator/form_login_authenticator.py
+<<<<<<< Updated upstream:src/core/security/authenticator/form_login_authenticator.py
 from src.core.security.passport.passport import Passport
 from src.core.security.passport.user_badge import UserBadge
 from src.core.security.passport.password_credentials import PasswordCredentials
 from src.core.security.passport.csrf_token_badge import CsrfTokenBadge
 from src.core.security.authenticator.abstract_authenticator import AbstractAuthenticator
 from src.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/security/authenticator/form_login_authenticator.py
+
+from framefox.core.security.passport.passport import Passport
+from framefox.core.security.passport.user_badge import UserBadge
+from framefox.core.security.passport.password_credentials import PasswordCredentials
+from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
+from framefox.core.security.authenticator.abstract_authenticator import (
+    AbstractAuthenticator,
+)
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
+>>>>>>> Stashed changes:framefox/core/security/authenticator/form_login_authenticator.py
 
 
 class FormLoginAuthenticator(AbstractAuthenticator, AuthenticatorInterface):

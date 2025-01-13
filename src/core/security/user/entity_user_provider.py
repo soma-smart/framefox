@@ -2,7 +2,15 @@ import importlib
 import logging
 from typing import Optional, Tuple, Any, Annotated
 from injectable import injectable, autowired, Autowired
+<<<<<<< Updated upstream:src/core/security/user/entity_user_provider.py
+<<<<<<< Updated upstream:src/core/security/user/entity_user_provider.py
 from src.core.config.settings import Settings
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/security/user/entity_user_provider.py
+
+from framefox.core.config.settings import Settings
+>>>>>>> Stashed changes:framefox/core/security/user/entity_user_provider.py
 
 
 @injectable
@@ -32,8 +40,15 @@ class EntityUserProvider:
         entity_class_path = provider_config.get("entity", {}).get("class")
         property_name = provider_config.get("entity", {}).get("property")
         if not entity_class_path or not property_name:
+<<<<<<< Updated upstream:src/core/security/user/entity_user_provider.py
             self.logger.error(f"Incomplete configuration for provider '{
                               provider_name}'.")
+=======
+            self.logger.error(
+                f"Incomplete configuration for provider '{
+                    provider_name}'."
+            )
+>>>>>>> Stashed changes:framefox/core/security/user/entity_user_provider.py
             return None
 
         try:
@@ -46,6 +61,13 @@ class EntityUserProvider:
             repository_instance = repository_class()
             return repository_instance, property_name
         except (ImportError, AttributeError) as e:
+<<<<<<< Updated upstream:src/core/security/user/entity_user_provider.py
             self.logger.error(f"Error loading repository for entity '{
                               entity_class_path}': {e}")
+=======
+            self.logger.error(
+                f"Error loading repository for entity '{
+                    entity_class_path}': {e}"
+            )
+>>>>>>> Stashed changes:framefox/core/security/user/entity_user_provider.py
             return None

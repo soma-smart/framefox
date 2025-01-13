@@ -2,7 +2,15 @@ from typing import Annotated
 import logging
 from injectable import injectable, autowired, Autowired
 from sqlmodel import create_engine, Session
+<<<<<<< Updated upstream:src/core/orm/entity_manager.py
+<<<<<<< Updated upstream:src/core/orm/entity_manager.py
 from src.core.config.settings import Settings
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/orm/entity_manager.py
+
+from framefox.core.config.settings import Settings
+>>>>>>> Stashed changes:framefox/core/orm/entity_manager.py
 
 
 @injectable

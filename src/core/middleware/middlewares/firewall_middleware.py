@@ -1,8 +1,17 @@
 import logging
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+<<<<<<< Updated upstream:src/core/middleware/middlewares/firewall_middleware.py
+<<<<<<< Updated upstream:src/core/middleware/middlewares/firewall_middleware.py
 from src.core.events.decorator.dispatch_event import DispatchEvent
 from src.core.security.handlers.firewall_handler import FirewallHandler
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/middleware/middlewares/firewall_middleware.py
+
+from framefox.core.events.decorator.dispatch_event import DispatchEvent
+from framefox.core.security.handlers.firewall_handler import FirewallHandler
+>>>>>>> Stashed changes:framefox/core/middleware/middlewares/firewall_middleware.py
 
 
 class FirewallMiddleware(BaseHTTPMiddleware):

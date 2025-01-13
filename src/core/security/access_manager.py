@@ -1,7 +1,16 @@
 from typing import List
 import re
+<<<<<<< Updated upstream:src/core/security/access_manager.py
+<<<<<<< Updated upstream:src/core/security/access_manager.py
 from src.core.config.settings import Settings
 from src.core.logging.logger import Logger
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/security/access_manager.py
+
+from framefox.core.config.settings import Settings
+from framefox.core.logging.logger import Logger
+>>>>>>> Stashed changes:framefox/core/security/access_manager.py
 
 
 class AccessManager:

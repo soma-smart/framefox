@@ -2,7 +2,15 @@ from abc import ABC
 from typing import Annotated, Type, TypeVar, List, Optional
 from sqlmodel import SQLModel, select, asc, desc
 from injectable import Autowired, autowired
+<<<<<<< Updated upstream:src/core/orm/abstract_repository.py
+<<<<<<< Updated upstream:src/core/orm/abstract_repository.py
 from src.core.orm.entity_manager import EntityManager
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/orm/abstract_repository.py
+
+from framefox.core.orm.entity_manager import EntityManager
+>>>>>>> Stashed changes:framefox/core/orm/abstract_repository.py
 
 T = TypeVar("T", bound=SQLModel)
 
@@ -64,9 +72,11 @@ class AbstractRepository(ABC):
         if order_by:
             for field, direction in order_by.items():
                 if direction.lower() == "asc":
-                    statement = statement.order_by(asc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        asc(getattr(self.model, field)))
                 elif direction.lower() == "desc":
-                    statement = statement.order_by(desc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        desc(getattr(self.model, field)))
 
         if limit is not None:
             statement = statement.limit(limit)

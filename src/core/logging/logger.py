@@ -1,7 +1,15 @@
 import logging
 import logging.config
 import os
+<<<<<<< Updated upstream:src/core/logging/logger.py
+<<<<<<< Updated upstream:src/core/logging/logger.py
 from src.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/logging/logger.py
+
+from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
+>>>>>>> Stashed changes:framefox/core/logging/logger.py
 
 
 class Logger:

@@ -1,22 +1,12 @@
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
-<<<<<<< Updated upstream:src/core/middleware/middlewares/session_middleware.py
-from src.core.request.request_stack import RequestStack
-from src.core.request.cookie_manager import CookieManager
-import json
-import os
-import uuid
-from datetime import datetime, timedelta, timezone
-from src.core.request.session.session_manager import SessionManager
-=======
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from framefox.core.request.session.session_manager import SessionManager
 from framefox.core.request.request_stack import RequestStack
 from framefox.core.request.cookie_manager import CookieManager
->>>>>>> Stashed changes:framefox/core/middleware/middlewares/session_middleware.py
 
 
 class SessionMiddleware(BaseHTTPMiddleware):

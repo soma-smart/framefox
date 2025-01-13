@@ -2,8 +2,16 @@ import logging
 from datetime import datetime, timedelta
 import jwt
 from injectable import Autowired, autowired
+<<<<<<< Updated upstream:src/core/security/token_manager.py
+<<<<<<< Updated upstream:src/core/security/token_manager.py
 from src.core.config.settings import Settings
+=======
+>>>>>>> Stashed changes:framefox/core/security/token_manager.py
+=======
+>>>>>>> Stashed changes:framefox/core/security/token_manager.py
 from typing import Annotated
+
+from framefox.core.config.settings import Settings
 
 
 class TokenManager:
@@ -29,7 +37,8 @@ class TokenManager:
     def decode_token(self, token: str) -> dict:
         try:
             payload = jwt.decode(
-                token, self.settings.cookie_secret_key, algorithms=[self.algorithm]
+                token, self.settings.cookie_secret_key, algorithms=[
+                    self.algorithm]
             )
             return payload
         except jwt.ExpiredSignatureError:

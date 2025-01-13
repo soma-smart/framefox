@@ -1,6 +1,8 @@
 import logging
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+<<<<<<< Updated upstream:src/core/middleware/middlewares/request_middleware.py
+<<<<<<< Updated upstream:src/core/middleware/middlewares/request_middleware.py
 from src.core.request.request_stack import RequestStack
 from src.core.events.decorator.dispatch_event import DispatchEvent
 import uuid
@@ -8,6 +10,22 @@ from src.core.request.cookie_manager import CookieManager
 from injectable import autowired, Autowired
 from typing import Annotated
 from src.core.config.settings import Settings
+=======
+from injectable import autowired, Autowired
+from typing import Annotated
+=======
+from injectable import autowired, Autowired
+from typing import Annotated
+>>>>>>> Stashed changes:framefox/core/middleware/middlewares/request_middleware.py
+
+from framefox.core.config.settings import Settings
+from framefox.core.request.request_stack import RequestStack
+from framefox.core.events.decorator.dispatch_event import DispatchEvent
+from framefox.core.request.cookie_manager import CookieManager
+<<<<<<< Updated upstream:src/core/middleware/middlewares/request_middleware.py
+>>>>>>> Stashed changes:framefox/core/middleware/middlewares/request_middleware.py
+=======
+>>>>>>> Stashed changes:framefox/core/middleware/middlewares/request_middleware.py
 
 
 class RequestMiddleware(BaseHTTPMiddleware):

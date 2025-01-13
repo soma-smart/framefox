@@ -1,10 +1,24 @@
 from injectable import autowired, Autowired
 from typing import Annotated
+<<<<<<< Updated upstream:src/core/middleware/middleware_manager.py
+<<<<<<< Updated upstream:src/core/middleware/middleware_manager.py
 from src.core.config.settings import Settings
 from src.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
 from src.core.middleware.middlewares.request_middleware import RequestMiddleware
 from src.core.middleware.middlewares.custom_cors_middleware import CustomCORSMiddleware
 from src.core.middleware.middlewares.session_middleware import SessionMiddleware
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/middleware/middleware_manager.py
+
+from framefox.core.config.settings import Settings
+from framefox.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
+from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
+from framefox.core.middleware.middlewares.custom_cors_middleware import (
+    CustomCORSMiddleware,
+)
+from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
+>>>>>>> Stashed changes:framefox/core/middleware/middleware_manager.py
 
 
 class MiddlewareManager:

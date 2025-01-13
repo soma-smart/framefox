@@ -1,7 +1,15 @@
 from typing import Annotated, Optional
 from fastapi.responses import Response
 from injectable import Autowired, autowired
+<<<<<<< Updated upstream:src/core/request/cookie_manager.py
+<<<<<<< Updated upstream:src/core/request/cookie_manager.py
 from src.core.config.settings import Settings
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/request/cookie_manager.py
+
+from framefox.core.config.settings import Settings
+>>>>>>> Stashed changes:framefox/core/request/cookie_manager.py
 
 
 @autowired

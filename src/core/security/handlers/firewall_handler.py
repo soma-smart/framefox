@@ -4,6 +4,8 @@ import inspect
 from typing import Dict, Optional, Type, Annotated
 from fastapi import Request
 from fastapi.responses import Response, HTMLResponse, JSONResponse, RedirectResponse
+<<<<<<< Updated upstream:src/core/security/handlers/firewall_handler.py
+<<<<<<< Updated upstream:src/core/security/handlers/firewall_handler.py
 from src.core.security.token_manager import TokenManager
 from src.core.request.csrf_token_manager import CsrfTokenManager
 from src.core.security.access_manager import AccessManager
@@ -18,6 +20,23 @@ from src.core.security.authenticator.authenticator_interface import (
 import importlib
 from src.core.request.session.session import Session
 from src.core.request.session.session_manager import SessionManager
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/security/handlers/firewall_handler.py
+import importlib
+
+from framefox.core.security.token_manager import TokenManager
+from framefox.core.request.csrf_token_manager import CsrfTokenManager
+from framefox.core.security.access_manager import AccessManager
+from framefox.core.templates.template_renderer import TemplateRenderer
+from framefox.core.config.settings import Settings
+from framefox.core.request.cookie_manager import CookieManager
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
+from framefox.core.request.session.session import Session
+from framefox.core.request.session.session_manager import SessionManager
+>>>>>>> Stashed changes:framefox/core/security/handlers/firewall_handler.py
 
 
 class FirewallHandler:
@@ -81,11 +100,14 @@ class FirewallHandler:
                 if request.method == "GET":
                     return await self.handle_get_request(authenticator, firewall_config)
                 elif request.method == "POST":
+                    if not await self.csrf_manager.validate_token(request):
+                        self.logger.error("CSRF validation failed.")
+                        return Response(content="Invalid CSRF token", status_code=400)
                     return await self.handle_post_request(
                         request, authenticator, firewall_config, firewall_name
                     )
 
-        return None
+        return await call_next(request)
 
     async def handle_get_request(
         self, authenticator: AuthenticatorInterface, firewall_config: Dict
@@ -122,10 +144,6 @@ class FirewallHandler:
             f"Handling a POST request for {
                           type(authenticator).__name__}."
         )
-
-        if not self.csrf_manager.validate_token(request):
-            self.logger.error("CSRF validation failed.")
-            return Response(content="Invalid CSRF token", status_code=400)
 
         passport = await authenticator.authenticate_request(request, firewall_name)
         if passport:

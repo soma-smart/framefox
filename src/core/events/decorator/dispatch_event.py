@@ -1,7 +1,13 @@
-# src/core/events/decorators/dispatch_event.py
-
 from functools import wraps
+<<<<<<< Updated upstream:src/core/events/decorator/dispatch_event.py
+<<<<<<< Updated upstream:src/core/events/decorator/dispatch_event.py
 from src.core.events.event_dispatcher import dispatcher
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/events/decorator/dispatch_event.py
+
+from framefox.core.events.event_dispatcher import dispatcher
+>>>>>>> Stashed changes:framefox/core/events/decorator/dispatch_event.py
 
 
 class DispatchEvent:

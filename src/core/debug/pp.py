@@ -1,4 +1,3 @@
-import os
 import io
 import inspect
 from rich.console import Console
@@ -6,7 +5,15 @@ from rich.pretty import Pretty
 from rich.panel import Panel
 from rich import box
 from rich.table import Table
+<<<<<<< Updated upstream:src/core/debug/pp.py
+<<<<<<< Updated upstream:src/core/debug/pp.py
 from src.core.debug.exception.debug_exception import DebugException
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/debug/pp.py
+
+from framefox.core.debug.exception.debug_exception import DebugException
+>>>>>>> Stashed changes:framefox/core/debug/pp.py
 
 
 def pp(*args, **kwargs):

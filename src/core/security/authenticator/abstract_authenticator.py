@@ -2,10 +2,21 @@ import logging
 from typing import Optional, Annotated
 from fastapi import Request, HTTPException
 from injectable import Autowired, autowired
+<<<<<<< Updated upstream:src/core/security/authenticator/abstract_authenticator.py
+<<<<<<< Updated upstream:src/core/security/authenticator/abstract_authenticator.py
 from src.core.config.settings import Settings
 from src.core.security.passport.passport import Passport
 from src.core.security.token_manager import TokenManager
 from src.core.security.user.entity_user_provider import EntityUserProvider
+=======
+=======
+>>>>>>> Stashed changes:framefox/core/security/authenticator/abstract_authenticator.py
+
+from framefox.core.config.settings import Settings
+from framefox.core.security.passport.passport import Passport
+from framefox.core.security.token_manager import TokenManager
+from framefox.core.security.user.entity_user_provider import EntityUserProvider
+>>>>>>> Stashed changes:framefox/core/security/authenticator/abstract_authenticator.py
 
 
 class AbstractAuthenticator:
@@ -29,10 +40,19 @@ class AbstractAuthenticator:
                 provider_info = self.entity_user_provider.get_repository_and_property(
                     firewall_name)
 
+<<<<<<< Updated upstream:src/core/security/authenticator/abstract_authenticator.py
                 passport.provider_info = {
                     "repository": provider_info[0],
                     "property": provider_info[1]
                 } if provider_info else None
+=======
+                passport.provider_info = (
+                    {"repository": provider_info[0],
+                        "property": provider_info[1]}
+                    if provider_info
+                    else None
+                )
+>>>>>>> Stashed changes:framefox/core/security/authenticator/abstract_authenticator.py
 
                 authenticated = await passport.authenticate_user()
                 if not authenticated:
