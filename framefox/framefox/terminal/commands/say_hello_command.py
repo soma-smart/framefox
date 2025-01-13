@@ -5,8 +5,8 @@ class SayHelloCommand(AbstractCommand):
     def __init__(self):
         super().__init__('say_hello')
 
-    def execute(self):
+    def execute(self, name: str):
         """
         Toto
         """
-        print("Hello there!")
+        print(f"Welcome {name}")
