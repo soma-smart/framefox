@@ -53,19 +53,19 @@ class Settings:
 
     ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
 
-    def __init__(self, config_folder="../config"):
+    def __init__(self, config_folder=None):
 
         self.app_env = os.getenv("APP_ENV", "prod")
-
+        self.config_path = os.getenv(
+            "CONFIG_PATH") or config_folder or "./config"
         self.config = {}
-        self.load_configs(config_folder)
+        self.load_configs(self.config_path)
 
-    def load_configs(self, config_folder):
-        config_path = os.path.join(os.path.dirname(__file__), config_folder)
+    def load_configs(self, config_path):
         if not os.path.exists(config_path):
             raise FileNotFoundError(
                 f"""Configuration file '{
-                    config_folder}' does not exist"""
+                    config_path}' does not exist"""
             )
 
         for filename in os.listdir(config_path):

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="framefox",
-    version="0.1.13",
+    version="0.1.15",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[

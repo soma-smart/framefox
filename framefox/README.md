@@ -13,7 +13,9 @@ try: framefox
 pip install twine wheel  
 python setup.py sdist bdist_wheel  
 twine upload --repository-url <https://test.pypi.org/legacy/> dist/*  
+twine upload --repository-url <https://test.pypi.org/legacy/> dist/* -u __token__ -p <votre_cle_api>
 
 ## Install from PyPi
   
 pip install --index-url <https://test.pypi.org/simple/> --extra-index-url <https://pypi.org/simple/> framefox  
+python3 -m pip install --index-url <https://test.pypi.org/simple/> --extra-index-url <https://pypi.org/simple/> framefox
