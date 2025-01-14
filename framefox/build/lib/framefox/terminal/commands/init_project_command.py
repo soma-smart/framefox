@@ -27,12 +27,51 @@ class InitProjectCommand(AbstractCommand):
         os.makedirs(os.path.join(project_path, "repository"))
         # Create templates directory
         os.makedirs(os.path.join(".", "templates"))
+        # Create config directory
+        os.makedirs(os.path.join(".", "config"))
         # Create usefull files
-        # .env, main.py, requirements.txt
-        # template: str, path: str, name: str, data: str, format: str = "py"
+        # main.py
         FileCreator().create_file(
             template="init_files/main.jinja2",
             path=".",
-            name="test_main",
+            name="main",
             data={},
+        )
+        # .env
+        FileCreator().create_file(
+            template="init_files/env.jinja2",
+            path=".",
+            name=".env",
+            data={},
+            format="env"
+        )
+        # requirements.txt
+        FileCreator().create_file(
+            template="init_files/requirements.jinja2",
+            path=".",
+            name="requirements.txt",
+            data={},
+            format="txt"
+        )
+        # yaml files
+        FileCreator().create_file(
+            template="init_files/application.jinja2",
+            path="./config",
+            name="application.yaml",
+            data={},
+            format="yaml"
+        )
+        FileCreator().create_file(
+            template="init_files/orm.jinja2",
+            path="./config",
+            name="orm.yaml",
+            data={},
+            format="yaml"
+        )
+        FileCreator().create_file(
+            template="init_files/security.jinja2",
+            path="./config",
+            name="security.yaml",
+            data={},
+            format="yaml"
         )

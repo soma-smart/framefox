@@ -1,0 +1,31 @@
+application:
+  env: "${APP_ENV}"
+  template_dir: "templates"
+  openapi_url: /openapi.json
+  redoc_url: /redoc
+
+  controllers:
+    dir: "src/controllers/"
+
+  cors:
+    allow_origins:
+      - "http://localhost"
+      - "http://localhost:8000"
+    allow_credentials: true
+    allow_methods:
+      - "*"
+    allow_headers:
+      - "*"
+
+  session:
+    name: "session_id"
+    file_path: var/session/sessions.json
+
+  cookie:
+    secret_key: "${COOKIE_SECRET_KEY}"
+    type: "filesystem"
+    max_age: 10
+    secure: true
+    http_only: true
+    same_site: "strict" # "strict", "lax", "none"
+    path: "/"
