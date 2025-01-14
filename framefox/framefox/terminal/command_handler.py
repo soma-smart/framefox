@@ -18,8 +18,6 @@ class CommandHandler:
     def load_commands(app: typer.Typer):
         to_ignore = [
             'abstract_command.py',
-            'orm_create_db_command.py',
-            'orm_migrate_db_command.py',
         ]
         # , commands_dir='../framefox/terminal/commands'
         commands_dir = pkg_resources.files(framefox.terminal.commands)
