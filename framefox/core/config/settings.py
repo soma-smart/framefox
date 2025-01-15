@@ -2,6 +2,7 @@ import yaml
 import os
 import re
 from dotenv import load_dotenv
+from pathlib import Path
 
 env_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path=env_path)
@@ -52,12 +53,11 @@ class Settings:
     def __init__(self):
 
         self.app_env = os.getenv("APP_ENV", "prod")
-
         self.config = {}
-        self.load_configs("../../../config")
+        self.load_configs("./config")
 
     def load_configs(self, config_folder):
-        config_path = os.path.join(os.path.dirname(__file__), config_folder)
+        config_path = Path(config_folder).resolve()
         if not os.path.exists(config_path):
             raise FileNotFoundError(
                 f"""Configuration file '{
