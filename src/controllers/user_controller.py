@@ -14,7 +14,7 @@ class UserController(AbstractController):
 
     @Route("/users", "get_users", methods=["GET"])
     async def get_users(self):
-        return UserRepository().get_user_by_email("test@test.fr")
+        return UserRepository().find_all()
 
     @Route("/users/search", "search_users", methods=["POST"])
     async def search_users(
