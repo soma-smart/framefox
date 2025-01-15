@@ -1,0 +1,10 @@
+from framefox.core.routing.decorator.route import Route
+from framefox.core.controller.abstract_controller import AbstractController
+
+
+class {{ controller_class_name }}(AbstractController):
+    @Route("/{{ controller_class_name }}_greet", "hello_world", methods=["GET"])
+    async def hello_world(self):
+        my_var = "my_var"
+        return self.render("{{ view_name }}", {"test":my_var})
+{% raw %}{% endraw %}
