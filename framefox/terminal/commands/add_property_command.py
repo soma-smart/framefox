@@ -2,6 +2,7 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.printer import Printer
 
 
 class AddPropertyCommand(AbstractCommand):
@@ -23,10 +24,10 @@ class AddPropertyCommand(AbstractCommand):
             optional (str): Whether the property is optional.
         """
         if not ClassNameManager.is_snake_case(name):
-            print("Invalid name. Must be in snake_case.")
+            Printer().print_msg("Invalid name. Must be in snake_case.", theme='error')
             return
         if not ModelChecker().check_entity_and_repository(name):
-            print("\033[91mFailed to create controller.\033[0m")
+            Printer().print_msg("Failed to create controller.", theme='error')
             return
         try:
             file_path = self.entity_folder + '/' + name + '.py'
@@ -36,9 +37,9 @@ class AddPropertyCommand(AbstractCommand):
                 property_type=property_type,
                 optional=optional
             )
-            print("Property added successfully.")
+            Printer().print_msg("Property added successfully.", theme='success')
         except FileNotFoundError:
-            print(f"Entity {name} not found")
+            Printer().print_msg("Entity not found.", theme='error')
 
     def modify_entity(self, file_path: str, property_name: str, property_type: str, optional: str):
         if not self.check_property_type(property_type):
@@ -78,16 +79,18 @@ class AddPropertyCommand(AbstractCommand):
 
     def check_property_type(self, property_type: str):
         if property_type not in self.property_types:
-            print(
-                "\033[91mInvalid property type. Must be one of the valid Python types.\033[0m")
+            Printer().print_msg(
+                "Invalid property type. Must be one of the valid Python types.", theme='error'
+            )
             return False
         return True
 
     @staticmethod
     def check_optional(optional: str):
         if optional not in ['yes', 'no']:
-            print(
-                "\033[91mInvalid optional value type. Must be one yes or no.\033[0m")
+            Printer().print_msg(
+                "Invalid optional value type. Must be one yes or no.", theme='error'
+            )
             return False
         return True
 
