@@ -23,9 +23,9 @@ class CommandHandler:
         commands_dir = pkg_resources.files(framefox.terminal.commands)
         for filename in sorted(os.listdir(commands_dir)):
             if filename.endswith('_command.py') and filename not in to_ignore:
-                if not self.project_init and (filename == 'init_project_command.py' or filename == 'hello_world_command.py'):
+                if not self.project_init and (filename == 'init_command.py' or filename == 'hello_world_command.py'):
                     self.load_unique_command(app, filename)
-                elif self.project_init and filename != 'init_project_command.py' and filename != 'hello_world_command.py':
+                elif self.project_init and filename != 'init_command.py' and filename != 'hello_world_command.py':
                     self.load_unique_command(app, filename)
 
     def load_unique_command(self, app: typer.Typer, filename: str):
