@@ -17,18 +17,20 @@ class CommandHandler:
         if self.project_init:
             to_ignore = [
                 'abstract_command.py',
-                'orm_create_db_command.py',
-                'orm_migrate_db_command.py',
+                'add_property_command.py',
+                'unsupported_command.py',
             ]
         else:
             to_ignore = [
                 'abstract_command.py',
+                'add_property_command.py',
+                'unsupported_command.py',
                 'orm_create_db_command.py',
                 'orm_migrate_db_command.py',
             ]
         # , commands_dir='../framefox/terminal/commands'
         commands_dir = pkg_resources.files(framefox.terminal.commands)
-        for filename in os.listdir(commands_dir):
+        for filename in sorted(os.listdir(commands_dir)):
             if filename.endswith('_command.py') and filename not in to_ignore:
                 module_name = filename[:-3]
                 # Import the module and register the command

@@ -1,5 +1,3 @@
-from typing import Annotated
-from injectable import autowired, Autowired
 import os
 import ast
 import importlib.util
@@ -9,11 +7,13 @@ from sqlmodel import create_engine
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 from framefox.core.config.settings import Settings
+from framefox.core.di.service_container import ServiceContainer
 
 
 class OrmMigrateDbCommand(AbstractCommand):
-    @autowired
-    def __init__(self, settings: Annotated[Settings, Autowired]):
+    def __init__(self):
+        container = ServiceContainer()
+        settings = container.get(Settings)
         super().__init__("orm_migrate_db")
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"

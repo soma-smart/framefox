@@ -1,5 +1,3 @@
-from typing import Annotated
-from injectable import autowired, Autowired
 from sqlmodel import create_engine, SQLModel
 import pymysql
 import psycopg2
@@ -7,11 +5,13 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.core.config.settings import Settings
+from framefox.core.di.service_container import ServiceContainer
 
 
 class OrmCreateDbCommand(AbstractCommand):
-    @autowired
-    def __init__(self, settings: Annotated[Settings, Autowired]):
+    def __init__(self):
+        container = ServiceContainer()
+        settings = container.get(Settings)
         super().__init__("orm_create_db")
         self.db_types = ["sqlite", "postgresql", "mysql"]
         self.database_url = settings.database_url

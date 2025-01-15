@@ -1,11 +1,15 @@
-from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
 from typing import Optional, Dict
 from src.repository.{{ repository_file_name }} import {{ repository_class_name }}
 from src.entity.{{ entity_file_name }} import {{ entity_class_name }}
+from framefox.core.orm.entity_manager import EntityManager
 
 
 class {{ controller_class_name }}(AbstractController):
+    def __init__(self, entityManager: EntityManager):
+        self.entity_manager = entityManager
+
     @Route("/{{ entity_name }}", "read_all", methods=["GET"])
     async def read_all(self):
         return {{ repository_class_name }}().find_all()
