@@ -9,7 +9,7 @@ from framefox.core.config.settings import Settings
 
 class OrmCreateDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("orm_create_db")
+        super().__init__("orm_create_database")
         settings = Settings()
         self.db_types = ["sqlite", "postgresql", "mysql"]
         self.database_url = settings.database_url

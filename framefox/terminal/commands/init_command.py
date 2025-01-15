@@ -3,19 +3,19 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.file_creator import FileCreator
 
 
-class InitProjectCommand(AbstractCommand):
+class InitCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('init_project')
+        super().__init__('init')
 
     def execute(self):
         """
-        Initializes a new project
+        Initializes a new Framefox project
         """
         if os.path.exists("src"):
             print("Project already exists")
             return
         else:
-            InitProjectCommand.create_empty_project()
+            InitCommand.create_empty_project()
             print("Project created successfully")
 
     @staticmethod
@@ -52,6 +52,14 @@ class InitProjectCommand(AbstractCommand):
             name="requirements.txt",
             data={},
             format="txt"
+        )
+        # base.html
+        FileCreator().create_file(
+            template="init_files/base.jinja2",
+            path="./templates",
+            name="base.html",
+            data={},
+            format="html"
         )
         # yaml files
         FileCreator().create_file(

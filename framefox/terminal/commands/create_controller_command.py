@@ -22,11 +22,12 @@ class CreateControllerCommand(AbstractCommand):
             print("\033[91mInvalid name. Must be in snake_case.\033[0m")
             return
 
-        class_name = f"{name}Controller"
+        class_name = f"{ClassNameManager.snake_to_pascal(name)}Controller"
         view_name = f"{name}.html"
 
         data_controller = {
             "controller_class_name": class_name,
+            "controller_file_name": name,
             "view_name": view_name,
             "name": name,
         }
