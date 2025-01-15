@@ -5,6 +5,7 @@ import sys
 
 from pathlib import Path
 from typing import Type, Any, Dict, get_type_hints, List, Optional
+from abc import ABC
 
 
 class ServiceContainer:
@@ -32,28 +33,42 @@ class ServiceContainer:
         core_path = Path(__file__).resolve().parent.parent
         src_path = Path(__file__).resolve().parent.parent.parent.parent / "src"
 
+        excluded_directories = ['entity', 'entities', 'Entity']
+        excluded_modules = ['src.entity',
+                            'src.entities', 'framefox.core.entity']
+
         paths_to_scan = [core_path, src_path]
         for base_path in paths_to_scan:
-            for root, _, files in os.walk(core_path):
+            for root, _, files in os.walk(base_path):
+                root_path = Path(root)
+
+                # Vérifier si un des dossiers parents est dans la liste d'exclusion
+                if any(excluded_dir.lower() in part.lower()
+                       for part in root_path.parts
+                       for excluded_dir in excluded_directories):
+                    continue
+
                 for file in files:
                     if file.endswith(".py") and file not in ["service_container.py", "__init__.py"]:
-                        module_path = Path(root) / file
-                        module_name = self._module_name_from_path(
-                            module_path, core_path)
+                        module_path = root_path / file
                         try:
+                            module_name = (
+                                self._module_name_from_path(
+                                    module_path, core_path)
+                                if base_path == core_path
+                                else f"src.{module_path.relative_to(src_path).with_suffix('').as_posix().replace('/', '.')}"
+                            )
+
+                            # Vérifier si le module est exclu
+                            if any(module_name.startswith(excluded) for excluded in excluded_modules):
+                                continue
+
                             module = importlib.import_module(module_name)
                             for attr_name in dir(module):
                                 attr = getattr(module, attr_name)
                                 if inspect.isclass(attr) and not inspect.isabstract(attr):
                                     if self._is_service_class(attr):
                                         self.register(attr)
-                        except NameError as e:
-                            if "Scope" in str(e):
-                                print(f"Ignoring module {
-                                      module_name} (Scope error).")
-                                continue
-                            else:
-                                raise e
                         except Exception as e:
                             print(f"Error importing module {module_name}: {e}")
 
@@ -63,9 +78,18 @@ class ServiceContainer:
 
     def _is_service_class(self, cls: Type[Any]) -> bool:
 
-        if cls.__module__ == 'builtins' or cls in (str, int, float, bool, list, dict, set, tuple):
-            print(f"Excluding primitive type {cls.__name__}")
+        if (cls.__module__ == 'builtins' or
+            cls in (str, int, float, bool, list, dict, set, tuple, ABC) or
+                cls.__name__ in ('str', 'int', 'float', 'bool', 'list', 'dict', 'set', 'tuple', 'ABC')):
             return False
+        if (cls.__module__.startswith('src.entity.') or
+                cls.__module__.startswith('framefox.core.entity.')):
+            return False
+        if hasattr(cls, '__module__'):
+
+            if cls.__module__ in {'builtins', 'typing', 'abc', 'list'}:
+
+                return False
 
         excluded_modules = {
             'typing',
@@ -79,7 +103,11 @@ class ServiceContainer:
             'jinja2',
             'sqlalchemy',
             'pydantic',
-            'passlib'
+            'passlib',
+            'abc',
+            'logging',
+            '_abc',
+            'list'
         }
 
         if hasattr(cls, '__module__'):
@@ -113,7 +141,7 @@ class ServiceContainer:
             return self.services[service_cls]
         problematic_classes = {
             "FastAPI",
-            "Panel", "Pretty", "Table"
+            "Panel", "Pretty", "Table", "Built-in", "abc"
         }
         if service_cls.__name__ in problematic_classes:
             return None
@@ -177,13 +205,26 @@ class ServiceContainer:
         print(f"Service with name '{class_name}' not found.")
         return None
 
-    def print_services(self) -> None:
-        if not self.services:
-            print("No services registered.")
-            return
-        print("Registered services:")
-        for cls in self.services:
-            print(f"- {cls.__name__}")
+    def print_services(self):
+        print("\nServiceContainer Statistics:")
+        # print(f"Container instance: #{self._instance_counter}")
+        print(f"Total registered services: {len(self.services)}")
+        print("\nRegistered services:")
+
+        for service_class in self.services:
+            service_instance = self.services[service_class]
+            try:
+                source_file = inspect.getfile(service_class)
+                module_name = service_class.__module__
+            except Exception:
+                source_file = "Built-in"
+                module_name = "Built-in"
+
+            print(f"- {service_class.__name__}")
+            print(f"  Module: {module_name}")
+            print(f"  Source: {source_file}")
+            print(f"  Instance ID: {id(service_instance)}")
+            print()
 
     def get_by_tag(self, tag: str) -> list:
         return self._tags.get(tag, [])

@@ -7,14 +7,12 @@ from sqlmodel import create_engine
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 from framefox.core.config.settings import Settings
-from framefox.core.di.service_container import ServiceContainer
 
 
 class OrmMigrateDbCommand(AbstractCommand):
     def __init__(self):
-        container = ServiceContainer()
-        settings = container.get(Settings)
         super().__init__("orm_migrate_db")
+        settings = Settings()
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"
         self.base_model = "AbstractEntity"

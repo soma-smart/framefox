@@ -5,8 +5,6 @@ from framefox.core.security.passport.password_credentials import PasswordCredent
 from framefox.core.security.password.password_hasher import PasswordHasher
 from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
 
-from src.entity.user import User
-
 
 class Passport:
     """
@@ -30,7 +28,7 @@ class Passport:
         self.user_badge = user_badge
         self.password_credentials = password_credentials
         self.csrf_token_badge = csrf_token_badge,
-        self.user: Optional[User] = None
+        self.user = None
         self.roles: List[str] = []
         self.provider_info = provider_info
         self.logger = logging.getLogger("PASSPORT")

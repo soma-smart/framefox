@@ -14,30 +14,40 @@ class CommandHandler:
         app.command(name=command_instance.name)(command_instance.execute)
 
     def load_commands(self, app: typer.Typer):
-        if self.project_init:
-            to_ignore = [
-                'abstract_command.py',
-                'add_property_command.py',
-                'unsupported_command.py',
-            ]
-        else:
-            to_ignore = [
-                'abstract_command.py',
-                'add_property_command.py',
-                'unsupported_command.py',
-                'orm_create_db_command.py',
-                'orm_migrate_db_command.py',
-            ]
+        # if self.project_init:
+        #     to_ignore = [
+        #         'abstract_command.py',
+        #         'add_property_command.py',
+        #         'unsupported_command.py',
+        #     ]
+        # else:
+        #     to_ignore = [
+        #         'abstract_command.py',
+        #         'add_property_command.py',
+        #         'unsupported_command.py',
+        #         'orm_create_db_command.py',
+        #         'orm_migrate_db_command.py',
+        #     ]
+        to_ignore = [
+            'abstract_command.py',
+            'add_property_command.py',
+            'unsupported_command.py',
+        ]
         # , commands_dir='../framefox/terminal/commands'
         commands_dir = pkg_resources.files(framefox.terminal.commands)
         for filename in sorted(os.listdir(commands_dir)):
             if filename.endswith('_command.py') and filename not in to_ignore:
-                module_name = filename[:-3]
-                # Import the module and register the command
-                module = __import__(f'framefox.terminal.commands.{
-                                    module_name}', fromlist=[module_name])
-                class_name = ''.join(word.capitalize()
-                                     for word in module_name.split('_'))
-                command_class = getattr(module, class_name)
-                command_instance = command_class()
-                CommandHandler.register_command(app, command_instance)
+                if not self.project_init and (filename == 'init_project_command.py' or filename == 'hello_world_command.py'):
+                    self.load_unique_command(app, filename)
+                elif self.project_init and filename != 'init_project_command.py' and filename != 'hello_world_command.py':
+                    self.load_unique_command(app, filename)
+
+    def load_unique_command(self, app: typer.Typer, filename: str):
+        module_name = filename[:-3]
+        module = __import__(f'framefox.terminal.commands.{
+                            module_name}', fromlist=[module_name])
+        class_name = ''.join(word.capitalize()
+                             for word in module_name.split('_'))
+        command_class = getattr(module, class_name)
+        command_instance = command_class()
+        CommandHandler.register_command(app, command_instance)
