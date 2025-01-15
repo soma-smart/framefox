@@ -1,13 +1,19 @@
-import click
+# import click
+from rich.prompt import Prompt
 
 
 class InputManager:
     @staticmethod
     def input_with_option(prompt, default=None):
+        # if default:
+        #     user_input = click.prompt(prompt, default=default)
+        # else:
+        #     user_input = input(f"{prompt}: ")
+        # return user_input
         if default:
-            user_input = click.prompt(prompt, default=default)
+            user_input = Prompt.ask(prompt, default=default)
         else:
-            user_input = input(f"{prompt}: ")
+            user_input = Prompt.ask(prompt)
         return user_input
 
     @staticmethod

@@ -14,20 +14,6 @@ class CommandHandler:
         app.command(name=command_instance.name)(command_instance.execute)
 
     def load_commands(self, app: typer.Typer):
-        # if self.project_init:
-        #     to_ignore = [
-        #         'abstract_command.py',
-        #         'add_property_command.py',
-        #         'unsupported_command.py',
-        #     ]
-        # else:
-        #     to_ignore = [
-        #         'abstract_command.py',
-        #         'add_property_command.py',
-        #         'unsupported_command.py',
-        #         'orm_create_db_command.py',
-        #         'orm_migrate_db_command.py',
-        #     ]
         to_ignore = [
             'abstract_command.py',
             'add_property_command.py',

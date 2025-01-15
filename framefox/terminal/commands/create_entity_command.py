@@ -25,16 +25,19 @@ class CreateEntityCommand(AbstractCommand):
             name (str): The name of the entity to be created in snake case.
         """
         if not ClassNameManager.is_snake_case(name):
-            print("Invalid name. Must be in snake_case.")
+            self.printer.print_msg(
+                "Invalid name. Must be in snake_case.", theme="error")
             return
 
         does_entity_exist = ModelChecker().check_entity_and_repository(name)
         if not does_entity_exist:
             self.create_entity(name)
             self.create_repository(name)
-            print("Entity and repository created successfully.")
+            self.printer.print_msg(
+                "Entity and repository created successfully.", theme="success"
+            )
         else:
-            print("Entity already exists.")
+            self.printer.print_msg("Entity already exists.", theme="warning")
         signature = inspect.signature(self.add_property_command.execute)
         param_list = [param.name for param in signature.parameters.values()]
         self.request_n_add_property_to_entity(name, param_list)
@@ -65,8 +68,9 @@ class CreateEntityCommand(AbstractCommand):
 
     def request_n_add_property_to_entity(self, name: str, param_list: list):
         while True:
-            print(
-                "Do you want to add a property to the entity? If yes, enter its name. Otherwise, press enter."
+            self.printer.print_msg(
+                "Do you want to add a property to the entity? If yes, enter its name. Otherwise, press enter.",
+                theme="normal",
             )
             property_name = InputManager.wait_input("property_name")
             if property_name == '':
