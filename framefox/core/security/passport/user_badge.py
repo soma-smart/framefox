@@ -1,7 +1,5 @@
 from typing import Optional
 
-from src.entity.user import User
-
 
 class UserBadge:
     """
@@ -19,8 +17,9 @@ class UserBadge:
         self.user_identifier = user_identifier
         self.user_identifier_property = user_identifier_property
 
-    async def get_user(self, repository) -> Optional[User]:
-        user = repository.find_by({self.user_identifier_property: self.user_identifier})
+    async def get_user(self, repository):
+        user = repository.find_by(
+            {self.user_identifier_property: self.user_identifier})
         if user:
             return user[0]
         return None

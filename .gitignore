@@ -7,3 +7,6 @@ instance/
 .mypy_cache/
 
 *.egg-info/
+build/
+dist/
+publish_lib.sh
