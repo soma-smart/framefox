@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="framefox",
-    version="0.1.23",
+    version="0.1.26",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -10,7 +10,6 @@ setup(
         "fastapi==0.115.6",
         "uvicorn==0.32.1",
         "starlette==0.41.3",
-        "injectable==4.0.1",
         "sqlmodel==0.0.22",
         "python-dotenv==1.0.1",
         "pyYAML==6.0.2",
@@ -24,7 +23,7 @@ setup(
         "bcrypt==4.0.1",
         "python-multipart==0.0.20",
         "pymysql==1.1.1",
-        "psycopg2==2.9.10",
+        "psycopg2-binary==2.9.10",
     ],
     entry_points={
         "console_scripts": [
