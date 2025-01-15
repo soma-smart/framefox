@@ -4,6 +4,8 @@ from framefox.core.orm.entity_manager import EntityManager
 
 
 class LoginController(AbstractController):
+    def __init__(self, entityManager: EntityManager):
+        self.entity_manager = entityManager
 
     @Route("/login", "login", methods=["GET", "POST"])
     async def login(self):
