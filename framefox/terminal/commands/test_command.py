@@ -3,7 +3,7 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 
 class TestCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('test')
+        super().__init__('test:test')
 
     def execute(self):
         """

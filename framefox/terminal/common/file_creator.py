@@ -22,7 +22,7 @@ class FileCreator:
             format (str): The file format (default is "py").
 
         Returns:
-            None
+            file_path (str): The path of the created file.
         """
         # Load the template from a file
         env = Environment(loader=FileSystemLoader(self.template_path))
@@ -40,3 +40,5 @@ class FileCreator:
             output_file = f"{path}/{name}"
         with open(output_file, "w") as file:
             file.write(code)
+
+        return output_file

@@ -1,11 +1,9 @@
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.add_property_command import AddPropertyCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
-from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
-
-import inspect
+from framefox.terminal.common.entity_property_manager import EntityPropertyManager
+from framefox.terminal.common.input_manager import InputManager
 
 
 class CreateEntityCommand(AbstractCommand):
@@ -15,43 +13,62 @@ class CreateEntityCommand(AbstractCommand):
         self.repository_template = r"repository_template.jinja2"
         self.entity_path = r"src/entity"
         self.repository_path = r"src/repository"
-        self.add_property_command = AddPropertyCommand()
+        self.entity_property_manager = EntityPropertyManager()
 
-    def execute(self, name: str):
+    def execute(self, name: str = None):
         """
         Create the entity and the associated repository and ask for properties to add to the entity.
 
         Args:
-            name (str): The name of the entity to be created in snake case.
+            name (str, optional): The name of the entity in snake_case. Defaults to None.
         """
+        if name is None:
+            name = InputManager().wait_input("Entity name")
+            if name == '':
+                return
         if not ClassNameManager.is_snake_case(name):
             self.printer.print_msg(
-                "Invalid name. Must be in snake_case.", theme="error")
+                "Invalid name. Must be in snake_case.",
+                theme="error",
+                linebefore=True,
+                newline=True
+            )
             return
 
         does_entity_exist = ModelChecker().check_entity_and_repository(name)
         if not does_entity_exist:
-            self.create_entity(name)
-            self.create_repository(name)
+            entity_path = self.create_entity(name)
+            repository_path = self.create_repository(name)
             self.printer.print_msg(
-                "Entity and repository created successfully.", theme="success"
+                f"Entity created successfully: {entity_path}",
+                theme="success",
+                linebefore=True,
+            )
+            self.printer.print_msg(
+                f"Repository created successfully: {repository_path}",
+                theme="success",
+                newline=True,
             )
         else:
-            self.printer.print_msg("Entity already exists.", theme="warning")
-        signature = inspect.signature(self.add_property_command.execute)
-        param_list = [param.name for param in signature.parameters.values()]
-        self.request_n_add_property_to_entity(name, param_list)
+            self.printer.print_msg(
+                "Entity already exists. You can add properties to the entity.",
+                theme="warning",
+                linebefore=True,
+                newline=True,
+            )
+        self.request_n_add_property_to_entity(name)
 
     def create_entity(self, name: str):
         data = {
             "class_name": CreateEntityCommand.create_entity_class_name(name),
         }
-        FileCreator().create_file(
+        file_path = FileCreator().create_file(
             self.entity_template,
             self.entity_path,
             name,
             data
         )
+        return file_path
 
     def create_repository(self, name: str):
         data = {
@@ -59,38 +76,24 @@ class CreateEntityCommand(AbstractCommand):
             "repository_class_name": CreateEntityCommand.create_repository_class_name(name),
             "snake_case_name": name,
         }
-        FileCreator().create_file(
+        file_path = FileCreator().create_file(
             self.repository_template,
             self.repository_path,
             f"{name}_repository",
             data
         )
+        return file_path
 
-    def request_n_add_property_to_entity(self, name: str, param_list: list):
+    def request_n_add_property_to_entity(self, name: str):
         while True:
             self.printer.print_msg(
-                "Do you want to add a property to the entity? If yes, enter its name. Otherwise, press enter.",
-                theme="normal",
+                "Enter the properties you want to add to the entity. Leave empty now to stop.",
+                theme="bold_normal",
             )
-            property_name = InputManager.wait_input("property_name")
-            if property_name == '':
+            request = self.entity_property_manager.request_and_add_property(
+                name)
+            if not request:
                 break
-            param_dict = {
-                'name': name,
-                'property_name': property_name}
-            for param in param_list:
-                if param == 'name' or param == 'property_name':
-                    continue
-                choices = self.add_property_command.get_choices(param)
-                default = self.add_property_command.get_default(param)
-                input_value = InputManager.wait_input(
-                    input_type=param,
-                    choices=choices,
-                    default=default
-                )
-                param_dict[param] = input_value
-            self.add_property_command.execute(**param_dict)
-            print("\n")
 
     @staticmethod
     def create_repository_class_name(name: str) -> str:

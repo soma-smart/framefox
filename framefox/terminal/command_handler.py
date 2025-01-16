@@ -16,7 +16,6 @@ class CommandHandler:
     def load_commands(self, app: typer.Typer):
         to_ignore = [
             'abstract_command.py',
-            'add_property_command.py',
             'unsupported_command.py',
         ]
         # , commands_dir='../framefox/terminal/commands'

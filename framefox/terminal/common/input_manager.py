@@ -1,28 +1,36 @@
-# import click
 from rich.prompt import Prompt
 
 
 class InputManager:
     @staticmethod
     def input_with_option(prompt, default=None):
-        # if default:
-        #     user_input = click.prompt(prompt, default=default)
-        # else:
-        #     user_input = input(f"{prompt}: ")
-        # return user_input
         if default:
-            user_input = Prompt.ask(prompt, default=default)
+            user_input = Prompt.ask(prompt, default=str(default))
         else:
             user_input = Prompt.ask(prompt)
         return user_input
 
     @staticmethod
-    def wait_input(input_type: str, choices: list = None, quit_on_space: bool = False, default: str = None):
-        user_input = InputManager.input_with_option(input_type, default)
+    def wait_input(prompt: str, choices: list = None, default: str = None):
+        """
+        Waits for user input and validates it against provided choices.
+
+        Parameters:
+        prompt (str): The prompt to display to the user.
+        choices (list, optional): A list of valid choices for the input. Defaults to None.
+        default (str, optional): The default value to use if no input is provided. Defaults to None.
+
+        Returns:
+        str: The validated user input.
+        """
+        user_input = InputManager.input_with_option(prompt, default)
         if user_input == "?" and choices:
             print("Choices:", choices)
-            return InputManager.wait_input(input_type, choices)
+            return InputManager.wait_input(prompt, choices, default)
+        elif user_input == "?" and not choices:
+            print("No choices available.")
+            return InputManager.wait_input(prompt, choices, default)
         if choices and user_input not in choices:
-            print(f"Invalid {input_type}.")
-            return InputManager.wait_input(input_type, choices)
+            print(f"Invalid {prompt.lower()}.")
+            return InputManager.wait_input(prompt, choices, default)
         return user_input
