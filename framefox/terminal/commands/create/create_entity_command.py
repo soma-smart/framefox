@@ -8,7 +8,7 @@ from framefox.terminal.common.input_manager import InputManager
 
 class CreateEntityCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('create_entity')
+        super().__init__('entity')
         self.entity_template = r"entity_template.jinja2"
         self.repository_template = r"repository_template.jinja2"
         self.entity_path = r"src/entity"

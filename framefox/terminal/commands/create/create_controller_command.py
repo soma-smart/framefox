@@ -5,7 +5,7 @@ from framefox.terminal.common.file_creator import FileCreator
 
 class CreateControllerCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('create_controller')
+        super().__init__('controller')
         self.controller_path = r'src/controllers'
         self.view_path = r'templates'
         self.controller_template = r'controller_template.jinja2'
