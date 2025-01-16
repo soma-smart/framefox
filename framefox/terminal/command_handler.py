@@ -8,6 +8,13 @@ import framefox.terminal.commands
 class CommandHandler:
     def __init__(self):
         self.project_init = os.path.exists("src")
+        self.priority_list = [
+            'hello',
+            'init',
+            'create_entity',
+            'create',
+            'orm',
+        ]
 
     @staticmethod
     def register_command(app: typer.Typer, command_instance):
@@ -20,7 +27,8 @@ class CommandHandler:
         ]
         # , commands_dir='../framefox/terminal/commands'
         commands_dir = pkg_resources.files(framefox.terminal.commands)
-        for filename in sorted(os.listdir(commands_dir)):
+        # for filename in sorted(os.listdir(commands_dir)):
+        for filename in self.custom_sort(os.listdir(commands_dir)):
             if filename.endswith('_command.py') and filename not in to_ignore:
                 if not self.project_init and (filename == 'init_command.py' or filename == 'hello_world_command.py'):
                     self.load_unique_command(app, filename)
@@ -36,3 +44,22 @@ class CommandHandler:
         command_class = getattr(module, class_name)
         command_instance = command_class()
         CommandHandler.register_command(app, command_instance)
+
+    def custom_sort(self, command_files):
+        """
+        Sorts command files according to the priority list.
+        Commands starting with prefixes in the priority list are sorted according to the order of this list.
+        Other commands are sorted alphabetically and added at the end.
+        """
+        def sort_key(filename):
+            # Extract the command name without the '_command.py' suffix
+            base_name = filename[:-11]
+
+            for index, prefix in enumerate(self.priority_list):
+                if base_name.startswith(prefix):
+                    # Return a tuple with the priority index and the rest of the name for secondary alphabetical sorting
+                    return (index, base_name)
+
+            # If no prefix matches, assign a high priority and sort alphabetically
+            return (len(self.priority_list), base_name)
+        return sorted(command_files, key=sort_key)
