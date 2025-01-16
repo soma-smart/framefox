@@ -11,7 +11,7 @@ from framefox.core.config.settings import Settings
 
 class OrmMigrateDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("orm:migrate_database")
+        super().__init__("orm:migrate:database")
         settings = Settings()
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"
