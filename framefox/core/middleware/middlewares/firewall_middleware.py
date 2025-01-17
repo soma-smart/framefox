@@ -14,20 +14,16 @@ class FirewallMiddleware(BaseHTTPMiddleware):
         self.logger = logging.getLogger("FIREWALL")
         container = ServiceContainer()
         self.handler = container.get(FirewallHandler)
-        # self.handler = FirewallHandler(
-        #     logger=self.logger)
 
     @DispatchEvent(event_before="auth.auth_attempt", event_after="auth.auth_result")
     async def dispatch(self, request: Request, call_next):
-        """
-        Main middleware to handle authentication and authorization.
-        """
         if self.settings.access_control:
             auth_response = await self.handler.handle_authentication(request, call_next)
-            if auth_response:
+            if auth_response and auth_response.status_code != 200:
                 return auth_response
-            return await self.handler.handle_authorization(request, call_next)
+            auth_result = await self.handler.handle_authorization(request, call_next)
+            return auth_result
         else:
-            self.logger.info("No access control rules defined.")
+            self.logger.warning("Access control is disabled!")
 
         return await call_next(request)

@@ -3,12 +3,6 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from framefox.core.request.request_stack import RequestStack
 from framefox.core.events.decorator.dispatch_event import DispatchEvent
-import uuid
-from framefox.core.request.cookie_manager import CookieManager
-
-from typing import Annotated
-from framefox.core.config.settings import Settings
-from framefox.core.di.service_container import ServiceContainer
 
 
 class RequestMiddleware(BaseHTTPMiddleware):
@@ -32,8 +26,6 @@ class RequestMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
         self.logger = logging.getLogger("REQUEST")
-        self.cookie_manager = CookieManager()
-        self.settings = ServiceContainer().get(Settings)
 
     @DispatchEvent(
         event_before="kernel.request_received", event_after="kernel.finish_request"
@@ -44,9 +36,5 @@ class RequestMiddleware(BaseHTTPMiddleware):
             f"Incoming request: {
                 request.method} {request.url.path}"
         )
-        # session_id = request.state.session_id or str(uuid.uuid4())
         response = await call_next(request)
-        # self.cookie_manager.set_cookie(
-        #     response, "session_id", session_id, self.settings.cookie_max_age, ...)
-        # self.logger.info(f"Client: {request.client}")
         return response
