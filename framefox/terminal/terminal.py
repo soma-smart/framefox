@@ -16,14 +16,24 @@ class Terminal:
             help="Create various resources like entities or CRUD operations.")
         orm_app = typer.Typer(
             help="ORM operations like creating or migrating databases.")
+        database_app = typer.Typer(
+            help="Database operations like creating or migrating databases.")
+        server_app = typer.Typer(
+            help="Server operations like starting or stopping the server.")
+
         typers = {
             "main": app,
             "create": create_app,
-            "orm": orm_app
+            "orm": orm_app,
+            "orm database": database_app,
+            "server": server_app,
         }
 
         app.add_typer(create_app, name="create")
         app.add_typer(orm_app, name="orm")
+        app.add_typer(server_app, name="server")
+
+        orm_app.add_typer(database_app, name="database")
 
         command_handler = CommandHandler()
         command_handler.load_commands(typers)
@@ -38,6 +48,7 @@ class Terminal:
         @app.callback(invoke_without_command=True)
         def main(ctx: typer.Context):
             if ctx.invoked_subcommand is None:
+                print("Framefox - the awesome python framework!")
                 print(ctx.get_help())
                 # Initialiser la console Rich
                 console = Console()

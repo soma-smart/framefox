@@ -61,13 +61,13 @@ class CreateControllerCommand(AbstractCommand):
             format="html"
         )
 
-        self.printer.print_msg(
-            f"Controller successfully: {controller_path}",
-            theme="success",
+        self.printer.print_full_text(
+            f"[bold green]Controller created successfuly:[/bold green] {
+                controller_path}",
             linebefore=True,
         )
-        self.printer.print_msg(
-            f"View successfully: {view_path}",
-            theme="success",
+        self.printer.print_full_text(
+            f"[bold green]View created successfully:[/bold green] {
+                view_path}",
             newline=True,
         )

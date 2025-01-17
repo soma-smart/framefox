@@ -77,14 +77,9 @@ class CreateCrudCommand(AbstractCommand):
                 data
             )
 
-        self.printer.print_msg(
-            f"Controller '{class_name}' created: {file_path}",
-            theme="success",
-            linebefore=True,
-            newline=True
-        )
-
         self.printer.print_full_text(
-            "You can now continue by using [bold green]framefox orm create_datbase[/bold green]",
+            f"[bold green]Controller '{
+                class_name}' created:[/bold green] {file_path}",
+            linebefore=True,
             newline=True,
         )

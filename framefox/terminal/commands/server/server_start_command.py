@@ -4,7 +4,7 @@ import subprocess
 
 class ServerStartCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('server_start')
+        super().__init__('start')
 
     def execute(self, port: int = 8000):
         """

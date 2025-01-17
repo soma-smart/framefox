@@ -11,7 +11,7 @@ from framefox.core.config.settings import Settings
 
 class OrmMigrateDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("migrate_database")
+        super().__init__("migrate")
         settings = Settings()
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"
@@ -42,6 +42,10 @@ class OrmMigrateDbCommand(AbstractCommand):
                 "Tables created successfully.",
                 theme="success",
                 linebefore=True,
+                newline=True,
+            )
+            self.printer.print_full_text(
+                "You should try [bold green]framefox create crud[/bold green]",
                 newline=True,
             )
         except Exception as e:

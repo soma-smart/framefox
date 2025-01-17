@@ -9,7 +9,7 @@ from framefox.core.config.settings import Settings
 
 class OrmCreateDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("create_database")
+        super().__init__("create")
         settings = Settings()
         self.db_types = ["sqlite", "postgresql", "mysql"]
         self.database_url = settings.database_url
@@ -118,6 +118,6 @@ class OrmCreateDbCommand(AbstractCommand):
 
     def command_suggestion(self):
         self.printer.print_full_text(
-            "You can now continue by using [bold green]framefox orm migrate_database[/bold green]",
+            "Now you can migrate your database by using [bold green]framefox orm database migrate[/bold green]",
             newline=True,
         )

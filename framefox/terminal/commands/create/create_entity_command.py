@@ -39,14 +39,14 @@ class CreateEntityCommand(AbstractCommand):
         if not does_entity_exist:
             entity_path = self.create_entity(name)
             repository_path = self.create_repository(name)
-            self.printer.print_msg(
-                f"Entity created successfully: {entity_path}",
-                theme="success",
+            self.printer.print_full_text(
+                f"[bold green]Entity created successfully:[/bold green] {
+                    entity_path}",
                 linebefore=True,
             )
-            self.printer.print_msg(
-                f"Repository created successfully: {repository_path}",
-                theme="success",
+            self.printer.print_full_text(
+                f"[bold green]Repository created successfully:[/bold green] {
+                    repository_path}",
                 newline=True,
             )
         else:
@@ -59,7 +59,7 @@ class CreateEntityCommand(AbstractCommand):
         self.request_n_add_property_to_entity(name)
 
         self.printer.print_full_text(
-            "You can now continue by using [bold green]framefox create crud[/bold green]",
+            "You can now continue by using [bold green]framefox orm database create[/bold green]",
             newline=True,
         )
 

@@ -28,7 +28,7 @@ class InitCommand(AbstractCommand):
                 newline=True,
             )
             self.printer.print_full_text(
-                "You can now continue by using [bold green]framefox create entity[/bold green]",
+                "You can now continue by using [bold green]framefox create controller[/bold green]",
                 newline=True,
             )
 
