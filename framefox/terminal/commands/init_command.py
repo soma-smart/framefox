@@ -12,11 +12,21 @@ class InitCommand(AbstractCommand):
         Initializes a new Framefox project
         """
         if os.path.exists("src"):
-            print("Project already exists")
+            self.printer.print_msg(
+                "If you want to create a new project, delete the existing project first",
+                theme="warning",
+                linebefore=True,
+                newline=True,
+            )
             return
         else:
             InitCommand.create_empty_project()
-            print("Project created successfully")
+            self.printer.print_msg(
+                "Project created successfully",
+                theme="success",
+                linebefore=True,
+                newline=True,
+            )
 
     @staticmethod
     def create_empty_project():
