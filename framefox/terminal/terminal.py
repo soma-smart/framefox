@@ -48,10 +48,12 @@ class Terminal:
         @app.callback(invoke_without_command=True)
         def main(ctx: typer.Context):
             if ctx.invoked_subcommand is None:
-                print("Framefox - the awesome python framework!")
-                print(ctx.get_help())
                 # Initialiser la console Rich
                 console = Console()
+                print("")
+                console.print(
+                    ":fox_face: Framefox - Swift, smart, and a bit foxy", style="bold orange3")
+                print(ctx.get_help())
 
                 # Créer un tableau pour les commandes
                 table = Table(show_header=True, header_style="bold blue")
