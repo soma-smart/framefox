@@ -8,6 +8,7 @@ class Printer:
             "error": "bold red",
             "warning": "bold yellow",
             "normal": "white",
+            "bold_normal": "bold white",
             "success": "bold green",
         }
         self.custom_theme = Theme(self.theme_dict)
@@ -17,7 +18,7 @@ class Printer:
         """Uses the Rich print method."""
         self.console.print(*args, **kwargs)
 
-    def print_msg(self, message: str, theme: str = "normal", newline: bool = False):
+    def print_msg(self, message: str, theme: str = "normal", newline: bool = False, linebefore: bool = False):
         """
         Prints a message to the console with a specified theme and optional newline.
 
@@ -25,14 +26,17 @@ class Printer:
             message (str): The message to be printed.
             theme (str, optional): The theme of the message. Can be "normal", "error", or "warning". Defaults to "normal".
             newline (bool, optional): Whether to print a newline after the message. Defaults to True.
+            linebefore (bool, optional): Whether to print a newline before the message. Defaults to False.
         """
+        if linebefore:
+            self.console.print()
         if theme not in self.theme_dict.keys():
             theme = "normal"
         self.console.print(f"[{theme}]{message}[/{theme}]")
         if newline:
             self.console.print()
 
-    def print_full_text(self, text: str, newline: bool = False):
+    def print_full_text(self, text: str, newline: bool = False, linebefore: bool = False):
         """
         Prints the given text with optional styling and a newline.
 
@@ -45,7 +49,11 @@ class Printer:
                         [error] and [warning] for styling.
             newline (bool): If True, a newline is printed after the text.
                             Defaults to True.
+            linebefore (bool): If True, a newline is printed before the text.
+                               Defaults to False.
         """
+        if linebefore:
+            self.console.print()
         styled_text = text.replace("[error]", "[error]").replace("[/error]", "[/error]") \
                           .replace("[warning]", "[warning]").replace("[/warning]", "[/warning]")
         self.console.print(styled_text)

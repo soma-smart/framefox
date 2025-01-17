@@ -1,9 +1,6 @@
-import typer
+from framefox.terminal.terminal import Terminal
 
-from framefox.terminal.command_handler import CommandHandler
-
-app = typer.Typer()
-CommandHandler().load_commands(app)
+app = Terminal.run()
 
 if __name__ == "__main__":
     app()

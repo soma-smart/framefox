@@ -22,7 +22,7 @@ class AbstractController:
         flash_messages.append({"message": message, "category": category})
         Session.set("flash_messages", flash_messages)
 
-    def render(self, template_name: str, **context: dict):
+    def render(self, template_name: str, context: dict):
         template_renderer = self.service_container.get_by_name(
             "TemplateRenderer")
         """Renders a view with context variables, including CSRF token."""

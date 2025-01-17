@@ -9,7 +9,7 @@ from framefox.core.config.settings import Settings
 
 class OrmCreateDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("orm_create_database")
+        super().__init__("create_database")
         settings = Settings()
         self.db_types = ["sqlite", "postgresql", "mysql"]
         self.database_url = settings.database_url
@@ -22,36 +22,47 @@ class OrmCreateDbCommand(AbstractCommand):
             MySQL
         """
         for db_type in self.db_types:
-            print(db_type)
-            print(self.database_url)
+            self.printer.print_msg(
+                db_type,
+                theme="normal",
+                linebefore=True,
+            )
+            self.printer.print_msg(
+                self.database_url,
+                theme="bold_normal",
+            )
             if db_type in self.database_url:
                 if db_type == "sqlite":
-                    OrmCreateDbCommand.create_db_sqlite(self.database_url)
+                    self.create_db_sqlite(self.database_url)
                 elif db_type == "postgresql":
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
                     )
-                    OrmCreateDbCommand.create_db_postgresql(
+                    self.create_db_postgresql(
                         user, password, host, port, database
                     )
                 elif db_type == "mysql":
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
                     )
-                    OrmCreateDbCommand.create_db_mysql(
+                    self.create_db_mysql(
                         user, password, host, port, database
                     )
                 break
 
-    @staticmethod
-    def create_db_sqlite(database_url: str):
+    def create_db_sqlite(self, database_url: str):
         engine = create_engine(database_url, echo=True)
         SQLModel.metadata.create_all(engine)
-        print("Database created successfully.")
+        self.printer.print_msg(
+            "Database created successfully.",
+            theme="success",
+            linebefore=True,
+            newline=True,
+        )
+        self.command_suggestion()
 
-    @staticmethod
     def create_db_postgresql(
-        user: str, password: str, host: str, port: int, database: str
+        self, user: str, password: str, host: str, port: int, database: str
     ):
         connection = psycopg2.connect(
             user=user, password=password, host=host, port=port, database=database
@@ -61,15 +72,25 @@ class OrmCreateDbCommand(AbstractCommand):
         cursor.execute(
             f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
         if cursor.fetchone():
-            print(f"The database '{database}' already exists.")
+            self.printer.print_msg(
+                f"The database '{database}' already exists.",
+                theme="warning",
+                linebefore=True,
+                newline=True,
+            )
         else:
             cursor.execute(f"CREATE DATABASE {database};")
-            print(f"Database '{database}' created successfully.")
+            self.printer.print_msg(
+                f"Database '{database}' created successfully.",
+                theme="success",
+                linebefore=True,
+                newline=True,
+            )
         cursor.close()
         connection.close()
+        self.command_suggestion()
 
-    @staticmethod
-    def create_db_mysql(user: str, password: str, host: str, port: int, database: str):
+    def create_db_mysql(self, user: str, password: str, host: str, port: int, database: str):
         connection = pymysql.connect(
             user=user, password=password, host=host, port=port, database=database
         )
@@ -77,9 +98,26 @@ class OrmCreateDbCommand(AbstractCommand):
         cursor.execute(f"SHOW DATABASES LIKE '{database}';")
         result = cursor.fetchone()
         if result:
-            print(f"The database '{database}' already exists.")
+            self.printer.print_msg(
+                f"The database '{database}' already exists.",
+                theme="warning",
+                linebefore=True,
+                newline=True,
+            )
         else:
             cursor.execute(f"CREATE DATABASE {database};")
-            print(f"Database '{database}' created successfully.")
+            self.printer.print_msg(
+                f"Database '{database}' created successfully.",
+                theme="success",
+                linebefore=True,
+                newline=True,
+            )
         cursor.close()
         connection.close()
+        self.command_suggestion()
+
+    def command_suggestion(self):
+        self.printer.print_full_text(
+            "You can now continue by using [bold green]framefox orm migrate_database[/bold green]",
+            newline=True,
+        )
