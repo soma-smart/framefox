@@ -38,12 +38,13 @@ class Terminal:
         @app.callback(invoke_without_command=True)
         def main(ctx: typer.Context):
             if ctx.invoked_subcommand is None:
+                print(ctx.get_help())
                 # Initialiser la console Rich
                 console = Console()
 
                 # Créer un tableau pour les commandes
                 table = Table(show_header=True, header_style="bold blue")
-                table.add_column("Commande", style="blue", no_wrap=True)
+                table.add_column("Commands", style="blue", no_wrap=True)
                 table.add_column("Description", style="white")
 
                 # Parcourir les typers et ajouter les commandes au tableau
