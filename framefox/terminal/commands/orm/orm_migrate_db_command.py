@@ -22,7 +22,12 @@ class OrmMigrateDbCommand(AbstractCommand):
         Create tables in the database.
         """
         if not OrmMigrateDbCommand.database_exists(self.database_url):
-            print("The database doesnt exist. Create it firts.")
+            self.printer.print_msg(
+                "The database does not exist. Please create it first.",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
             return
         try:
             OrmMigrateDbCommand.create_sqlmodel_tables_from_directory(
@@ -30,10 +35,23 @@ class OrmMigrateDbCommand(AbstractCommand):
                 database_url=self.database_url,
                 base_model=self.base_model,
             )
-            print("Tables created successfully.")
+            self.printer.print_msg(
+                "Tables created successfully.",
+                theme="success",
+                linebefore=True,
+                newline=True,
+            )
         except Exception as e:
-            print(f"An error occurred: {e}")
-            print("The database does not exist. Please create it first.")
+            self.printer.print_msg(
+                f"An error occurred: {e}",
+                theme="error",
+                linebefore=True,
+            )
+            self.printer.print_msg(
+                "The database does not exist. Please create it first.",
+                theme="error",
+                newline=True,
+            )
 
     @staticmethod
     def find_sqlmodel_classes_in_file(filepath, base_model):
