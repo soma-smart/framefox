@@ -45,16 +45,20 @@ class EntityPropertyManager(object):
         return entity_name, property_name, property_type, property_constraint, optional
 
     def build_property(self, property_name: str, property_type: str, property_constraint: tuple, optional: str):
-        property_prompt = f"    {property_name}: {property_type}"
+        property_header = f"    {property_name}: {property_type}"
+        property_core = ""
+        property_parameters = ""
         if property_constraint or optional == 'yes':
+            property_core = " = Field("
+            params = []
             if property_constraint:
-                property_prompt += f" = Field({property_constraint[0]}={
-                    property_constraint[1]}"
+                params.append(f"{property_constraint[0]}={
+                    property_constraint[1]}")
             if optional == 'yes':
-                property_prompt += ", nullable=True"
-            property_prompt += ")"
-        property_prompt += "\n"
-        return property_prompt
+                params.append("nullable=True")
+            property_parameters = ", ".join(params)
+        final_property = property_header + property_core + property_parameters + ")" + "\n"
+        return final_property
 
     def insert_property(self, entity_name: str, property_prompt: str):
         file_path = self.entity_folder + '/' + entity_name + '.py'
