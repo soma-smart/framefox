@@ -28,7 +28,7 @@ class CreateCrudCommand(AbstractCommand):
             return
         print("What type of controller do you want to create?")
         user_input = InputManager.wait_input(
-            input_type='controller type',
+            prompt='controller type',
             choices=self.input_choices
         )
         entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
