@@ -4,7 +4,6 @@ from framefox.terminal.common.printer import Printer
 class AbstractCommand:
     def __init__(self, name):
         self.name = name
-        self.category = "main"
         self.printer = Printer()
 
     def execute(self, *args):
