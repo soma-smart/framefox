@@ -83,3 +83,8 @@ class CreateCrudCommand(AbstractCommand):
             linebefore=True,
             newline=True
         )
+
+        self.printer.print_full_text(
+            "You can now continue by using [bold green]framefox orm create_datbase[/bold green]",
+            newline=True,
+        )

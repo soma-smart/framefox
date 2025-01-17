@@ -58,6 +58,11 @@ class CreateEntityCommand(AbstractCommand):
             )
         self.request_n_add_property_to_entity(name)
 
+        self.printer.print_full_text(
+            "You can now continue by using [bold green]framefox create crud[/bold green]",
+            newline=True,
+        )
+
     def create_entity(self, name: str):
         data = {
             "class_name": CreateEntityCommand.create_entity_class_name(name),

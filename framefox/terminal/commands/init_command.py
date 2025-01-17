@@ -27,6 +27,10 @@ class InitCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
+            self.printer.print_full_text(
+                "You can now continue by using [bold green]framefox create entity[/bold green]",
+                newline=True,
+            )
 
     @staticmethod
     def create_empty_project():

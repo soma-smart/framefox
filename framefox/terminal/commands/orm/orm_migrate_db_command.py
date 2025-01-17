@@ -26,6 +26,9 @@ class OrmMigrateDbCommand(AbstractCommand):
                 "The database does not exist. Please create it first.",
                 theme="error",
                 linebefore=True,
+            )
+            self.printer.print_full_text(
+                "You should try [bold green]framefox orm create_database[/bold green]",
                 newline=True,
             )
             return
