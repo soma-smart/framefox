@@ -9,7 +9,7 @@ class EntityPropertyManager(object):
         self.entity_folder = r"src/entity"
         self.printer = Printer()
         self.property_types = ['str', 'int', 'float',
-                               'bool', 'list', 'tuple', 'dict', 'datetime']
+                               'bool', 'list', 'tuple', 'dict', 'date']
 
     def request_and_add_property(self, entity_name=None):
         request = self.request_property(entity_name)
@@ -105,6 +105,8 @@ class EntityPropertyManager(object):
             prompt="Property type [?]",
             choices=self.property_types
         )
+        if property_type == 'date':
+            property_type = 'datetime'
         return property_type
 
     def request_optionnal(self):
