@@ -7,10 +7,13 @@ from framefox.core.di.service_container import ServiceContainer
 
 class AbstractController:
 
-    def __init__(
-        self,
-    ):
-        self.service_container = ServiceContainer()
+    # def __init__(
+    #     self,
+    # ):
+    #     self.service_container = ServiceContainer()
+
+    def _get_container(self):
+        return ServiceContainer()
 
     def redirect(self, location: str, code: int = 302):
         """Redirects to a specific URL."""
@@ -23,7 +26,7 @@ class AbstractController:
         Session.set("flash_messages", flash_messages)
 
     def render(self, template_name: str, context: dict):
-        template_renderer = self.service_container.get_by_name(
+        template_renderer = self._get_container().get_by_name(
             "TemplateRenderer")
         """Renders a view with context variables, including CSRF token."""
         if Session.has("flash_messages"):
