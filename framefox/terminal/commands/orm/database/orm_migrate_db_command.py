@@ -44,6 +44,10 @@ class OrmMigrateDbCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
+            self.printer.print_full_text(
+                "You should try [bold green]framefox create crud[/bold green]",
+                newline=True,
+            )
         except Exception as e:
             self.printer.print_msg(
                 f"An error occurred: {e}",

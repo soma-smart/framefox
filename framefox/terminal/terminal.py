@@ -48,6 +48,7 @@ class Terminal:
         @app.callback(invoke_without_command=True)
         def main(ctx: typer.Context):
             if ctx.invoked_subcommand is None:
+                print("Framefox - the awesome python framework!")
                 print(ctx.get_help())
                 # Initialiser la console Rich
                 console = Console()

@@ -23,9 +23,9 @@ class EntityPropertyManager(object):
             optional
         )
         file_path = self.insert_property(entity_name, property_prompt)
-        self.printer.print_msg(
-            f"Property {property_name} added to {file_path}.",
-            theme="success",
+        self.printer.print_full_text(
+            f"[bold green]Property {
+                property_name} added to[/bold green] {file_path}",
             linebefore=True,
             newline=True,
         )
