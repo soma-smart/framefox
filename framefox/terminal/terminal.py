@@ -84,6 +84,7 @@ class Terminal:
                 # # Afficher le panel
                 # console.print(panel)
                 console.print(table)
+                print("")
 
                 raise typer.Exit()
         return app

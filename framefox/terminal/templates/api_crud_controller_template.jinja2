@@ -14,9 +14,9 @@ class {{ controller_class_name }}(AbstractController):
     async def read_all(self):
         return {{ repository_class_name }}().find_all()
 
-    @Route("/{{ entity_name }}/find", "read", methods=["POST"])
-    async def read(self, keys_formula: {{ entity_class_name }}.generate_find_model()):
-        return {{ repository_class_name }}().find(keys_formula.dict())
+    @Route("/{{ entity_name }}/{id}", "read", methods=["GET"])
+    async def read(self, id: int):
+        return {{ repository_class_name }}().find({"id": id})
 
     @Route("/{{ entity_name }}", "create", methods=["POST"])
     async def create(self, {{ entity_name }}: {{ entity_class_name }}.generate_create_model()):

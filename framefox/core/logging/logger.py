@@ -2,6 +2,7 @@ import logging
 import logging.config
 import os
 from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
+from pathlib import Path
 
 
 class Logger:
@@ -10,7 +11,8 @@ class Logger:
         self.logger = logging.getLogger("Application")
 
     def configure_logging(self):
-        log_dir = os.path.join(os.path.dirname(__file__), "../../../var/log")
+        # log_dir = os.path.join(os.path.dirname(__file__), "../../../var/log")
+        log_dir = Path('./var/log').resolve()
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "app.log")
 
