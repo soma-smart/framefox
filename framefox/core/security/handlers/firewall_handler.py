@@ -156,8 +156,15 @@ class FirewallHandler:
         required_roles = self.access_manager.get_required_roles(
             request.url.path)
         print("ici")
+        print(required_roles)
+        print(not required_roles)
         if not required_roles:
-            return await call_next(request)
+            response = await call_next(request)
+            print(response)
+            self.logger.debug(f"Response from call_next: Status={
+                              response.status_code}")
+            return response
+
         token = Session.get("access_token")
         if token:
             payload = self.token_manager.decode_token(token)
