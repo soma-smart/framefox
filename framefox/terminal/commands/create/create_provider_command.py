@@ -53,6 +53,10 @@ class CreateProviderCommand(AbstractCommand):
             name,
             "    email: str\n"
         )
+        self.entity_property_manager.insert_property(
+            name,
+            "    roles: List[str] = Field(default_factory=lambda: ['ROLE_USER'], sa_column=Column(JSON))\n"
+        )
 
         self.printer.print_full_text(
             f"[bold green]Provider entity created successfully:[/bold green] {

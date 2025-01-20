@@ -39,6 +39,8 @@ class InitCommand(AbstractCommand):
         os.makedirs(os.path.join(project_path, "controllers"))
         os.makedirs(os.path.join(project_path, "entity"))
         os.makedirs(os.path.join(project_path, "repository"))
+        os.makedirs(os.path.join(project_path, "security"))
+        os.makedirs(os.path.join("src/security", "authenticator"))
         # Create templates directory
         os.makedirs(os.path.join(".", "templates"))
         # Create config directory

@@ -17,7 +17,7 @@ class SecurityConfigurator:
         new_provider = {
             f'app_{provider_name}_provider': {
                 'entity': {
-                    'class': f'src.entity.{provider_name}.f{provider_class}',
+                    'class': f'src.entity.{provider_name}.{provider_class}',
                     'property': 'email'
                 }
             }
@@ -59,9 +59,6 @@ class SecurityConfigurator:
             }
         }
 
-        # Ajouter le nouveau provider à la configuration existante
-        if 'firewall' not in config:
-            config['firewall'] = {}
         # Ajouter le nouveau provider à la configuration existante
         if 'security' not in config:
             config['security'] = {}

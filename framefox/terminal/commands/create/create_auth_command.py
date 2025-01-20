@@ -9,8 +9,12 @@ from framefox.terminal.common.security_configurator import SecurityConfigurator
 class CreateAuthCommand(AbstractCommand):
     def __init__(self):
         super().__init__('auth')
-        self.login_form_template_name = r"form_login_authenticator.jinja2"
+        self.login_form_template_name = r"security/form_login_authenticator_template.jinja2"
+        self.login_controller_template_name = r"security/login_controller_template.jinja2"
+        self.login_view_template_name = r"security/login_view_template.jinja2"
         self.login_form_path = r"src/security/authenticator"
+        self.controller_path = r"src/controllers"
+        self.view_path = r"templates"
 
     def execute(self):
         self.printer.print_msg(
@@ -93,6 +97,32 @@ class CreateAuthCommand(AbstractCommand):
             )
             return
 
+        # Login controller
+        file_path = FileCreator().create_file(
+            self.login_controller_template_name,
+            self.controller_path,
+            name=r"login_controller",
+            data={}
+        )
+        self.printer.print_full_text(
+            f"[bold green]Login controller created successfully:[/bold green] {
+                file_path}",
+            linebefore=True,
+        )
+
+        # Login view
+        file_path = FileCreator().create_file(
+            self.login_view_template_name,
+            self.view_path,
+            name=r"login.html",
+            data={},
+            format="html",
+        )
+        self.printer.print_full_text(
+            f"[bold green]Login view created successfully:[/bold green] {
+                file_path}",
+        )
+
         # Create src/security/form_login_authenticator.py
         file_path = FileCreator().create_file(
             self.login_form_template_name,
@@ -103,8 +133,6 @@ class CreateAuthCommand(AbstractCommand):
         self.printer.print_full_text(
             f"[bold green]Form login authenticator created successfully:[/bold green] {
                 file_path}",
-            linebefore=True,
-            newline=True,
         )
         # Ajouter les modifications dans security.yaml
         provider_class = ClassNameManager.snake_to_pascal(provider_name)
@@ -113,6 +141,5 @@ class CreateAuthCommand(AbstractCommand):
 
         self.printer.print_full_text(
             "[bold green]Access control to[/bold green] config/security.yaml [bold green]to manage your app and permissions[/bold green]",
-            linebefore=True,
             newline=True,
         )
