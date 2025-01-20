@@ -6,6 +6,8 @@ from framefox.core.security.handlers.firewall_handler import FirewallHandler
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 
+from fastapi.responses import JSONResponse, Response
+
 
 class FirewallMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, settings: Settings):
@@ -14,19 +16,33 @@ class FirewallMiddleware(BaseHTTPMiddleware):
         self.logger = logging.getLogger("FIREWALL")
         container = ServiceContainer()
         self.handler = container.get(FirewallHandler)
-        # self.handler = FirewallHandler(
-        #     logger=self.logger)
 
     @DispatchEvent(event_before="auth.auth_attempt", event_after="auth.auth_result")
     async def dispatch(self, request: Request, call_next):
-        """
-        Main middleware to handle authentication and authorization.
-        """
         if self.settings.access_control:
-            auth_response = await self.handler.handle_authentication(request, call_next)
-            if auth_response:
-                return auth_response
-            return await self.handler.handle_authorization(request, call_next)
+            # Authentification
+            auth_routes = []
+            for firewall in self.settings.firewalls.values():
+                if "login_path" in firewall:
+                    auth_routes.append(firewall["login_path"])
+
+            # Vérifier si c'est une route d'authentification
+            is_auth_route = any(request.url.path.startswith(route)
+                                for route in auth_routes)
+            if is_auth_route:
+                auth_response = await self.handler.handle_authentication(request, call_next)
+                if auth_response:
+                    return auth_response
+
+            # Autorisation
+            auth_result = await self.handler.handle_authorization(request, call_next)
+            if auth_result.status_code == 403:
+                self.logger.warning(
+                    "Authorization failed - insufficient permissions")
+                return auth_result
+
+            return auth_result
+
         else:
             self.logger.info("No access control rules defined.")
 

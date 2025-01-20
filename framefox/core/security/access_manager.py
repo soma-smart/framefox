@@ -1,13 +1,14 @@
+import logging
 from typing import List
 import re
 from framefox.core.config.settings import Settings
-from framefox.core.logging.logger import Logger
 
 
 class AccessManager:
-    def __init__(self, settings: Settings, logger: Logger):
+    def __init__(self, settings: Settings):
         self.settings = settings
-        self.logger = logger
+
+        self.logger = logging.getLogger("FIREWALL")
 
     def get_required_roles(self, path: str) -> List[str]:
         """

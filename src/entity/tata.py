@@ -4,6 +4,6 @@ from typing import List, Optional
 from datetime import datetime
 
 
-class {{ class_name }}(AbstractEntity, table=True):
+class Tata(AbstractEntity, table=True):
     id: int = Field(default=None, primary_key=True)
-{% raw %}{% endraw %}
+    name: str = Field(max_length=256)

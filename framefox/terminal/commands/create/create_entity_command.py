@@ -17,7 +17,7 @@ class CreateEntityCommand(AbstractCommand):
 
     def execute(self, name: str = None):
         """
-        Create the entity and the associated repository and ask for properties to add to the entity.
+        Create and/or modify the entity and the associated repository and ask for properties to add to the entity.
 
         Args:
             name (str, optional): The name of the entity in snake_case. Defaults to None.

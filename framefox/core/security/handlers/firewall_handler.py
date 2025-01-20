@@ -23,7 +23,6 @@ class FirewallHandler:
 
     def __init__(
         self,
-        logger: logging.Logger,
         settings: Settings,
         template_renderer: TemplateRenderer,
         cookie_manager: CookieManager,
@@ -32,7 +31,7 @@ class FirewallHandler:
         csrf_manager: CsrfTokenManager,
         access_manager: AccessManager
     ):
-        self.logger = logger
+        self.logger = logging.getLogger("FIREWALL")
         self.settings = settings
         self.template_renderer = template_renderer
         self.cookie_manager = cookie_manager
@@ -71,6 +70,7 @@ class FirewallHandler:
         """
         Determines the firewall to use based on the request path and HTTP method.
         """
+
         for firewall_name, authenticator in self.authenticators.items():
             firewall_config = self.settings.get_firewall_config(firewall_name)
             login_path = firewall_config.get("login_path")
@@ -156,7 +156,11 @@ class FirewallHandler:
         required_roles = self.access_manager.get_required_roles(
             request.url.path)
         if not required_roles:
-            return await call_next(request)
+            response = await call_next(request)
+            self.logger.debug(f"Response from call_next: Status={
+                              response.status_code}")
+            return response
+
         token = Session.get("access_token")
         if token:
             payload = self.token_manager.decode_token(token)

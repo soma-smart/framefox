@@ -140,3 +140,63 @@ class ModelChecker:
             self.check_repository_file(entity_name, verbose) and\
             self.check_entity_class(entity_name, verbose) and\
             self.check_repository_class(entity_name, verbose)
+
+    def check_entity_property(self, entity_name: str, property_name: str, verbose: bool = False):
+        """
+        Check if a given property exists for an entity.
+
+        Args:
+            entity_name (str): Name of the entity in snake_case format
+            property_name (str): Name of the property to check
+            verbose (bool, optional): If True, prints error messages. Defaults to False.
+
+        Returns:
+            bool: True if the property exists in the entity file, False otherwise
+
+        The method performs the following checks:
+        - Validates that entity_name is in snake_case format
+        - Verifies that the entity file exists at the specified path
+        - Searches for the property_name in the entity file contents
+        """
+        if not ClassNameManager.is_snake_case(entity_name):
+            if verbose:
+                Printer().print_msg("Invalid name. Must be in snake_case.", theme="error")
+            return False
+        entity_file_name = entity_name + ".py"
+        entity_path = os.path.join(self.entity_path, entity_file_name)
+        if not os.path.exists(entity_path):
+            if verbose:
+                Printer().print_msg(f"Entity file '{
+                    entity_name}' does not exist.", theme="error")
+            return False
+        with open(entity_path, "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                if property_name in line:
+                    return True
+        if verbose:
+            Printer().print_msg(f"Property '{
+                property_name}' does not exist.", theme="error")
+        return False
+
+    def check_entity_properties(self, entity_name: str, properties_name: list, verbose: bool = False):
+        """
+        Check if multiple properties exist for a specific entity.
+
+        Args:
+            entity_name (str): Name of the entity to check
+            properties_name (list): List of property names to verify
+            verbose (bool, optional): Whether to display verbose output. Defaults to False.
+
+        Returns:
+            bool: True if all properties exist for the entity, False otherwise
+
+        Example:
+            >>> checker = ModelChecker()
+            >>> checker.check_entity_properties("user", ["id", "name"], verbose=True)
+            True
+        """
+        for property_name in properties_name:
+            if not self.check_entity_property(entity_name, property_name, verbose):
+                return False
+        return True

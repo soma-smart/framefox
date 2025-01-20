@@ -1,7 +1,7 @@
-from sqlmodel import Field
+from sqlmodel import Field, Column, JSON
 from framefox.core.orm.abstract_entity import AbstractEntity
 from typing import List
-from sqlalchemy import Column, JSON
+# from sqlalchemy import Column, JSON
 
 
 class User(AbstractEntity, table=True):

@@ -34,15 +34,21 @@ class InitCommand(AbstractCommand):
 
     @staticmethod
     def create_empty_project():
-        # Create src directory
+        # Create src directorys
         project_path = "src"
         os.makedirs(os.path.join(project_path, "controllers"))
         os.makedirs(os.path.join(project_path, "entity"))
         os.makedirs(os.path.join(project_path, "repository"))
+        os.makedirs(os.path.join(project_path, "security"))
+        os.makedirs(os.path.join("src/security", "authenticator"))
         # Create templates directory
         os.makedirs(os.path.join(".", "templates"))
         # Create config directory
         os.makedirs(os.path.join(".", "config"))
+        # Create var directory
+        os.makedirs(os.path.join(".", "var"))
+        os.makedirs(os.path.join("./var", "log"))
+        os.makedirs(os.path.join("./var", "session"))
         # Create usefull files
         # main.py
         FileCreator().create_file(
@@ -58,14 +64,6 @@ class InitCommand(AbstractCommand):
             name=".env",
             data={},
             format="env"
-        )
-        # requirements.txt
-        FileCreator().create_file(
-            template="init_files/requirements.jinja2",
-            path=".",
-            name="requirements.txt",
-            data={},
-            format="txt"
         )
         # base.html
         FileCreator().create_file(
