@@ -19,7 +19,7 @@ class FirewallMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if self.settings.access_control:
             auth_response = await self.handler.handle_authentication(request, call_next)
-            if auth_response and auth_response.status_code != 200:
+            if auth_response and auth_response.status_code == 200:
                 return auth_response
             auth_result = await self.handler.handle_authorization(request, call_next)
             return auth_result
