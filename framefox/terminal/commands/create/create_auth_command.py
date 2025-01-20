@@ -12,6 +12,8 @@ class CreateAuthCommand(AbstractCommand):
         self.login_form_template_name = r"security/form_login_authenticator_template.jinja2"
         self.login_controller_template_name = r"security/login_controller_template.jinja2"
         self.login_view_template_name = r"security/login_view_template.jinja2"
+        self.register_controller_template_name = r"security/register_controller_template.jinja2"
+        self.register_view_template_name = r"security/register_view_template.jinja2"
         self.login_form_path = r"src/security/authenticator"
         self.controller_path = r"src/controllers"
         self.view_path = r"templates"
@@ -79,23 +81,23 @@ class CreateAuthCommand(AbstractCommand):
             )
             return
 
-        self.printer.print_msg(
-            "What is the redirection url?",
-            theme="bold_normal",
-            linebefore=True,
-        )
-        redirection_url = InputManager().wait_input(
-            "Redirection url"
-        )
+        # self.printer.print_msg(
+        #     "What is the redirection url?",
+        #     theme="bold_normal",
+        #     linebefore=True,
+        # )
+        # redirection_url = InputManager().wait_input(
+        #     "Redirection url"
+        # )
 
-        if not ClassNameManager.is_snake_case(redirection_url):
-            self.printer.print_msg(
-                "Invalid redirectton url. Must be in snake_case.",
-                theme="error",
-                linebefore=True,
-                newline=True
-            )
-            return
+        # if not ClassNameManager.is_snake_case(redirection_url):
+        #     self.printer.print_msg(
+        #         "Invalid redirectton url. Must be in snake_case.",
+        #         theme="error",
+        #         linebefore=True,
+        #         newline=True
+        #     )
+        #     return
 
         # Login controller
         file_path = FileCreator().create_file(
@@ -120,6 +122,35 @@ class CreateAuthCommand(AbstractCommand):
         )
         self.printer.print_full_text(
             f"[bold green]Login view created successfully:[/bold green] {
+                file_path}",
+        )
+
+        # Register controller
+        file_path = FileCreator().create_file(
+            self.register_controller_template_name,
+            self.controller_path,
+            name=r"register_controller",
+            data={
+                'entity_file_name': provider_name,
+                'entity_class_name': ClassNameManager.snake_to_pascal(provider_name),
+            }
+        )
+        self.printer.print_full_text(
+            f"[bold green]Register controller created successfully:[/bold green] {
+                file_path}",
+            linebefore=True,
+        )
+
+        # Register view
+        file_path = FileCreator().create_file(
+            self.register_view_template_name,
+            self.view_path,
+            name=r"register.html",
+            data={},
+            format="html",
+        )
+        self.printer.print_full_text(
+            f"[bold green]Register view created successfully:[/bold green] {
                 file_path}",
         )
 
