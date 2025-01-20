@@ -6,11 +6,16 @@ from src.repository.user_repository import UserRepository
 from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
 
+from framefox.core.orm.entity_manager import EntityManager
+
 
 class UserController(AbstractController):
     """
     Example
     """
+
+    def __init__(self, entityManager: EntityManager):
+        self.entity_manager = entityManager
 
     @Route("/users", "get_users", methods=["GET"])
     async def get_users(self):
@@ -32,7 +37,7 @@ class UserController(AbstractController):
         return UserRepository().find(keys_formula.dict())
 
     @Route("/users", "create_user", methods=["POST"])
-    async def create_user(self, user: User):
+    async def create_user(self, user: User.generate_create_model()):
         user_instance = UserRepository().model(**user.dict())
         self.entity_manager.persist(user_instance)
         self.entity_manager.commit()
