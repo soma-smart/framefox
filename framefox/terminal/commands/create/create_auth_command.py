@@ -1,10 +1,16 @@
 from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.common.class_name_manager import ClassNameManager
+from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.security_configurator import SecurityConfigurator
 
 
 class CreateAuthCommand(AbstractCommand):
     def __init__(self):
         super().__init__('auth')
+        self.login_form_template_name = r"form_login_authenticator.jinja2"
+        self.login_form_path = r"src/security/authenticator"
 
     def execute(self):
         self.printer.print_msg(
@@ -41,11 +47,33 @@ class CreateAuthCommand(AbstractCommand):
         provider_name = InputManager().wait_input(
             "Provider name"
         )
-
-        # TODO
         # Check snake_case
+        if not ClassNameManager.is_snake_case(provider_name):
+            self.printer.print_msg(
+                "Invalid provider name. Must be in snake_case.",
+                theme="error",
+                linebefore=True,
+                newline=True
+            )
+            return
         # Check if entity exists
+        if not ModelChecker().check_entity_and_repository(provider_name):
+            self.printer.print_msg(
+                "Provider entity does not exist.",
+                theme="error",
+                linebefore=True,
+                newline=True
+            )
+            return
         # Check if provider as password and email properties
+        if not ModelChecker().check_entity_properties(provider_name, ["password", "email"]):
+            self.printer.print_msg(
+                "Provider entity must have 'password' and 'email' properties.",
+                theme="error",
+                linebefore=True,
+                newline=True
+            )
+            return
 
         self.printer.print_msg(
             "What is the redirection url?",
@@ -56,11 +84,35 @@ class CreateAuthCommand(AbstractCommand):
             "Redirection url"
         )
 
-        # TODO
-        # Check if url is valid
+        if not ClassNameManager.is_snake_case(redirection_url):
+            self.printer.print_msg(
+                "Invalid redirectton url. Must be in snake_case.",
+                theme="error",
+                linebefore=True,
+                newline=True
+            )
+            return
 
-        # TODO
-        # Create files
-        # Seulement après toutes les questions on peut créer les fichiers
         # Create src/security/form_login_authenticator.py
+        file_path = FileCreator().create_file(
+            self.login_form_template_name,
+            self.login_form_path,
+            name=r"form_login_authenticator",
+            data={}
+        )
+        self.printer.print_full_text(
+            f"[bold green]Form login authenticator created successfully:[/bold green] {
+                file_path}",
+            linebefore=True,
+            newline=True,
+        )
         # Ajouter les modifications dans security.yaml
+        provider_class = ClassNameManager.snake_to_pascal(provider_name)
+        SecurityConfigurator().add_provider(provider_name, provider_class)
+        SecurityConfigurator().add_firewall(provider_name)
+
+        self.printer.print_full_text(
+            "[bold green]Access control to[/bold green] config/security.yaml [bold green]to manage your app and permissions[/bold green]",
+            linebefore=True,
+            newline=True,
+        )

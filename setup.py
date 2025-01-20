@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="framefox",
-    version="0.1.30",
+    version="0.1.32",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -24,6 +24,7 @@ setup(
         "python-multipart==0.0.20",
         "pymysql==1.1.1",
         "psycopg2-binary==2.9.10",
+        "ruamel.yaml==0.18.10",
     ],
     entry_points={
         "console_scripts": [
