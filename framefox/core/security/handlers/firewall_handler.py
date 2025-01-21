@@ -64,6 +64,40 @@ class FirewallHandler:
                     )
         return authenticators
 
+    async def handle_request(self, request: Request, call_next):
+        """
+        Point d'entrée principal pour la gestion des requêtes.
+        Gère l'authentification et l'autorisation.
+        """
+        # Récupérer les routes d'auth
+        auth_routes = []
+        for firewall in self.settings.firewalls.values():
+            if "login_path" in firewall:
+                auth_routes.append(firewall["login_path"])
+            if "logout_path" in firewall:
+                auth_routes.append(firewall["logout_path"])
+
+        # Vérifier si c'est une route de déconnexion
+        for firewall_name, firewall in self.settings.firewalls.items():
+            if "logout_path" in firewall and request.url.path.startswith(firewall["logout_path"]):
+                return await self.handle_logout(request, firewall, firewall_name, call_next)
+
+        # Vérifier si c'est une route d'authentification
+        is_auth_route = any(request.url.path.startswith(route)
+                            for route in auth_routes)
+        if is_auth_route:
+            auth_response = await self.handle_authentication(request, call_next)
+            if auth_response:
+                return auth_response
+
+        # Autorisation
+        auth_result = await self.handle_authorization(request, call_next)
+        if auth_result.status_code == 403:
+            self.logger.warning(
+                "Authorization failed - insufficient permissions")
+
+        return auth_result
+
     async def handle_authentication(
         self, request: Request, call_next
     ) -> Optional[Response]:
