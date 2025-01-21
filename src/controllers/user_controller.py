@@ -1,54 +1,49 @@
-from typing import Optional, Dict
-
-from src.entity.user import User
-from src.repository.user_repository import UserRepository
-
-from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
-
+from framefox.core.routing.decorator.route import Route
+from typing import Optional, Dict
+from src.repository.user_repository import UserRepository
+from src.entity.user import User
 from framefox.core.orm.entity_manager import EntityManager
 
 
 class UserController(AbstractController):
-    """
-    Example
-    """
-
     def __init__(self, entityManager: EntityManager):
         self.entity_manager = entityManager
 
-    @Route("/users", "get_users", methods=["GET"])
-    async def get_users(self):
+    @Route("/user", "read_all", methods=["GET"])
+    async def read_all(self):
         return UserRepository().find_all()
 
-    @Route("/users/search", "search_users", methods=["POST"])
-    async def search_users(
-        self,
-        criteria: Dict[str, str],
-        order_by: Optional[Dict[str, str]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ):
-        users = UserRepository().find_by(criteria, order_by, limit, offset)
-        return users
+    @Route("/user/{id}", "read", methods=["GET"])
+    async def read(self, id: int):
+        return UserRepository().find({"id": id})
 
-    @Route("/users/find", "get_user", methods=["POST"])
-    async def get_user(self, keys_formula: User.generate_find_model()):
-        return UserRepository().find(keys_formula.dict())
-
-    @Route("/users", "create_user", methods=["POST"])
-    async def create_user(self, user: User.generate_create_model()):
-        user_instance = UserRepository().model(**user.dict())
-        self.entity_manager.persist(user_instance)
+    @Route("/user", "create", methods=["POST"])
+    async def create(self, user: User.generate_create_model()):
+        entity_instance = UserRepository().model(**user.dict())
+        self.entity_manager.persist(entity_instance)
         self.entity_manager.commit()
+        return self.json(
+            data={"message": "Created successfully",
+                  "id": entity_instance.id},
+            status=201
+        )
 
-    @Route("/users", "update_user", methods=["PUT"])
-    async def update_user(self, user: User):
+    @Route("/user", "update", methods=["PUT"])
+    async def update(self, user: User):
         self.entity_manager.persist(user)
         self.entity_manager.commit()
+        return self.json(
+            data={"message": "Updated successfully"},
+            status=200
+        )
 
-    @Route("/users/{id}", "delete_user", methods=["DELETE"])
-    async def delete_user(self, id: int):
-        user_instance = UserRepository().find(id)
-        self.entity_manager.delete(user_instance)
+    @Route("/user/{id}", "delete", methods=["DELETE"])
+    async def delete(self, id: int):
+        entity_instance = UserRepository().find(id)
+        self.entity_manager.delete(entity_instance)
         self.entity_manager.commit()
+        return self.json(
+            data={"message": "Deletion success"},
+            status=204
+        )
