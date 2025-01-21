@@ -19,6 +19,9 @@ class CreateAuthCommand(AbstractCommand):
         self.view_path = r"templates"
 
     def execute(self):
+        """
+        Create authentication system with default or custom settings.
+        """
         self.printer.print_msg(
             "Do you want to create a custom authentication system or use the default one? (y/n)",
             theme="bold_normal",

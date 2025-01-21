@@ -6,8 +6,6 @@ from framefox.core.security.handlers.firewall_handler import FirewallHandler
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 
-from fastapi.responses import JSONResponse, Response
-
 
 class FirewallMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, settings: Settings):
@@ -25,8 +23,14 @@ class FirewallMiddleware(BaseHTTPMiddleware):
             for firewall in self.settings.firewalls.values():
                 if "login_path" in firewall:
                     auth_routes.append(firewall["login_path"])
+                if "logout_path" in firewall:
+                    auth_routes.append(firewall["logout_path"])
+                # Check if it is a logout route
+                for firewall_name, firewall in self.settings.firewalls.items():
+                    if "logout_path" in firewall and request.url.path.startswith(firewall["logout_path"]):
+                        return await self.handler.handle_logout(request, firewall, firewall_name, call_next)
 
-            # Vérifier si c'est une route d'authentification
+            # Check if it is an authentication route
             is_auth_route = any(request.url.path.startswith(route)
                                 for route in auth_routes)
             if is_auth_route:
