@@ -28,9 +28,6 @@ security:
     # - { path: ^/admin, roles: ROLE_ADMIN }  # Only users with ROLE_ADMIN can access  paths starting with /admin
     # - { path: ^/profile, roles: ROLE_USER }  # Only users with ROLE_USER can access paths starting with /profile
 
-    - { path: ^/users, roles: ROLE_USER }
-    - { path: ^/tata, roles: ROLE_USER }
-    - { path: ^/products, roles: ROLE_ADMIN }
-    - { path: ^/admin, roles: ROLE_ADMIN }
-    # - { path: ^/test2, roles: ROLE_USER }
-    # - { path: ^/test3, roles: ROLE_ADMIN }
+    - { path: ^/role_user, roles: ROLE_USER }
+    - { path: ^/user, roles: ROLE_ADMIN }
+    - { path: ^/role_admin, roles: ROLE_ADMIN }
