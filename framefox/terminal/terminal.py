@@ -52,7 +52,7 @@ class Terminal:
                 console = Console()
                 print("")
                 console.print(
-                    ":fox_face: Framefox - Swift, smart, and a bit foxy", style="bold orange3")
+                    ":fox_face: Framefox - Swift, smart, and a bit foxy", style="bold orange1")
                 print("")
 
                 console.print(
@@ -63,8 +63,9 @@ class Terminal:
                 # print(ctx.get_help())
 
                 # Créer un tableau pour les commandes
-                table = Table(show_header=True, header_style="bold blue")
-                table.add_column("Commands", style="blue", no_wrap=True)
+                table = Table(show_header=True, header_style="bold orange1")
+                table.add_column(
+                    "Commands", style="bold orange3", no_wrap=True)
                 table.add_column("Description", style="white")
 
                 # Parcourir les typers et ajouter les commandes au tableau
