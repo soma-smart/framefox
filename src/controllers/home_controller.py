@@ -9,12 +9,12 @@ from framefox.core.config.settings import Settings
 
 class HomeController(AbstractController):
 
-    @Route("/", "show_home", methods=["GET"])
+    # @Route("/", "show_home", methods=["GET"])
     async def show_home(self, request: Request):
         # Récupérer les cookies
         cookies = request.cookies
         service_container = ServiceContainer()
-        service_container.print_container_stats()
+        # service_container.print_container_stats()
 
         # Récupérer la session
 

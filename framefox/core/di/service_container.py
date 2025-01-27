@@ -42,7 +42,6 @@ class ServiceContainer:
             for root, _, files in os.walk(base_path):
                 root_path = Path(root)
 
-                # Vérifier si un des dossiers parents est dans la liste d'exclusion
                 if any(excluded_dir.lower() in part.lower()
                        for part in root_path.parts
                        for excluded_dir in excluded_directories):
@@ -59,7 +58,6 @@ class ServiceContainer:
                                 else f"src.{module_path.relative_to(src_path).with_suffix('').as_posix().replace('/', '.')}"
                             )
 
-                            # Vérifier si le module est exclu
                             if any(module_name.startswith(excluded) for excluded in excluded_modules):
                                 continue
 
@@ -166,7 +164,7 @@ class ServiceContainer:
                     continue
                 dependency_cls = type_hints.get(name)
                 if not dependency_cls:
-                    # Handle untyped or optional parameter
+
                     if param.default != inspect.Parameter.empty:
                         dependencies.append(param.default)
                     continue
@@ -205,26 +203,25 @@ class ServiceContainer:
         print(f"Service with name '{class_name}' not found.")
         return None
 
-    def print_services(self):
-        print("\nServiceContainer Statistics:")
-        # print(f"Container instance: #{self._instance_counter}")
-        print(f"Total registered services: {len(self.services)}")
-        print("\nRegistered services:")
+    # def print_services(self):
+    #     print("\nServiceContainer Statistics:")
+    #     print(f"Total registered services: {len(self.services)}")
+    #     print("\nRegistered services:")
 
-        for service_class in self.services:
-            service_instance = self.services[service_class]
-            try:
-                source_file = inspect.getfile(service_class)
-                module_name = service_class.__module__
-            except Exception:
-                source_file = "Built-in"
-                module_name = "Built-in"
+    #     for service_class in self.services:
+    #         service_instance = self.services[service_class]
+    #         try:
+    #             source_file = inspect.getfile(service_class)
+    #             module_name = service_class.__module__
+    #         except Exception:
+    #             source_file = "Built-in"
+    #             module_name = "Built-in"
 
-            print(f"- {service_class.__name__}")
-            print(f"  Module: {module_name}")
-            print(f"  Source: {source_file}")
-            print(f"  Instance ID: {id(service_instance)}")
-            print()
+    #         print(f"- {service_class.__name__}")
+    #         print(f"  Module: {module_name}")
+    #         print(f"  Source: {source_file}")
+    #         print(f"  Instance ID: {id(service_instance)}")
+    #         print()
 
     def get_by_tag(self, tag: str) -> list:
         return self._tags.get(tag, [])
