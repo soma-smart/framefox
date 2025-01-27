@@ -23,6 +23,24 @@ Key features include an interactive terminal,a powerful routing system,an advanc
 Dive into this documentation to discover how Framefox can transform your Python development experience.
 
 
+## How to test new terminal feature ?
+### Using venv
+
+```bash
+python -m venv env
+source env/bin/activate
+```
+### Using Conda
+```bash
+conda create -n framefox_env python=3.12
+conda activate framefox_env
+```
+
+### Then, to use framefox command
+```bash
+pip install -e .
+```
+
 ______________________ EVERYTHING AFTER HERE WILL BE REMOVED _____________________
 
 

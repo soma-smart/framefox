@@ -3,6 +3,7 @@ __pycache__/
 *$py.class
 var/
 venv/
+env/
 instance/
 .mypy_cache/
 
