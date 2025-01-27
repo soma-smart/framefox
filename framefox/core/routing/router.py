@@ -1,15 +1,15 @@
+
+
+import os
+import inspect
 import importlib
 from pathlib import Path
-import os
 from fastapi import FastAPI
 from fastapi.routing import APIRouter
-from framefox.core.controller.abstract_controller import AbstractController
-import inspect
+from fastapi.responses import HTMLResponse
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
-
-
-from framefox.core.di.service_container import ServiceContainer
+from framefox.core.templates.template_renderer import TemplateRenderer
 
 
 class Router:
@@ -32,23 +32,31 @@ class Router:
                 if file.endswith('.py'):
                     module_path = os.path.join(root, file)
                     module_name = self._get_module_name(module_path)
+                try:
+                    module = importlib.import_module(module_name)
+                    for attr_name in dir(module):
+                        attr = getattr(module, attr_name)
+                        if (inspect.isclass(attr) and
+                            attr.__module__ == module.__name__ and
+                                not attr.__name__.startswith('_')):
+                            controller_instance = self.container.get(attr)
+                            if controller_instance:
+                                router = APIRouter()
+                                setattr(controller_instance,
+                                        'router', router)
+                                self._register_routes(controller_instance)
+                                self.app.include_router(router)
+                except Exception as e:
+                    print(f"Error loading controller {module_name}: {e}")
 
-                    try:
-                        module = importlib.import_module(module_name)
-                        for attr_name in dir(module):
-                            attr = getattr(module, attr_name)
-                            if (inspect.isclass(attr) and
-                                attr.__module__ == module.__name__ and
-                                    not attr.__name__.startswith('_')):
-                                controller_instance = self.container.get(attr)
-                                if controller_instance:
-                                    router = APIRouter()
-                                    setattr(controller_instance,
-                                            'router', router)
-                                    self._register_routes(controller_instance)
-                                    self.app.include_router(router)
-                    except Exception as e:
-                        print(f"Error loading controller {module_name}: {e}")
+        if not any(route.path == "/" for route in self.app.routes):
+            async def default_root():
+                template_renderer = self.container.get(TemplateRenderer)
+                html_content = template_renderer.render("default.html", {})
+                return HTMLResponse(content=html_content)
+
+            self.app.add_api_route(
+                "/", default_root, name="default_root", methods=["GET"])
 
     @staticmethod
     def _register_routes(controller_instance):

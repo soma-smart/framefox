@@ -11,6 +11,8 @@ from framefox.core.middleware.middleware_manager import MiddlewareManager
 from framefox.core.debug.handler.debug_handler import DebugHandler
 from framefox.core.debug.exception.debug_exception import DebugException
 from framefox.core.di.service_container import ServiceContainer
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 INITIALIZED = False
 
@@ -56,3 +58,9 @@ class Kernel:
         middleware_manager.setup_middlewares()
         router = Router(self.app)
         router.register_controllers()
+        self.app.mount(
+            "/static",
+            StaticFiles(directory=Path(__file__).parent /
+                        "templates" / "static"),
+            name="static"
+        )

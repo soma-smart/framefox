@@ -1,0 +1,69 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: rgb(24, 24, 24);
+  position: relative;
+}
+.slogan {
+  margin-top: 20px;
+  font-family: "Poppins", sans-serif;
+  font-size: 24px;
+  color: white;
+  text-align: center;
+}
+/* Effet d'ombrage pour le texte */
+.logo-text {
+  fill: #ffd700;
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.22));
+}
+.buttons {
+  display: flex;
+  flex-direction: row;
+  width: 30%;
+  justify-content: space-between;
+  margin-top: 100px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.03);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+.button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.button img {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+}
+.info-box {
+  background-color: rgba(201, 201, 201, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 20px;
+  border-radius: 10px;
+  font-family: "Courier New", Courier, monospace;
+  color: #ffd700;
+
+  text-align: center;
+  max-width: 70%;
+  margin-top: 30px;
+}
+.info-box code {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-family: "Courier New", Courier, monospace;
+}

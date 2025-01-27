@@ -1,8 +1,30 @@
-# Soma Framework Skeleton
+![Framefox](./docs/images/framefox.png?raw=true "Framefox")
+
+
+# Documentation 
+Our documentation is available 
+<a href="https://soma-smart.github.io/doc-framefox/" class="button button-docs" target="_blank">
+				 Here
+			</a> :)
+
+
 
 ## Introduction
 
-Welcome to the **Soma Framework Skeleton**, a development framework designed to simplify the creation of robust and scalable web applications. This framework is built on FastAPI and SQLModel, and it integrates advanced features such as session management, authentication, entity and repository management, as well as custom middlewares.
+Framefox is a Object oriented Python Framework, that give you the fastest path in Python Environnement to Build you Web Application.
+
+Designed to simplify the development of robust, modular, and maintainable applications, this framework emphasizes a clear MVC  architecture and a productivity-driven philosophy.
+ 
+With its intuitive structure, it helps developers focus on building features while reducing code complexity. Offering simplicity for quick onboarding, modularity for well-structured code, extensibility for project-specific needs, and adherence to best practices for performance and security, this framework suits both beginners exploring foundational architectures and experts tackling complex projects. 
+  
+  
+Key features include an interactive terminal,a powerful routing system,an advanced configuration management, pre-configured authentications and registration, ORM database management,and a lot more. 
+
+Dive into this documentation to discover how Framefox can transform your Python development experience.
+
+
+______________________ EVERYTHING AFTER HERE WILL BE REMOVED _____________________
+
 
 ## Project Tree
 
