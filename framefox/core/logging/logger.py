@@ -12,7 +12,7 @@ class Logger:
 
     def configure_logging(self):
         # log_dir = os.path.join(os.path.dirname(__file__), "../../../var/log")
-        log_dir = Path('./var/log').resolve()
+        log_dir = Path("./var/log").resolve()
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "app.log")
 
@@ -135,13 +135,13 @@ class Logger:
                 "passlib": {
                     "handlers": ["file"],
                     "level": "WARNING",  # Change DEBUG to WARNING
-                    "propagate": False
+                    "propagate": False,
                 },
                 "passlib.registry": {
                     "handlers": ["file"],
                     "level": "WARNING",  # Change DEBUG to WARNING
-                    "propagate": False
-                }
+                    "propagate": False,
+                },
             },
         }
         logging.config.dictConfig(logging_config)

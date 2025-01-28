@@ -1,27 +1,29 @@
 ![Framefox](./docs/images/framefox.png?raw=true "Framefox")
 
 
-# Documentation 
+## Documentation 
 Our documentation is available 
 <a href="https://soma-smart.github.io/doc-framefox/" class="button button-docs" target="_blank">
 				 Here
 			</a> :)
 
 
-
-## Swift, smart, and a bit foxy !
+# Swift, smart, and a bit foxy !
 
 - **Object-oriented framework**: Framefox is designed with an object-oriented approach, providing a structured and organized way to build your web applications.
-- **Fastest path in Python environment**: It offers the quickest route to developing web applications in Python.
 - **Simplified development**: The framework is designed to simplify the development of robust, modular, and maintainable applications.
 - **Clear MVC architecture**: Emphasizes a clear Model-View-Controller (MVC) architecture for better code organization and separation of concerns.
 - **Productivity-driven philosophy**: Focuses on enhancing developer productivity with its intuitive structure and features.
 
 Key features include an interactive terminal, a powerful routing system, advanced configuration management, pre-configured authentications and registration, ORM database management, and much more.
 
+Dive into this documentation to discover how Framefox can transform your Python development experience.
+
+Key features include an interactive terminal, a powerful routing system, advanced configuration management, pre-configured authentications and registration, ORM database management, and much more.
 
 
-## How to test new terminal feature ?
+
+## How to test terminal locally without importing from pip ?
 
 ### Using venv
 

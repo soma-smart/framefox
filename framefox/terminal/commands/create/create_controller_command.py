@@ -6,11 +6,11 @@ from framefox.terminal.common.input_manager import InputManager
 
 class CreateControllerCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('controller')
-        self.controller_path = r'src/controllers'
-        self.view_path = r'templates'
-        self.controller_template = r'controller_template.jinja2'
-        self.view_template = r'view_template.jinja2'
+        super().__init__("controller")
+        self.controller_path = r"src/controllers"
+        self.view_path = r"templates"
+        self.controller_template = r"controller_template.jinja2"
+        self.view_template = r"view_template.jinja2"
 
     def execute(self, name: str = None):
         """
@@ -21,7 +21,7 @@ class CreateControllerCommand(AbstractCommand):
         """
         if name is None:
             name = InputManager().wait_input("Controller name")
-            if name == '':
+            if name == "":
                 return
 
         if not ClassNameManager.is_snake_case(name):
@@ -29,7 +29,7 @@ class CreateControllerCommand(AbstractCommand):
                 "Invalid name. Must be in snake_case.",
                 theme="error",
                 linebefore=True,
-                newline=True
+                newline=True,
             )
             return
 
@@ -51,14 +51,14 @@ class CreateControllerCommand(AbstractCommand):
             template=self.controller_template,
             path=self.controller_path,
             name=f"{name}_controller",
-            data=data_controller
+            data=data_controller,
         )
         view_path = FileCreator().create_file(
             template=self.view_template,
             path=self.view_path,
             name=view_name,
             data=data_view,
-            format="html"
+            format="html",
         )
 
         self.printer.print_full_text(

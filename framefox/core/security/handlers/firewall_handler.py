@@ -29,7 +29,7 @@ class FirewallHandler:
         session_manager: SessionManager,
         token_manager: TokenManager,  # Ajout des nouvelles dépendances
         csrf_manager: CsrfTokenManager,
-        access_manager: AccessManager
+        access_manager: AccessManager,
     ):
         self.logger = logging.getLogger("FIREWALL")
         self.settings = settings
@@ -37,7 +37,7 @@ class FirewallHandler:
         self.cookie_manager = cookie_manager
         self.session_manager = session_manager
         self.token_manager = token_manager  # Plus besoin d'instancier
-        self.csrf_manager = csrf_manager    # Plus besoin d'instancier
+        self.csrf_manager = csrf_manager  # Plus besoin d'instancier
         self.access_manager = access_manager  # Plus besoin d'instancier
         self.authenticators = self.load_authenticators()
 
@@ -79,12 +79,15 @@ class FirewallHandler:
 
         # Vérifier si c'est une route de déconnexion
         for firewall_name, firewall in self.settings.firewalls.items():
-            if "logout_path" in firewall and request.url.path.startswith(firewall["logout_path"]):
-                return await self.handle_logout(request, firewall, firewall_name, call_next)
+            if "logout_path" in firewall and request.url.path.startswith(
+                firewall["logout_path"]
+            ):
+                return await self.handle_logout(
+                    request, firewall, firewall_name, call_next
+                )
 
         # Vérifier si c'est une route d'authentification
-        is_auth_route = any(request.url.path.startswith(route)
-                            for route in auth_routes)
+        is_auth_route = any(request.url.path.startswith(route) for route in auth_routes)
         if is_auth_route:
             auth_response = await self.handle_authentication(request, call_next)
             if auth_response:
@@ -93,8 +96,7 @@ class FirewallHandler:
         # Autorisation
         auth_result = await self.handle_authorization(request, call_next)
         if auth_result.status_code == 403:
-            self.logger.warning(
-                "Authorization failed - insufficient permissions")
+            self.logger.warning("Authorization failed - insufficient permissions")
 
         return auth_result
 
@@ -187,12 +189,13 @@ class FirewallHandler:
         """
         Handles authorization using the AccessManager class.
         """
-        required_roles = self.access_manager.get_required_roles(
-            request.url.path)
+        required_roles = self.access_manager.get_required_roles(request.url.path)
         if not required_roles:
             response = await call_next(request)
-            self.logger.debug(f"Response from call_next: Status={
-                              response.status_code}")
+            self.logger.debug(
+                f"Response from call_next: Status={
+                              response.status_code}"
+            )
             return response
 
         token = Session.get("access_token")
@@ -203,8 +206,7 @@ class FirewallHandler:
                 if self.access_manager.is_allowed(user_roles, required_roles):
                     return await call_next(request)
                 else:
-                    self.logger.warning(
-                        "User does not have the required roles.")
+                    self.logger.warning("User does not have the required roles.")
             else:
                 self.logger.warning("Invalid token payload.")
 

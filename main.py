@@ -1,8 +1,6 @@
 import uvicorn
-import warnings
 from framefox.core.kernel import Kernel
 
-warnings.filterwarnings("ignore", category=RuntimeWarning, module="runpy")
 app = Kernel().app
 
 if __name__ == "__main__":

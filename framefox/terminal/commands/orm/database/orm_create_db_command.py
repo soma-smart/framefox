@@ -1,10 +1,12 @@
 from sqlmodel import create_engine, SQLModel
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pymysql
 import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from sqlalchemy import text
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.core.config.settings import Settings
+import os
 
 
 class OrmCreateDbCommand(AbstractCommand):
@@ -16,10 +18,7 @@ class OrmCreateDbCommand(AbstractCommand):
 
     def execute(self):
         """
-        Analyze the DATABASE_URL to determine the type of database to create based on the choices:
-            SQLite
-            PostgreSQL
-            MySQL
+        Analyzes the database URL to determine the type of database to create.
         """
         for db_type in self.db_types:
             self.printer.print_msg(
@@ -38,21 +37,30 @@ class OrmCreateDbCommand(AbstractCommand):
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
                     )
-                    self.create_db_postgresql(
-                        user, password, host, port, database
-                    )
+                    self.create_db_postgresql(user, password, host, port, database)
                 elif db_type == "mysql":
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
                     )
-                    self.create_db_mysql(
-                        user, password, host, port, database
-                    )
+                    self.create_db_mysql(user, password, host, port, database)
                 break
 
     def create_db_sqlite(self, database_url: str):
+
+        db_path = database_url.replace("sqlite:///", "")
+
+        if os.path.exists(db_path):
+            self.printer.print_msg(
+                f"The SQLite database '{db_path}' already exists.",
+                theme="warning",
+                linebefore=True,
+                newline=True,
+            )
+            return
+
         engine = create_engine(database_url, echo=True)
         SQLModel.metadata.create_all(engine)
+        self.create_alembic_version_table(engine)
         self.printer.print_msg(
             "Database created successfully.",
             theme="success",
@@ -65,15 +73,14 @@ class OrmCreateDbCommand(AbstractCommand):
         self, user: str, password: str, host: str, port: int, database: str
     ):
         connection = psycopg2.connect(
-            user=user, password=password, host=host, port=port, database=database
+            user=user, password=password, host=host, port=port, database="postgres"
         )
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = connection.cursor()
-        cursor.execute(
-            f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
+        cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
         if cursor.fetchone():
             self.printer.print_msg(
-                f"The database '{database}' already exists.",
+                f"The PostgreSQL database '{database}' already exists.",
                 theme="warning",
                 linebefore=True,
                 newline=True,
@@ -81,25 +88,33 @@ class OrmCreateDbCommand(AbstractCommand):
         else:
             cursor.execute(f"CREATE DATABASE {database};")
             self.printer.print_msg(
-                f"Database '{database}' created successfully.",
+                f"PostgreSQL database '{database}' created successfully.",
                 theme="success",
                 linebefore=True,
                 newline=True,
+            )
+
+            cursor.execute(
+                """
+                CREATE TABLE alembic_version (
+                    version_num VARCHAR(32) NOT NULL PRIMARY KEY
+                );
+            """
             )
         cursor.close()
         connection.close()
         self.command_suggestion()
 
-    def create_db_mysql(self, user: str, password: str, host: str, port: int, database: str):
-        connection = pymysql.connect(
-            user=user, password=password, host=host, port=port, database=database
-        )
+    def create_db_mysql(
+        self, user: str, password: str, host: str, port: int, database: str
+    ):
+        connection = pymysql.connect(user=user, password=password, host=host, port=port)
         cursor = connection.cursor()
         cursor.execute(f"SHOW DATABASES LIKE '{database}';")
         result = cursor.fetchone()
         if result:
             self.printer.print_msg(
-                f"The database '{database}' already exists.",
+                f"The MySQL database '{database}' already exists.",
                 theme="warning",
                 linebefore=True,
                 newline=True,
@@ -107,17 +122,39 @@ class OrmCreateDbCommand(AbstractCommand):
         else:
             cursor.execute(f"CREATE DATABASE {database};")
             self.printer.print_msg(
-                f"Database '{database}' created successfully.",
+                f"MySQL database '{database}' created successfully.",
                 theme="success",
                 linebefore=True,
                 newline=True,
             )
+
+            cursor.execute(
+                """
+                CREATE TABLE alembic_version (
+                    version_num VARCHAR(32) NOT NULL PRIMARY KEY
+                );
+            """
+            )
+
         cursor.close()
         connection.close()
         self.command_suggestion()
 
+    def create_alembic_version_table(self, engine):
+        with engine.connect() as connection:
+            connection.execute(
+                text(
+                    """
+                CREATE TABLE IF NOT EXISTS alembic_version (
+                    version_num VARCHAR(32) NOT NULL PRIMARY KEY
+                );
+            """
+                )
+            )
+            connection.commit()
+
     def command_suggestion(self):
         self.printer.print_full_text(
-            "Now you can migrate your database by using [bold green]framefox orm database migrate[/bold green]",
+            "Next, try using [bold green]framefox orm database create_migration[/bold green]",
             newline=True,
         )

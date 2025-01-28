@@ -1,5 +1,3 @@
-
-
 class PasswordCredentials:
     """
     A class used to handle password credentials and verification.

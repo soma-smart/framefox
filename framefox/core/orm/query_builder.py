@@ -27,23 +27,23 @@ class QueryBuilder:
         self._update_values = {}
         self.logger = logging.getLogger(__name__)
 
-    def select(self) -> 'QueryBuilder':
+    def select(self) -> "QueryBuilder":
         self._select = select(self.model)
         return self
 
-    def delete(self) -> 'QueryBuilder':
+    def delete(self) -> "QueryBuilder":
         self._delete = sql_delete(self.model)
         return self
 
-    def update(self, values: Dict[str, Any]) -> 'QueryBuilder':
+    def update(self, values: Dict[str, Any]) -> "QueryBuilder":
         self._update = sql_update(self.model).values(**values)
         return self
 
-    def where(self, condition: Any) -> 'QueryBuilder':
+    def where(self, condition: Any) -> "QueryBuilder":
         self._where.append(condition)
         return self
 
-    def join(self, *joins: Any) -> 'QueryBuilder':
+    def join(self, *joins: Any) -> "QueryBuilder":
         if self._select is not None:
             self._select = self._select.join(*joins)
         elif self._delete is not None:
@@ -51,23 +51,22 @@ class QueryBuilder:
         elif self._update is not None:
             self._update = self._update.join(*joins)
         else:
-            raise ValueError(
-                "No query (select, delete, update) has been initiated.")
+            raise ValueError("No query (select, delete, update) has been initiated.")
         return self
 
-    def having(self, condition: Any) -> 'QueryBuilder':
+    def having(self, condition: Any) -> "QueryBuilder":
         self._having.append(condition)
         return self
 
-    def order_by(self, *conditions: Any) -> 'QueryBuilder':
+    def order_by(self, *conditions: Any) -> "QueryBuilder":
         self._order_by.extend(conditions)
         return self
 
-    def limit(self, limit: int) -> 'QueryBuilder':
+    def limit(self, limit: int) -> "QueryBuilder":
         self._limit = limit
         return self
 
-    def offset(self, offset: int) -> 'QueryBuilder':
+    def offset(self, offset: int) -> "QueryBuilder":
         self._offset = offset
         return self
 
@@ -77,21 +76,20 @@ class QueryBuilder:
 
         if self._select is not None:
             query = self._select
-            query_type = 'select'
+            query_type = "select"
         elif self._delete is not None:
             query = self._delete
-            query_type = 'delete'
+            query_type = "delete"
         elif self._update is not None:
             query = self._update
-            query_type = 'update'
+            query_type = "update"
         else:
-            raise ValueError(
-                "No query has been initiated (select, delete, update).")
+            raise ValueError("No query has been initiated (select, delete, update).")
 
         if self._where:
             query = query.where(*self._where)
 
-        if self._having and query_type == 'select':
+        if self._having and query_type == "select":
             query = query.having(*self._having)
 
         if self._order_by:
@@ -123,7 +121,8 @@ class QueryBuilder:
 
             if isinstance(query, (Delete, Update)):
                 raise ValueError(
-                    "The 'first' method is not applicable for delete or update queries.")
+                    "The 'first' method is not applicable for delete or update queries."
+                )
             result = session.exec(query).first()
             return result
 
@@ -134,18 +133,16 @@ class QueryBuilder:
         query = self.get_query()
 
         if not self._order_by:
-            raise ValueError(
-                "A sort order must be defined to use the 'last' method.")
+            raise ValueError("A sort order must be defined to use the 'last' method.")
 
         reversed_order = []
         for condition in self._order_by:
-            if hasattr(condition, 'desc'):
+            if hasattr(condition, "desc"):
                 reversed_condition = condition.asc()
-            elif hasattr(condition, 'asc'):
+            elif hasattr(condition, "asc"):
                 reversed_condition = condition.desc()
             else:
-                raise ValueError(
-                    f"Unsupported order condition: {condition}")
+                raise ValueError(f"Unsupported order condition: {condition}")
             reversed_order.append(reversed_condition)
 
         query = query.order_by(*reversed_order).limit(1)
@@ -154,6 +151,7 @@ class QueryBuilder:
 
             if isinstance(query, (Delete, Update)):
                 raise ValueError(
-                    "The 'last' method is not applicable for delete or update queries.")
+                    "The 'last' method is not applicable for delete or update queries."
+                )
             result = session.exec(query).first()
             return result

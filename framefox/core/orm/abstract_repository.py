@@ -19,8 +19,8 @@ class AbstractRepository(ABC):
     """
 
     def __init__(
-        self, model: Type[T],
-
+        self,
+        model: Type[T],
     ):
         self.model = model
         self.entity_manager = ServiceContainer().get(EntityManager)
@@ -67,11 +67,9 @@ class AbstractRepository(ABC):
         if order_by:
             for field, direction in order_by.items():
                 if direction.lower() == "asc":
-                    statement = statement.order_by(
-                        asc(getattr(self.model, field)))
+                    statement = statement.order_by(asc(getattr(self.model, field)))
                 elif direction.lower() == "desc":
-                    statement = statement.order_by(
-                        desc(getattr(self.model, field)))
+                    statement = statement.order_by(desc(getattr(self.model, field)))
 
         if limit is not None:
             statement = statement.limit(limit)

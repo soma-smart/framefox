@@ -6,10 +6,11 @@ from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 
 
-
 class EntityUserProvider:
 
-    def __init__(self, ):
+    def __init__(
+        self,
+    ):
         service_container = ServiceContainer()
         self.settings = service_container.get(Settings)
         self.logger = logging.getLogger("ENTITY_USER_PROVIDER")

@@ -1,5 +1,3 @@
-
-
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 from framefox.core.request.session.session import Session
 from framefox.core.di.service_container import ServiceContainer
@@ -26,8 +24,7 @@ class AbstractController:
         Session.set("flash_messages", flash_messages)
 
     def render(self, template_name: str, context: dict = {}):
-        template_renderer = self._get_container().get_by_name(
-            "TemplateRenderer")
+        template_renderer = self._get_container().get_by_name("TemplateRenderer")
         """Renders a view with context variables, including CSRF token."""
         if Session.has("flash_messages"):
             context["messages"] = Session.get("flash_messages")

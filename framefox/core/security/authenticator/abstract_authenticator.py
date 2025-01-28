@@ -13,7 +13,6 @@ class AbstractAuthenticator:
 
     def __init__(
         self,
-
     ):
         self.logger = logging.getLogger("AUTHENTICATOR")
         service_container = ServiceContainer()
@@ -33,8 +32,7 @@ class AbstractAuthenticator:
                 )
 
                 passport.provider_info = (
-                    {"repository": provider_info[0],
-                        "property": provider_info[1]}
+                    {"repository": provider_info[0], "property": provider_info[1]}
                     if provider_info
                     else None
                 )

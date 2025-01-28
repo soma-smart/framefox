@@ -13,11 +13,11 @@ class CommandHandler:
     def __init__(self):
         self.project_init = os.path.exists("src")
         self.priority_list = [
-            'hello',
-            'init',
-            'create_entity',
-            'create',
-            'orm',
+            "hello",
+            "init",
+            "create_entity",
+            "create",
+            "orm",
         ]
 
     @staticmethod
@@ -41,52 +41,69 @@ class CommandHandler:
         self.load_commands_for_an_app(app_dict["main"], main_commands_dir)
 
         orm_commands_dir = pkg_resources.files(framefox.terminal.commands.orm)
-        self.load_commands_for_an_app(app_dict["orm"], orm_commands_dir, 'orm')
+        self.load_commands_for_an_app(app_dict["orm"], orm_commands_dir, "orm")
 
         orm_database_commands_dir = pkg_resources.files(
-            framefox.terminal.commands.orm.database)
+            framefox.terminal.commands.orm.database
+        )
         self.load_commands_for_an_app(
-            app_dict["orm database"], orm_database_commands_dir, 'database', 'orm')
+            app_dict["orm database"], orm_database_commands_dir, "database", "orm"
+        )
 
-        server_commands_dir = pkg_resources.files(
-            framefox.terminal.commands.server)
-        self.load_commands_for_an_app(
-            app_dict["server"], server_commands_dir, 'server')
+        server_commands_dir = pkg_resources.files(framefox.terminal.commands.server)
+        self.load_commands_for_an_app(app_dict["server"], server_commands_dir, "server")
 
-        create_commands_dir = pkg_resources.files(
-            framefox.terminal.commands.create)
-        self.load_commands_for_an_app(
-            app_dict["create"], create_commands_dir, 'create')
+        create_commands_dir = pkg_resources.files(framefox.terminal.commands.create)
+        self.load_commands_for_an_app(app_dict["create"], create_commands_dir, "create")
 
-    def load_commands_for_an_app(self, app: typer.Typer, commands_dir, dir=None, parent_dir=None):
+    def load_commands_for_an_app(
+        self, app: typer.Typer, commands_dir, dir=None, parent_dir=None
+    ):
         """
         Load commands for a specific app.
         """
         to_ignore = [
-            'abstract_command.py',
-            'unsupported_command.py',
+            "abstract_command.py",
+            "unsupported_command.py",
         ]
         for filename in self.custom_sort(os.listdir(commands_dir)):
-            if filename.endswith('_command.py') and filename not in to_ignore:
-                if not self.project_init and (filename == 'init_command.py' or filename == 'hello_world_command.py'):
+            if filename.endswith("_command.py") and filename not in to_ignore:
+                if not self.project_init and (
+                    filename == "init_command.py"
+                    or filename == "hello_world_command.py"
+                ):
                     self.load_unique_command(app, filename, dir, parent_dir)
-                elif self.project_init and filename != 'init_command.py' and filename != 'hello_world_command.py':
+                elif (
+                    self.project_init
+                    and filename != "init_command.py"
+                    and filename != "hello_world_command.py"
+                ):
                     self.load_unique_command(app, filename, dir, parent_dir)
 
-    def load_unique_command(self, app: typer.Typer, filename: str, dir: str = None, parent_dir: str = None):
+    def load_unique_command(
+        self, app: typer.Typer, filename: str, dir: str = None, parent_dir: str = None
+    ):
         module_name = filename[:-3]
         if dir:
             if parent_dir:
-                module = __import__(f'framefox.terminal.commands.{parent_dir}.{dir}.{
-                                    module_name}', fromlist=[module_name])
+                module = __import__(
+                    f"framefox.terminal.commands.{parent_dir}.{dir}.{
+                                    module_name}",
+                    fromlist=[module_name],
+                )
             else:
-                module = __import__(f'framefox.terminal.commands.{dir}.{
-                                    module_name}', fromlist=[module_name])
+                module = __import__(
+                    f"framefox.terminal.commands.{dir}.{
+                                    module_name}",
+                    fromlist=[module_name],
+                )
         else:
-            module = __import__(f'framefox.terminal.commands.{
-                                module_name}', fromlist=[module_name])
-        class_name = ''.join(word.capitalize()
-                             for word in module_name.split('_'))
+            module = __import__(
+                f"framefox.terminal.commands.{
+                                module_name}",
+                fromlist=[module_name],
+            )
+        class_name = "".join(word.capitalize() for word in module_name.split("_"))
         command_class = getattr(module, class_name)
         command_instance = command_class()
         CommandHandler.register_command(app, command_instance)
@@ -97,6 +114,7 @@ class CommandHandler:
         Commands starting with prefixes in the priority list are sorted according to the order of this list.
         Other commands are sorted alphabetically and added at the end.
         """
+
         def sort_key(filename):
             # Extract the command name without the '_command.py' suffix
             base_name = filename[:-11]
@@ -108,4 +126,5 @@ class CommandHandler:
 
             # If no prefix matches, assign a high priority and sort alphabetically
             return (len(self.priority_list), base_name)
+
         return sorted(command_files, key=sort_key)
