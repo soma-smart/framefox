@@ -52,6 +52,7 @@ class InitCommand(AbstractCommand):
         # Create migrations directory
         os.makedirs(os.path.join(".", "migrations"))
         os.makedirs(os.path.join("./migrations", "versions"))
+        os.makedirs(os.path.join("./migrations", "versions", "__pycache__"))
         # Create usefull files
         # main.py
         FileCreator().create_file(

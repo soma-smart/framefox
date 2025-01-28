@@ -57,7 +57,7 @@ class AlembicFileManager:
         """Returns the database URL from the configuration settings"""
 
         settings = Settings()
-        print(settings.database_url)
+
         return settings.database_url
 
     def get_engine_connection(self):

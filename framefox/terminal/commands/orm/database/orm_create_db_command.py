@@ -37,7 +37,8 @@ class OrmCreateDbCommand(AbstractCommand):
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
                     )
-                    self.create_db_postgresql(user, password, host, port, database)
+                    self.create_db_postgresql(
+                        user, password, host, port, database)
                 elif db_type == "mysql":
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
@@ -77,7 +78,8 @@ class OrmCreateDbCommand(AbstractCommand):
         )
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = connection.cursor()
-        cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
+        cursor.execute(
+            f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
         if cursor.fetchone():
             self.printer.print_msg(
                 f"The PostgreSQL database '{database}' already exists.",
@@ -108,7 +110,8 @@ class OrmCreateDbCommand(AbstractCommand):
     def create_db_mysql(
         self, user: str, password: str, host: str, port: int, database: str
     ):
-        connection = pymysql.connect(user=user, password=password, host=host, port=port)
+        connection = pymysql.connect(
+            user=user, password=password, host=host, port=port)
         cursor = connection.cursor()
         cursor.execute(f"SHOW DATABASES LIKE '{database}';")
         result = cursor.fetchone()
@@ -138,7 +141,6 @@ class OrmCreateDbCommand(AbstractCommand):
 
         cursor.close()
         connection.close()
-        self.command_suggestion()
 
     def create_alembic_version_table(self, engine):
         with engine.connect() as connection:
@@ -152,9 +154,3 @@ class OrmCreateDbCommand(AbstractCommand):
                 )
             )
             connection.commit()
-
-    def command_suggestion(self):
-        self.printer.print_full_text(
-            "Next, try using [bold green]framefox orm database create_migration[/bold green]",
-            newline=True,
-        )
