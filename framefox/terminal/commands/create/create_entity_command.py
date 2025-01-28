@@ -59,7 +59,7 @@ class CreateEntityCommand(AbstractCommand):
         self.request_n_add_property_to_entity(name)
 
         self.printer.print_full_text(
-            "Next, proceed with [bold green]framefox orm database create[/bold green] to continue.",
+            "Next, proceed with [bold green]framefox orm database create_migration[/bold green]",
             newline=True,
         )
 
@@ -81,7 +81,8 @@ class CreateEntityCommand(AbstractCommand):
             "snake_case_name": name,
         }
         file_path = FileCreator().create_file(
-            self.repository_template, self.repository_path, f"{name}_repository", data
+            self.repository_template, self.repository_path, f"{
+                name}_repository", data
         )
         return file_path
 
@@ -91,7 +92,8 @@ class CreateEntityCommand(AbstractCommand):
                 "Enter the properties you want to add to the entity. Leave empty now to stop.",
                 theme="bold_normal",
             )
-            request = self.entity_property_manager.request_and_add_property(name)
+            request = self.entity_property_manager.request_and_add_property(
+                name)
             if not request:
                 break
 
