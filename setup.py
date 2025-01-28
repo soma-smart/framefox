@@ -7,7 +7,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "typer==0.15.1",
-        "fastapi==0.115.6",
+        "fastapi==0.115.7",
         "uvicorn==0.32.1",
         "starlette==0.41.3",
         "sqlmodel==0.0.22",
