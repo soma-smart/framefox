@@ -20,7 +20,7 @@ setup(
         "click==8.1.8",
         "passlib==1.7.4",
         "pyjwt==2.10.1",
-        "bcrypt==4.0.1",
+        "bcrypt==4.2.1",
         "python-multipart==0.0.20",
         "pymysql==1.1.1",
         "psycopg2-binary==2.9.10",
