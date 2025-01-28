@@ -9,7 +9,7 @@ setup(
         "typer==0.15.1",
         "fastapi==0.115.7",
         "uvicorn==0.32.1",
-        "starlette==0.41.3",
+        "starlette==0.45.3",
         "sqlmodel==0.0.22",
         "python-dotenv==1.0.1",
         "pyYAML==6.0.2",
