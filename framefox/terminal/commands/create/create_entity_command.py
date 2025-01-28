@@ -8,7 +8,7 @@ from framefox.terminal.common.input_manager import InputManager
 
 class CreateEntityCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('entity')
+        super().__init__("entity")
         self.entity_template = r"entity_template.jinja2"
         self.repository_template = r"repository_template.jinja2"
         self.entity_path = r"src/entity"
@@ -24,14 +24,14 @@ class CreateEntityCommand(AbstractCommand):
         """
         if name is None:
             name = InputManager().wait_input("Entity name")
-            if name == '':
+            if name == "":
                 return
         if not ClassNameManager.is_snake_case(name):
             self.printer.print_msg(
                 "Invalid name. Must be in snake_case.",
                 theme="error",
                 linebefore=True,
-                newline=True
+                newline=True,
             )
             return
 
@@ -59,7 +59,7 @@ class CreateEntityCommand(AbstractCommand):
         self.request_n_add_property_to_entity(name)
 
         self.printer.print_full_text(
-            "You can now continue by using [bold green]framefox orm database create[/bold green]",
+            "Next, proceed with [bold green]framefox orm database create[/bold green] to continue.",
             newline=True,
         )
 
@@ -68,24 +68,20 @@ class CreateEntityCommand(AbstractCommand):
             "class_name": CreateEntityCommand.create_entity_class_name(name),
         }
         file_path = FileCreator().create_file(
-            self.entity_template,
-            self.entity_path,
-            name,
-            data
+            self.entity_template, self.entity_path, name, data
         )
         return file_path
 
     def create_repository(self, name: str):
         data = {
             "entity_class_name": CreateEntityCommand.create_entity_class_name(name),
-            "repository_class_name": CreateEntityCommand.create_repository_class_name(name),
+            "repository_class_name": CreateEntityCommand.create_repository_class_name(
+                name
+            ),
             "snake_case_name": name,
         }
         file_path = FileCreator().create_file(
-            self.repository_template,
-            self.repository_path,
-            f"{name}_repository",
-            data
+            self.repository_template, self.repository_path, f"{name}_repository", data
         )
         return file_path
 
@@ -95,8 +91,7 @@ class CreateEntityCommand(AbstractCommand):
                 "Enter the properties you want to add to the entity. Leave empty now to stop.",
                 theme="bold_normal",
             )
-            request = self.entity_property_manager.request_and_add_property(
-                name)
+            request = self.entity_property_manager.request_and_add_property(name)
             if not request:
                 break
 

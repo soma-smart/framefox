@@ -7,7 +7,7 @@ class UnsupportedCommand(AbstractCommand):
     """
 
     def __init__(self):
-        super().__init__('unsupported')
+        super().__init__("unsupported")
 
     def execute(self, *args):
         """

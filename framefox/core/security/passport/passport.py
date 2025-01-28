@@ -27,7 +27,7 @@ class Passport:
     ):
         self.user_badge = user_badge
         self.password_credentials = password_credentials
-        self.csrf_token_badge = csrf_token_badge,
+        self.csrf_token_badge = (csrf_token_badge,)
         self.user = None
         self.roles: List[str] = []
         self.provider_info = provider_info
@@ -54,8 +54,7 @@ class Passport:
                     self.user = user
         else:
 
-            self.logger.warning(
-                "No provider info available, cannot authenticate user.")
+            self.logger.warning("No provider info available, cannot authenticate user.")
             return False
 
         if not self.user:

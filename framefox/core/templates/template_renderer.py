@@ -14,7 +14,8 @@ class TemplateRenderer:
         self.framework_template_dir = Path(__file__).parent / "views"
         self.env = Environment(
             loader=FileSystemLoader(
-                [self.user_template_dir, str(self.framework_template_dir)])
+                [self.user_template_dir, str(self.framework_template_dir)]
+            )
         )
 
     def render(self, template_name: str, context: dict = {}) -> str:

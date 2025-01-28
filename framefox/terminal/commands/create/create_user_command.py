@@ -6,15 +6,15 @@ from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.commands.create.create_entity_command import CreateEntityCommand
 
 
-class CreateProviderCommand(AbstractCommand):
+class CreateUserCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('provider')
+        super().__init__('user')
         self.create_entity_command = CreateEntityCommand()
         self.entity_property_manager = EntityPropertyManager()
 
     def execute(self, name: str = None):
         """
-        Create a provider entity and the associated repository.
+        Create a user entity for the authentication.
 
         Args:
             name (str, optional): The name of the entity in snake_case. Defaults to None.

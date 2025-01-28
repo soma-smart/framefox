@@ -1,4 +1,3 @@
-
 from typing import Annotated
 from framefox.core.config.settings import Settings
 from framefox.core.middleware.middlewares.firewall_middleware import FirewallMiddleware

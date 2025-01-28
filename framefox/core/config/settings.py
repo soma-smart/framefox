@@ -98,8 +98,7 @@ class Settings:
 
     @property
     def cache_dir(self):
-        cache_path = os.path.join(
-            os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 

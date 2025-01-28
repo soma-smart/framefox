@@ -1,5 +1,3 @@
-
-
 import os
 import inspect
 import importlib
@@ -21,42 +19,45 @@ class Router:
     def _get_module_name(self, module_path: str) -> str:
         """Convert file path to module name."""
         path = Path(module_path)
-        src_dir = Path.cwd() / 'src'
-        relative_path = path.relative_to(src_dir).with_suffix('')
-        return '.'.join(['src'] + list(relative_path.parts))
+        src_dir = Path.cwd() / "src"
+        relative_path = path.relative_to(src_dir).with_suffix("")
+        return ".".join(["src"] + list(relative_path.parts))
 
     def register_controllers(self):
-        controllers_path = os.path.join(os.getcwd(), 'src', 'controllers')
+        controllers_path = os.path.join(os.getcwd(), "src", "controllers")
         for root, _, files in os.walk(controllers_path):
             for file in files:
-                if file.endswith('.py'):
+                if file.endswith(".py"):
                     module_path = os.path.join(root, file)
                     module_name = self._get_module_name(module_path)
                 try:
                     module = importlib.import_module(module_name)
                     for attr_name in dir(module):
                         attr = getattr(module, attr_name)
-                        if (inspect.isclass(attr) and
-                            attr.__module__ == module.__name__ and
-                                not attr.__name__.startswith('_')):
+                        if (
+                            inspect.isclass(attr)
+                            and attr.__module__ == module.__name__
+                            and not attr.__name__.startswith("_")
+                        ):
                             controller_instance = self.container.get(attr)
                             if controller_instance:
                                 router = APIRouter()
-                                setattr(controller_instance,
-                                        'router', router)
+                                setattr(controller_instance, "router", router)
                                 self._register_routes(controller_instance)
                                 self.app.include_router(router)
                 except Exception as e:
                     print(f"Error loading controller {module_name}: {e}")
 
         if not any(route.path == "/" for route in self.app.routes):
+
             async def default_root():
                 template_renderer = self.container.get(TemplateRenderer)
                 html_content = template_renderer.render("default.html", {})
                 return HTMLResponse(content=html_content)
 
             self.app.add_api_route(
-                "/", default_root, name="default_root", methods=["GET"])
+                "/", default_root, name="default_root", methods=["GET"]
+            )
 
     @staticmethod
     def _register_routes(controller_instance):

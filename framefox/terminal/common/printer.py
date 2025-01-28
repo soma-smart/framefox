@@ -18,7 +18,13 @@ class Printer:
         """Uses the Rich print method."""
         self.console.print(*args, **kwargs)
 
-    def print_msg(self, message: str, theme: str = "normal", newline: bool = False, linebefore: bool = False):
+    def print_msg(
+        self,
+        message: str,
+        theme: str = "normal",
+        newline: bool = False,
+        linebefore: bool = False,
+    ):
         """
         Prints a message to the console with a specified theme and optional newline.
 
@@ -36,7 +42,9 @@ class Printer:
         if newline:
             self.console.print()
 
-    def print_full_text(self, text: str, newline: bool = False, linebefore: bool = False):
+    def print_full_text(
+        self, text: str, newline: bool = False, linebefore: bool = False
+    ):
         """
         Prints the given text with optional styling and a newline.
 
@@ -54,8 +62,12 @@ class Printer:
         """
         if linebefore:
             self.console.print()
-        styled_text = text.replace("[error]", "[error]").replace("[/error]", "[/error]") \
-                          .replace("[warning]", "[warning]").replace("[/warning]", "[/warning]")
+        styled_text = (
+            text.replace("[error]", "[error]")
+            .replace("[/error]", "[/error]")
+            .replace("[warning]", "[warning]")
+            .replace("[/warning]", "[/warning]")
+        )
         self.console.print(styled_text)
         if newline:
             self.console.print()

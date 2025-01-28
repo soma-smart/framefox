@@ -38,9 +38,9 @@ setup(
         #     'terminal/templates/**/*',
         #     'terminal/commands/*',
         #     'terminal/common/*'],
-        'framefox': [
-            'framefox/**',
-            'terminal/templates/**/*',
+        "framefox": [
+            "framefox/**",
+            "terminal/templates/**/*",
         ],
     },
 )

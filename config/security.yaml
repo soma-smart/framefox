@@ -2,24 +2,7 @@
 # It defines the security settings and access control rules.
 
 security:
-  providers:
-    # User provider is responsible for loading user data from the database.
-    app_user_provider:
-      entity:
-        class: src.entity.user.User
-        property: email
 
-  firewalls:
-    main:
-      provider: app_user_provider
-      authenticator: framefox.core.security.authenticator.form_login_authenticator.FormLoginAuthenticator
-      login_path: /login
-      logout_path: /logout
-
-    api:
-      authenticator: framefox.core.security.authenticator.api_token_authenticator.ApiTokenAuthenticator
-      login_path: /api/login
-      logout_path: /api/logout
   access_control:
     # Access control rules define which roles have access to specific paths.
     # Each rule consists of a path pattern and the roles that are allowed to access it.
@@ -28,6 +11,7 @@ security:
     # - { path: ^/admin, roles: ROLE_ADMIN }  # Only users with ROLE_ADMIN can access  paths starting with /admin
     # - { path: ^/profile, roles: ROLE_USER }  # Only users with ROLE_USER can access paths starting with /profile
 
-    - { path: ^/role_user, roles: ROLE_USER }
-    - { path: ^/user, roles: ROLE_ADMIN }
-    - { path: ^/role_admin, roles: ROLE_ADMIN }
+    - { path: ^/users, roles: ROLE_USER }
+    - { path: ^/products, roles: ROLE_ADMIN }
+    # - { path: ^/test2, roles: ROLE_USER }
+    # - { path: ^/test3, roles: ROLE_ADMIN }

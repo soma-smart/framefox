@@ -5,7 +5,7 @@ from framefox.terminal.common.file_creator import FileCreator
 
 class InitCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('init')
+        super().__init__("init")
 
     def execute(self):
         """
@@ -49,6 +49,9 @@ class InitCommand(AbstractCommand):
         os.makedirs(os.path.join(".", "var"))
         os.makedirs(os.path.join("./var", "log"))
         os.makedirs(os.path.join("./var", "session"))
+        # Create migrations directory
+        os.makedirs(os.path.join(".", "migrations"))
+        os.makedirs(os.path.join("./migrations", "versions"))
         # Create usefull files
         # main.py
         FileCreator().create_file(
@@ -63,7 +66,7 @@ class InitCommand(AbstractCommand):
             path=".",
             name=".env",
             data={},
-            format="env"
+            format="env",
         )
         # base.html
         FileCreator().create_file(
@@ -71,7 +74,7 @@ class InitCommand(AbstractCommand):
             path="./templates",
             name="base.html",
             data={},
-            format="html"
+            format="html",
         )
         # yaml files
         FileCreator().create_file(
@@ -79,19 +82,27 @@ class InitCommand(AbstractCommand):
             path="./config",
             name="application.yaml",
             data={},
-            format="yaml"
+            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/orm.jinja2",
             path="./config",
             name="orm.yaml",
             data={},
-            format="yaml"
+            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/security.jinja2",
             path="./config",
             name="security.yaml",
             data={},
-            format="yaml"
+            format="yaml",
+        )
+        # env.py in migrations
+        FileCreator().create_file(
+            template="init_files/env.py.jinja2",
+            path="./migrations",
+            name="env",
+            data={},
+            format="py",
         )

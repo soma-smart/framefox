@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 
 
@@ -60,7 +59,6 @@ class Kernel:
         router.register_controllers()
         self.app.mount(
             "/static",
-            StaticFiles(directory=Path(__file__).parent /
-                        "templates" / "static"),
-            name="static"
+            StaticFiles(directory=Path(__file__).parent / "templates" / "static"),
+            name="static",
         )

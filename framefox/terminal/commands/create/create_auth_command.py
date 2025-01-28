@@ -8,11 +8,17 @@ from framefox.terminal.common.security_configurator import SecurityConfigurator
 
 class CreateAuthCommand(AbstractCommand):
     def __init__(self):
-        super().__init__('auth')
-        self.login_form_template_name = r"security/form_login_authenticator_template.jinja2"
-        self.login_controller_template_name = r"security/login_controller_template.jinja2"
+        super().__init__("auth")
+        self.login_form_template_name = (
+            r"security/form_login_authenticator_template.jinja2"
+        )
+        self.login_controller_template_name = (
+            r"security/login_controller_template.jinja2"
+        )
         self.login_view_template_name = r"security/login_view_template.jinja2"
-        self.register_controller_template_name = r"security/register_controller_template.jinja2"
+        self.register_controller_template_name = (
+            r"security/register_controller_template.jinja2"
+        )
         self.register_view_template_name = r"security/register_view_template.jinja2"
         self.login_form_path = r"src/security/authenticator"
         self.controller_path = r"src/controllers"
@@ -53,16 +59,14 @@ class CreateAuthCommand(AbstractCommand):
             theme="bold_normal",
             linebefore=True,
         )
-        provider_name = InputManager().wait_input(
-            "Provider name"
-        )
+        provider_name = InputManager().wait_input("Provider name")
         # Check snake_case
         if not ClassNameManager.is_snake_case(provider_name):
             self.printer.print_msg(
                 "Invalid provider name. Must be in snake_case.",
                 theme="error",
                 linebefore=True,
-                newline=True
+                newline=True,
             )
             return
         # Check if entity exists
@@ -71,16 +75,18 @@ class CreateAuthCommand(AbstractCommand):
                 "Provider entity does not exist.",
                 theme="error",
                 linebefore=True,
-                newline=True
+                newline=True,
             )
             return
         # Check if provider as password and email properties
-        if not ModelChecker().check_entity_properties(provider_name, ["password", "email"]):
+        if not ModelChecker().check_entity_properties(
+            provider_name, ["password", "email"]
+        ):
             self.printer.print_msg(
                 "Provider entity must have 'password' and 'email' properties.",
                 theme="error",
                 linebefore=True,
-                newline=True
+                newline=True,
             )
             return
 
@@ -107,7 +113,7 @@ class CreateAuthCommand(AbstractCommand):
             self.login_controller_template_name,
             self.controller_path,
             name=r"login_controller",
-            data={}
+            data={},
         )
         self.printer.print_full_text(
             f"[bold green]Login controller created successfully:[/bold green] {
@@ -134,9 +140,9 @@ class CreateAuthCommand(AbstractCommand):
             self.controller_path,
             name=r"register_controller",
             data={
-                'entity_file_name': provider_name,
-                'entity_class_name': ClassNameManager.snake_to_pascal(provider_name),
-            }
+                "entity_file_name": provider_name,
+                "entity_class_name": ClassNameManager.snake_to_pascal(provider_name),
+            },
         )
         self.printer.print_full_text(
             f"[bold green]Register controller created successfully:[/bold green] {
@@ -162,7 +168,7 @@ class CreateAuthCommand(AbstractCommand):
             self.login_form_template_name,
             self.login_form_path,
             name=r"form_login_authenticator",
-            data={}
+            data={},
         )
         self.printer.print_full_text(
             f"[bold green]Form login authenticator created successfully:[/bold green] {

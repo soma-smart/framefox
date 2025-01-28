@@ -6,6 +6,7 @@ venv/
 env/
 instance/
 .mypy_cache/
+/migrations
 
 *.egg-info/
 build/

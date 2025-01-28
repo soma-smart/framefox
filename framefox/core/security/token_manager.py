@@ -30,8 +30,7 @@ class TokenManager:
     def decode_token(self, token: str) -> dict:
         try:
             payload = jwt.decode(
-                token, self.settings.cookie_secret_key, algorithms=[
-                    self.algorithm]
+                token, self.settings.cookie_secret_key, algorithms=[self.algorithm]
             )
             return payload
         except jwt.ExpiredSignatureError:
