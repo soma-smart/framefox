@@ -1,9 +1,9 @@
-from sqlmodel import Field, Column, JSON
+from sqlmodel import Field, Column, JSON, Relationship,Table, ForeignKey ,Base
 from framefox.core.orm.abstract_entity import AbstractEntity
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 
 
 class {{ class_name }}(AbstractEntity, table=True):
-    id: int = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
 {% raw %}{% endraw %}

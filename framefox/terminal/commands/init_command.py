@@ -28,7 +28,7 @@ class InitCommand(AbstractCommand):
                 newline=True,
             )
             self.printer.print_full_text(
-                "You can now continue by using [bold green]framefox create controller[/bold green]",
+                "Next, try [bold green]framefox server start[/bold green]",
                 newline=True,
             )
 
@@ -106,4 +106,20 @@ class InitCommand(AbstractCommand):
             name="env",
             data={},
             format="py",
+        )
+        # env.py in migrations
+        FileCreator().create_file(
+            template="init_files/blank.jinja2",
+            path="./migrations/versions/__pycache__",
+            name=".gitkeep",
+            data={},
+            format="gitkeep",
+        )
+        # gitignore
+        FileCreator().create_file(
+            template="init_files/gitignore.jinja2",
+            path=".",
+            name=".gitignore",
+            data={},
+            format="gitignore",
         )

@@ -68,7 +68,6 @@ class OrmCreateDbCommand(AbstractCommand):
             linebefore=True,
             newline=True,
         )
-        self.command_suggestion()
 
     def create_db_postgresql(
         self, user: str, password: str, host: str, port: int, database: str
@@ -105,7 +104,6 @@ class OrmCreateDbCommand(AbstractCommand):
             )
         cursor.close()
         connection.close()
-        self.command_suggestion()
 
     def create_db_mysql(
         self, user: str, password: str, host: str, port: int, database: str
