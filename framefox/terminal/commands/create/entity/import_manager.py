@@ -12,12 +12,12 @@ class ImportManager:
         }
 
     def ensure_import(self, file_path: str, import_line: str) -> bool:
-        """Assure qu'une ligne d'import spécifique est présente dans le fichier"""
+        """Ensures that a specific import line is present in the file"""
         with open(file_path, 'r') as f:
             content = f.readlines()
 
         if not any(line.strip() == import_line for line in content):
-            # Trouver la position d'insertion (après le dernier import)
+
             insert_pos = 0
             for idx, line in enumerate(content):
                 if line.startswith("from ") or line.startswith("import "):
@@ -29,7 +29,7 @@ class ImportManager:
                 f.writelines(content)
 
             self.printer.print_msg(
-                f"Import ajouté dans {file_path}: {import_line}",
+                f"Import added to {file_path}: {import_line}",
                 theme="success"
             )
             return True

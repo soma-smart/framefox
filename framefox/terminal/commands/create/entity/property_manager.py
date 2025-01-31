@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Tuple, List
 import os
+from framefox.terminal.common.class_name_manager import ClassNameManager
 
 
 @dataclass
@@ -11,7 +12,7 @@ class PropertyDetails:
     optional: bool
 
 
-class PropertyManager():
+class PropertyManager:
     def __init__(self, input_manager, printer):
         self.input_manager = input_manager
         self.printer = printer
@@ -27,17 +28,15 @@ class PropertyManager():
 
         for line in content:
             if line.strip().startswith(f"{property_name}:"):
+                self.printer.print_msg(
+                    f"The property '{property_name}' already exists in '{entity_name}'.", theme="warning")
                 return True
         return False
 
     def add_property(self, entity_name: str, property_details: PropertyDetails) -> bool:
         if self._property_exists(entity_name, property_details.name):
-            self.printer.print_msg(
-                f"La propriété '{property_details.name}' existe déjà dans l'entité '{
-                    entity_name}'.",
-                theme="error"
-            )
             return False
+
         property_prompt = self._build_property(
             property_details.name,
             property_details.type,
@@ -64,19 +63,18 @@ class PropertyManager():
         property_core = ""
         property_parameters = ""
 
-        if property_constraint or optional:
-            property_core = " = Field("
+        if property_constraint or not optional:
+            property_core += "("
             params = []
             if property_constraint:
-                params.append(f"{property_constraint[0]}={
-                              property_constraint[1]}")
-            if optional:
-                params.append("nullable=True")
+                params.extend(property_constraint)
+            if not optional:
+                params.append("default=None")
             property_parameters = ", ".join(params)
+            property_header += property_core + property_parameters + ")"
 
         final_property = (
-            property_header + property_core + property_parameters + ")" + "\n"
-            if property_core else property_header + "\n"
+            property_header + "\n"
         )
         return final_property
 
@@ -87,20 +85,41 @@ class PropertyManager():
             content = file.readlines()
 
         class_found = False
-        last_line = 0
+        insertion_index = None
+        indentation = "    "
+
         for i, line in enumerate(content):
-            if line.strip().startswith("class ") and line.strip().endswith(
-                "(AbstractEntity, table=True):"
-            ):
+            # Detect the class definition line
+            if line.strip().startswith(f"class {ClassNameManager.snake_to_pascal(entity_name)}(") or \
+                    line.strip().startswith(f"class {ClassNameManager.snake_to_pascal(entity_name)}:"):
                 class_found = True
-            if "Field" in line:
-                last_line = i
+                continue
 
-        if class_found:
-            content.insert(last_line + 1, property_prompt)
+            if class_found:
 
-        with open(file_path, "w") as file:
-            file.writelines(content)
+                if not line.startswith(indentation) and line.strip():
+                    insertion_index = i
+                    break
+
+                if line.startswith(indentation):
+                    insertion_index = i + 1
+
+        if class_found and insertion_index is not None:
+
+            if not property_prompt.startswith(indentation):
+                property_prompt = indentation + property_prompt.lstrip()
+
+            content.insert(insertion_index, property_prompt)
+            with open(file_path, "w") as file:
+                file.writelines(content)
+
+        else:
+
+            self.printer.print_error(f"Class '{ClassNameManager.snake_to_pascal(
+                entity_name)}' not found in '{file_path}'.")
+            raise ValueError(f"Class '{ClassNameManager.snake_to_pascal(
+                entity_name)}' not found in '{file_path}'.")
+
         return file_path
 
     def request_property(self, entity_name: str) -> Optional[PropertyDetails]:
@@ -108,22 +127,20 @@ class PropertyManager():
         if not name:
             return None
 
-        # Vérifier si la propriété existe déjà
         if self._property_exists(entity_name, name):
-            self.printer.print_msg(
-                f"La propriété '{name}' existe déjà dans l'entité '{
-                    entity_name}'.",
-                theme="error"
-            )
             return None
 
         type_ = self._request_property_type()
         constraints = self._manage_property_constraint(type_)
-        optional = self._request_optional()
+        optional = True
+
+        if type_ != "relation":
+            optional = self._request_optional()
+
         return PropertyDetails(name, type_, constraints, optional)
 
     def _request_property_name(self) -> str:
-        return self.input_manager.wait_input("Property name")
+        return self.input_manager.wait_input("Property name").strip()
 
     def _request_property_type(self) -> str:
         return self.input_manager.wait_input(
@@ -134,9 +151,11 @@ class PropertyManager():
 
     def _manage_property_constraint(self, property_type: str) -> Optional[Tuple]:
         if property_type == "str":
-            length = self.input_manager.wait_input(
-                "String max length", default=256)
-            return ("max_length", length)
+            max_length = self.input_manager.wait_input(
+                "Maximum length ",
+                default=256).strip()
+            if max_length.isdigit():
+                return ("max_length=" + max_length,)
         return None
 
     def _request_optional(self) -> bool:
@@ -144,4 +163,4 @@ class PropertyManager():
             "Optional [?]",
             choices=["yes", "no"],
             default="no"
-        ) == "yes"
+        ).strip().lower() == "yes"

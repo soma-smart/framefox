@@ -43,6 +43,9 @@ class InitCommand(AbstractCommand):
         os.makedirs(os.path.join("src/security", "authenticator"))
         # Create templates directory
         os.makedirs(os.path.join(".", "templates"))
+        # Create public directory
+        os.makedirs(os.path.join(".", "public"))
+
         # Create config directory
         os.makedirs(os.path.join(".", "config"))
         # Create var directory

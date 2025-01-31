@@ -34,7 +34,7 @@ class CreateEntityCommand(AbstractCommand):
 
         if not name or not ClassNameManager.is_snake_case(name):
             self.printer.print_msg(
-                "Nom invalide. Doit être en snake_case.", theme="error")
+                "Invalid name. Must be in snake_case.", theme="error")
             return None
 
         return name
@@ -44,14 +44,14 @@ class CreateEntityCommand(AbstractCommand):
 
         if exists:
             self.printer.print_full_text(
-                f"L'entité '[bold green]{
-                    entity_name}[/bold green]' existe déjà. Modification en cours...",
+                f"The entity '[bold green]{
+                    entity_name}[/bold green]' already exists. You are updating it !",
                 newline=True
             )
         else:
             self.printer.print_full_text(
-                f"Création de l'entité '[bold green]{
-                    entity_name}[/bold green]'...",
+                f"Creating the entity '[bold green]{
+                    entity_name}[/bold green]'",
                 newline=True
             )
             self._create_entity_and_repository(entity_name)
@@ -60,18 +60,12 @@ class CreateEntityCommand(AbstractCommand):
 
     def _process_entity_properties(self, entity_name: str):
         while True:
-            # Passer entity_name au property_manager
             property_details = self.property_manager.request_property(
                 entity_name)
-
-            # Si None, la propriété existe déjà ou est invalide, continuer la boucle
             if property_details is None:
                 continue
-
-            # Si False, l'utilisateur veut sortir
             if property_details is False:
                 break
-
             if property_details.type == "relation":
                 self.relation_manager.create_relation(
                     entity_name,

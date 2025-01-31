@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple, List
-import os
+from typing import Optional, Tuple
 from framefox.terminal.common.class_name_manager import ClassNameManager
+import os
 
 
 @dataclass
@@ -10,6 +10,7 @@ class RelationConfig:
     cascade_delete: bool
     optional: bool
     inverse_relation: bool
+    inverse_property: Optional[str] = None
 
 
 class RelationManager:
@@ -23,20 +24,39 @@ class RelationManager:
     def create_relation(self, source_entity: str, property_name: str, optional: bool) -> bool:
         target_entity = self._request_target_entity()
         if not target_entity:
-            return False  # Interrompre si l'entité cible n'existe pas
+            return False
 
         config = self._get_relation_config(
-            optional, source_entity, target_entity)
+            source_entity, target_entity, property_name)
         if config.type == "ManyToMany":
             return self._create_many_to_many_relation(source_entity, target_entity, property_name, config)
         return self._create_standard_relation(source_entity, target_entity, property_name, config)
 
-    def _get_relation_config(self, optional: bool, source_entity: str, target_entity: str) -> RelationConfig:
+    def _get_relation_config(self, source_entity: str, target_entity: str, property_name: str) -> RelationConfig:
         relation_type = self._request_relation_type(
             source_entity, target_entity)
-        cascade_delete = self._request_delete_behavior()
-        inverse_relation = self._request_inverse_relation()
-        return RelationConfig(relation_type, cascade_delete, optional, inverse_relation)
+
+        if relation_type in ["ManyToOne", "OneToOne"]:
+            optional = self._request_optional()
+        else:
+            optional = False
+
+        if relation_type == "OneToMany":
+            inverse_relation, inverse_property = self._request_inverse_relation(
+                source_entity, property_name, auto_inverse=True, relation_type=relation_type
+            )
+            optional = self._request_optional()
+        else:
+            inverse_relation, inverse_property = self._request_inverse_relation(
+                source_entity, property_name, relation_type=relation_type
+            )
+
+        if not optional and inverse_relation:
+            cascade_delete = self._request_delete_behavior()
+        else:
+            cascade_delete = False
+
+        return RelationConfig(relation_type, cascade_delete, optional, inverse_relation, inverse_property)
 
     def _request_relation_type(self, source_entity: str, target_entity: str) -> str:
         source_class = ClassNameManager.snake_to_pascal(source_entity)
@@ -50,113 +70,107 @@ class RelationManager:
         }
 
         help_messages = {
-            "1": f"One {source_class} est lié à One {target_class}",
-            "2": f"One {source_class} est lié à Many {target_class}",
-            "3": f"Many {source_class} sont liés à One {target_class}",
-            "4": f"Many {source_class} sont liés à Many {target_class}"
+            "1": f"One {source_class} is linked to One {target_class}",
+            "2": f"One {source_class} is linked to Many {target_class}",
+            "3": f"Many {source_class} are linked to One {target_class}",
+            "4": f"Many {source_class} are linked to Many {target_class}"
         }
 
-        self.printer.print_msg("Sélectionnez le type de relation :")
-        for key, value in relation_types.items():
-            self.printer.print_msg(
-                f"{key}. {value}  - \"{help_messages[key]}\""
-            )
+        while True:
+            self.printer.print_msg("Select the type of relation:")
+            for key, value in relation_types.items():
+                self.printer.print_msg(
+                    f"{key}. {value}  - \"{help_messages[key]}\""
+                )
 
-        choice = self.input_manager.wait_input(
-            "Entrez le numéro correspondant au type de relation :: "
-        ).strip()
+            choice = self.input_manager.wait_input(
+                "Enter the number corresponding to the type of relation :: "
+            ).strip()
 
-        if choice not in relation_types:
-            self.printer.print_msg(
-                "Choix invalide. Utilisation de ManyToOne par défaut.",
-                theme="warning"
-            )
-            return "ManyToOne"
-
-        return relation_types[choice]
+            if choice in relation_types:
+                return relation_types[choice]
+            else:
+                self.printer.print_msg(
+                    "Invalid choice. Please try again.", theme="error"
+                )
 
     def _request_delete_behavior(self) -> bool:
-        """Demande le comportement de suppression (cascade ou set null)"""
+        """Ask for delete behavior (cascade or set null)"""
         delete_choice = self.input_manager.wait_input(
-            "Quel comportement de suppression souhaitez-vous ? (cascade/set null) :"
+            "What delete behavior do you want? (cascade/set null) :"
         ).strip().lower()
         return delete_choice == "cascade"
 
-    def _request_inverse_relation(self) -> bool:
-        """Demande si une relation inverse doit être créée"""
+    def _request_inverse_relation(self, source_entity: str, property_name: str, auto_inverse=False, relation_type=None) -> Tuple[bool, Optional[str]]:
+        if auto_inverse:
+            has_inverse = True
+            self.printer.print_msg(
+                "An inverse property will be added automatically.")
+        else:
+            has_inverse = self.input_manager.wait_input(
+                "Do you want to add an inverse relation? (yes/no) :",
+                choices=["yes", "no"],
+                default="yes"
+            ).strip().lower() == "yes"
+
+        inverse_property = None
+        if has_inverse:
+
+            if relation_type == "OneToMany":
+                default_inverse = source_entity
+            elif relation_type == "ManyToOne":
+                default_inverse = self._pluralize(
+                    source_entity)
+            else:
+                default_inverse = self._pluralize(
+                    source_entity)
+
+            user_input = self.input_manager.wait_input(
+                f"Enter the name of the inverse property in the target entity [{
+                    default_inverse}] : ",
+                default=default_inverse
+            ).strip()
+            inverse_property = user_input if user_input else default_inverse
+
+            if not inverse_property.isidentifier():
+                self.printer.print_msg(
+                    "Invalid inverse property name. Using the default name.",
+                    theme="warning"
+                )
+                inverse_property = default_inverse
+
+        return has_inverse, inverse_property
+
+    def _pluralize(self, word: str) -> str:
+        """Simple pluralization function"""
+        if word.endswith('y') and word[-2] not in 'aeiou':
+            return word[:-1] + 'ies'
+        elif word.endswith(('s', 'sh', 'ch', 'x', 'z')):
+            return word + 'es'
+        else:
+            return word + 's'
+
+    def _request_optional(self) -> bool:
+        """Ask if the relation can be optional"""
         return self.input_manager.wait_input(
-            "Voulez-vous ajouter une relation inverse ? (oui/non) :",
-            choices=["oui", "non"],
-            default="oui"
-        ).strip().lower() == "oui"
+            "Can the relation be nullable? (yes/no) :",
+            choices=["yes", "no"],
+            default="yes"
+        ).strip().lower() == "yes"
 
     def _request_target_entity(self) -> Optional[str]:
-        """Demande le nom de l'entité cible et vérifie son existence"""
+        """Request the name of the target entity and check its existence"""
         while True:
             target_entity = self.input_manager.wait_input(
-                "Entrez le nom de l'entité cible (snake_case) :: ").strip()
-            if not target_entity:
-                self.printer.print_msg(
-                    "Nom de l'entité cible invalide.", theme="error"
-                )
-                continue  # Reposer la question
-
+                "Enter the name of the target entity (snake_case) "
+            ).strip().lower()
             target_file = os.path.join(
                 self.entity_folder, f"{target_entity}.py")
-            if not os.path.isfile(target_file):
+            if os.path.exists(target_file):
+                return target_entity
+            else:
                 self.printer.print_msg(
-                    f"L'entité cible '{target_entity}' n'existe pas.", theme="error"
-                )
-
-                continue
-            return target_entity
-
-    def _create_standard_relation(
-        self,
-        source_entity: str,
-        target_entity: str,
-        property_name: str,
-        config: RelationConfig
-    ) -> bool:
-        source_class = ClassNameManager.snake_to_pascal(source_entity)
-        target_class = ClassNameManager.snake_to_pascal(target_entity)
-
-        # Création des chemins de fichiers
-        source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
-        target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
-
-        # Génération des relations
-        source_relation, target_relation = self._generate_relation_code(
-            source_entity, target_entity, property_name, source_class, target_class, config
-        )
-
-        # Ajout des clés étrangères
-        foreign_key = self._generate_foreign_key(
-            source_entity, target_entity, config
-        )
-
-        # Ajout des imports nécessaires
-        self._add_necessary_imports(
-            source_file, target_file, source_class, target_class, config
-        )
-
-        # Ajout des relations aux fichiers
-        self._add_relation_to_file(source_file, source_relation)
-        if config.inverse_relation and target_relation:
-            self._add_relation_to_file(target_file, target_relation)
-
-        # Ajout de la clé étrangère
-        if config.type in ["ManyToOne", "OneToOne"]:
-            self._add_relation_to_file(source_file, foreign_key)
-        elif config.type == "OneToMany":
-            self._add_relation_to_file(target_file, foreign_key)
-
-        self.printer.print_msg(
-            f"Relation {config.type} entre '{source_entity}' et '{
-                target_entity}' ajoutée avec succès.",
-            theme="success"
-        )
-        return True
+                    f"The entity '{target_entity}' does not exist. Please try again.", theme="error")
 
     def _generate_relation_code(
         self,
@@ -168,34 +182,45 @@ class RelationManager:
         config: RelationConfig
     ) -> Tuple[str, Optional[str]]:
         cascade_option = ", cascade_delete=True" if config.cascade_delete else ""
+        nullable_option = ", nullable=True" if config.optional else ""
 
         intermediate_class = ClassNameManager.snake_to_pascal(
-            f"{source_entity}_{target_entity}")
+            f"{source_entity}_{target_entity}"
+        )
+
+        if config.type == "OneToMany":
+            inverse_prop = config.inverse_property if config.inverse_property else source_entity
+        elif config.type == "ManyToOne":
+            inverse_prop = config.inverse_property if config.inverse_property else self._pluralize(
+                source_entity)
+        else:
+            inverse_prop = config.inverse_property if config.inverse_property else self._pluralize(
+                source_entity)
 
         relation_template = {
             "OneToOne": (
-                f"{property_name}: Optional['{target_class}'] = Relationship(back_populates='{
-                    source_entity}', uselist=False{cascade_option})",
-                f"{source_entity}: Optional['{source_class}'] = Relationship(back_populates='{
+                f"{property_name}: {target_class} | None = Relationship(back_populates='{
+                    inverse_prop}', uselist=False{cascade_option})",
+                f"{inverse_prop}: {source_class} | None = Relationship(back_populates='{
                     property_name}', uselist=False)"
             ),
             "OneToMany": (
-                f"{property_name}s: List['{target_class}'] = Relationship(back_populates='{
-                    source_entity}'{cascade_option})",
-                f"{source_entity}: Optional['{source_class}'] = Relationship(back_populates='{
-                    property_name}s')"
+                f"{property_name}: list['{target_class}'] = Relationship(back_populates='{
+                    inverse_prop}'{cascade_option})",
+                f"{inverse_prop}: {source_class} | None = Relationship(back_populates='{
+                    property_name}')"
             ),
             "ManyToOne": (
-                f"{property_name}: Optional['{target_class}'] = Relationship(back_populates='{
-                    source_entity}s'{cascade_option})",
-                f"{source_entity}s: List['{source_class}'] = Relationship(back_populates='{
+                f"{property_name}: {target_class} | None = Relationship(back_populates='{
+                    inverse_prop}'{cascade_option}{nullable_option})",
+                f"{inverse_prop}: list['{source_class}'] = Relationship(back_populates='{
                     property_name}')"
             ),
             "ManyToMany": (
-                f"{property_name}s: List['{target_class}'] = Relationship(back_populates='{
-                    source_entity}s', link_model={intermediate_class})",
-                f"{source_entity}s: List['{source_class}'] = Relationship(back_populates='{
-                    property_name}s', link_model={intermediate_class})"
+                f"{property_name}s: list['{target_class}'] = Relationship(back_populates='{
+                    inverse_prop}', link_model={intermediate_class})",
+                f"{inverse_prop}: list['{source_class}'] = Relationship(back_populates='{
+                    property_name}', link_model={intermediate_class})"
             )
         }
 
@@ -208,76 +233,55 @@ class RelationManager:
 
         return source_relation, target_relation
 
-    def _generate_foreign_key(
+    def _create_standard_relation(
         self,
         source_entity: str,
         target_entity: str,
-        config: RelationConfig
-    ) -> str:
-        ondelete = "CASCADE" if config.cascade_delete else "SET NULL"
-        if config.type == "ManyToOne":
-            return f"    {target_entity}_id: int = Field(foreign_key='{target_entity}.id', ondelete='{ondelete}')"
-        elif config.type == "OneToMany":
-            return f"    {source_entity}_id: int = Field(foreign_key='{source_entity}.id', ondelete='{ondelete}')"
-        else:
-            return f"    {target_entity}_id: int = Field(foreign_key='{target_entity}.id', ondelete='{ondelete}')"
-
-    def _add_necessary_imports(
-        self,
-        source_file: str,
-        target_file: str,
-        source_class: str,
-        target_class: str,
+        property_name: str,
         config: RelationConfig
     ):
-        standard_imports = [
-            "from sqlmodel import Field, ForeignKey, Relationship",
-            "from typing import Optional, List"
-        ]
+        source_class = ClassNameManager.snake_to_pascal(source_entity)
+        target_class = ClassNameManager.snake_to_pascal(target_entity)
+        source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
+        target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
 
-        # Importer la classe cible si non optionnelle
-        if not config.optional:
-            self.import_manager.ensure_import(
-                source_file,
-                f"from src.entity.{target_class.lower()} import {target_class}"
-            )
+        source_relation, target_relation = self._generate_relation_code(
+            source_entity, target_entity, property_name, source_class, target_class, config
+        )
 
-        # Importer la classe intermédiaire (link_model) si ManyToMany
-        if config.type == "ManyToMany":
-            intermediate_class = ClassNameManager.snake_to_pascal(f"{source_file.split(
-                '/')[-1].split('.')[0]}_{target_file.split('/')[-1].split('.')[0]}")
-            self.import_manager.ensure_import(
-                source_file,
-                f"from src.entity.{intermediate_class.lower()} import {
-                    intermediate_class}"
-            )
-            self.import_manager.ensure_import(
-                target_file,
-                f"from src.entity.{intermediate_class.lower()} import {
-                    intermediate_class}"
-            )
+        self._add_relation_to_file(source_file, source_relation)
+        if target_relation:
+            self._add_relation_to_file(target_file, target_relation)
 
-        # Ajouter les imports standard
-        for import_line in standard_imports:
-            self.import_manager.ensure_import(source_file, import_line)
-            if config.inverse_relation:
-                self.import_manager.ensure_import(target_file, import_line)
+        if config.type in ["OneToOne", "ManyToOne"]:
+            self._add_class_import(source_file, target_entity, target_class)
+        if config.type in ["OneToOne", "OneToMany"]:
+            self._add_class_import(target_file, source_entity, source_class)
 
-    def _add_relation_to_file(self, file_path: str, relation_code: str):
-        with open(file_path, 'r') as f:
-            lines = f.readlines()
+        if config.inverse_relation:
+            if config.type == "OneToMany":
 
-        # Trouver la position d'insertion (après la dernière propriété)
-        insert_pos = next(
-            (i for i in reversed(range(len(lines)))
-             if lines[i].strip().startswith("#") or "Field" in lines[i] or "Relationship" in lines[i]),
-            len(lines)
-        ) + 1
+                foreign_key_code = (
+                    f"    {source_entity}_id: int | None = Field(\n"
+                    f"        foreign_key='{
+                        source_entity}.id', ondelete='CASCADE', nullable=False\n"
+                    f"    )\n"
+                )
+                self._add_field_to_file(target_file, foreign_key_code)
+            elif config.type == "ManyToOne":
 
-        lines.insert(insert_pos, f"    {relation_code}\n")
+                foreign_key_code = (
+                    f"    {target_entity}_id: int | None = Field(\n"
+                    f"        foreign_key='{
+                        target_entity}.id', ondelete='CASCADE', nullable=False\n"
+                    f"    )\n"
+                )
+                self._add_field_to_file(source_file, foreign_key_code)
+            elif config.type == "ManyToMany":
 
-        with open(file_path, 'w') as f:
-            f.writelines(lines)
+                pass
+
+        return True
 
     def _create_many_to_many_relation(
         self,
@@ -291,6 +295,18 @@ class RelationManager:
             intermediate_entity, source_entity, target_entity)
         self._add_many_to_many_relations(
             source_entity, target_entity, property_name, intermediate_entity, config)
+
+        intermediate_class = ClassNameManager.snake_to_pascal(
+            intermediate_entity)
+
+        source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
+        target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
+
+        self._add_class_import(
+            source_file, intermediate_entity, intermediate_class)
+        self._add_class_import(
+            target_file, intermediate_entity, intermediate_class)
+
         return True
 
     def _create_intermediate_entity(
@@ -301,26 +317,29 @@ class RelationManager:
     ):
         intermediate_class = ClassNameManager.snake_to_pascal(
             intermediate_entity)
-        properties = [
-            f"{source_entity}_id: int = Field(foreign_key='{
-                source_entity}.id')",
-            f"{target_entity}_id: int = Field(foreign_key='{
-                target_entity}.id')"
-        ]
-        data = {
-            'class_name': intermediate_class,
-            'properties': properties
-        }
-        self.file_creator.create_file(
-            template="entity_template.jinja2",
-            path=self.entity_folder,
-            name=intermediate_entity,
-            data=data
-        )
-        self.printer.print_msg(
-            f"Entité intermédiaire '{intermediate_entity}' créée.",
-            theme="success"
-        )
+        file_path = os.path.join(self.entity_folder, f"{
+                                 intermediate_entity}.py")
+        if not os.path.exists(file_path):
+            with open(file_path, 'w') as file:
+                file.write("from sqlmodel import Field, Relationship\n")
+                file.write(
+                    "from framefox.core.orm.abstract_entity import AbstractEntity\n")
+                file.write("from typing import TYPE_CHECKING\n\n")
+                file.write("if TYPE_CHECKING:\n")
+                file.write(f"    from src.entity.{source_entity} import {
+                           ClassNameManager.snake_to_pascal(source_entity)}\n")
+                file.write(f"    from src.entity.{target_entity} import {
+                           ClassNameManager.snake_to_pascal(target_entity)}\n\n")
+                file.write(
+                    f"class {intermediate_class}(AbstractEntity, table=True):\n")
+                file.write(f"    {source_entity}_id: int | None = Field(foreign_key='{
+                           source_entity}.id', primary_key=True)\n")
+                file.write(f"    {target_entity}_id: int | None = Field(foreign_key='{
+                           target_entity}.id', primary_key=True)\n")
+                file.write(f"    {source_entity}: '{ClassNameManager.snake_to_pascal(
+                    source_entity)}' = Relationship(back_populates='{target_entity}s')\n")
+                file.write(f"    {target_entity}: '{ClassNameManager.snake_to_pascal(
+                    target_entity)}' = Relationship(back_populates='{source_entity}s')\n")
 
     def _add_many_to_many_relations(
         self,
@@ -335,19 +354,54 @@ class RelationManager:
         intermediate_class = ClassNameManager.snake_to_pascal(
             intermediate_entity)
 
-        source_relation = f"{property_name}s: List['{target_class}'] = Relationship(back_populates='{
-            source_entity}s', link_model={intermediate_class})"
-        target_relation = f"{source_entity}s: List['{source_class}'] = Relationship(back_populates='{
-            property_name}s', link_model={intermediate_class})"
-
         source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
         target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
 
-        self._add_relation_to_file(source_file, source_relation)
-        self._add_relation_to_file(target_file, target_relation)
-
-        self.printer.print_msg(
-            f"Relations ManyToMany entre '{
-                source_entity}' et '{target_entity}' ajoutées.",
-            theme="success"
+        source_relation, target_relation = self._generate_relation_code(
+            source_entity, target_entity, property_name, source_class, target_class, config
         )
+
+        self._add_relation_to_file(source_file, source_relation)
+        if target_relation:
+            self._add_relation_to_file(target_file, target_relation)
+
+    def _add_relation_to_file(self, file_path: str, relation_code: str):
+        with open(file_path, 'a') as file:
+            file.write(f"\n    {relation_code}\n")
+
+    def _add_field_to_file(self, file_path: str, field_code: str):
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+        insertion_index = 0
+        for i, line in enumerate(lines):
+            if line.strip().startswith('class '):
+                insertion_index = i + 1
+            elif line.strip() == '' and insertion_index > 0:
+                insertion_index = i
+                break
+
+        lines.insert(insertion_index, field_code + "\n")
+
+        with open(file_path, 'w') as file:
+            file.writelines(lines)
+
+    def _add_class_import(self, file_path: str, entity_snake: str, entity_class: str):
+
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+        import_line = f"from src.entity.{entity_snake} import {entity_class}\n"
+
+        if import_line not in lines:
+
+            insertion_index = 0
+            for i, line in enumerate(lines):
+                if not line.startswith('from') and not line.startswith('import'):
+                    insertion_index = i
+                    break
+
+            lines.insert(insertion_index, import_line)
+
+            with open(file_path, 'w') as file:
+                file.writelines(lines)
