@@ -31,7 +31,7 @@ class ModelChecker:
             if verbose:
                 Printer().print_msg(
                     f"Entity file '{
-                    entity_name}' does not exist.",
+                        entity_name}' does not exist.",
                     theme="error",
                 )
             return False
@@ -55,12 +55,13 @@ class ModelChecker:
                 )
             return False
         repository_file_name = entity_name + "_repository.py"
-        repository_path = os.path.join(self.repositories_path, repository_file_name)
+        repository_path = os.path.join(
+            self.repositories_path, repository_file_name)
         if not os.path.exists(repository_path):
             if verbose:
                 Printer().print_msg(
                     f"Repository file '{
-                    repository_file_name}' does not exist.",
+                        repository_file_name}' does not exist.",
                     theme="error",
                 )
             return False
@@ -90,7 +91,7 @@ class ModelChecker:
             if verbose:
                 Printer().print_msg(
                     f"Entity file '{
-                    entity_name}' does not exist.",
+                        entity_name}' does not exist.",
                     theme="error",
                 )
             return False
@@ -102,7 +103,7 @@ class ModelChecker:
         if verbose:
             Printer().print_msg(
                 f"Entity class '{
-                entity_class_name}' does not exist.",
+                    entity_class_name}' does not exist.",
                 theme="error",
             )
         return False
@@ -128,12 +129,13 @@ class ModelChecker:
             ClassNameManager.snake_to_pascal(repository_name) + "Repository"
         )
         repository_file_name = repository_name + "_repository.py"
-        repository_path = os.path.join(self.repositories_path, repository_file_name)
+        repository_path = os.path.join(
+            self.repositories_path, repository_file_name)
         if not os.path.exists(repository_path):
             if verbose:
                 Printer().print_msg(
                     f"Repository file '{
-                    repository_file_name}' does not exist.",
+                        repository_file_name}' does not exist.",
                     theme="error",
                 )
             return False
@@ -145,7 +147,7 @@ class ModelChecker:
         if verbose:
             Printer().print_msg(
                 f"Repository class '{
-                repository_class_name}' does not exist.",
+                    repository_class_name}' does not exist.",
                 theme="error",
             )
         return False
@@ -199,7 +201,7 @@ class ModelChecker:
             if verbose:
                 Printer().print_msg(
                     f"Entity file '{
-                    entity_name}' does not exist.",
+                        entity_name}' does not exist.",
                     theme="error",
                 )
             return False
@@ -211,7 +213,7 @@ class ModelChecker:
         if verbose:
             Printer().print_msg(
                 f"Property '{
-                property_name}' does not exist.",
+                    property_name}' does not exist.",
                 theme="error",
             )
         return False
@@ -238,4 +240,16 @@ class ModelChecker:
         for property_name in properties_name:
             if not self.check_entity_property(entity_name, property_name, verbose):
                 return False
+        return True
+
+    def check_association_table(self, entity_name: str, target_entity: str, verbose: bool = False) -> bool:
+        association_table = f"{entity_name}_{target_entity}_association"
+        table_path = os.path.join("src/entity", f"{association_table}.py")
+        if not os.path.exists(table_path):
+            if verbose:
+                Printer().print_msg(
+                    f"Association table '{association_table}' does not exist.",
+                    theme="error",
+                )
+            return False
         return True

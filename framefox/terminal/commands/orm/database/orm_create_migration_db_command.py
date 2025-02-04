@@ -7,7 +7,7 @@ from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyD
 
 class OrmCreateMigrationDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("create_migration")
+        super().__init__("create-migration")
         self.alembic_manager = AlembicFileManager()
 
     def execute(self):

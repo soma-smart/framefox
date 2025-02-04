@@ -1,3 +1,4 @@
+import os
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
@@ -39,7 +40,7 @@ class CreateControllerCommand(AbstractCommand):
         data_controller = {
             "controller_class_name": class_name,
             "controller_file_name": name,
-            "view_name": view_name,
+            "view_name": f"{name}/index.html",
             "name": name,
         }
         data_view = {
@@ -53,10 +54,11 @@ class CreateControllerCommand(AbstractCommand):
             name=f"{name}_controller",
             data=data_controller,
         )
+        os.makedirs(os.path.join(self.view_path, name))
         view_path = FileCreator().create_file(
             template=self.view_template,
-            path=self.view_path,
-            name=view_name,
+            path=os.path.join(self.view_path, name),
+            name="index.html",
             data=data_view,
             format="html",
         )
