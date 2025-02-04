@@ -9,7 +9,7 @@ class Printer:
             "warning": "bold yellow",
             "normal": "white",
             "bold_normal": "bold white",
-            "success": "bold green",
+            "success": "bold orange1",
         }
         self.custom_theme = Theme(self.theme_dict)
         self.console = Console(theme=self.custom_theme)
@@ -22,7 +22,7 @@ class Printer:
         self,
         message: str,
         theme: str = "normal",
-        newline: bool = False,
+        newline: bool = True,
         linebefore: bool = False,
     ):
         """

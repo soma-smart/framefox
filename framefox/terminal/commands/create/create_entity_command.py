@@ -8,6 +8,7 @@ from framefox.terminal.common.printer import Printer
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.class_name_manager import ClassNameManager
+import os
 
 
 class CreateEntityCommand(AbstractCommand):
@@ -17,6 +18,7 @@ class CreateEntityCommand(AbstractCommand):
         self.relation_manager = RelationManager(
             InputManager(), Printer(), FileCreator(), ImportManager(Printer()))
         self.import_manager = ImportManager(Printer())
+        self.file_creator = FileCreator()
 
     def execute(self, name: Optional[str] = None):
         entity_name = self._validate_and_get_entity_name(name)
@@ -44,14 +46,14 @@ class CreateEntityCommand(AbstractCommand):
 
         if exists:
             self.printer.print_full_text(
-                f"The entity '[bold green]{
-                    entity_name}[/bold green]' already exists. You are updating it !",
+                f"The entity '[bold orange1]{
+                    entity_name}[/bold orange1]' already exists. You are updating it !",
                 newline=True
             )
         else:
             self.printer.print_full_text(
-                f"Creating the entity '[bold green]{
-                    entity_name}[/bold green]'",
+                f"Creating the entity '[bold orange1]{
+                    entity_name}[/bold orange1]'",
                 newline=True
             )
             self._create_entity_and_repository(entity_name)
@@ -75,3 +77,32 @@ class CreateEntityCommand(AbstractCommand):
             else:
                 self.property_manager.add_property(
                     entity_name, property_details)
+
+    def _create_entity_and_repository(self, entity_name: str):
+        """Crée l'entité et le dépôt associé"""
+        entity_class = ClassNameManager.snake_to_pascal(entity_name)
+        repository_class = f"{entity_class}Repository"
+        entity_file_path = os.path.join("src/entity", f"{entity_name}.py")
+        repository_file_path = os.path.join(
+            "src/repository", f"{entity_name}_repository.py")
+
+        self.file_creator.create_file(
+            template="entity_template.jinja2",
+            path="src/entity",
+            name=entity_name,
+            data={"class_name": entity_class, "properties": []}
+        )
+
+        self.file_creator.create_file(
+            template="repository_template.jinja2",
+            path="src/repository",
+            name=f"{entity_name}_repository",
+            data={
+                "snake_case_name": entity_name,
+                "entity_class_name": entity_class,
+                "repository_class_name": repository_class
+            }
+        )
+
+        self.printer.print_msg(
+            f"Entity '{entity_name}' and repository created successfully.", theme="success")

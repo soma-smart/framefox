@@ -23,6 +23,7 @@ class InputManager:
         Returns:
         str: The validated user input.
         """
+        print()
         user_input = InputManager.input_with_option(prompt, default)
         if user_input == "?" and choices:
             print("Choices:", choices)
@@ -31,6 +32,7 @@ class InputManager:
             print("No choices available.")
             return InputManager.wait_input(prompt, choices, default)
         if choices and user_input not in choices:
+            print()
             print(f"Invalid {prompt.lower()}.")
             return InputManager.wait_input(prompt, choices, default)
         return user_input
