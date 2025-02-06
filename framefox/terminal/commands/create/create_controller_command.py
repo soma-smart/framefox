@@ -15,11 +15,16 @@ class CreateControllerCommand(AbstractCommand):
 
     def execute(self, name: str = None):
         """
-        Create a simple controller with a exemple route and view.
+        Create a simple controller and view.
 
         Args:
             name (str): The name of the controller.
         """
+        self.printer.print_msg(
+            "What is the name of the controller ?(snake_case)",
+            theme="bold_normal",
+            linebefore=True,
+        )
         if name is None:
             name = InputManager().wait_input("Controller name")
             if name == "":
@@ -64,12 +69,12 @@ class CreateControllerCommand(AbstractCommand):
         )
 
         self.printer.print_full_text(
-            f"[bold green]Controller created successfuly:[/bold green] {
+            f"[bold orange1]Controller created successfully:[/bold orange1] {
                 controller_path}",
             linebefore=True,
         )
         self.printer.print_full_text(
-            f"[bold green]View created successfully:[/bold green] {
+            f"[bold orange1]View created successfully:[/bold orange1] {
                 view_path}",
             newline=True,
         )

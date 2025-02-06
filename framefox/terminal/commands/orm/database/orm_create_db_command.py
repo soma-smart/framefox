@@ -18,7 +18,7 @@ class OrmCreateDbCommand(AbstractCommand):
 
     def execute(self):
         """
-        Analyzes the database URL to determine the type of database to create.
+        Create the database with the given database URL (located in .env file)
         """
         for db_type in self.db_types:
             self.printer.print_msg(
@@ -37,8 +37,7 @@ class OrmCreateDbCommand(AbstractCommand):
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
                     )
-                    self.create_db_postgresql(
-                        user, password, host, port, database)
+                    self.create_db_postgresql(user, password, host, port, database)
                 elif db_type == "mysql":
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
@@ -53,14 +52,14 @@ class OrmCreateDbCommand(AbstractCommand):
         if os.path.exists(db_path):
             self.printer.print_msg(
                 f"The SQLite database '{db_path}' already exists.",
-                theme="warning",
+                theme="error",
                 linebefore=True,
                 newline=True,
             )
             return
 
         engine = create_engine(database_url, echo=True)
-        SQLModel.metadata.create_all(engine)
+
         self.create_alembic_version_table(engine)
         self.printer.print_msg(
             "Database created successfully.",
@@ -77,8 +76,7 @@ class OrmCreateDbCommand(AbstractCommand):
         )
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = connection.cursor()
-        cursor.execute(
-            f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
+        cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
         if cursor.fetchone():
             self.printer.print_msg(
                 f"The PostgreSQL database '{database}' already exists.",
@@ -108,8 +106,7 @@ class OrmCreateDbCommand(AbstractCommand):
     def create_db_mysql(
         self, user: str, password: str, host: str, port: int, database: str
     ):
-        connection = pymysql.connect(
-            user=user, password=password, host=host, port=port)
+        connection = pymysql.connect(user=user, password=password, host=host, port=port)
         cursor = connection.cursor()
         cursor.execute(f"SHOW DATABASES LIKE '{database}';")
         result = cursor.fetchone()

@@ -1,10 +1,10 @@
-from framefox.core.controller.abstract_controller import AbstractController
-from framefox.core.routing.decorator.route import Route
-from framefox.core.security.password.password_hasher import PasswordHasher
-from src.entity.{{ entity_file_name }} import {{ entity_class_name }}
 from fastapi import Request
-from framefox.core.orm.entity_manager import EntityManager
+from src.entity.{{ entity_file_name }} import {{ entity_class_name }}
 
+from framefox.core.routing.decorator.route import Route
+from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.security.password.password_hasher import PasswordHasher
+from framefox.core.controller.abstract_controller import AbstractController
 
 class RegisterController(AbstractController):
 
@@ -25,5 +25,5 @@ class RegisterController(AbstractController):
             self.entity_manager.commit()
             return self.redirect("/login")
 
-        return self.render("register.html")
+        return self.render("security/register.html")
 {% raw %}{% endraw %}

@@ -50,13 +50,13 @@ class Router:
 
         if not any(route.path == "/" for route in self.app.routes):
 
-            async def default_root():
+            async def default_route():
                 template_renderer = self.container.get(TemplateRenderer)
                 html_content = template_renderer.render("default.html", {})
                 return HTMLResponse(content=html_content)
 
             self.app.add_api_route(
-                "/", default_root, name="default_root", methods=["GET"]
+                "/", default_route, name="default_route", methods=["GET"]
             )
 
     @staticmethod

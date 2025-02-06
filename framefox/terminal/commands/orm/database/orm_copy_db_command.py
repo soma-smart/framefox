@@ -54,11 +54,11 @@ class OrmCopyDbCommand(AbstractCommand):
                 theme="error",
                 linebefore=True,
             )
-            self.printer.print_msg(
-                "The database does not exist. Please create it first.",
-                theme="error",
-                newline=True,
-            )
+            # self.printer.print_msg(
+            #     "The database does not exist. Please create it first.",
+            #     theme="error",
+            #     newline=True,
+            # )
 
     @staticmethod
     def find_sqlmodel_classes_in_file(filepath, base_model):
@@ -205,8 +205,7 @@ class OrmCopyDbCommand(AbstractCommand):
                 )
                 connection.autocommit = True
                 cursor = connection.cursor()
-                cursor.execute(
-                    f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
+                cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
                 exists = cursor.fetchone() is not None
 
                 cursor.close()

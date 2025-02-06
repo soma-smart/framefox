@@ -24,15 +24,19 @@ class Terminal:
         server_app = typer.Typer(
             help="Server operations like starting or stopping the server."
         )
+        debug_app = typer.Typer(
+            help="Debug operations like checking routes or testing security."
+        )
 
         typers = {
             "main": app,
             "create": create_app,
             "orm": orm_app,
+            "debug": debug_app,
             "orm database": database_app,
             "server": server_app,
         }
-
+        app.add_typer(debug_app, name="debug")
         app.add_typer(create_app, name="create")
         app.add_typer(orm_app, name="orm")
         app.add_typer(server_app, name="server")
@@ -61,8 +65,7 @@ class Terminal:
                 )
                 print("")
 
-                console.print(
-                    "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
+                console.print("Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
                 console.print(
                     "Try 'framefox --help' for more information", style="bold white"
                 )
@@ -70,8 +73,7 @@ class Terminal:
 
                 # Créer un tableau pour les commandes
                 table = Table(show_header=True, header_style="bold orange1")
-                table.add_column(
-                    "Commands", style="bold orange3", no_wrap=True)
+                table.add_column("Commands", style="bold orange3", no_wrap=True)
                 table.add_column("Description", style="white")
 
                 # Parcourir les typers et ajouter les commandes au tableau
@@ -89,8 +91,7 @@ class Terminal:
                         )
                         command_help = command.callback.__doc__ or ""
                         first_line = (
-                            command_help.strip().split(
-                                "\n")[0] if command_help else ""
+                            command_help.strip().split("\n")[0] if command_help else ""
                         )
                         table.add_row(command_name, first_line)
 

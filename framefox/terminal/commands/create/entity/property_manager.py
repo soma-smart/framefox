@@ -17,8 +17,17 @@ class PropertyManager:
         self.input_manager = input_manager
         self.printer = printer
         self.entity_folder = "src/entity"
-        self.property_types = ["str", "int", "float", "bool",
-                               "list", "tuple", "dict", "date", "relation"]
+        self.property_types = [
+            "str",
+            "int",
+            "float",
+            "bool",
+            "list",
+            "tuple",
+            "dict",
+            "date",
+            "relation",
+        ]
 
     def _property_exists(self, entity_name: str, property_name: str) -> bool:
         file_path = os.path.join(self.entity_folder, f"{entity_name}.py")
@@ -29,7 +38,9 @@ class PropertyManager:
         for line in content:
             if line.strip().startswith(f"{property_name}:"):
                 self.printer.print_msg(
-                    f"The property '{property_name}' already exists in '{entity_name}'.", theme="warning")
+                    f"The property '{property_name}' already exists in '{entity_name}'.",
+                    theme="error",
+                )
                 return True
         return False
 
@@ -41,7 +52,7 @@ class PropertyManager:
             property_details.name,
             property_details.type,
             property_details.constraints,
-            property_details.optional
+            property_details.optional,
         )
         file_path = self._insert_property(entity_name, property_prompt)
         self.printer.print_full_text(
@@ -86,8 +97,11 @@ class PropertyManager:
         indentation = "    "
 
         for i, line in enumerate(content):
-            if line.strip().startswith(f"class {ClassNameManager.snake_to_pascal(entity_name)}(") or \
-               line.strip().startswith(f"class {ClassNameManager.snake_to_pascal(entity_name)}:"):
+            if line.strip().startswith(
+                f"class {ClassNameManager.snake_to_pascal(entity_name)}("
+            ) or line.strip().startswith(
+                f"class {ClassNameManager.snake_to_pascal(entity_name)}:"
+            ):
                 class_found = True
                 continue
 
@@ -107,10 +121,14 @@ class PropertyManager:
             with open(file_path, "w") as file:
                 file.writelines(content)
         else:
-            self.printer.print_error(f"Class '{ClassNameManager.snake_to_pascal(
-                entity_name)}' not found in '{file_path}'.")
-            raise ValueError(f"Class '{ClassNameManager.snake_to_pascal(
-                entity_name)}' not found in '{file_path}'.")
+            self.printer.print_error(
+                f"Class '{ClassNameManager.snake_to_pascal(
+                entity_name)}' not found in '{file_path}'."
+            )
+            raise ValueError(
+                f"Class '{ClassNameManager.snake_to_pascal(
+                entity_name)}' not found in '{file_path}'."
+            )
 
         return file_path
 
@@ -118,7 +136,8 @@ class PropertyManager:
         name = self._request_property_name()
         if not name:
             self.printer.print_msg(
-                "No property entered. Closing terminal.", theme="success")
+                "No property entered. Closing terminal.", theme="success"
+            )
             exit(0)
 
         if self._property_exists(entity_name, name):
@@ -134,27 +153,38 @@ class PropertyManager:
         return PropertyDetails(name, type_, constraints, optional)
 
     def _request_property_name(self) -> str:
-        return self.input_manager.wait_input("Property name (press enter to quit the terminal)").strip()
+        self.printer.print_msg(
+            "Do you want to add a new property to the entity ?(press enter to quit the terminal)",
+            theme="bold_normal",
+            linebefore=True,
+        )
+        return self.input_manager.wait_input("Property name").strip()
 
     def _request_property_type(self) -> str:
-        return self.input_manager.wait_input(
-            "Property type [?]",
-            choices=self.property_types,
-            default="str"
-        ).strip().lower() or "str"
+        return (
+            self.input_manager.wait_input(
+                "Property type [?]", choices=self.property_types, default="str"
+            )
+            .strip()
+            .lower()
+            or "str"
+        )
 
     def _manage_property_constraint(self, property_type: str) -> Optional[Tuple]:
         if property_type == "str":
             max_length = self.input_manager.wait_input(
-                "Maximum length",
-                default=256).strip()
+                "Maximum length", default=256
+            ).strip()
             if max_length.isdigit():
                 return ("max_length=" + max_length,)
         return None
 
     def _request_optional(self) -> bool:
-        return self.input_manager.wait_input(
-            "Optional [?]",
-            choices=["yes", "no"],
-            default="no"
-        ).strip().lower() == "yes"
+        return (
+            self.input_manager.wait_input(
+                "Optional [?]", choices=["yes", "no"], default="no"
+            )
+            .strip()
+            .lower()
+            == "yes"
+        )

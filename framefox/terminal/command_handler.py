@@ -7,13 +7,13 @@ import framefox.terminal.commands.create
 import framefox.terminal.commands.orm
 import framefox.terminal.commands.orm.database
 import framefox.terminal.commands.server
+import framefox.terminal.commands.debug
 
 
 class CommandHandler:
     def __init__(self):
         self.project_init = os.path.exists("src")
         self.priority_list = [
-            "hello",
             "init",
             "create_entity",
             "create",
@@ -25,18 +25,7 @@ class CommandHandler:
         app.command(name=command_instance.name)(command_instance.execute)
 
     def load_commands(self, app_dict):
-        # to_ignore = [
-        #     'abstract_command.py',
-        #     'unsupported_command.py',
-        # ]
-        # , commands_dir='../framefox/terminal/commands'
-        # commands_dir = pkg_resources.files(framefox.terminal.commands)
-        # for filename in self.custom_sort(os.listdir(commands_dir)):
-        #     if filename.endswith('_command.py') and filename not in to_ignore:
-        #         if not self.project_init and (filename == 'init_command.py' or filename == 'hello_world_command.py'):
-        #             self.load_unique_command(app, filename)
-        #         elif self.project_init and filename != 'init_command.py' and filename != 'hello_world_command.py':
-        #             self.load_unique_command(app, filename)
+
         main_commands_dir = pkg_resources.files(framefox.terminal.commands)
         self.load_commands_for_an_app(app_dict["main"], main_commands_dir)
 
@@ -55,6 +44,8 @@ class CommandHandler:
 
         create_commands_dir = pkg_resources.files(framefox.terminal.commands.create)
         self.load_commands_for_an_app(app_dict["create"], create_commands_dir, "create")
+        debug_commands_dir = pkg_resources.files(framefox.terminal.commands.debug)
+        self.load_commands_for_an_app(app_dict["debug"], debug_commands_dir, "debug")
 
     def load_commands_for_an_app(
         self, app: typer.Typer, commands_dir, dir=None, parent_dir=None
@@ -69,14 +60,13 @@ class CommandHandler:
         for filename in self.custom_sort(os.listdir(commands_dir)):
             if filename.endswith("_command.py") and filename not in to_ignore:
                 if not self.project_init and (
-                    filename == "init_command.py"
-                    or filename == "hello_world_command.py"
+                    filename == "init_command.py" or filename == "check_command.py"
                 ):
                     self.load_unique_command(app, filename, dir, parent_dir)
                 elif (
                     self.project_init
                     and filename != "init_command.py"
-                    and filename != "hello_world_command.py"
+                    and filename != "check_command.py"
                 ):
                     self.load_unique_command(app, filename, dir, parent_dir)
 
@@ -88,19 +78,19 @@ class CommandHandler:
             if parent_dir:
                 module = __import__(
                     f"framefox.terminal.commands.{parent_dir}.{dir}.{
-                                    module_name}",
+                        module_name}",
                     fromlist=[module_name],
                 )
             else:
                 module = __import__(
                     f"framefox.terminal.commands.{dir}.{
-                                    module_name}",
+                        module_name}",
                     fromlist=[module_name],
                 )
         else:
             module = __import__(
                 f"framefox.terminal.commands.{
-                                module_name}",
+                    module_name}",
                 fromlist=[module_name],
             )
         class_name = "".join(word.capitalize() for word in module_name.split("_"))
@@ -116,15 +106,10 @@ class CommandHandler:
         """
 
         def sort_key(filename):
-            # Extract the command name without the '_command.py' suffix
             base_name = filename[:-11]
-
             for index, prefix in enumerate(self.priority_list):
                 if base_name.startswith(prefix):
-                    # Return a tuple with the priority index and the rest of the name for secondary alphabetical sorting
                     return (index, base_name)
-
-            # If no prefix matches, assign a high priority and sort alphabetically
             return (len(self.priority_list), base_name)
 
         return sorted(command_files, key=sort_key)

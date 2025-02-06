@@ -28,7 +28,7 @@ class InitCommand(AbstractCommand):
                 newline=True,
             )
             self.printer.print_full_text(
-                "Next, try [bold green]framefox server start[/bold green]",
+                "Next, try [bold orange1]framefox[/bold orange1] to see the available commands",
                 newline=True,
             )
 

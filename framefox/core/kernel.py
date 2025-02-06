@@ -25,11 +25,8 @@ class Kernel:
         return cls._instance
 
     def __init__(self):
-
         container = ServiceContainer()
-        # container.print_services()
         self.settings = container.get(Settings)
-
         global INITIALIZED
         if not INITIALIZED:
             self.app = FastAPI(
@@ -37,17 +34,12 @@ class Kernel:
                 openapi_url=self.settings.openapi_url,
                 redoc_url=self.settings.redoc_url,
             )
-
             self.app.add_exception_handler(
                 DebugException, DebugHandler.debug_exception_handler
             )
-
             self.logger = Logger().get_logger()
-
             dispatcher.load_listeners()
-
             self.setup_app()
-
             INITIALIZED = True
 
     def setup_app(self):
