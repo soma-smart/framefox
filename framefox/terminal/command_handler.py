@@ -8,6 +8,7 @@ import framefox.terminal.commands.orm
 import framefox.terminal.commands.orm.database
 import framefox.terminal.commands.server
 import framefox.terminal.commands.debug
+import framefox.terminal.commands.cache
 
 
 class CommandHandler:
@@ -39,13 +40,23 @@ class CommandHandler:
             app_dict["orm database"], orm_database_commands_dir, "database", "orm"
         )
 
-        server_commands_dir = pkg_resources.files(framefox.terminal.commands.server)
-        self.load_commands_for_an_app(app_dict["server"], server_commands_dir, "server")
+        server_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.server)
+        self.load_commands_for_an_app(
+            app_dict["server"], server_commands_dir, "server")
 
-        create_commands_dir = pkg_resources.files(framefox.terminal.commands.create)
-        self.load_commands_for_an_app(app_dict["create"], create_commands_dir, "create")
-        debug_commands_dir = pkg_resources.files(framefox.terminal.commands.debug)
-        self.load_commands_for_an_app(app_dict["debug"], debug_commands_dir, "debug")
+        create_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.create)
+        self.load_commands_for_an_app(
+            app_dict["create"], create_commands_dir, "create")
+        debug_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.debug)
+        self.load_commands_for_an_app(
+            app_dict["debug"], debug_commands_dir, "debug")
+        cache_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.cache)
+        self.load_commands_for_an_app(
+            app_dict["cache"], cache_commands_dir, "cache")
 
     def load_commands_for_an_app(
         self, app: typer.Typer, commands_dir, dir=None, parent_dir=None
@@ -93,7 +104,8 @@ class CommandHandler:
                     module_name}",
                 fromlist=[module_name],
             )
-        class_name = "".join(word.capitalize() for word in module_name.split("_"))
+        class_name = "".join(word.capitalize()
+                             for word in module_name.split("_"))
         command_class = getattr(module, class_name)
         command_instance = command_class()
         CommandHandler.register_command(app, command_instance)
