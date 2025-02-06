@@ -13,11 +13,11 @@ from framefox.core.security.authenticator.authenticator_interface import (
 )
 
 
-class FormLoginAuthenticator(AbstractAuthenticator, AuthenticatorInterface):
+class {{ authenticator_name }}Authenticator(AbstractAuthenticator, AuthenticatorInterface):
     async def authenticate(self, request: Request) -> Optional[Passport]:
         form = await request.form()
         email = form.get("email")
-        passport = Passport(
+        passport = Passport( 
             user_badge=UserBadge(email),
             password_credentials=PasswordCredentials(form.get("password")),
             csrf_token_badge=CsrfTokenBadge(form.get("csrf_token")),

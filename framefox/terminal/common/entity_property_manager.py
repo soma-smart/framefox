@@ -24,7 +24,9 @@ class EntityPropertyManager(object):
         request = self.request_property(entity_name)
         if request is None:
             return None
-        entity_name, property_name, property_type, property_constraint, optional = request
+        entity_name, property_name, property_type, property_constraint, optional = (
+            request
+        )
 
         if property_type == "relation":
             # Indiquer à CreateEntityCommand de gérer la relation
@@ -49,7 +51,8 @@ class EntityPropertyManager(object):
     def request_property(self, entity_name=None):
         if entity_name is None:
             entity_name = self.request_snake_case(
-                "What is the name of the entity?(snake_case)")
+                "What is the name of the entity?(snake_case)"
+            )
         if entity_name is None:
             return None
         property_name = self.request_property_name()
@@ -129,11 +132,13 @@ class EntityPropertyManager(object):
         return name
 
     def request_property_type(self):
-        property_type = InputManager().wait_input(
-            "Property type [?]",
-            choices=self.property_types,
-            default="str"
-        ).strip().lower() or "str"
+        property_type = (
+            InputManager()
+            .wait_input("Property type [?]", choices=self.property_types, default="str")
+            .strip()
+            .lower()
+            or "str"
+        )
 
         # Si le type est 'date', le mapper à 'datetime'
         if property_type == "date":

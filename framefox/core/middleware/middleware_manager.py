@@ -28,8 +28,8 @@ class MiddlewareManager:
     def setup_middlewares(self):
 
         # self.app.add_middleware(HTTPSRedirectMiddleware)
-        # self.app.add_middleware(RequestMiddleware, app=self.app)
+        self.app.add_middleware(RequestMiddleware)
 
         self.app.add_middleware(FirewallMiddleware, settings=self.settings)
         self.app.add_middleware(SessionMiddleware, settings=self.settings)
-        # self.app.add_middleware(CustomCORSMiddleware, settings=self.settings)
+        self.app.add_middleware(CustomCORSMiddleware, settings=self.settings)

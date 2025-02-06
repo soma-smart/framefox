@@ -19,6 +19,5 @@ class FirewallMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if self.settings.access_control:
             return await self.handler.handle_request(request, call_next)
-
         self.logger.info("No access control rules defined.")
         return await call_next(request)

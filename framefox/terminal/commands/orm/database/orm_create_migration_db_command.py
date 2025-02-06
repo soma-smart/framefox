@@ -7,16 +7,18 @@ from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyD
 
 class OrmCreateMigrationDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("create-migration")
+        super().__init__("migration")
         self.alembic_manager = AlembicFileManager()
 
     def execute(self):
         """Create a new migration file with Alembic"""
         try:
-            if not OrmCopyDbCommand.database_exists(self.alembic_manager.get_database_url()):
+            if not OrmCopyDbCommand.database_exists(
+                self.alembic_manager.get_database_url()
+            ):
                 self.printer.print_msg(
                     "The database does not exist. Please create it first.",
-                    theme="error"
+                    theme="error",
                 )
                 return
 
@@ -32,17 +34,12 @@ class OrmCreateMigrationDbCommand(AbstractCommand):
 
             existing_migrations = set(os.listdir(versions_dir))
 
-            command.revision(
-                alembic_cfg,
-                message=migration_message,
-                autogenerate=True
-            )
+            command.revision(alembic_cfg, message=migration_message, autogenerate=True)
 
             new_migrations = set(os.listdir(versions_dir))
             created_migration = new_migrations - existing_migrations
             if not created_migration:
-                self.printer.print_msg(
-                    "No migration generated.", theme="warning")
+                self.printer.print_msg("No migration generated.", theme="warning")
                 return
 
             latest_migration = created_migration.pop()
@@ -54,22 +51,21 @@ class OrmCreateMigrationDbCommand(AbstractCommand):
             if "op." not in content:
                 os.remove(migration_path)
                 self.printer.print_msg(
-                    "No changes detected since the last migration.",
-                    theme="warning"
+                    "No changes detected since the last migration.", theme="warning"
                 )
             else:
                 self.printer.print_msg(
-                    "Migration file created with Alembic.",
-                    theme="success"
+                    "Migration file created with Alembic.", theme="success"
                 )
 
         except Exception as e:
+            self.printer.print_msg(f"Error creating migration: {e}", theme="error")
             self.printer.print_msg(
-                f"Error creating migration: {e}",
-                theme="error"
+                f"Please check your migrations or entities files", theme="error"
             )
 
     def generate_migration_message(self):
         from datetime import datetime
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         return f"{timestamp}_migration"

@@ -8,12 +8,12 @@ class ImportManager:
         self.standard_imports = {
             "from sqlmodel import Field, ForeignKey, Relationship",
             "from typing import Optional, list",
-            "from framefox.core.orm.abstract_entity import AbstractEntity"
+            "from framefox.core.orm.abstract_entity import AbstractEntity",
         }
 
     def ensure_import(self, file_path: str, import_line: str) -> bool:
         """Ensures that a specific import line is present in the file"""
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             content = f.readlines()
 
         if not any(line.strip() == import_line for line in content):
@@ -25,12 +25,11 @@ class ImportManager:
 
             content.insert(insert_pos, f"{import_line}\n")
 
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 f.writelines(content)
 
             self.printer.print_msg(
-                f"Import added to {file_path}: {import_line}",
-                theme="success"
+                f"Import added to {file_path}: {import_line}", theme="success"
             )
             return True
         return False

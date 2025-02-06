@@ -4,7 +4,8 @@ from fastapi.responses import JSONResponse
 
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.passport.user_badge import UserBadge
-from src.entity.user import User
+
+# from src.entity.user import User
 from framefox.core.security.authenticator.abstract_authenticator import (
     AbstractAuthenticator,
 )
@@ -17,20 +18,20 @@ from framefox.core.request.session.session import Session
 class ApiTokenAuthenticator(AbstractAuthenticator, AuthenticatorInterface):
     async def authenticate(self) -> Optional[Passport]:
         passport = Passport()
-        passport.user = User(
-            id=2,
-            name="Utilisateur Test",
-            email="lol",
-            password="",
-            roles=["ROLE_USER"],
-        )
+        # passport.user = User(
+        #     id=2,
+        #     name="Test User",
+        #     email="test@example.com",
+        #     password="",
+        #     roles=["ROLE_USER"],
+        # )
         return passport
 
     def on_auth_success(self, token: str) -> JSONResponse:
         session_id = Session.get("session_id")
         return JSONResponse(
             {
-                "message": "Authentification réussie",
+                "message": "Authentication successful",
                 "token": token,
                 "session_id": session_id,
             },

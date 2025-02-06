@@ -5,11 +5,6 @@ from framefox.core.di.service_container import ServiceContainer
 
 class AbstractController:
 
-    # def __init__(
-    #     self,
-    # ):
-    #     self.service_container = ServiceContainer()
-
     def _get_container(self):
         return ServiceContainer()
 

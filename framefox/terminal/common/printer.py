@@ -22,7 +22,7 @@ class Printer:
         self,
         message: str,
         theme: str = "normal",
-        newline: bool = True,
+        newline: bool = False,
         linebefore: bool = False,
     ):
         """

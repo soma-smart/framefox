@@ -27,7 +27,7 @@ class FirewallHandler:
         template_renderer: TemplateRenderer,
         cookie_manager: CookieManager,
         session_manager: SessionManager,
-        token_manager: TokenManager,  # Ajout des nouvelles dépendances
+        token_manager: TokenManager,
         csrf_manager: CsrfTokenManager,
         access_manager: AccessManager,
     ):
@@ -36,14 +36,18 @@ class FirewallHandler:
         self.template_renderer = template_renderer
         self.cookie_manager = cookie_manager
         self.session_manager = session_manager
-        self.token_manager = token_manager  # Plus besoin d'instancier
-        self.csrf_manager = csrf_manager  # Plus besoin d'instancier
-        self.access_manager = access_manager  # Plus besoin d'instancier
+        self.token_manager = token_manager
+        self.csrf_manager = csrf_manager
+        self.access_manager = access_manager
         self.authenticators = self.load_authenticators()
 
     def load_authenticators(self) -> Dict[str, AuthenticatorInterface]:
         authenticators = {}
+
         firewalls = self.settings.firewalls
+        if not firewalls:
+            # self.logger.warning("No firewalls configured in security.yaml")
+            return authenticators
         for firewall_name, config in firewalls.items():
             authenticator_path = config.get("authenticator")
             if authenticator_path:
@@ -69,15 +73,17 @@ class FirewallHandler:
         Point d'entrée principal pour la gestion des requêtes.
         Gère l'authentification et l'autorisation.
         """
-        # Récupérer les routes d'auth
+        if not self.settings.firewalls:
+            return await call_next(request)
+
         auth_routes = []
+
         for firewall in self.settings.firewalls.values():
             if "login_path" in firewall:
                 auth_routes.append(firewall["login_path"])
             if "logout_path" in firewall:
                 auth_routes.append(firewall["logout_path"])
 
-        # Vérifier si c'est une route de déconnexion
         for firewall_name, firewall in self.settings.firewalls.items():
             if "logout_path" in firewall and request.url.path.startswith(
                 firewall["logout_path"]
@@ -86,14 +92,11 @@ class FirewallHandler:
                     request, firewall, firewall_name, call_next
                 )
 
-        # Vérifier si c'est une route d'authentification
         is_auth_route = any(request.url.path.startswith(route) for route in auth_routes)
         if is_auth_route:
             auth_response = await self.handle_authentication(request, call_next)
             if auth_response:
                 return auth_response
-
-        # Autorisation
         auth_result = await self.handle_authorization(request, call_next)
         if auth_result.status_code == 403:
             self.logger.warning("Authorization failed - insufficient permissions")
@@ -142,7 +145,7 @@ class FirewallHandler:
         )
         csrf_token_value = self.csrf_manager.generate_token()
         content = self.template_renderer.render(
-            "login.html", {"csrf_token": csrf_token_value}
+            "security/login.html", {"csrf_token": csrf_token_value}
         )
         response = HTMLResponse(content=content, status_code=200)
         self.cookie_manager.set_cookie(
@@ -194,7 +197,7 @@ class FirewallHandler:
             response = await call_next(request)
             self.logger.debug(
                 f"Response from call_next: Status={
-                              response.status_code}"
+                    response.status_code}"
             )
             return response
 

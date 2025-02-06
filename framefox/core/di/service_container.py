@@ -27,7 +27,8 @@ class ServiceContainer:
         print("\nRegistered services:")
         for service_class in self.services:
             print(
-                f"- {service_class.__name__} (id: {id(self.services[service_class])})"
+                f"- {service_class.__name__} (id: {id(
+                    self.services[service_class])})"
             )
 
     def scan_and_register_services(self):
@@ -184,7 +185,7 @@ class ServiceContainer:
         if service_cls in stack:
             raise Exception(
                 f"Circular dependency detected: {
-                            ' -> '.join([c.__name__ for c in stack + [service_cls]])}"
+                    ' -> '.join([c.__name__ for c in stack + [service_cls]])}"
             )
         stack.append(service_cls)
 
@@ -214,13 +215,19 @@ class ServiceContainer:
             stack.pop()
             self.services[service_cls] = instance
 
-            if tags:
-                for tag in tags:
-                    if tag not in self._tags:
-                        self._tags[tag] = []
-                    self._tags[tag].append(instance)
+            if not tags:
+                tags = []
+            default_tag = self._get_default_tag(service_cls)
+            tags.append(default_tag)
+
+            # Enregistrer les tags
+            for tag in tags:
+                if tag not in self._tags:
+                    self._tags[tag] = []
+                self._tags[tag].append(instance)
 
             return instance
+
         except NameError as e:
             print(f"NameError while registering {service_cls.__name__}: {e}")
             stack.pop()
@@ -228,7 +235,7 @@ class ServiceContainer:
         except Exception as e:
             print(
                 f"Error while registering service {
-                  service_cls.__name__}: {e}"
+                    service_cls.__name__}: {e}"
             )
             stack.pop()
             return None
@@ -245,25 +252,23 @@ class ServiceContainer:
         print(f"Service with name '{class_name}' not found.")
         return None
 
-    # def print_services(self):
-    #     print("\nServiceContainer Statistics:")
-    #     print(f"Total registered services: {len(self.services)}")
-    #     print("\nRegistered services:")
+    def _get_default_tag(self, service_cls: Type[Any]) -> str:
+        """
+        Convertit le nom du module en tag
+        Ex: framefox.core.request.session.session -> core.request.session
+        """
+        module_name = service_cls.__module__
+        parts = module_name.split(".")
 
-    #     for service_class in self.services:
-    #         service_instance = self.services[service_class]
-    #         try:
-    #             source_file = inspect.getfile(service_class)
-    #             module_name = service_class.__module__
-    #         except Exception:
-    #             source_file = "Built-in"
-    #             module_name = "Built-in"
+        # Supprimer 'framefox' ou 'src' du début
+        if parts[0] in ["framefox", "src"]:
+            parts = parts[1:]
 
-    #         print(f"- {service_class.__name__}")
-    #         print(f"  Module: {module_name}")
-    #         print(f"  Source: {source_file}")
-    #         print(f"  Instance ID: {id(service_instance)}")
-    #         print()
+        # Retirer le dernier élément s'il est identique à l'avant-dernier
+        if len(parts) > 1 and parts[-1] == parts[-2]:
+            parts = parts[:-1]
+
+        return ".".join(parts)
 
     def get_by_tag(self, tag: str) -> list:
         return self._tags.get(tag, [])

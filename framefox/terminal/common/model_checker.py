@@ -55,8 +55,7 @@ class ModelChecker:
                 )
             return False
         repository_file_name = entity_name + "_repository.py"
-        repository_path = os.path.join(
-            self.repositories_path, repository_file_name)
+        repository_path = os.path.join(self.repositories_path, repository_file_name)
         if not os.path.exists(repository_path):
             if verbose:
                 Printer().print_msg(
@@ -129,8 +128,7 @@ class ModelChecker:
             ClassNameManager.snake_to_pascal(repository_name) + "Repository"
         )
         repository_file_name = repository_name + "_repository.py"
-        repository_path = os.path.join(
-            self.repositories_path, repository_file_name)
+        repository_path = os.path.join(self.repositories_path, repository_file_name)
         if not os.path.exists(repository_path):
             if verbose:
                 Printer().print_msg(
@@ -242,7 +240,9 @@ class ModelChecker:
                 return False
         return True
 
-    def check_association_table(self, entity_name: str, target_entity: str, verbose: bool = False) -> bool:
+    def check_association_table(
+        self, entity_name: str, target_entity: str, verbose: bool = False
+    ) -> bool:
         association_table = f"{entity_name}_{target_entity}_association"
         table_path = os.path.join("src/entity", f"{association_table}.py")
         if not os.path.exists(table_path):

@@ -20,6 +20,11 @@ class CreateCrudCommand(AbstractCommand):
         Args:
             entity_name (str): The name of the entity in snake_case.
         """
+        self.printer.print_msg(
+            "What is the name of the entity you want to create a CRUD with ?(snake_case)",
+            theme="bold_normal",
+            linebefore=True,
+        )
         if entity_name is None:
             entity_name = InputManager().wait_input("Entity name")
             if entity_name == "":
@@ -75,10 +80,8 @@ class CreateCrudCommand(AbstractCommand):
                 f"{entity_name}_controller",
                 data,
             )
-
         self.printer.print_full_text(
-            f"[bold green]Controller '{
-                class_name}' created:[/bold green] {file_path}",
+            f"[bold orange1]CRUD Controller created successfully:[/bold orange1] {
+                file_path}",
             linebefore=True,
-            newline=True,
         )
