@@ -3,17 +3,17 @@ from alembic import command
 from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
 from contextlib import closing
+import typer
 
 
-class OrmMigrateDbCommand(AbstractCommand):
+class OrmRollbackDbCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("upgrade")
+        super().__init__("downgrade")
         self.alembic_manager = AlembicFileManager()
 
-    def execute(self):
-        """Apply all migrations to the database"""
+    def execute(self, steps: int = typer.Argument(1, help="Number of migrations to rollback")):
+        """Rolls back migrations"""
         try:
-
             if not OrmCopyDbCommand.database_exists(
                 self.alembic_manager.get_database_url()
             ):
@@ -27,12 +27,15 @@ class OrmMigrateDbCommand(AbstractCommand):
 
             with closing(self.alembic_manager.get_engine_connection()) as connection:
                 alembic_cfg.attributes["connection"] = connection
-                command.upgrade(alembic_cfg, "head")
+                command.downgrade(alembic_cfg, f"-{steps}")
 
             self.printer.print_msg(
-                "All migrations have been successfully applied.", theme="success"
+                f"Successfully rolled back {steps} migration{
+                    's' if steps > 1 else ''}.",
+                theme="success"
             )
         except Exception as e:
             self.printer.print_msg(
-                f"An error occurred while applying the migrations: {e}", theme="error"
+                f"Error rolling back migrations: {str(e)}",
+                theme="error"
             )
