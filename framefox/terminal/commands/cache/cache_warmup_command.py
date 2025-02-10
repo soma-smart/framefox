@@ -19,55 +19,48 @@ class CacheWarmupCommand(AbstractCommand):
 
     def execute(self):
         """
-        Préchauffer le cache de l'application
+        Warm up the application cache
         """
         console = Console()
         print("")
         start_time = time.time()
 
         table = Table(show_header=True, header_style="bold orange1")
-        table.add_column("Composant", style="bold orange3")
+        table.add_column("Component", style="bold orange3")
         table.add_column("Status", style="white")
-        table.add_column("Temps", style="white")
+        table.add_column("Time", style="white")
 
-        # Préchauffer les templates
         template_start = time.time()
         template_count = self._warmup_templates()
         template_time = time.time() - template_start
         table.add_row(
             "Templates",
-            f"[green]{template_count} chargés[/green]",
-            f"{template_time:.2f}s"
+            f"[green]{template_count} loaded[/green]",
+            f"{template_time:.2f}s",
         )
 
-        # Préchauffer les routes
         route_start = time.time()
         route_count = self._warmup_routes()
         route_time = time.time() - route_start
         table.add_row(
-            "Routes",
-            f"[green]{route_count} chargées[/green]",
-            f"{route_time:.2f}s"
+            "Routes", f"[green]{route_count} loaded[/green]", f"{route_time:.2f}s"
         )
 
-        # Préchauffer les services
         service_start = time.time()
         service_count = self._warmup_services()
         service_time = time.time() - service_start
         table.add_row(
-            "Services",
-            f"[green]{service_count} chargés[/green]",
-            f"{service_time:.2f}s"
+            "Services", f"[green]{service_count} loaded[/green]", f"{service_time:.2f}s"
         )
 
         total_time = time.time() - start_time
 
         console.print(table)
         print("")
-        self.printer.print_full_text(
-            f"[bold green]✓ Cache préchauffé en {
-                total_time:.2f} secondes[/bold green]",
-            linebefore=True
+        console.print(
+            f"[bold orange1]✓ Cache warmed up in {total_time:.2f} seconds[/bold orange1]",
+            style="bold green",
+            highlight=False,
         )
 
     def _warmup_templates(self) -> int:
@@ -77,8 +70,7 @@ class CacheWarmupCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".html"):
                     template_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(
-                        template_path, template_dir)
+                    relative_path = os.path.relpath(template_path, template_dir)
                     try:
                         self.template_renderer.env.get_template(relative_path)
                         count += 1
