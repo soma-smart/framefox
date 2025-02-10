@@ -1,4 +1,3 @@
-
 import os
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
@@ -33,8 +32,7 @@ class CreateRegisterCommand(AbstractCommand):
 
     def _create_register_files(self, provider_name: str):
 
-        controller_path = os.path.join(
-            "src/controllers", "register_controller.py")
+        controller_path = os.path.join("src/controllers", "register_controller.py")
         view_path = os.path.join("templates/security", "register.html")
 
         existing_files = []

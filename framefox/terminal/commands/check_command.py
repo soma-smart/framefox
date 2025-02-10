@@ -32,16 +32,16 @@ class CheckCommand(AbstractCommand):
             "Python Version",
             "[green]OK[/green]" if python_ok else "[red]Error[/red]",
             f"Python {'.'.join(map(str, self.MIN_PYTHON_VERSION))}+",
-            f"Python {'.'.join(map(str, python_version[:3]))}"
+            f"Python {'.'.join(map(str, python_version[:3]))}",
         )
 
         os_name = platform.system()
-        os_ok = os_name in ['Linux', 'Darwin', 'Windows', 'MacOS']
+        os_ok = os_name in ["Linux", "Darwin", "Windows", "MacOS"]
         table.add_row(
             "Operating System",
             "[green]OK[/green]" if os_ok else "[red]Not Supported[/red]",
             "Win/Linux/MacOS",
-            os_name
+            os_name,
         )
         home = os.path.expanduser("~")
         can_write = os.access(home, os.W_OK)
@@ -49,7 +49,7 @@ class CheckCommand(AbstractCommand):
             "User Permissions",
             "[green]OK[/green]" if can_write else "[red]Error[/red]",
             "Write in home",
-            "OK" if can_write else "Denied"
+            "OK" if can_write else "Denied",
         )
 
         _, _, free = shutil.disk_usage(home)
@@ -58,7 +58,7 @@ class CheckCommand(AbstractCommand):
             "Disk Space",
             "[green]OK[/green]" if space_ok else "[red]Insufficient[/red]",
             "100 MB minimum",
-            f"{free // (1024*1024)} MB available"
+            f"{free // (1024*1024)} MB available",
         )
 
         console.print(table)
@@ -68,10 +68,10 @@ class CheckCommand(AbstractCommand):
         if all_ok:
             self.printer.print_full_text(
                 "[bold orange1]✓ Your system is compatible with Framefox[/bold orange1]",
-                linebefore=True
+                linebefore=True,
             )
         else:
             self.printer.print_full_text(
                 "[bold red]✗ Your system does not meet all the required conditions[/bold red]",
-                linebefore=True
+                linebefore=True,
             )

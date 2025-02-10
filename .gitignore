@@ -14,3 +14,16 @@ instance/
 build/
 dist/
 publish_lib.sh
+
+# only for the framefox project
+src/
+tests/
+framefox.egg-info/
+var/
+.env
+config/
+templates/
+migrations/
+public/
+main.py
+app.db
