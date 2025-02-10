@@ -253,3 +253,29 @@ class ModelChecker:
                 )
             return False
         return True
+
+    def get_entity_properties(self, entity_name: str, verbose: bool = False):
+        """
+        Returns the list of properties (fields) of an entity via its annotations.
+        """
+        if not self.check_entity_class(entity_name, verbose):
+            return []
+
+        entity_file_name = ClassNameManager.snake_to_pascal(entity_name)
+        module_name = f"src.entity.{entity_name}"
+        try:
+            module = __import__(module_name, fromlist=[entity_file_name])
+            entity_cls = getattr(module, entity_file_name)
+        except (ImportError, AttributeError):
+            if verbose:
+                Printer().print_msg(
+                    f"Unable to load class {entity_file_name} from {module_name}",
+                    theme="error",
+                )
+            return []
+
+        annotations = getattr(entity_cls, "__annotations__", {})
+        properties = []
+        for field_name, type_hint in annotations.items():
+            properties.append({"name": field_name, "type": str(type_hint)})
+        return properties

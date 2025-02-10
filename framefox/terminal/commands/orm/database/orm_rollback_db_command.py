@@ -11,7 +11,9 @@ class OrmRollbackDbCommand(AbstractCommand):
         super().__init__("downgrade")
         self.alembic_manager = AlembicFileManager()
 
-    def execute(self, steps: int = typer.Argument(1, help="Number of migrations to rollback")):
+    def execute(
+        self, steps: int = typer.Argument(1, help="Number of migrations to rollback")
+    ):
         """Rolls back migrations"""
         try:
             if not OrmCopyDbCommand.database_exists(
@@ -32,10 +34,9 @@ class OrmRollbackDbCommand(AbstractCommand):
             self.printer.print_msg(
                 f"Successfully rolled back {steps} migration{
                     's' if steps > 1 else ''}.",
-                theme="success"
+                theme="success",
             )
         except Exception as e:
             self.printer.print_msg(
-                f"Error rolling back migrations: {str(e)}",
-                theme="error"
+                f"Error rolling back migrations: {str(e)}", theme="error"
             )

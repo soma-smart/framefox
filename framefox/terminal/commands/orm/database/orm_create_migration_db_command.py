@@ -34,14 +34,12 @@ class OrmCreateMigrationDbCommand(AbstractCommand):
 
             existing_migrations = set(os.listdir(versions_dir))
 
-            command.revision(
-                alembic_cfg, message=migration_message, autogenerate=True)
+            command.revision(alembic_cfg, message=migration_message, autogenerate=True)
 
             new_migrations = set(os.listdir(versions_dir))
             created_migration = new_migrations - existing_migrations
             if not created_migration:
-                self.printer.print_msg(
-                    "No migration generated.", theme="warning")
+                self.printer.print_msg("No migration generated.", theme="warning")
                 return
 
             latest_migration = created_migration.pop()
@@ -61,8 +59,7 @@ class OrmCreateMigrationDbCommand(AbstractCommand):
                 )
 
         except Exception as e:
-            self.printer.print_msg(
-                f"Error creating migration: {e}", theme="error")
+            self.printer.print_msg(f"Error creating migration: {e}", theme="error")
             self.printer.print_msg(
                 f"Please check your migrations or entities files", theme="error"
             )

@@ -15,8 +15,9 @@ class CacheClearCommand(AbstractCommand):
             "var/cache",
             "var/log/*.log",
             "var/session/*",
-            ".coverage"
+            ".coverage",
         ]
+        self.excluded_dirs = ["migrations/versions/__pycache__"]
 
     def execute(self):
         """
@@ -28,54 +29,28 @@ class CacheClearCommand(AbstractCommand):
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Location", style="bold orange3")
         table.add_column("Status", style="white")
-        table.add_column("Details", style="white")
 
-        total_cleared = 0
+        for cache_dir in self.cache_dirs:
+            if cache_dir in self.excluded_dirs:
+                table.add_row(cache_dir, "[yellow]Excluded[/yellow]")
+                continue
 
-        # Parcourir récursivement pour trouver tous les dossiers cache
-        for root, dirs, files in os.walk("."):
-            for dir_name in dirs:
-                if dir_name in self.cache_dirs:
-                    path = os.path.join(root, dir_name)
-                    try:
-                        shutil.rmtree(path)
-                        table.add_row(
-                            path,
-                            "[green]Cleared[/green]",
-                            "Directory removed"
-                        )
-                        total_cleared += 1
-                    except Exception as e:
-                        table.add_row(
-                            path,
-                            "[red]Error[/red]",
-                            str(e)
-                        )
-
-            # Nettoyer les fichiers .pyc
-            for file in files:
-                if file.endswith(".pyc"):
-                    path = os.path.join(root, file)
-                    try:
-                        os.remove(path)
-                        table.add_row(
-                            path,
-                            "[green]Cleared[/green]",
-                            "File removed"
-                        )
-                        total_cleared += 1
-                    except Exception as e:
-                        table.add_row(
-                            path,
-                            "[red]Error[/red]",
-                            str(e)
-                        )
+            if os.path.exists(cache_dir):
+                try:
+                    if os.path.isdir(cache_dir):
+                        shutil.rmtree(cache_dir)
+                    else:
+                        os.remove(cache_dir)
+                    table.add_row(cache_dir, "[green]Cleared[/green]")
+                except Exception as e:
+                    table.add_row(cache_dir, f"[red]Error: {str(e)}[/red]")
+            else:
+                table.add_row(cache_dir, "[yellow]Not found[/yellow]")
 
         console.print(table)
         print("")
-
-        self.printer.print_full_text(
-            f"[bold green]✓ Cache cleared: {
-                total_cleared} items removed[/bold green]",
-            linebefore=True
+        self.printer.print_msg(
+            "Cache clearing completed.",
+            theme="success",
+            linebefore=True,
         )

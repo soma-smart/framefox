@@ -36,6 +36,9 @@ class Terminal:
         cache_app = typer.Typer(
             help="Cache operations like clearing cache files and directories."
         )
+        fixtures_app = typer.Typer(
+            help="Fixtures operations like generating or loading fixtures."
+        )
 
         typers = {
             "main": app,
@@ -45,14 +48,16 @@ class Terminal:
             "orm database": database_app,
             "server": server_app,
             "cache": cache_app,
+            "fixtures": fixtures_app,
         }
-        app.add_typer(debug_app, name="debug")
-        app.add_typer(cache_app, name="cache")
+
         app.add_typer(create_app, name="create")
         app.add_typer(orm_app, name="orm")
         app.add_typer(server_app, name="server")
-
         orm_app.add_typer(database_app, name="database")
+        app.add_typer(debug_app, name="debug")
+        app.add_typer(cache_app, name="cache")
+        app.add_typer(fixtures_app, name="fixtures")
         Terminal._typers = typers
         command_handler = CommandHandler()
         command_handler.load_commands(typers)
@@ -61,9 +66,12 @@ class Terminal:
         def main(
             ctx: typer.Context,
             help: bool = typer.Option(
-                None, "--help", "-h", is_eager=True,
+                None,
+                "--help",
+                "-h",
+                is_eager=True,
                 help="Show this message and exit.",
-            )
+            ),
         ):
             """Framefox CLI - Swift, smart, and a bit foxy"""
             if help is not None or ctx.invoked_subcommand is None:
@@ -110,17 +118,13 @@ class Terminal:
         )
         print("")
 
-        console.print(
-            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
-        console.print(
-            "Try 'framefox --help' for more information", style="bold white"
-        )
+        console.print("Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
+        console.print("Try 'framefox --help' for more information", style="bold white")
         print("")
 
         # Créer un tableau pour les commandes
         table = Table(show_header=True, header_style="bold orange1")
-        table.add_column(
-            "Commands", style="bold orange3", no_wrap=True)
+        table.add_column("Commands", style="bold orange3", no_wrap=True)
         table.add_column("Description", style="white")
 
         # Parcourir les typers et ajouter les commandes au tableau
@@ -131,14 +135,10 @@ class Terminal:
                 else typer_app.commands.values()
             ):
                 command_name = (
-                    f"{category} {command.name}"
-                    if category != "main"
-                    else command.name
+                    f"{category} {command.name}" if category != "main" else command.name
                 )
                 command_help = command.callback.__doc__ or ""
-                first_line = (
-                    command_help.strip().split("\n")[0] if command_help else ""
-                )
+                first_line = command_help.strip().split("\n")[0] if command_help else ""
                 table.add_row(command_name, first_line)
 
         console.print(table)

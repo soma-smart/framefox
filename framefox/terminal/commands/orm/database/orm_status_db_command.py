@@ -17,7 +17,9 @@ class OrmStatusDbCommand(AbstractCommand):
     def execute(self):
         """Check the status of migrations"""
         try:
-            if not OrmCopyDbCommand.database_exists(self.alembic_manager.get_database_url()):
+            if not OrmCopyDbCommand.database_exists(
+                self.alembic_manager.get_database_url()
+            ):
                 self.printer.print_msg(
                     "The database does not exist. Please create it first.",
                     theme="error",
@@ -44,44 +46,44 @@ class OrmStatusDbCommand(AbstractCommand):
                     if current_rev is None:
                         status = "PENDING"
                     else:
-                        status = "CURRENT" if rev.revision == current_rev else \
-                            "PENDING" if rev.revision in [r.revision for r in script.iterate_revisions(current_rev, "head")] else \
-                            "APPLIED"
+                        status = (
+                            "CURRENT"
+                            if rev.revision == current_rev
+                            else (
+                                "PENDING"
+                                if rev.revision
+                                in [
+                                    r.revision
+                                    for r in script.iterate_revisions(
+                                        current_rev, "head"
+                                    )
+                                ]
+                                else "APPLIED"
+                            )
+                        )
 
-                    table.add_row(
-                        rev.revision,
-                        rev.doc or "",
-                        status
-                    )
+                    table.add_row(rev.revision, rev.doc or "", status)
                     console = Console()
                     console.print("")
-                    console.print(
-                        "[bold orange1]Migration Status[/bold orange1]")
+                    console.print("[bold orange1]Migration Status[/bold orange1]")
                     console.print("")
                     console.print(table)
                     console.print("")
 
                 if current_rev != head_rev:
                     if current_rev is None:
-                        self.printer.print_msg(
-                            "No migrations applied",
-                            theme="warning"
-                        )
+                        self.printer.print_msg("No migrations applied", theme="warning")
                     else:
-                        pending = list(
-                            script.iterate_revisions(current_rev, "head"))
+                        pending = list(script.iterate_revisions(current_rev, "head"))
                         self.printer.print_msg(
-                            f"{len(pending)} pending migration(s)",
-                            theme="warning"
+                            f"{len(pending)} pending migration(s)", theme="warning"
                         )
                 else:
                     self.printer.print_msg(
-                        "The database is up to date",
-                        theme="success"
+                        "The database is up to date", theme="success"
                     )
 
         except Exception as e:
             self.printer.print_msg(
-                f"Error while checking migrations: {str(e)}",
-                theme="error"
+                f"Error while checking migrations: {str(e)}", theme="error"
             )

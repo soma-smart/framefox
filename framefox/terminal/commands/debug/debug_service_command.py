@@ -19,15 +19,22 @@ class DebugServiceCommand(AbstractCommand):
 
         grouped_services = {}
         for service_class, instance in self.container.services.items():
-            if service_class.__module__ in ['Built-in', 'builtins', 'framefox.core.di.service_container']:
+            if service_class.__module__ in [
+                "Built-in",
+                "builtins",
+                "framefox.core.di.service_container",
+            ]:
                 continue
 
             tags = []
             for tag, services in self.container.tags.items():
                 if instance in services:
                     tags.append(tag)
-            group = service_class.__module__.split('.')[1] if len(
-                service_class.__module__.split('.')) > 1 else 'other'
+            group = (
+                service_class.__module__.split(".")[1]
+                if len(service_class.__module__.split(".")) > 1
+                else "other"
+            )
 
             if group not in grouped_services:
                 grouped_services[group] = []
@@ -35,8 +42,7 @@ class DebugServiceCommand(AbstractCommand):
             tags_str = ", ".join(sorted(tags)) if tags else "No tags"
             grouped_services[group].append((tags_str, service_class, instance))
 
-        total_services = sum(len(services)
-                             for services in grouped_services.values())
+        total_services = sum(len(services) for services in grouped_services.values())
         console.print(
             f"[bold orange1]Total registered services:[/bold orange1] {
                 total_services}"
@@ -45,8 +51,10 @@ class DebugServiceCommand(AbstractCommand):
 
         for group, services in sorted(grouped_services.items()):
 
-            console.print(f"Services in group: [bold cyan]{
-                          group}[/bold cyan]")
+            console.print(
+                f"Services in group: [bold cyan]{
+                          group}[/bold cyan]"
+            )
 
             table = Table(show_header=True, header_style="bold orange1")
             table.add_column("Service", style="bold orange3")
@@ -61,7 +69,7 @@ class DebugServiceCommand(AbstractCommand):
                     service_class.__name__,
                     service_class.__module__,
                     str(id(instance)),
-                    tags_str
+                    tags_str,
                 )
 
             console.print(table)
