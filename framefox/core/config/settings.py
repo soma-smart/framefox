@@ -1,8 +1,9 @@
-import yaml
 import os
 import re
-from dotenv import load_dotenv
 from pathlib import Path
+
+import yaml
+from dotenv import load_dotenv
 
 env_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path=env_path)

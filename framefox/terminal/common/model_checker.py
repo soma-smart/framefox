@@ -1,4 +1,5 @@
 import os
+
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.printer import Printer
 

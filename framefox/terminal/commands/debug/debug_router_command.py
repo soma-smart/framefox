@@ -1,11 +1,13 @@
 import os
 import sys
 from pathlib import Path
-from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.core.routing.router import Router
-from framefox.core.kernel import Kernel
-from rich.table import Table
+
 from rich.console import Console
+from rich.table import Table
+
+from framefox.core.kernel import Kernel
+from framefox.core.routing.router import Router
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 
 class DebugRouterCommand(AbstractCommand):

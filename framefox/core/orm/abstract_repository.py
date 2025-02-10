@@ -1,6 +1,7 @@
 from abc import ABC
-from typing import Annotated, Type, TypeVar, List, Optional
-from sqlmodel import SQLModel, select, asc, desc
+from typing import Annotated, List, Optional, Type, TypeVar
+
+from sqlmodel import SQLModel, asc, desc, select
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.orm.entity_manager import EntityManager

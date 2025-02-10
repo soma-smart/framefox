@@ -1,12 +1,14 @@
-from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.core.kernel import Kernel
-from framefox.core.templates.template_renderer import TemplateRenderer
-from framefox.core.di.service_container import ServiceContainer
-from framefox.core.config.settings import Settings
-from rich.table import Table
-from rich.console import Console
 import os
 import time
+
+from rich.console import Console
+from rich.table import Table
+
+from framefox.core.config.settings import Settings
+from framefox.core.di.service_container import ServiceContainer
+from framefox.core.kernel import Kernel
+from framefox.core.templates.template_renderer import TemplateRenderer
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 
 class CacheWarmupCommand(AbstractCommand):

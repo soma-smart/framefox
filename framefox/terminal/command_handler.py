@@ -1,15 +1,16 @@
+import importlib.resources as pkg_resources
 import os
+
 import typer
 
-import importlib.resources as pkg_resources
 import framefox.terminal.commands
+import framefox.terminal.commands.cache
 import framefox.terminal.commands.create
+import framefox.terminal.commands.debug
+import framefox.terminal.commands.fixtures
 import framefox.terminal.commands.orm
 import framefox.terminal.commands.orm.database
 import framefox.terminal.commands.server
-import framefox.terminal.commands.debug
-import framefox.terminal.commands.cache
-import framefox.terminal.commands.fixtures
 
 
 class CommandHandler:

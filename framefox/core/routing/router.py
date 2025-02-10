@@ -1,10 +1,12 @@
-import os
-import inspect
 import importlib
+import inspect
+import os
 from pathlib import Path
+
 from fastapi import FastAPI
-from fastapi.routing import APIRouter
 from fastapi.responses import HTMLResponse
+from fastapi.routing import APIRouter
+
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.templates.template_renderer import TemplateRenderer

@@ -1,4 +1,5 @@
 import os
+
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.file_creator import FileCreator
 

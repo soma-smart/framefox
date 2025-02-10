@@ -1,12 +1,13 @@
 import logging
 from typing import Optional
-from fastapi import Request, HTTPException
+
+from fastapi import HTTPException, Request
 
 from framefox.core.config.settings import Settings
+from framefox.core.di.service_container import ServiceContainer
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.token_manager import TokenManager
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
-from framefox.core.di.service_container import ServiceContainer
 
 
 class AbstractAuthenticator:

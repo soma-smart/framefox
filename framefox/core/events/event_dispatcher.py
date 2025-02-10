@@ -1,7 +1,7 @@
-from typing import Callable, Dict, List, Any
 import importlib
-import pkgutil
 import inspect
+import pkgutil
+from typing import Any, Callable, Dict, List
 
 
 class EventDispatcher:

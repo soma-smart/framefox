@@ -1,14 +1,15 @@
+import os
 from typing import Optional
+
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.commands.create.entity.import_manager import ImportManager
 from framefox.terminal.commands.create.entity.property_manager import PropertyManager
 from framefox.terminal.commands.create.entity.relation_manager import RelationManager
-from framefox.terminal.commands.create.entity.import_manager import ImportManager
-from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.common.input_manager import InputManager
-from framefox.terminal.common.printer import Printer
-from framefox.terminal.common.file_creator import FileCreator
-from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.class_name_manager import ClassNameManager
-import os
+from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.model_checker import ModelChecker
+from framefox.terminal.common.printer import Printer
 
 
 class CreateEntityCommand(AbstractCommand):
