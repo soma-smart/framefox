@@ -1,9 +1,10 @@
-from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.common.printer import Printer
-from framefox.terminal.common.input_manager import InputManager
-import os
 import importlib
+import os
 from typing import Optional
+
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.printer import Printer
 
 
 class FixturesLoadCommand(AbstractCommand):

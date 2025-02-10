@@ -1,8 +1,10 @@
-from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.core.di.service_container import ServiceContainer
 import inspect
-from rich.table import Table
+
 from rich.console import Console
+from rich.table import Table
+
+from framefox.core.di.service_container import ServiceContainer
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 
 class DebugServiceCommand(AbstractCommand):

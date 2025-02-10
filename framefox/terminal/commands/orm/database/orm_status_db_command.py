@@ -1,12 +1,14 @@
-from framefox.terminal.commands.abstract_command import AbstractCommand
+from contextlib import closing
+
 from alembic import command
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from framefox.terminal.common.alembic_file_manager import AlembicFileManager
-from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
-from rich.table import Table
 from rich.console import Console
-from contextlib import closing
+from rich.table import Table
+
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
+from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 
 
 class OrmStatusDbCommand(AbstractCommand):

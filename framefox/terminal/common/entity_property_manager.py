@@ -1,6 +1,6 @@
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.printer import Printer
 
 

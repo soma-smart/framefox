@@ -1,8 +1,10 @@
 import os
 import shutil
-from framefox.terminal.commands.abstract_command import AbstractCommand
-from rich.table import Table
+
 from rich.console import Console
+from rich.table import Table
+
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 
 class CacheClearCommand(AbstractCommand):

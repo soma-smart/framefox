@@ -1,6 +1,7 @@
+import importlib.resources as pkg_resources
+
 from jinja2 import Environment, FileSystemLoader
 
-import importlib.resources as pkg_resources
 import framefox.terminal
 
 

@@ -1,7 +1,7 @@
-from sqlmodel import SQLModel
-from typing import Type, List
+from typing import List, Type
+
 from pydantic import BaseModel, create_model
-from sqlmodel import inspect
+from sqlmodel import SQLModel, inspect
 
 
 class AbstractEntity(SQLModel):

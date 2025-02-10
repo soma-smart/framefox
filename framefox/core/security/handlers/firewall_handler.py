@@ -1,22 +1,22 @@
-import logging
-import inspect
-
-from typing import Dict, Optional, Type
-from fastapi import Request
-from fastapi.responses import Response, HTMLResponse, JSONResponse, RedirectResponse
 import importlib
+import inspect
+import logging
+from typing import Dict, Optional, Type
 
-from framefox.core.security.token_manager import TokenManager
-from framefox.core.request.csrf_token_manager import CsrfTokenManager
-from framefox.core.security.access_manager import AccessManager
-from framefox.core.templates.template_renderer import TemplateRenderer
+from fastapi import Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+
 from framefox.core.config.settings import Settings
 from framefox.core.request.cookie_manager import CookieManager
+from framefox.core.request.csrf_token_manager import CsrfTokenManager
+from framefox.core.request.session.session import Session
+from framefox.core.request.session.session_manager import SessionManager
+from framefox.core.security.access_manager import AccessManager
 from framefox.core.security.authenticator.authenticator_interface import (
     AuthenticatorInterface,
 )
-from framefox.core.request.session.session import Session
-from framefox.core.request.session.session_manager import SessionManager
+from framefox.core.security.token_manager import TokenManager
+from framefox.core.templates.template_renderer import TemplateRenderer
 
 
 class FirewallHandler:

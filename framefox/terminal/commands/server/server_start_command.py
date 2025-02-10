@@ -1,5 +1,6 @@
-from framefox.terminal.commands.abstract_command import AbstractCommand
 import subprocess
+
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 
 class ServerStartCommand(AbstractCommand):

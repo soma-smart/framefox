@@ -1,6 +1,6 @@
-from fastapi import Request
 from contextvars import ContextVar
 
+from fastapi import Request
 
 _request_context: ContextVar[Request] = ContextVar("request_context")
 

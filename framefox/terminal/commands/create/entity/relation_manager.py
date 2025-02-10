@@ -1,7 +1,8 @@
+import os
 from dataclasses import dataclass
 from typing import Optional, Tuple
+
 from framefox.terminal.common.class_name_manager import ClassNameManager
-import os
 
 
 @dataclass

@@ -1,9 +1,10 @@
 import logging
-from typing import Type, List, Any, Optional, Dict, Annotated
+from typing import Annotated, Any, Dict, List, Optional, Type
 
-
-from sqlmodel import select, delete as sql_delete, update as sql_update
 from sqlalchemy.sql.expression import Delete, Update
+from sqlmodel import delete as sql_delete
+from sqlmodel import select
+from sqlmodel import update as sql_update
 
 from framefox.core.orm.entity_manager import EntityManager
 

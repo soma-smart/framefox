@@ -1,17 +1,17 @@
-from fastapi import FastAPI
-
-
-from framefox.core.config.setup_pp_debug import setup_pp_debug
-from framefox.core.routing.router import Router
-from framefox.core.logging.logger import Logger
-from framefox.core.config.settings import Settings
-from framefox.core.events.event_dispatcher import dispatcher
-from framefox.core.middleware.middleware_manager import MiddlewareManager
-from framefox.core.debug.handler.debug_handler import DebugHandler
-from framefox.core.debug.exception.debug_exception import DebugException
-from framefox.core.di.service_container import ServiceContainer
-from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from framefox.core.config.settings import Settings
+from framefox.core.config.setup_pp_debug import setup_pp_debug
+from framefox.core.debug.exception.debug_exception import DebugException
+from framefox.core.debug.handler.debug_handler import DebugHandler
+from framefox.core.di.service_container import ServiceContainer
+from framefox.core.events.event_dispatcher import dispatcher
+from framefox.core.logging.logger import Logger
+from framefox.core.middleware.middleware_manager import MiddlewareManager
+from framefox.core.routing.router import Router
 
 INITIALIZED = False
 

@@ -1,9 +1,9 @@
 import logging
 
-from framefox.core.di.service_container import ServiceContainer
-from sqlmodel import create_engine, Session
+from sqlmodel import Session, create_engine
 
 from framefox.core.config.settings import Settings
+from framefox.core.di.service_container import ServiceContainer
 
 
 class EntityManager:

@@ -1,6 +1,6 @@
 import importlib
 import logging
-from typing import Optional, Tuple, Any, Annotated
+from typing import Annotated, Any, Optional, Tuple
 
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer

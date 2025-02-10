@@ -1,6 +1,7 @@
 import logging
-from typing import List
 import re
+from typing import List
+
 from framefox.core.config.settings import Settings
 
 

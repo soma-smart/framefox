@@ -1,10 +1,12 @@
 import os
-import sys
-import shutil
 import platform
-from framefox.terminal.commands.abstract_command import AbstractCommand
-from rich.table import Table
+import shutil
+import sys
+
 from rich.console import Console
+from rich.table import Table
+
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 
 class CheckCommand(AbstractCommand):

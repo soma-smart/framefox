@@ -1,11 +1,13 @@
-import os
-import io
 import inspect
-from rich.console import Console
-from rich.pretty import Pretty
-from rich.panel import Panel
+import io
+import os
+
 from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.pretty import Pretty
 from rich.table import Table
+
 from framefox.core.debug.exception.debug_exception import DebugException
 
 

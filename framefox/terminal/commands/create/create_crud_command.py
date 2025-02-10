@@ -1,8 +1,8 @@
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.model_checker import ModelChecker
+from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.model_checker import ModelChecker
 
 
 class CreateCrudCommand(AbstractCommand):

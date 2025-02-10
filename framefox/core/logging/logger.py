@@ -1,8 +1,9 @@
 import logging
 import logging.config
 import os
-from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
 from pathlib import Path
+
+from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
 
 
 class Logger:
