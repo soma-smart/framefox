@@ -2,9 +2,16 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import Annotated, Dict, Optional
+from typing import Dict, Optional
 
 from framefox.core.config.settings import Settings
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class SessionManager:
@@ -73,7 +80,8 @@ class SessionManager:
         """Cleans up expired sessions"""
         sessions = self.load_sessions()
         current_time = datetime.now(timezone.utc).timestamp()
-        expired = [sid for sid, s in sessions.items() if s["expires_at"] < current_time]
+        expired = [sid for sid, s in sessions.items() if s["expires_at"]
+                   < current_time]
 
         if expired:
             for sid in expired:
