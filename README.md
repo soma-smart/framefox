@@ -248,3 +248,8 @@ Application configurations are defined in the `config` folder. The configuration
 - `application.yaml`: General application settings.
 - `orm.yaml`: ORM (Object-Relational Mapping) settings.
 - `security.yaml`: Security settings including authentication and authorization.
+
+
+## Authors
+
+- @RayenBou
