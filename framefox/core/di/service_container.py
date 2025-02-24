@@ -35,7 +35,8 @@ class ServiceContainer:
         src_path = Path(__file__).resolve().parent.parent.parent.parent / "src"
 
         excluded_directories = ["entity", "entities", "Entity"]
-        excluded_modules = ["src.entity", "src.entities", "framefox.core.entity"]
+        excluded_modules = ["src.entity",
+                            "src.entities", "framefox.core.entity"]
 
         paths_to_scan = [core_path, src_path]
         for base_path in paths_to_scan:
@@ -57,7 +58,8 @@ class ServiceContainer:
                         module_path = root_path / file
                         try:
                             module_name = (
-                                self._module_name_from_path(module_path, core_path)
+                                self._module_name_from_path(
+                                    module_path, core_path)
                                 if base_path == core_path
                                 else f"src.{module_path.relative_to(src_path).with_suffix('').as_posix().replace('/', '.')}"
                             )
@@ -175,7 +177,8 @@ class ServiceContainer:
             return None
         if service_cls in self.services:
             return self.services[service_cls]
-        problematic_classes = {"FastAPI", "Panel", "Pretty", "Table", "Built-in", "abc"}
+        problematic_classes = {"FastAPI", "Panel",
+                               "Pretty", "Table", "Built-in", "abc"}
         if service_cls.__name__ in problematic_classes:
             return None
 
@@ -269,7 +272,28 @@ class ServiceContainer:
 
         return ".".join(parts)
 
-    def get_by_tag(self, tag: str) -> list:
+    def get_by_tag(self, tag: str) -> Any:
+        """
+        Retourne l'instance unique d'un service par son tag.
+        Lève une exception si plusieurs services sont trouvés.
+        """
+        services = self._tags.get(tag, [])
+
+        if not services:
+            return None
+
+        if len(services) > 1:
+            service_names = [
+                service.__class__.__name__ for service in services]
+            raise Exception(
+                f"Multiple services found for tag '{tag}': {', '.join(service_names)}")
+
+        return services[0]
+
+    def get_all_by_tag(self, tag: str) -> list:
+        """
+        Retourne tous les services associés à un tag donné.
+        """
         return self._tags.get(tag, [])
 
     @property

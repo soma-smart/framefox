@@ -2,7 +2,8 @@ import importlib
 import inspect
 import os
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRouter
 from framefox.core.di.service_container import ServiceContainer
@@ -34,7 +35,21 @@ class Router:
             return route_path
         return "#"
 
+    def register_exception_handlers(self):
+        """Register custom exception handlers"""
+        @self.app.exception_handler(404)
+        async def custom_404_handler(request: Request, exc: HTTPException):
+            if exc.status_code == 404:
+                template_renderer = self.container.get(TemplateRenderer)
+                html_content = template_renderer.render("404.html", {
+                    "request": request,
+                    "error": "Page non trouvée"
+                })
+                return HTMLResponse(content=html_content, status_code=404)
+            raise exc
+
     def register_controllers(self):
+        self.register_exception_handlers()
         controllers_path = os.path.join(os.getcwd(), "src", "controllers")
         for root, _, files in os.walk(controllers_path):
             for file in files:
@@ -59,12 +74,12 @@ class Router:
                 except Exception as e:
                     print(f"Error loading controller {module_name}: {e}")
 
-        if not any(route.path == "/" for route in self.app.routes):
+        if not any(route.path == "/" for route in self.app.routes) and self.settings.app_env == "dev":
 
             async def default_route():
                 template_renderer = self.container.get(TemplateRenderer)
                 html_content = template_renderer.render("default.html", {})
-                return HTMLResponse(content=html_content)
+                return HTMLResponse(content=html_content, status_code=404)
 
             self.app.add_api_route(
                 "/", default_route, name="default_route", methods=["GET"]
