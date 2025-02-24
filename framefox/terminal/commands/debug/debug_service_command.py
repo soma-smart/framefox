@@ -44,10 +44,13 @@ class DebugServiceCommand(AbstractCommand):
             tags_str = ", ".join(sorted(tags)) if tags else "No tags"
             grouped_services[group].append((tags_str, service_class, instance))
 
-        total_services = sum(len(services) for services in grouped_services.values())
-        console.print(
-            f"[bold orange1]Total registered services:[/bold orange1] {
-                total_services}"
+        total_services = sum(len(services)
+                             for services in grouped_services.values())
+
+        self.printer.print_msg(
+            f"Total registered services: {total_services}",
+            theme="success",
+            linebefore=True,
         )
         print("")
 
@@ -55,7 +58,7 @@ class DebugServiceCommand(AbstractCommand):
 
             console.print(
                 f"Services in group: [bold cyan]{
-                          group}[/bold cyan]"
+                    group}[/bold cyan]"
             )
 
             table = Table(show_header=True, header_style="bold orange1")

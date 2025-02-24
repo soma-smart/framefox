@@ -36,8 +36,8 @@ class Terminal:
         cache_app = typer.Typer(
             help="Cache operations like clearing cache files and directories."
         )
-        fixtures_app = typer.Typer(
-            help="Fixtures operations like generating or loading fixtures."
+        mock_app = typer.Typer(
+            help="mock operations like generating or loading mock."
         )
 
         typers = {
@@ -48,7 +48,7 @@ class Terminal:
             "orm database": database_app,
             "server": server_app,
             "cache": cache_app,
-            "fixtures": fixtures_app,
+            "mock": mock_app,
         }
 
         app.add_typer(create_app, name="create")
@@ -57,7 +57,7 @@ class Terminal:
         orm_app.add_typer(database_app, name="database")
         app.add_typer(debug_app, name="debug")
         app.add_typer(cache_app, name="cache")
-        app.add_typer(fixtures_app, name="fixtures")
+        app.add_typer(mock_app, name="mock")
         Terminal._typers = typers
         command_handler = CommandHandler()
         command_handler.load_commands(typers)
@@ -118,8 +118,10 @@ class Terminal:
         )
         print("")
 
-        console.print("Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
-        console.print("Try 'framefox --help' for more information", style="bold white")
+        console.print(
+            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
+        console.print("Try 'framefox --help' for more information",
+                      style="bold white")
         print("")
 
         # Créer un tableau pour les commandes
@@ -138,7 +140,8 @@ class Terminal:
                     f"{category} {command.name}" if category != "main" else command.name
                 )
                 command_help = command.callback.__doc__ or ""
-                first_line = command_help.strip().split("\n")[0] if command_help else ""
+                first_line = command_help.strip().split(
+                    "\n")[0] if command_help else ""
                 table.add_row(command_name, first_line)
 
         console.print(table)

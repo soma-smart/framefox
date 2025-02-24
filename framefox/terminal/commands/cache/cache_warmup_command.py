@@ -59,10 +59,10 @@ class CacheWarmupCommand(AbstractCommand):
 
         console.print(table)
         print("")
-        console.print(
-            f"[bold orange1]✓ Cache warmed up in {total_time:.2f} seconds[/bold orange1]",
-            style="bold green",
-            highlight=False,
+        self.printer.print_msg(
+            f"✓ Cache warmed up in {total_time:.2f} seconds",
+            theme="success",
+            linebefore=True,
         )
 
     def _warmup_templates(self) -> int:
@@ -72,7 +72,8 @@ class CacheWarmupCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".html"):
                     template_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(template_path, template_dir)
+                    relative_path = os.path.relpath(
+                        template_path, template_dir)
                     try:
                         self.template_renderer.env.get_template(relative_path)
                         count += 1

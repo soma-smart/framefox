@@ -92,14 +92,16 @@ class FirewallHandler:
                     request, firewall, firewall_name, call_next
                 )
 
-        is_auth_route = any(request.url.path.startswith(route) for route in auth_routes)
+        is_auth_route = any(request.url.path.startswith(route)
+                            for route in auth_routes)
         if is_auth_route:
             auth_response = await self.handle_authentication(request, call_next)
             if auth_response:
                 return auth_response
         auth_result = await self.handle_authorization(request, call_next)
         if auth_result.status_code == 403:
-            self.logger.warning("Authorization failed - insufficient permissions")
+            self.logger.warning(
+                "Authorization failed - insufficient permissions")
 
         return auth_result
 
@@ -192,7 +194,8 @@ class FirewallHandler:
         """
         Handles authorization using the AccessManager class.
         """
-        required_roles = self.access_manager.get_required_roles(request.url.path)
+        required_roles = self.access_manager.get_required_roles(
+            request.url.path)
         if not required_roles:
             response = await call_next(request)
             self.logger.debug(
@@ -209,7 +212,8 @@ class FirewallHandler:
                 if self.access_manager.is_allowed(user_roles, required_roles):
                     return await call_next(request)
                 else:
-                    self.logger.warning("User does not have the required roles.")
+                    self.logger.warning(
+                        "User does not have the required roles.")
             else:
                 self.logger.warning("Invalid token payload.")
 

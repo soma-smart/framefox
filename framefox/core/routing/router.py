@@ -2,21 +2,20 @@ import importlib
 import inspect
 import os
 from pathlib import Path
-
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRouter
-
-from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.templates.template_renderer import TemplateRenderer
 
 
 class Router:
+    _routes = {}
+
     def __init__(self, app: FastAPI):
         self.app = app
         self.container = ServiceContainer()
-        self.settings = self.container.get(Settings)
+        self.settings = self.container.get_by_name("Settings")
 
     def _get_module_name(self, module_path: str) -> str:
         """Convert file path to module name."""
@@ -24,6 +23,16 @@ class Router:
         src_dir = Path.cwd() / "src"
         relative_path = path.relative_to(src_dir).with_suffix("")
         return ".".join(["src"] + list(relative_path.parts))
+
+    def url_path_for(self, name: str, **params) -> str:
+        """Generate URL for named route"""
+        if name in self._routes:
+            route_path = self._routes[name]
+
+            for key, value in params.items():
+                route_path = route_path.replace(f"{{{key}}}", str(value))
+            return route_path
+        return "#"
 
     def register_controllers(self):
         controllers_path = os.path.join(os.getcwd(), "src", "controllers")
@@ -71,6 +80,7 @@ class Router:
         ):
             if hasattr(method, "route_info"):
                 route = method.route_info
+                Router._routes[route["name"]] = route["path"]
                 controller_instance.router.add_api_route(
                     path=route["path"],
                     endpoint=method,

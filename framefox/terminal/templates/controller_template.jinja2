@@ -3,7 +3,7 @@ from framefox.core.controller.abstract_controller import AbstractController
 
 
 class {{ controller_class_name }}(AbstractController):
-    @Route("/{{ controller_file_name }}", "index", methods=["GET"])
+    @Route("/{{ controller_file_name }}", "{{ controller_file_name }}.index", methods=["GET"])
     async def index(self):
         return self.render("{{ view_name }}", {"controller_name":"{{ controller_class_name }}"})
-{% raw %}{% endraw %}
+{% raw %}{% endraw %} 

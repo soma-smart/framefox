@@ -1,3 +1,4 @@
+import os
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
@@ -9,9 +10,39 @@ class CreateCrudCommand(AbstractCommand):
     def __init__(self):
         super().__init__("crud")
         self.api_controller_template = r"api_crud_controller_template.jinja2"
-        self.templated_controller_template = r"api_crud_controller_template.jinja2"
+        self.templated_controller_template = r"templated_crud_controller_template.jinja2"
         self.controllers_path = r"src/controllers"
         self.input_choices = ["api", "templated"]
+        self.templates_path = r"templates"
+
+    def _create_view_templates(self, entity_name: str):
+        template_dir = os.path.join(self.templates_path, entity_name)
+        os.makedirs(template_dir, exist_ok=True)
+
+        properties = ModelChecker().get_entity_properties(entity_name)
+        print(properties)
+
+        templates = {
+            "create": "create_template.jinja2",
+            "read": "read_template.jinja2",
+            "update": "update_template.jinja2",
+            "index": "read_all_template.jinja2"
+        }
+
+        data = {
+            "entity_name": entity_name,
+            "properties": properties
+        }
+
+        file_creator = FileCreator()
+        for output_name, template_file in templates.items():
+            file_creator.create_file(
+                template=f"crud/{template_file}",
+                path=template_dir,
+                name=output_name+".html",
+                data=data,
+                format="html"
+            )
 
     def execute(self, entity_name: str = None):
         """
@@ -66,6 +97,17 @@ class CreateCrudCommand(AbstractCommand):
             "entity_class_name": entity_class_name,
             "entity_name": entity_name,
         }
+
+        file_creator = FileCreator()
+        if file_creator.check_if_exists(self.controllers_path, f"{entity_name}_controller"):
+            self.printer.print_msg(
+                f"Controller {entity_name} already exists!",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
+            return
+
         if user_input == "api":
             file_path = FileCreator().create_file(
                 self.api_controller_template,
@@ -73,15 +115,21 @@ class CreateCrudCommand(AbstractCommand):
                 f"{entity_name}_controller",
                 data,
             )
-        else:
+
+        if user_input == "templated":
+
             file_path = FileCreator().create_file(
                 self.templated_controller_template,
                 self.controllers_path,
                 f"{entity_name}_controller",
                 data,
             )
-        self.printer.print_full_text(
-            f"[bold orange1]CRUD Controller created successfully:[/bold orange1] {
-                file_path}",
+
+            self._create_view_templates(entity_name)
+
+        self.printer.print_msg(
+            f"✓ CRUD Controller created successfully: {file_path}",
+            theme="success",
             linebefore=True,
+
         )

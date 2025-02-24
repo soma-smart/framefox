@@ -53,7 +53,24 @@ class CreateControllerCommand(AbstractCommand):
             "pascal_case_name": ClassNameManager.snake_to_pascal(name),
             "controller_class_name": class_name,
         }
+        file_creator = FileCreator()
+        if file_creator.check_if_exists(self.controller_path, f"{name}_controller"):
+            self.printer.print_msg(
+                f"Controller {name} already exists!",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
+            return
 
+        # Vérifier si le template existe
+        if os.path.exists(os.path.join(self.view_path, name)):
+            self.printer.print_msg(
+                f"View folder {name} already exists!",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
         controller_path = FileCreator().create_file(
             template=self.controller_template,
             path=self.controller_path,

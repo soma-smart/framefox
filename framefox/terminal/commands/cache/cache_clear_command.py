@@ -17,7 +17,7 @@ class CacheClearCommand(AbstractCommand):
             "var/cache",
             "var/log/*.log",
             "var/session/*",
-            ".coverage",
+
         ]
         self.excluded_dirs = ["migrations/versions/__pycache__"]
 
@@ -52,7 +52,7 @@ class CacheClearCommand(AbstractCommand):
         console.print(table)
         print("")
         self.printer.print_msg(
-            "Cache clearing completed.",
+            "✓ Cache clearing completed.",
             theme="success",
             linebefore=True,
         )
