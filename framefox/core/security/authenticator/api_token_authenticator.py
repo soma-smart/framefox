@@ -15,6 +15,14 @@ from framefox.core.security.authenticator.authenticator_interface import (
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.passport.user_badge import UserBadge
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class ApiTokenAuthenticator(AbstractAuthenticator, AuthenticatorInterface):
     async def authenticate(self) -> Optional[Passport]:

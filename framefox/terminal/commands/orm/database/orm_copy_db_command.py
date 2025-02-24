@@ -162,8 +162,6 @@ class OrmCopyDbCommand(AbstractCommand):
 
             for filepath, classes in sqlmodel_classes.items():
                 module = OrmCopyDbCommand.import_module_from_file(filepath)
-
-                # Create tables for all SQLModel classes
                 for class_name in classes:
                     class_obj = getattr(module, class_name)
                     class_obj.metadata.create_all(engine)
@@ -235,7 +233,7 @@ class OrmCopyDbCommand(AbstractCommand):
                 connection.close()
                 return exists
             except Exception as e:
-                print(f"Erreur MySQL : {e}")
+                print(f"MySQL error: {e}")
                 return False
 
         # Unsupported database type

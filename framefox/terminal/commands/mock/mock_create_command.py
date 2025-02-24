@@ -1,13 +1,19 @@
 import os
 from typing import Optional
 
-import typer
-
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class MockCreateCommand(AbstractCommand):
@@ -65,8 +71,7 @@ class MockCreateCommand(AbstractCommand):
             entity_name, verbose=True
         )
 
-        properties_list = [
-            prop for prop in properties_list if prop["name"] != "id"]
+        properties_list = [prop for prop in properties_list if prop["name"] != "id"]
 
         self.file_creator.create_file(
             template="mock_create_template.jinja2",

@@ -3,6 +3,14 @@ import inspect
 import pkgutil
 from typing import Any, Callable, Dict, List
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class EventDispatcher:
     def __init__(self):
@@ -19,10 +27,10 @@ class EventDispatcher:
 
     def load_listeners(self, package: str = "framefox.core.events.listeners"):
         """
-        Charge automatiquement tous les listeners depuis le package spécifié en POO.
+        Automatically loads all listeners from the specified package in OOP.
 
         Args:
-            package (str): Le chemin du package contenant les listeners.
+            package (str): The path of the package containing the listeners.
         """
         package_module = importlib.import_module(package)
         for _, module_name, _ in pkgutil.iter_modules(package_module.__path__):

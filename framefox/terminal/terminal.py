@@ -36,9 +36,7 @@ class Terminal:
         cache_app = typer.Typer(
             help="Cache operations like clearing cache files and directories."
         )
-        mock_app = typer.Typer(
-            help="mock operations like generating or loading mock."
-        )
+        mock_app = typer.Typer(help="mock operations like generating or loading mock.")
 
         typers = {
             "main": app,
@@ -118,10 +116,8 @@ class Terminal:
         )
         print("")
 
-        console.print(
-            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
-        console.print("Try 'framefox --help' for more information",
-                      style="bold white")
+        console.print("Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
+        console.print("Try 'framefox --help' for more information", style="bold white")
         print("")
 
         # Créer un tableau pour les commandes
@@ -140,8 +136,7 @@ class Terminal:
                     f"{category} {command.name}" if category != "main" else command.name
                 )
                 command_help = command.callback.__doc__ or ""
-                first_line = command_help.strip().split(
-                    "\n")[0] if command_help else ""
+                first_line = command_help.strip().split("\n")[0] if command_help else ""
                 table.add_row(command_name, first_line)
 
         console.print(table)

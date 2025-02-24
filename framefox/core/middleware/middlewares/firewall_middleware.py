@@ -8,6 +8,14 @@ from framefox.core.di.service_container import ServiceContainer
 from framefox.core.events.decorator.dispatch_event import DispatchEvent
 from framefox.core.security.handlers.firewall_handler import FirewallHandler
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class FirewallMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, settings: Settings):

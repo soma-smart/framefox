@@ -6,6 +6,14 @@ from framefox.core.security.passport.password_credentials import PasswordCredent
 from framefox.core.security.passport.user_badge import UserBadge
 from framefox.core.security.password.password_hasher import PasswordHasher
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class Passport:
     """

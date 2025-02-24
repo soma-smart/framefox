@@ -1,9 +1,17 @@
 import importlib
 import logging
-from typing import Annotated, Any, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class EntityUserProvider:
@@ -39,7 +47,7 @@ class EntityUserProvider:
         if not entity_class_path or not property_name:
             self.logger.error(
                 f"Incomplete configuration for provider '{
-                              provider_name}'."
+                    provider_name}'."
             )
             return None
 
@@ -56,6 +64,6 @@ class EntityUserProvider:
         except (ImportError, AttributeError) as e:
             self.logger.error(
                 f"Error loading repository for entity '{
-                              entity_class_path}': {e}"
+                    entity_class_path}': {e}"
             )
             return None

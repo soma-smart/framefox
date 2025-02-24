@@ -5,6 +5,15 @@ from framefox.terminal.common.entity_property_manager import EntityPropertyManag
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen & Leurond Raphael
+Github: https://github.com/RayenBou
+Github: https://github.com/Vasulvius
+"""
+
 
 class CreateUserCommand(AbstractCommand):
     def __init__(self):

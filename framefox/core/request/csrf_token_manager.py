@@ -2,6 +2,14 @@ import secrets
 
 from fastapi import Request
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class CsrfTokenManager:
     """

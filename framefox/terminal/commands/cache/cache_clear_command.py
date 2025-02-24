@@ -6,6 +6,14 @@ from rich.table import Table
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class CacheClearCommand(AbstractCommand):
     def __init__(self):
@@ -17,7 +25,6 @@ class CacheClearCommand(AbstractCommand):
             "var/cache",
             "var/log/*.log",
             "var/session/*",
-
         ]
         self.excluded_dirs = ["migrations/versions/__pycache__"]
 

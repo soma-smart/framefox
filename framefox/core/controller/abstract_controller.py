@@ -3,6 +3,14 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.request.session.session import Session
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class AbstractController:
 

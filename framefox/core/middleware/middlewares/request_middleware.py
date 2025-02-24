@@ -6,6 +6,14 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from framefox.core.events.decorator.dispatch_event import DispatchEvent
 from framefox.core.request.request_stack import RequestStack
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class RequestMiddleware(BaseHTTPMiddleware):
     """

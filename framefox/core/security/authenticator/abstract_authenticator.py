@@ -9,6 +9,14 @@ from framefox.core.security.passport.passport import Passport
 from framefox.core.security.token_manager import TokenManager
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class AbstractAuthenticator:
 

@@ -4,6 +4,14 @@ from typing import List
 
 from framefox.core.config.settings import Settings
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class AccessManager:
     def __init__(self, settings: Settings):

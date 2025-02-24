@@ -5,6 +5,14 @@ from pathlib import Path
 
 from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class Logger:
     def __init__(self):
@@ -12,7 +20,7 @@ class Logger:
         self.logger = logging.getLogger("Application")
 
     def configure_logging(self):
-        # log_dir = os.path.join(os.path.dirname(__file__), "../../../var/log")
+
         log_dir = Path("./var/log").resolve()
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "app.log")
@@ -101,7 +109,6 @@ class Logger:
                 "level": LOG_LEVEL,
             },
             "loggers": {
-                # Logger de l'application
                 "Application": {
                     "handlers": ["console_app", "file"],
                     "level": LOG_LEVEL,
@@ -135,12 +142,12 @@ class Logger:
                 },
                 "passlib": {
                     "handlers": ["file"],
-                    "level": "WARNING",  # Change DEBUG to WARNING
+                    "level": "WARNING",
                     "propagate": False,
                 },
                 "passlib.registry": {
                     "handlers": ["file"],
-                    "level": "WARNING",  # Change DEBUG to WARNING
+                    "level": "WARNING",
                     "propagate": False,
                 },
             },

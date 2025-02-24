@@ -1,6 +1,16 @@
 from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader
+
 from framefox.core.di.service_container import ServiceContainer
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class TemplateRenderer:
@@ -14,7 +24,7 @@ class TemplateRenderer:
                 [self.user_template_dir, str(self.framework_template_dir)]
             )
         )
-        self.env.globals['url_for'] = self._url_for
+        self.env.globals["url_for"] = self._url_for
 
     def _url_for(self, name: str, **params) -> str:
         """Génère une URL à partir du nom de la route"""
