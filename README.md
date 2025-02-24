@@ -252,4 +252,5 @@ Application configurations are defined in the `config` folder. The configuration
 
 ## Authors
 
-- [@RayenBou](https://github.com/RayenBou)
+- Boumaza Rayen - [@RayenBou](https://github.com/RayenBou)
+- Raphaël Lerond - [@Vasulvius](https://github.com/Vasulvius)
