@@ -1,0 +1,24 @@
+from src.entity.{{ entity_name }} import {{ entity_class_name }}
+from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.di.service_container import ServiceContainer
+
+
+class {{ mock_class_name }}:
+    @staticmethod
+    def load():
+        container = ServiceContainer()
+        entity_manager = container.get(EntityManager)
+
+        mocks = []
+        for i in range({{ loop_count }}):
+            mock = {{ entity_class_name }}(
+                {% for prop in properties %}
+                {{ prop.name }}=None{% if not loop.last %},{% endif %}
+                {% endfor %}
+            )
+            mocks.append(mock)
+
+        for mock in mocks:
+            entity_manager.persist(mock)
+
+        entity_manager.commit()

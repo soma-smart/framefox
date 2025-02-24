@@ -23,7 +23,7 @@ class InitCommand(AbstractCommand):
         else:
             InitCommand.create_empty_project()
             self.printer.print_msg(
-                "Project created successfully",
+                "✓ Project created successfully",
                 theme="success",
                 linebefore=True,
                 newline=True,

@@ -1,5 +1,5 @@
 import importlib.resources as pkg_resources
-
+import os
 from jinja2 import Environment, FileSystemLoader
 
 import framefox.terminal
@@ -28,16 +28,9 @@ class FileCreator:
         Returns:
             file_path (str): The path of the created file.
         """
-        # Load the template from a file
         env = Environment(loader=FileSystemLoader(self.template_path))
-        # env = self.create_environment()
-        # print(env.list_templates())
         template = env.get_template(template)
-
-        # Render the template with the data
         code = template.render(data)
-
-        # Write to a Python file
         if format == "py":
             output_file = f"{path}/{name}.py"
         else:
@@ -46,3 +39,8 @@ class FileCreator:
             file.write(code)
 
         return output_file
+
+    def check_if_exists(self, path: str, name: str, format: str = "py") -> bool:
+        """Check if a file already exists"""
+        file_path = os.path.join(path, f"{name}.{format}")
+        return os.path.exists(file_path)

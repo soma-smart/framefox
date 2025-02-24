@@ -1,0 +1,44 @@
+{% raw %}{% extends "base.html" %}
+
+{% block title %}{% endraw %}{{ entity_name|title }}{% raw %} List{% endblock %}
+
+{% block content %}{% endraw %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>{{ entity_name|title }} List</h1>
+        <a href="{% raw %}{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.create') }}" class="btn btn-primary">Create New</a>
+    </div>
+
+    <div class="table-responsive mt-4">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                {% endraw %}
+                    {% for property in properties %}
+                    <th>{{ property.name|title }}</th>
+                    {% endfor %}
+                    <th>Actions</th>
+                    {% raw %}
+                </tr>
+            </thead>
+            <tbody>
+                  {% endraw %}
+                    {% for property in properties %}
+                    <td>{{ property.}}</td>
+                    {% endfor %}
+                    <th>Actions</th>
+                    {% raw %}
+                        <td>
+                            <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read', id=item.id) }}" class="btn btn-info btn-sm">View</a>
+                            <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.update', id=item.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                            <form method="POST" action="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.delete', id=item.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}{% endraw %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% raw %}{% endblock %}{% endraw %}
