@@ -1,8 +1,15 @@
-# python
 
 import uuid
 
 from framefox.core.request.request_stack import RequestStack
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class Session:
