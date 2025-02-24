@@ -252,4 +252,4 @@ Application configurations are defined in the `config` folder. The configuration
 
 ## Authors
 
-- @RayenBou
+- [@RayenBou](https://github.com/RayenBou)
