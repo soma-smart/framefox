@@ -1,6 +1,6 @@
 class RequestListener:
     """
-    Classe listener pour gérer les événements liés aux requêtes.
+    Listener class to handle events related to requests.
     """
 
     # def on_request_received(self, payload):

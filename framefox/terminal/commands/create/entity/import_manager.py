@@ -1,6 +1,14 @@
 import os
 from typing import List, Set
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class ImportManager:
     def __init__(self, printer):
