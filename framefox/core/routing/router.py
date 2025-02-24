@@ -2,12 +2,22 @@ import importlib
 import inspect
 import os
 from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRouter
+
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.templates.template_renderer import TemplateRenderer
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class Router:
@@ -37,14 +47,14 @@ class Router:
 
     def register_exception_handlers(self):
         """Register custom exception handlers"""
+
         @self.app.exception_handler(404)
         async def custom_404_handler(request: Request, exc: HTTPException):
             if exc.status_code == 404:
                 template_renderer = self.container.get(TemplateRenderer)
-                html_content = template_renderer.render("404.html", {
-                    "request": request,
-                    "error": "Page non trouvée"
-                })
+                html_content = template_renderer.render(
+                    "404.html", {"request": request, "error": "Page non trouvée"}
+                )
                 return HTMLResponse(content=html_content, status_code=404)
             raise exc
 
@@ -74,7 +84,10 @@ class Router:
                 except Exception as e:
                     print(f"Error loading controller {module_name}: {e}")
 
-        if not any(route.path == "/" for route in self.app.routes) and self.settings.app_env == "dev":
+        if (
+            not any(route.path == "/" for route in self.app.routes)
+            and self.settings.app_env == "dev"
+        ):
 
             async def default_route():
                 template_renderer = self.container.get(TemplateRenderer)

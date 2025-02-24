@@ -8,6 +8,14 @@ from sqlmodel import update as sql_update
 
 from framefox.core.orm.entity_manager import EntityManager
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class QueryBuilder:
     """

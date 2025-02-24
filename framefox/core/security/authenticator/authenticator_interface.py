@@ -5,6 +5,14 @@ from fastapi import Request
 
 from framefox.core.security.passport.passport import Passport
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class AuthenticatorInterface(ABC):
     @abstractmethod

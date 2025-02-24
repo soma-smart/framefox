@@ -1,17 +1,23 @@
-# src/core/events/decorators/dispatch_event.py
-
 from functools import wraps
 
 from framefox.core.events.event_dispatcher import dispatcher
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class DispatchEvent:
     """
-    Un décorateur pour dispatcher des événements avant et après l'exécution d'une fonction/middleware.
+    A decorator to dispatch events before and after the execution of a function/middleware.
 
     Args:
-        event_before (str): Nom de l'événement à dispatcher avant l'exécution.
-        event_after (str): Nom de l'événement à dispatcher après l'exécution.
+        event_before (str): Name of the event to dispatch before execution.
+        event_after (str): Name of the event to dispatch after execution.
     """
 
     def __init__(self, event_before: str, event_after: str):
@@ -21,15 +27,9 @@ class DispatchEvent:
     def __call__(self, func):
         @wraps(func)
         async def wrapper(middleware_instance, request, call_next):
-            # Dispatcher l'événement avant avec la requête
             dispatcher.dispatch(self.event_before, {"request": request})
-
-            # Exécuter la fonction/middleware
             response = await func(middleware_instance, request, call_next)
-
-            # Dispatcher l'événement après avec la réponse
             dispatcher.dispatch(self.event_after, {"response": response})
-
             return response
 
         return wrapper

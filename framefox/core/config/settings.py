@@ -7,6 +7,13 @@ from dotenv import load_dotenv
 
 env_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path=env_path)
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class Settings:
@@ -114,7 +121,7 @@ class Settings:
         """
         try:
             current = self.config.get("parameters", {})
-            for key in param_path.split('.'):
+            for key in param_path.split("."):
                 if isinstance(current, dict):
                     current = current.get(key)
                 else:
@@ -129,8 +136,7 @@ class Settings:
 
     @property
     def cache_dir(self):
-        cache_path = os.path.join(
-            os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 

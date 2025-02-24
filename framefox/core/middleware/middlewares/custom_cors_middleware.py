@@ -1,5 +1,13 @@
 from fastapi.middleware.cors import CORSMiddleware
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class CustomCORSMiddleware(CORSMiddleware):
     """

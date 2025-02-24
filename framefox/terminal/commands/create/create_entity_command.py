@@ -11,6 +11,15 @@ from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.printer import Printer
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen & Leurond Raphael
+Github: https://github.com/RayenBou
+Github: https://github.com/Vasulvius
+"""
+
 
 class CreateEntityCommand(AbstractCommand):
     def __init__(self):

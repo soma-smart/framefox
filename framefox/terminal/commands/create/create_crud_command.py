@@ -1,16 +1,28 @@
 import os
+
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen & Leurond Raphael
+Github: https://github.com/RayenBou
+Github: https://github.com/Vasulvius
+"""
+
 
 class CreateCrudCommand(AbstractCommand):
     def __init__(self):
         super().__init__("crud")
         self.api_controller_template = r"api_crud_controller_template.jinja2"
-        self.templated_controller_template = r"templated_crud_controller_template.jinja2"
+        self.templated_controller_template = (
+            r"templated_crud_controller_template.jinja2"
+        )
         self.controllers_path = r"src/controllers"
         self.input_choices = ["api", "templated"]
         self.templates_path = r"templates"
@@ -26,22 +38,19 @@ class CreateCrudCommand(AbstractCommand):
             "create": "create_template.jinja2",
             "read": "read_template.jinja2",
             "update": "update_template.jinja2",
-            "index": "read_all_template.jinja2"
+            "index": "read_all_template.jinja2",
         }
 
-        data = {
-            "entity_name": entity_name,
-            "properties": properties
-        }
+        data = {"entity_name": entity_name, "properties": properties}
 
         file_creator = FileCreator()
         for output_name, template_file in templates.items():
             file_creator.create_file(
                 template=f"crud/{template_file}",
                 path=template_dir,
-                name=output_name+".html",
+                name=output_name + ".html",
                 data=data,
-                format="html"
+                format="html",
             )
 
     def execute(self, entity_name: str = None):
@@ -99,7 +108,9 @@ class CreateCrudCommand(AbstractCommand):
         }
 
         file_creator = FileCreator()
-        if file_creator.check_if_exists(self.controllers_path, f"{entity_name}_controller"):
+        if file_creator.check_if_exists(
+            self.controllers_path, f"{entity_name}_controller"
+        ):
             self.printer.print_msg(
                 f"Controller {entity_name} already exists!",
                 theme="error",
@@ -131,5 +142,4 @@ class CreateCrudCommand(AbstractCommand):
             f"✓ CRUD Controller created successfully: {file_path}",
             theme="success",
             linebefore=True,
-
         )

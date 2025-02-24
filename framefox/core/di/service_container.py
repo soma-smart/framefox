@@ -6,6 +6,14 @@ from abc import ABC
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, get_type_hints
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class ServiceContainer:
     _instance = None
@@ -35,8 +43,7 @@ class ServiceContainer:
         src_path = Path(__file__).resolve().parent.parent.parent.parent / "src"
 
         excluded_directories = ["entity", "entities", "Entity"]
-        excluded_modules = ["src.entity",
-                            "src.entities", "framefox.core.entity"]
+        excluded_modules = ["src.entity", "src.entities", "framefox.core.entity"]
 
         paths_to_scan = [core_path, src_path]
         for base_path in paths_to_scan:
@@ -58,8 +65,7 @@ class ServiceContainer:
                         module_path = root_path / file
                         try:
                             module_name = (
-                                self._module_name_from_path(
-                                    module_path, core_path)
+                                self._module_name_from_path(module_path, core_path)
                                 if base_path == core_path
                                 else f"src.{module_path.relative_to(src_path).with_suffix('').as_posix().replace('/', '.')}"
                             )
@@ -177,8 +183,7 @@ class ServiceContainer:
             return None
         if service_cls in self.services:
             return self.services[service_cls]
-        problematic_classes = {"FastAPI", "Panel",
-                               "Pretty", "Table", "Built-in", "abc"}
+        problematic_classes = {"FastAPI", "Panel", "Pretty", "Table", "Built-in", "abc"}
         if service_cls.__name__ in problematic_classes:
             return None
 
@@ -221,8 +226,6 @@ class ServiceContainer:
                 tags = []
             default_tag = self._get_default_tag(service_cls)
             tags.append(default_tag)
-
-            # Enregistrer les tags
             for tag in tags:
                 if tag not in self._tags:
                     self._tags[tag] = []
@@ -256,17 +259,13 @@ class ServiceContainer:
 
     def _get_default_tag(self, service_cls: Type[Any]) -> str:
         """
-        Convertit le nom du module en tag
+        Converts the module name to a tag
         Ex: framefox.core.request.session.session -> core.request.session
         """
         module_name = service_cls.__module__
         parts = module_name.split(".")
-
-        # Supprimer 'framefox' ou 'src' du début
         if parts[0] in ["framefox", "src"]:
             parts = parts[1:]
-
-        # Retirer le dernier élément s'il est identique à l'avant-dernier
         if len(parts) > 1 and parts[-1] == parts[-2]:
             parts = parts[:-1]
 
@@ -274,8 +273,8 @@ class ServiceContainer:
 
     def get_by_tag(self, tag: str) -> Any:
         """
-        Retourne l'instance unique d'un service par son tag.
-        Lève une exception si plusieurs services sont trouvés.
+        Returns the unique instance of a service by its tag.
+        Raises an exception if multiple services are found.
         """
         services = self._tags.get(tag, [])
 
@@ -283,16 +282,16 @@ class ServiceContainer:
             return None
 
         if len(services) > 1:
-            service_names = [
-                service.__class__.__name__ for service in services]
+            service_names = [service.__class__.__name__ for service in services]
             raise Exception(
-                f"Multiple services found for tag '{tag}': {', '.join(service_names)}")
+                f"Multiple services found for tag '{tag}': {', '.join(service_names)}"
+            )
 
         return services[0]
 
     def get_all_by_tag(self, tag: str) -> list:
         """
-        Retourne tous les services associés à un tag donné.
+        Returns all services associated with a given tag.
         """
         return self._tags.get(tag, [])
 

@@ -1,5 +1,6 @@
 import os
 import secrets
+
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.file_creator import FileCreator
 
@@ -75,9 +76,7 @@ class InitCommand(AbstractCommand):
             template="init_files/env.jinja2",
             path=".",
             name=".env",
-            data={
-                "session_secret_key": InitCommand.generate_secret_key()
-            },
+            data={"session_secret_key": InitCommand.generate_secret_key()},
             format="env",
         )
         # base.html

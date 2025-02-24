@@ -6,6 +6,14 @@ from framefox.core.security.exceptions.invalid_csrf_token_exception import (
     InvalidCsrfTokenException,
 )
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class CsrfTokenBadge:
     """

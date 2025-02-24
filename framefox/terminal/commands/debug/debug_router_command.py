@@ -1,13 +1,19 @@
 import os
 import sys
-from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
 
 from framefox.core.kernel import Kernel
-from framefox.core.routing.router import Router
 from framefox.terminal.commands.abstract_command import AbstractCommand
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class DebugRouterCommand(AbstractCommand):

@@ -8,6 +8,14 @@ from rich.table import Table
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class CheckCommand(AbstractCommand):
     def __init__(self):

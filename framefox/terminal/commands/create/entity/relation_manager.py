@@ -4,6 +4,14 @@ from typing import Optional, Tuple
 
 from framefox.terminal.common.class_name_manager import ClassNameManager
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 @dataclass
 class RelationConfig:
@@ -397,7 +405,7 @@ class RelationManager:
         file_path = os.path.join(
             self.entity_folder,
             f"{
-                                 intermediate_entity}.py",
+                intermediate_entity}.py",
         )
 
         if not os.path.exists(file_path):

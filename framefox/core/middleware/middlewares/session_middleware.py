@@ -14,6 +14,14 @@ from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.request.request_stack import RequestStack
 from framefox.core.request.session.session_manager import SessionManager
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class SessionMiddleware(BaseHTTPMiddleware):
     def __init__(

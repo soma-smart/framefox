@@ -8,6 +8,14 @@ from framefox.core.middleware.middlewares.firewall_middleware import FirewallMid
 from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
 from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class MiddlewareManager:
     """

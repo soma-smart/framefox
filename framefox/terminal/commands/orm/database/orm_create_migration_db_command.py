@@ -6,6 +6,14 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
 from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class OrmCreateMigrationDbCommand(AbstractCommand):
     def __init__(self):

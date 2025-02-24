@@ -10,6 +10,14 @@ from framefox.core.kernel import Kernel
 from framefox.core.templates.template_renderer import TemplateRenderer
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class CacheWarmupCommand(AbstractCommand):
     def __init__(self):
@@ -72,8 +80,7 @@ class CacheWarmupCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".html"):
                     template_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(
-                        template_path, template_dir)
+                    relative_path = os.path.relpath(template_path, template_dir)
                     try:
                         self.template_renderer.env.get_template(relative_path)
                         count += 1

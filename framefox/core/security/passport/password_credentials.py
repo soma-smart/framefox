@@ -1,3 +1,12 @@
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
+
 class PasswordCredentials:
     """
     A class used to handle password credentials and verification.

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, ClassVar
+from typing import ClassVar, Optional
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -13,12 +13,21 @@ from framefox.core.logging.logger import Logger
 from framefox.core.middleware.middleware_manager import MiddlewareManager
 from framefox.core.routing.router import Router
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class Kernel:
     """
     Core kernel of the Framefox framework.
     Implements the Singleton pattern and manages the application lifecycle.
     """
+
     _instance: ClassVar[Optional["Kernel"]] = None
 
     def __new__(cls) -> "Kernel":
@@ -47,14 +56,13 @@ class Kernel:
         return FastAPI(
             debug=self._settings.debug_mode,
             openapi_url=self._settings.openapi_url,
-            redoc_url=self._settings.redoc_url
+            redoc_url=self._settings.redoc_url,
         )
 
     def _configure_app(self) -> None:
         """Configures all application components."""
         self._app.add_exception_handler(
-            DebugException,
-            DebugHandler.debug_exception_handler
+            DebugException, DebugHandler.debug_exception_handler
         )
         self._setup_middlewares()
         self._setup_routing()
@@ -74,11 +82,7 @@ class Kernel:
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
         static_path = Path(__file__).parent / "templates" / "static"
-        self._app.mount(
-            "/static",
-            StaticFiles(directory=static_path),
-            name="static"
-        )
+        self._app.mount("/static", StaticFiles(directory=static_path), name="static")
 
     @property
     def app(self) -> FastAPI:

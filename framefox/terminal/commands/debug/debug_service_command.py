@@ -6,6 +6,14 @@ from rich.table import Table
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class DebugServiceCommand(AbstractCommand):
     def __init__(self):
@@ -44,8 +52,7 @@ class DebugServiceCommand(AbstractCommand):
             tags_str = ", ".join(sorted(tags)) if tags else "No tags"
             grouped_services[group].append((tags_str, service_class, instance))
 
-        total_services = sum(len(services)
-                             for services in grouped_services.values())
+        total_services = sum(len(services) for services in grouped_services.values())
 
         self.printer.print_msg(
             f"Total registered services: {total_services}",

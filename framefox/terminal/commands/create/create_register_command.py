@@ -6,6 +6,14 @@ from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class CreateRegisterCommand(AbstractCommand):
     def __init__(self):

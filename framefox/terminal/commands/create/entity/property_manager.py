@@ -4,6 +4,14 @@ from typing import Optional, Tuple
 
 from framefox.terminal.common.class_name_manager import ClassNameManager
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: Boumaza Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 @dataclass
 class PropertyDetails:
@@ -124,11 +132,11 @@ class PropertyManager:
         else:
             self.printer.print_error(
                 f"Class '{ClassNameManager.snake_to_pascal(
-                entity_name)}' not found in '{file_path}'."
+                    entity_name)}' not found in '{file_path}'."
             )
             raise ValueError(
                 f"Class '{ClassNameManager.snake_to_pascal(
-                entity_name)}' not found in '{file_path}'."
+                    entity_name)}' not found in '{file_path}'."
             )
 
         return file_path
