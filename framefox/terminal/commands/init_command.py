@@ -1,5 +1,5 @@
 import os
-
+import secrets
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.file_creator import FileCreator
 
@@ -32,6 +32,11 @@ class InitCommand(AbstractCommand):
                 "Next, try [bold orange1]framefox[/bold orange1] to see the available commands",
                 newline=True,
             )
+
+    @staticmethod
+    def generate_secret_key():
+        """Generates a random secret key of 32 bytes encoded in base64"""
+        return secrets.token_urlsafe(32)
 
     @staticmethod
     def create_empty_project():
@@ -70,7 +75,9 @@ class InitCommand(AbstractCommand):
             template="init_files/env.jinja2",
             path=".",
             name=".env",
-            data={},
+            data={
+                "session_secret_key": InitCommand.generate_secret_key()
+            },
             format="env",
         )
         # base.html
@@ -100,6 +107,13 @@ class InitCommand(AbstractCommand):
             template="init_files/security.jinja2",
             path="./config",
             name="security.yaml",
+            data={},
+            format="yaml",
+        )
+        FileCreator().create_file(
+            template="init_files/parameter.jinja2",
+            path="./config",
+            name="parameter.yaml",
             data={},
             format="yaml",
         )

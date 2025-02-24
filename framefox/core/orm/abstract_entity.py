@@ -7,30 +7,6 @@ from sqlmodel import SQLModel, inspect
 class AbstractEntity(SQLModel):
     __abstract__ = True
 
-    # @declared_attr
-    # def __tablename__(cls):
-    #     """
-    #     Return the lowercase name of the class as the table name.
-
-    #     Returns:
-    #         str: The lowercase name of the class.
-    #     """
-    #     return cls.__name__.lower()
-
-    # @classmethod
-    # def generate_response_model(cls: Type[SQLModel]) -> Type[SQLModel]:
-    #     """
-    #     Generate the response model class.
-
-    #     Returns:
-    #         The response model class.
-    #     """
-    #     fields = {field.name: (field.type_, ...)
-    #               for field in cls.__fields__.values()}
-    #     response_model_class = create_model(
-    #         f"{cls.__name__}Response", **fields)
-    #     return response_model_class
-
     @classmethod
     def generate_create_model(cls) -> Type[BaseModel]:
         """

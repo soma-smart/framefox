@@ -52,10 +52,16 @@ class Settings:
     ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
 
     def __init__(self):
-
+        if os.path.exists(env_path):
+            load_dotenv(dotenv_path=env_path, override=True)
+        else:
+            print(f"WARNING: .env file not found!")
         self.app_env = os.getenv("APP_ENV", "prod")
         self.config = {}
-        self.load_configs("./config")
+        try:
+            self.load_configs("./config")
+        except FileNotFoundError as e:
+            raise Exception("Unable to load configuration") from e
 
     def load_configs(self, config_folder):
         config_path = Path(config_folder).resolve()
@@ -95,11 +101,36 @@ class Settings:
         value = os.getenv(var_name, "")
         return value
 
+    def get_param(self, param_path: str, default=None):
+        """
+        Retrieves a custom parameter from the configuration using dot notation.
+
+        Args:
+            param_path (str): Path of the parameter in dot notation (e.g., 'custom_variables.api_key')
+            default: Default value to return if the parameter does not exist
+
+        Returns:
+            The value of the parameter or the default value if the parameter does not exist
+        """
+        try:
+            current = self.config.get("parameters", {})
+            for key in param_path.split('.'):
+                if isinstance(current, dict):
+                    current = current.get(key)
+                else:
+                    return default
+                if current is None:
+                    return default
+            return current
+        except Exception:
+            return default
+
     # ------------------------------ cache ------------------------------
 
     @property
     def cache_dir(self):
-        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(
+            os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 
