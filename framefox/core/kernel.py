@@ -15,7 +15,7 @@ from framefox.core.routing.router import Router
 
 """
 Framefox Framework developed by SOMA
-Github: https://github.com/soma-smart/framefox
+Github: https://github.com/soma-smart/framefox 
 ----------------------------
 Author: Boumaza Rayen
 Github: https://github.com/RayenBou
@@ -82,7 +82,8 @@ class Kernel:
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
         static_path = Path(__file__).parent / "templates" / "static"
-        self._app.mount("/static", StaticFiles(directory=static_path), name="static")
+        self._app.mount(
+            "/static", StaticFiles(directory=static_path), name="static")
 
     @property
     def app(self) -> FastAPI:

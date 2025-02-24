@@ -1,6 +1,6 @@
 class AuthListener:
     """
-    Classe listener pour gérer les événements liés à l'authentification.
+    Listener class to handle authentication-related events.
     """
 
     # def on_auth_attempt(self, payload):

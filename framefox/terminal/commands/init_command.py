@@ -44,6 +44,7 @@ class InitCommand(AbstractCommand):
         # Create src directorys
         project_path = "src"
         os.makedirs(os.path.join(project_path, "controllers"))
+        os.makedirs(os.path.join(project_path, "tests"))
         os.makedirs(os.path.join(project_path, "entity"))
         os.makedirs(os.path.join(project_path, "repository"))
         os.makedirs(os.path.join(project_path, "security"))

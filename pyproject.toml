@@ -1,3 +1,17 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["framefox/tests"]
+python_files = ["test_*.py"]
+filterwarnings = [
+    "ignore::sqlalchemy.exc.SAWarning",
+    "ignore::DeprecationWarning",
+    "ignore::pytest.PytestCollectionWarning"
+]
+markers = [
+    "asyncio: mark test as async"
+]
