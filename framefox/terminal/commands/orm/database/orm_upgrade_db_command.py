@@ -42,6 +42,10 @@ class OrmUpgradeDbCommand(AbstractCommand):
             self.printer.print_msg(
                 "All migrations have been successfully applied.", theme="success"
             )
+            self.printer.print_full_text(
+                "You can use [bold orange1]framefox orm database downgrade[/bold orange1] to roll back migrations, if you need to.",
+                linebefore=True,
+            )
         except Exception as e:
             self.printer.print_msg(
                 f"An error occurred while applying the migrations: {e}", theme="error"
