@@ -10,7 +10,7 @@ from framefox.terminal.common.model_checker import ModelChecker
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -41,7 +41,8 @@ class CreateRegisterCommand(AbstractCommand):
 
     def _create_register_files(self, provider_name: str):
 
-        controller_path = os.path.join("src/controllers", "register_controller.py")
+        controller_path = os.path.join(
+            "src/controllers", "register_controller.py")
         view_path = os.path.join("templates/security", "register.html")
 
         existing_files = []

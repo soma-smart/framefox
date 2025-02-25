@@ -3,6 +3,14 @@ from typing import List, Type
 from pydantic import BaseModel, create_model
 from sqlmodel import SQLModel, inspect
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class AbstractEntity(SQLModel):
     __abstract__ = True

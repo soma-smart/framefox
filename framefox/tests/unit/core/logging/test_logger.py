@@ -1,14 +1,16 @@
-import pytest
 import logging
 from pathlib import Path
 from unittest.mock import patch
+
+import pytest
+
 from framefox.core.logging.logger import Logger
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -16,7 +18,7 @@ Github: https://github.com/RayenBou
 class TestLogger:
     @pytest.fixture
     def logger_instance(self):
-        with patch('logging.config.dictConfig') as mock_dict_config:
+        with patch("logging.config.dictConfig") as mock_dict_config:
             logger = Logger()
             yield logger, mock_dict_config
 
@@ -27,7 +29,7 @@ class TestLogger:
         mock_dict_config.assert_called_once()
 
     def test_log_directory_creation(self):
-        with patch('os.makedirs') as mock_makedirs:
+        with patch("os.makedirs") as mock_makedirs:
             logger = Logger()
             expected_path = Path("./var/log").resolve()
             mock_makedirs.assert_called_once_with(expected_path, exist_ok=True)
@@ -74,12 +76,17 @@ class TestLogger:
         assert "uvicorn" in config["loggers"]
         assert "sqlalchemy.engine.Engine" in config["loggers"]
 
-    @pytest.mark.parametrize("logger_name,expected_handlers", [
-        ("Application", ["console_app", "file"]),
-        ("uvicorn", ["console_server", "file"]),
-        ("sqlalchemy.engine.Engine", ["file_sqlmodel"]),
-    ])
-    def test_logger_specific_configurations(self, logger_instance, logger_name, expected_handlers):
+    @pytest.mark.parametrize(
+        "logger_name,expected_handlers",
+        [
+            ("Application", ["console_app", "file"]),
+            ("uvicorn", ["console_server", "file"]),
+            ("sqlalchemy.engine.Engine", ["file_sqlmodel"]),
+        ],
+    )
+    def test_logger_specific_configurations(
+        self, logger_instance, logger_name, expected_handlers
+    ):
         logger, mock_dict_config = logger_instance
         config = mock_dict_config.call_args[0][0]
 
@@ -89,7 +96,7 @@ class TestLogger:
                    ["handlers"]) == set(expected_handlers)
 
     def test_actual_logging(self, tmp_path):
-        with patch('pathlib.Path.resolve') as mock_resolve:
+        with patch("pathlib.Path.resolve") as mock_resolve:
             mock_resolve.return_value = tmp_path
             logger = Logger()
             test_logger = logger.get_logger()

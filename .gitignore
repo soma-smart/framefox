@@ -13,4 +13,5 @@ instance/
 *.egg-info/
 build/
 dist/
-publish_lib.sh
+publish_lib*.sh
+.vscode/

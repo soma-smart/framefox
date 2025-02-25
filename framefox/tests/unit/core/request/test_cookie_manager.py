@@ -1,14 +1,16 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
 from fastapi.responses import Response
-from framefox.core.request.cookie_manager import CookieManager
+
 from framefox.core.config.settings import Settings
+from framefox.core.request.cookie_manager import CookieManager
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -21,8 +23,8 @@ class TestCookieManager:
         settings.cookie_max_age = 3600
         settings.cookie_http_only = True
         settings.cookie_secure = True
-        settings.cookie_same_site = 'lax'
-        settings.cookie_path = '/'
+        settings.cookie_same_site = "lax"
+        settings.cookie_path = "/"
         return settings
 
     @pytest.fixture
@@ -47,7 +49,7 @@ class TestCookieManager:
             httponly=cookie_manager.settings.cookie_http_only,
             secure=cookie_manager.settings.cookie_secure,
             samesite=cookie_manager.settings.cookie_same_site,
-            path=cookie_manager.settings.cookie_path
+            path=cookie_manager.settings.cookie_path,
         )
 
     def test_set_cookie_with_custom_values(self, cookie_manager, mock_response):
@@ -62,7 +64,7 @@ class TestCookieManager:
             "test_value",
             max_age=custom_max_age,
             expires=custom_expires,
-            secure=custom_secure
+            secure=custom_secure,
         )
 
         mock_response.set_cookie.assert_called_once_with(
@@ -73,7 +75,7 @@ class TestCookieManager:
             httponly=cookie_manager.settings.cookie_http_only,
             secure=custom_secure,
             samesite=cookie_manager.settings.cookie_same_site,
-            path=cookie_manager.settings.cookie_path
+            path=cookie_manager.settings.cookie_path,
         )
 
     def test_delete_cookie(self, cookie_manager, mock_response):
@@ -81,8 +83,7 @@ class TestCookieManager:
         cookie_manager.delete_cookie(mock_response, "test_key")
 
         mock_response.delete_cookie.assert_called_once_with(
-            key="test_key",
-            path=cookie_manager.settings.cookie_path
+            key="test_key", path=cookie_manager.settings.cookie_path
         )
 
     def test_set_cookie_with_empty_values(self, cookie_manager, mock_response):
@@ -97,5 +98,5 @@ class TestCookieManager:
             httponly=cookie_manager.settings.cookie_http_only,
             secure=cookie_manager.settings.cookie_secure,
             samesite=cookie_manager.settings.cookie_same_site,
-            path=cookie_manager.settings.cookie_path
+            path=cookie_manager.settings.cookie_path,
         )

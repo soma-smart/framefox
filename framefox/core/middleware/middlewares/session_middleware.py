@@ -1,4 +1,3 @@
-
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -15,7 +14,7 @@ from framefox.core.request.session.session_manager import SessionManager
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -42,8 +41,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
         RequestStack.set_request(request)
 
         if session:
-            self.logger.info(
-                f"Session expired for session_id: {session_id}")
+            self.logger.info(f"Session expired for session_id: {session_id}")
             self.session_manager.delete_session(session_id)
             request.state.session_id = None
             request.state.session_data = {}

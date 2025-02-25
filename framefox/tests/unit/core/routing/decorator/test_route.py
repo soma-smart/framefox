@@ -1,11 +1,12 @@
 import pytest
+
 from framefox.core.routing.decorator.route import Route
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -14,11 +15,7 @@ class TestRoute:
     @pytest.fixture
     def route_decorator(self):
         """Fixture for the Route decorator"""
-        return Route(
-            path="/test",
-            name="test_route",
-            methods=["GET", "POST"]
-        )
+        return Route(path="/test", name="test_route", methods=["GET", "POST"])
 
     @pytest.mark.asyncio
     async def test_route_decorator_attributes(self, route_decorator):
@@ -30,6 +27,7 @@ class TestRoute:
     @pytest.mark.asyncio
     async def test_route_decorator_wrapper(self, route_decorator):
         """Test the wrapper of the Route decorator"""
+
         # Define a test function
         @route_decorator
         async def test_function(param1, param2):
@@ -88,6 +86,7 @@ class TestRoute:
     @pytest.mark.asyncio
     async def test_route_preserves_docstring(self, route_decorator):
         """Test that the decorator preserves the function's docstring"""
+
         @route_decorator
         async def documented_function():
             """This function has a docstring"""

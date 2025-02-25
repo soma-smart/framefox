@@ -1,17 +1,20 @@
-import pytest
-from sqlmodel import Field, SQLModel, select
 from typing import Optional
+from unittest.mock import Mock, patch
+
+import pytest
 from sqlalchemy import MetaData
-from framefox.core.orm.query_builder import QueryBuilder
-from framefox.core.orm.entity_manager import EntityManager
+from sqlmodel import Field, SQLModel, select
+
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
-from unittest.mock import Mock, patch
+from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.orm.query_builder import QueryBuilder
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -37,12 +40,13 @@ class TestQueryBuilder:
         container = ServiceContainer()
         container.get = Mock(return_value=mock_settings)
 
-        with patch.object(ServiceContainer, '_instance', container):
+        with patch.object(ServiceContainer, "_instance", container):
             yield container
 
     @pytest.fixture
     def TestEntityClass(self, test_metadata):
         """Fixture for the test entity class"""
+
         class TestEntity(SQLModel, table=True):
             __tablename__ = f"test_entity_{id(test_metadata)}"
             metadata = test_metadata
@@ -85,7 +89,7 @@ class TestQueryBuilder:
         entities = [
             TestEntityClass(name="Alice", age=25),
             TestEntityClass(name="Bob", age=30),
-            TestEntityClass(name="Charlie", age=35)
+            TestEntityClass(name="Charlie", age=35),
         ]
         for entity in entities:
             entity_manager.persist(entity)
@@ -125,6 +129,7 @@ class TestQueryBuilder:
     def test_update(self, query_builder, TestEntityClass, test_data):
         """Test updating"""
         query_builder.update({"age": 40}).where(
-            TestEntityClass.name == "Alice").execute()
+            TestEntityClass.name == "Alice"
+        ).execute()
         result = query_builder.select().where(TestEntityClass.name == "Alice").first()
         assert result.age == 40

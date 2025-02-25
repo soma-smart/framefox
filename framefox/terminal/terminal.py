@@ -6,6 +6,14 @@ from rich.text import Text
 
 from framefox.terminal.command_handler import CommandHandler
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class Terminal:
     _typers = None
@@ -36,7 +44,8 @@ class Terminal:
         cache_app = typer.Typer(
             help="Cache operations like clearing cache files and directories."
         )
-        mock_app = typer.Typer(help="mock operations like generating or loading mock.")
+        mock_app = typer.Typer(
+            help="mock operations like generating or loading mock.")
 
         typers = {
             "main": app,
@@ -84,28 +93,6 @@ class Terminal:
         app = Terminal.create_typer_app()
         return app
 
-    # @staticmethod
-    # def run():
-    #     app, typers = Terminal.create_typer_app()
-
-    #     @app.callback(invoke_without_command=True)
-    #     def main(
-    #         ctx: typer.Context,
-    #         help: bool = typer.Option(
-    #             False, "--help", "-h",
-    #             help="Show this message and exit.",
-    #             is_eager=True,
-    #             callback=lambda x: Terminal.display_commands_table(
-    #                  typers) if x else None
-    #         )
-    #     ):
-    #         """Framefox CLI - Swift, smart, and a bit foxy"""
-    #         if ctx.invoked_subcommand is None:
-    #             Terminal.display_commands_table(typers)
-    #             raise typer.Exit()
-
-    #     return app
-
     @staticmethod
     def display_commands_table(typers):
         console = Console()
@@ -116,8 +103,10 @@ class Terminal:
         )
         print("")
 
-        console.print("Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
-        console.print("Try 'framefox --help' for more information", style="bold white")
+        console.print(
+            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
+        console.print("Try 'framefox --help' for more information",
+                      style="bold white")
         print("")
 
         # Créer un tableau pour les commandes
@@ -125,18 +114,21 @@ class Terminal:
         table.add_column("Commands", style="bold orange3", no_wrap=True)
         table.add_column("Description", style="white")
 
-        # Parcourir les typers et ajouter les commandes au tableau
         for category, typer_app in typers.items():
-            for command in (
-                typer_app.registered_commands
-                if hasattr(typer_app, "registered_commands")
-                else typer_app.commands.values()
-            ):
+
+            command_list = typer_app.registered_commands if hasattr(
+                typer_app, "registered_commands") else typer_app.commands.values()
+
+            if category != "main" and category != "create" and len(command_list) > 0:
+                table.add_row("", "")
+
+            for command in command_list:
                 command_name = (
                     f"{category} {command.name}" if category != "main" else command.name
                 )
                 command_help = command.callback.__doc__ or ""
-                first_line = command_help.strip().split("\n")[0] if command_help else ""
+                first_line = command_help.strip().split(
+                    "\n")[0] if command_help else ""
                 table.add_row(command_name, first_line)
 
         console.print(table)

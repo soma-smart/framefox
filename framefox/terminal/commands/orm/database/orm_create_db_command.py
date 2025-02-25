@@ -10,6 +10,14 @@ from framefox.core.config.settings import Settings
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class OrmCreateDbCommand(AbstractCommand):
     def __init__(self):
@@ -39,7 +47,8 @@ class OrmCreateDbCommand(AbstractCommand):
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
                     )
-                    self.create_db_postgresql(user, password, host, port, database)
+                    self.create_db_postgresql(
+                        user, password, host, port, database)
                 elif db_type == "mysql":
                     _, user, password, host, port, database = (
                         DatabaseUrlParser.parse_database_url(self.database_url)
@@ -78,7 +87,8 @@ class OrmCreateDbCommand(AbstractCommand):
         )
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = connection.cursor()
-        cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
+        cursor.execute(
+            f"SELECT 1 FROM pg_database WHERE datname = '{database}';")
         if cursor.fetchone():
             self.printer.print_msg(
                 f"The PostgreSQL database '{database}' already exists.",
@@ -108,7 +118,8 @@ class OrmCreateDbCommand(AbstractCommand):
     def create_db_mysql(
         self, user: str, password: str, host: str, port: int, database: str
     ):
-        connection = pymysql.connect(user=user, password=password, host=host, port=port)
+        connection = pymysql.connect(
+            user=user, password=password, host=host, port=port)
         cursor = connection.cursor()
         cursor.execute(f"SHOW DATABASES LIKE '{database}';")
         result = cursor.fetchone()

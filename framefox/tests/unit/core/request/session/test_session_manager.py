@@ -1,16 +1,18 @@
-import pytest
-from unittest.mock import Mock
 import json
 import os
-from datetime import datetime, timezone, timedelta
-from framefox.core.request.session.session_manager import SessionManager
+from datetime import datetime, timedelta, timezone
+from unittest.mock import Mock
+
+import pytest
+
 from framefox.core.config.settings import Settings
+from framefox.core.request.session.session_manager import SessionManager
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -31,10 +33,7 @@ class TestSessionManager:
     @pytest.fixture
     def sample_session_data(self):
         """Fixture for sample session data"""
-        return {
-            "user_id": "123",
-            "username": "test_user"
-        }
+        return {"user_id": "123", "username": "test_user"}
 
     def test_create_session(self, session_manager, sample_session_data):
         """Test creating a new session"""
@@ -104,20 +103,26 @@ class TestSessionManager:
             sessions = {
                 "active": {
                     "data": {"user": "active"},
-                    "expires_at": (datetime.now(timezone.utc) + timedelta(hours=1)).timestamp()
+                    "expires_at": (
+                        datetime.now(timezone.utc) + timedelta(hours=1)
+                    ).timestamp(),
                 },
                 "expired1": {
                     "data": {"user": "expired1"},
-                    "expires_at": (datetime.now(timezone.utc) - timedelta(hours=1)).timestamp()
+                    "expires_at": (
+                        datetime.now(timezone.utc) - timedelta(hours=1)
+                    ).timestamp(),
                 },
                 "expired2": {
                     "data": {"user": "expired2"},
-                    "expires_at": (datetime.now(timezone.utc) - timedelta(minutes=30)).timestamp()
-                }
+                    "expires_at": (
+                        datetime.now(timezone.utc) - timedelta(minutes=30)
+                    ).timestamp(),
+                },
             }
 
             # Save the sessions directly
-            with open(session_manager.session_file_path, 'w') as f:
+            with open(session_manager.session_file_path, "w") as f:
                 json.dump(sessions, f)
 
             # Clean up expired sessions

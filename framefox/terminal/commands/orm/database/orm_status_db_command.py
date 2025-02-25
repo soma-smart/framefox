@@ -14,7 +14,7 @@ from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -75,16 +75,19 @@ class OrmStatusDbCommand(AbstractCommand):
                     table.add_row(rev.revision, rev.doc or "", status)
                     console = Console()
                     console.print("")
-                    console.print("[bold orange1]Migration Status[/bold orange1]")
+                    console.print(
+                        "[bold orange1]Migration Status[/bold orange1]")
                     console.print("")
                     console.print(table)
                     console.print("")
 
                 if current_rev != head_rev:
                     if current_rev is None:
-                        self.printer.print_msg("No migrations applied", theme="warning")
+                        self.printer.print_msg(
+                            "No migrations applied", theme="warning")
                     else:
-                        pending = list(script.iterate_revisions(current_rev, "head"))
+                        pending = list(
+                            script.iterate_revisions(current_rev, "head"))
                         self.printer.print_msg(
                             f"{len(pending)} pending migration(s)", theme="warning"
                         )

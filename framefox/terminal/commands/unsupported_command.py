@@ -1,5 +1,13 @@
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class UnsupportedCommand(AbstractCommand):
     """

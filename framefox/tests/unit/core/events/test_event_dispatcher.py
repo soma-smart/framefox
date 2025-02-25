@@ -1,12 +1,14 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from framefox.core.events.event_dispatcher import EventDispatcher
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 

@@ -1,98 +1,93 @@
-import pytest
-from framefox.core.routing.decorator.route import Route
+from pathlib import Path
+from unittest.mock import Mock, patch
 
+import pytest
+from fastapi import FastAPI
+
+from framefox.core.routing.router import Router
+from framefox.core.templates.template_renderer import TemplateRenderer
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
 
-class TestRoute:
+class TestRouter:
     @pytest.fixture
-    def route_decorator(self):
-        """Fixture for the Route decorator"""
-        return Route(
-            path="/test",
-            name="test_route",
-            methods=["GET", "POST"]
+    def mock_app(self):
+        """Fixture for FastAPI"""
+        app = Mock(spec=FastAPI)
+        app.routes = []
+        app.include_router = Mock()
+        app.add_api_route = Mock()
+        return app
+
+    @pytest.fixture
+    def mock_settings(self):
+        """Fixture for Settings"""
+        settings = Mock()
+        settings.app_env = "dev"
+        return settings
+
+    @pytest.fixture
+    def mock_template_renderer(self):
+        """Fixture for TemplateRenderer"""
+        renderer = Mock(spec=TemplateRenderer)
+        renderer.render.return_value = "<html>Test</html>"
+        return renderer
+
+    @pytest.fixture
+    def router(self, mock_app, mock_settings, mock_template_renderer):
+        """Fixture for Router"""
+        # Patch the ServiceContainer class and its instance
+        with patch("framefox.core.routing.router.ServiceContainer") as MockContainer:
+            # Create a mock instance that inherits from ServiceContainer
+            container = Mock()
+
+            # Configure the necessary methods
+            container.get_by_name = Mock(return_value=mock_settings)
+            container.get = Mock(return_value=mock_template_renderer)
+
+            # Configure the mock class
+            MockContainer.return_value = container
+
+            # Return the Router instance
+            return Router(mock_app)
+
+    def test_init(self, router, mock_app):
+        """Test Router initialization"""
+        assert router.app == mock_app
+        assert isinstance(router._routes, dict)
+
+    def test_get_module_name(self, router):
+        """Test path to module name conversion"""
+        with patch("pathlib.Path.cwd") as mock_cwd:
+            mock_cwd.return_value = Path("/home/project")
+            module_path = "/home/project/src/controllers/home.py"
+            result = router._get_module_name(module_path)
+            assert result == "src.controllers.home"
+
+    def test_url_path_for_existing_route(self, router):
+        """Test URL generation for an existing route"""
+        Router._routes = {"test_route": "/users/{id}/profile"}
+        url = router.url_path_for("test_route", id=123)
+        assert url == "/users/123/profile"
+
+    def test_url_path_for_missing_route(self, router):
+        """Test URL generation for a non-existent route"""
+        url = router.url_path_for("nonexistent_route")
+        assert url == "#"
+
+    def test_register_default_route(self, router, mock_app):
+        """Test default route registration"""
+        router.register_controllers()
+        mock_app.add_api_route.assert_called_with(
+            "/",
+            mock_app.add_api_route.call_args[0][1],
+            name="default_route",
+            methods=["GET"],
         )
-
-    @pytest.mark.asyncio
-    async def test_route_decorator_attributes(self, route_decorator):
-        """Test the attributes of the Route decorator"""
-        assert route_decorator.path == "/test"
-        assert route_decorator.name == "test_route"
-        assert route_decorator.methods == ["GET", "POST"]
-
-    @pytest.mark.asyncio
-    async def test_route_decorator_wrapper(self, route_decorator):
-        """Test the wrapper of the Route decorator"""
-        # Define a test function
-        @route_decorator
-        async def test_function(param1, param2):
-            return f"{param1}-{param2}"
-
-        # Check the route information
-        assert hasattr(test_function, "route_info")
-        assert test_function.route_info["path"] == "/test"
-        assert test_function.route_info["name"] == "test_route"
-        assert test_function.route_info["methods"] == ["GET", "POST"]
-
-        # Verify that the function still works
-        result = await test_function("hello", "world")
-        assert result == "hello-world"
-
-    @pytest.mark.asyncio
-    async def test_multiple_routes(self):
-        """Test multiple Route decorators"""
-        route1 = Route("/path1", "route1", ["GET"])
-        route2 = Route("/path2", "route2", ["POST"])
-
-        @route1
-        async def function1():
-            return "function1"
-
-        @route2
-        async def function2():
-            return "function2"
-
-        # Check distinct route information
-        assert function1.route_info["path"] == "/path1"
-        assert function1.route_info["name"] == "route1"
-        assert function1.route_info["methods"] == ["GET"]
-
-        assert function2.route_info["path"] == "/path2"
-        assert function2.route_info["name"] == "route2"
-        assert function2.route_info["methods"] == ["POST"]
-
-        # Verify function execution
-        assert await function1() == "function1"
-        assert await function2() == "function2"
-
-    @pytest.mark.asyncio
-    async def test_route_with_custom_methods(self):
-        """Test the Route decorator with custom HTTP methods"""
-        custom_methods = ["PUT", "DELETE", "PATCH"]
-        route = Route("/custom", "custom_route", custom_methods)
-
-        @route
-        async def custom_function():
-            return "custom"
-
-        assert custom_function.route_info["methods"] == custom_methods
-        assert await custom_function() == "custom"
-
-    @pytest.mark.asyncio
-    async def test_route_preserves_docstring(self, route_decorator):
-        """Test that the decorator preserves the function's docstring"""
-        @route_decorator
-        async def documented_function():
-            """This function has a docstring"""
-            return "test"
-
-        assert documented_function.__doc__ == "This function has a docstring"
-        assert await documented_function() == "test"

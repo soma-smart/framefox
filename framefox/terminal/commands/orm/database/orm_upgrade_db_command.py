@@ -10,7 +10,7 @@ from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -41,6 +41,10 @@ class OrmUpgradeDbCommand(AbstractCommand):
 
             self.printer.print_msg(
                 "All migrations have been successfully applied.", theme="success"
+            )
+            self.printer.print_full_text(
+                "You can use [bold orange1]framefox orm database downgrade[/bold orange1] to roll back migrations, if you need to.",
+                linebefore=True,
             )
         except Exception as e:
             self.printer.print_msg(

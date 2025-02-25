@@ -1,4 +1,3 @@
-
 import uuid
 
 from framefox.core.request.request_stack import RequestStack
@@ -7,7 +6,7 @@ from framefox.core.request.request_stack import RequestStack
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 

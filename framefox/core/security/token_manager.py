@@ -10,7 +10,7 @@ from framefox.core.di.service_container import ServiceContainer
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -18,10 +18,8 @@ Github: https://github.com/RayenBou
 class TokenManager:
 
     def __init__(self):
-        service_container = ServiceContainer()
-        self.settings = service_container.get(Settings)
+        self.settings = ServiceContainer().get(Settings)
         self.logger = logging.getLogger("TOKENMANAGER")
-
         self.algorithm = "HS256"
 
     def create_token(self, user, firewallname: str, roles: list) -> str:
@@ -40,7 +38,8 @@ class TokenManager:
     def decode_token(self, token: str) -> dict:
         try:
             payload = jwt.decode(
-                token, self.settings.cookie_secret_key, algorithms=[self.algorithm]
+                token, self.settings.cookie_secret_key, algorithms=[
+                    self.algorithm]
             )
             return payload
         except jwt.ExpiredSignatureError:

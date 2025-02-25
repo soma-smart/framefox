@@ -5,11 +5,12 @@ from datetime import datetime, timezone
 from typing import Dict, Optional
 
 from framefox.core.config.settings import Settings
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 

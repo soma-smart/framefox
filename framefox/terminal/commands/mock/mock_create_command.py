@@ -11,7 +11,7 @@ from framefox.terminal.common.model_checker import ModelChecker
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -71,7 +71,8 @@ class MockCreateCommand(AbstractCommand):
             entity_name, verbose=True
         )
 
-        properties_list = [prop for prop in properties_list if prop["name"] != "id"]
+        properties_list = [
+            prop for prop in properties_list if prop["name"] != "id"]
 
         self.file_creator.create_file(
             template="mock_create_template.jinja2",

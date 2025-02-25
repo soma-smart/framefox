@@ -10,7 +10,7 @@ from framefox.core.security.exceptions.invalid_csrf_token_exception import (
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 

@@ -9,7 +9,7 @@ from framefox.terminal.common.model_checker import ModelChecker
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen & Leurond Raphael
+Author: BOUMAZA Rayen & LEUROND Raphael
 Github: https://github.com/RayenBou
 Github: https://github.com/Vasulvius
 """
@@ -34,7 +34,7 @@ class CreateUserCommand(AbstractCommand):
             linebefore=True,
         )
         if name is None:
-            name = InputManager().wait_input("Entity name")
+            name = InputManager().wait_input("Entity name", default="user")
             if name == "":
                 return
         if not ClassNameManager.is_snake_case(name):
@@ -53,9 +53,11 @@ class CreateUserCommand(AbstractCommand):
                 newline=True,
             )
             return
-        entity_path = self.create_entity_command.create_entity_and_repository(name)
+        entity_path = self.create_entity_command.create_entity_and_repository(
+            name)
 
-        self.entity_property_manager.insert_property(name, "    password: str\n")
+        self.entity_property_manager.insert_property(
+            name, "    password: str\n")
         self.entity_property_manager.insert_property(name, "    email: str\n")
         self.entity_property_manager.insert_property(
             name,

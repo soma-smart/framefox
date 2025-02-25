@@ -1,14 +1,16 @@
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 from fastapi import Request
-from framefox.core.request.session.session import Session
+
 from framefox.core.request.request_stack import RequestStack
+from framefox.core.request.session.session import Session
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -25,7 +27,7 @@ class TestSession:
     @pytest.fixture(autouse=True)
     def setup_request_stack(self, mock_request):
         """Fixture to configure the RequestStack"""
-        with patch.object(RequestStack, 'get_request', return_value=mock_request):
+        with patch.object(RequestStack, "get_request", return_value=mock_request):
             yield
 
     def test_set_and_get(self, mock_request):

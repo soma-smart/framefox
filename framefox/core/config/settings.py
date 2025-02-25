@@ -1,3 +1,9 @@
+import os
+import re
+from pathlib import Path
+import yaml
+from dotenv import load_dotenv
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -5,12 +11,6 @@ Github: https://github.com/soma-smart/framefox
 Author: Boumaza Rayen
 Github: https://github.com/RayenBou
 """
-
-import os
-import re
-from pathlib import Path
-import yaml
-from dotenv import load_dotenv
 
 env_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path=env_path)

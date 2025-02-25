@@ -1,13 +1,15 @@
-import pytest
 from unittest.mock import Mock
-from framefox.core.security.access_manager import AccessManager
+
+import pytest
+
 from framefox.core.config.settings import Settings
+from framefox.core.security.access_manager import AccessManager
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -21,7 +23,7 @@ class TestAccessManager:
             {"path": r"^/admin.*", "roles": ["ROLE_ADMIN"]},
             {"path": r"^/api/users.*", "roles": ["ROLE_USER", "ROLE_ADMIN"]},
             {"path": r"^/public.*", "roles": "PUBLIC"},
-            {"path": r"^/mixed.*", "roles": ["ROLE_USER", "ROLE_EDITOR"]}
+            {"path": r"^/mixed.*", "roles": ["ROLE_USER", "ROLE_EDITOR"]},
         ]
         return settings
 
@@ -82,7 +84,7 @@ class TestAccessManager:
             ("/api/users/search", ["ROLE_USER", "ROLE_ADMIN"]),
             ("/public/assets/img.jpg", ["PUBLIC"]),
             ("/mixed/content", ["ROLE_USER", "ROLE_EDITOR"]),
-            ("/unprotected", [])
+            ("/unprotected", []),
         ]
 
         for path, expected_roles in test_cases:

@@ -11,7 +11,7 @@ from framefox.terminal.common.security_configurator import SecurityConfigurator
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen & Leurond Raphael
+Author: BOUMAZA Rayen & LEUROND Raphael
 Github: https://github.com/RayenBou
 Github: https://github.com/Vasulvius
 """
@@ -53,7 +53,8 @@ class CreateAuthCommand(AbstractCommand):
             if not provider_name:
                 return
 
-        authenticator_import_path = self._create_login_files(auth_type, auth_name)
+        authenticator_import_path = self._create_login_files(
+            auth_type, auth_name)
         self._configure_security(
             provider_name, authenticator_import_path, auth_type, auth_name
         )
@@ -134,12 +135,14 @@ class CreateAuthCommand(AbstractCommand):
                 f"[bold red]Cannot create authenticator. File already exists:[/bold red]",
                 linebefore=True,
             )
-            self.printer.print_msg(f"• Authenticator ({auth_path})", theme="error")
+            self.printer.print_msg(
+                f"• Authenticator ({auth_path})", theme="error")
             return None
 
         if auth_type == "default":
             # Vérifier l'existence des fichiers supplémentaires pour default
-            controller_path = os.path.join("src/controllers", "login_controller.py")
+            controller_path = os.path.join(
+                "src/controllers", "login_controller.py")
             view_path = os.path.join("templates/security", "login.html")
 
             existing_files = []
@@ -257,7 +260,8 @@ class CreateAuthCommand(AbstractCommand):
         else:
             provider_key = None
             if provider_name:
-                provider_class = ClassNameManager.snake_to_pascal(provider_name)
+                provider_class = ClassNameManager.snake_to_pascal(
+                    provider_name)
                 SecurityConfigurator().add_provider(provider_name, provider_class)
                 provider_key = f"app_{provider_name}_provider"
             SecurityConfigurator().add_named_firewall(

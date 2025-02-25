@@ -1,13 +1,14 @@
-import pytest
-from unittest.mock import patch, Mock
-from framefox.core.di.service_container import ServiceContainer
+from unittest.mock import Mock, patch
 
+import pytest
+
+from framefox.core.di.service_container import ServiceContainer
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -22,7 +23,7 @@ class DependentService:
 
 
 class CircularService1:
-    def __init__(self, service2: 'CircularService2'):
+    def __init__(self, service2: "CircularService2"):
         self.service2 = service2
 
 
@@ -36,7 +37,9 @@ class TestServiceContainer:
     def container(self):
         # Reset the singleton for each test
         ServiceContainer._instance = None
-        with patch('framefox.core.di.service_container.ServiceContainer.scan_and_register_services'):
+        with patch(
+            "framefox.core.di.service_container.ServiceContainer.scan_and_register_services"
+        ):
             return ServiceContainer()
 
     def test_singleton_pattern(self):
@@ -98,16 +101,15 @@ class TestServiceContainer:
         default_tag = container._get_default_tag(TestService)
         assert container.get_by_tag(default_tag) is test_service
 
-    @patch('os.walk')
-    @patch('importlib.import_module')
+    @patch("os.walk")
+    @patch("importlib.import_module")
     def test_scan_and_register_services(self, mock_import, mock_walk, container):
         # Restore the original method
-        container.scan_and_register_services = ServiceContainer.scan_and_register_services.__get__(
-            container)
+        container.scan_and_register_services = (
+            ServiceContainer.scan_and_register_services.__get__(container)
+        )
 
-        mock_walk.return_value = [
-            ('/test/path', [], ['test_service.py'])
-        ]
+        mock_walk.return_value = [("/test/path", [], ["test_service.py"])]
 
         mock_module = Mock()
         mock_module.TestService = TestService
