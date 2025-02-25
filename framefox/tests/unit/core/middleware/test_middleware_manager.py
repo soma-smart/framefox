@@ -1,12 +1,17 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
 from fastapi import FastAPI
-from framefox.core.middleware.middleware_manager import MiddlewareManager
+
 from framefox.core.config.settings import Settings
-from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
+from framefox.core.middleware.middleware_manager import MiddlewareManager
+from framefox.core.middleware.middlewares.custom_cors_middleware import (
+    CustomCORSMiddleware,
+)
 from framefox.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
+from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
 from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
-from framefox.core.middleware.middlewares.custom_cors_middleware import CustomCORSMiddleware
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -43,10 +48,9 @@ class TestMiddlewareManager:
         # Verify that add_middleware was called for each middleware
         expected_calls = [
             ((RequestMiddleware,), {}),
-            ((FirewallMiddleware,), {'settings': middleware_manager.settings}),
-            ((SessionMiddleware,), {'settings': middleware_manager.settings}),
-            ((CustomCORSMiddleware,), {
-             'settings': middleware_manager.settings}),
+            ((FirewallMiddleware,), {"settings": middleware_manager.settings}),
+            ((SessionMiddleware,), {"settings": middleware_manager.settings}),
+            ((CustomCORSMiddleware,), {"settings": middleware_manager.settings}),
         ]
 
         # Verify that the number of calls is correct
@@ -57,7 +61,7 @@ class TestMiddlewareManager:
         for expected, actual in zip(expected_calls, actual_calls):
             # Verify the middleware class
             assert actual[0][0] == expected[0][0]
-            assert actual[1] == expected[1]        # Verify the parameters
+            assert actual[1] == expected[1]  # Verify the parameters
 
     def test_middleware_order(self, middleware_manager, mock_app):
         """Test that the order of middlewares is correct"""
@@ -71,17 +75,23 @@ class TestMiddlewareManager:
         assert calls[2][0][0] == SessionMiddleware
         assert calls[3][0][0] == CustomCORSMiddleware
 
-    @pytest.mark.parametrize("middleware_class", [
-        RequestMiddleware,
-        FirewallMiddleware,
-        SessionMiddleware,
-        CustomCORSMiddleware
-    ])
-    def test_individual_middleware_addition(self, middleware_manager, mock_app, middleware_class):
+    @pytest.mark.parametrize(
+        "middleware_class",
+        [
+            RequestMiddleware,
+            FirewallMiddleware,
+            SessionMiddleware,
+            CustomCORSMiddleware,
+        ],
+    )
+    def test_individual_middleware_addition(
+        self, middleware_manager, mock_app, middleware_class
+    ):
         """Test the addition of each middleware individually"""
         middleware_manager.setup_middlewares()
 
         # Verify that each middleware was added
-        middleware_calls = [call[0][0]
-                            for call in mock_app.add_middleware.call_args_list]
+        middleware_calls = [
+            call[0][0] for call in mock_app.add_middleware.call_args_list
+        ]
         assert middleware_class in middleware_calls

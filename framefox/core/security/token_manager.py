@@ -18,10 +18,8 @@ Github: https://github.com/RayenBou
 class TokenManager:
 
     def __init__(self):
-        service_container = ServiceContainer()
-        self.settings = service_container.get(Settings)
+        self.settings = ServiceContainer().get(Settings)
         self.logger = logging.getLogger("TOKENMANAGER")
-
         self.algorithm = "HS256"
 
     def create_token(self, user, firewallname: str, roles: list) -> str:

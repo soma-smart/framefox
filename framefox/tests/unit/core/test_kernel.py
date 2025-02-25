@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+
 from framefox.core.kernel import Kernel
 
 """
@@ -14,7 +16,7 @@ Github: https://github.com/RayenBou
 class TestKernel:
     @pytest.fixture
     def mock_container(self):
-        with patch('framefox.core.di.service_container.ServiceContainer') as mock:
+        with patch("framefox.core.di.service_container.ServiceContainer") as mock:
             container = Mock()
             container.get.return_value = Mock()
             mock.return_value = container

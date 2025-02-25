@@ -1,11 +1,13 @@
-import pytest
-from unittest.mock import Mock, patch
 from typing import Optional
-from sqlmodel import Field, Session, create_engine, SQLModel, select
+from unittest.mock import Mock, patch
+
+import pytest
 from sqlalchemy import MetaData
-from framefox.core.orm.entity_manager import EntityManager
+from sqlmodel import Field, Session, SQLModel, create_engine, select
+
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
+from framefox.core.orm.entity_manager import EntityManager
 
 """
 Framefox Framework developed by SOMA
@@ -36,6 +38,7 @@ class TestEntityManager:
     @pytest.fixture
     def TestEntityClass(self, test_metadata):
         """Fixture for the test entity class"""
+
         class TestEntity(SQLModel, table=True):
             __tablename__ = f"test_entity_{id(test_metadata)}"
             metadata = test_metadata
@@ -55,7 +58,7 @@ class TestEntityManager:
         container = ServiceContainer()
         container.get = Mock(return_value=mock_settings)
 
-        with patch.object(ServiceContainer, '_instance', container):
+        with patch.object(ServiceContainer, "_instance", container):
             yield container
 
     @pytest.fixture
@@ -83,8 +86,9 @@ class TestEntityManager:
     def test_initialization(self, entity_manager, mock_settings):
         """Test correct initialization of the EntityManager"""
         assert entity_manager.settings is mock_settings
-        assert isinstance(entity_manager.engine, type(
-            create_engine("sqlite:///:memory:")))
+        assert isinstance(
+            entity_manager.engine, type(create_engine("sqlite:///:memory:"))
+        )
         assert isinstance(entity_manager.session, Session)
         assert entity_manager.logger is not None
 
@@ -171,10 +175,7 @@ class TestEntityManager:
     def test_exec_statement(self, entity_manager, TestEntityClass):
         """Test executing a SQL statement"""
         # Create test data
-        entities = [
-            TestEntityClass(name="test1"),
-            TestEntityClass(name="test2")
-        ]
+        entities = [TestEntityClass(name="test1"), TestEntityClass(name="test2")]
         for entity in entities:
             entity_manager.persist(entity)
 

@@ -54,7 +54,6 @@ class FirewallHandler:
 
         firewalls = self.settings.firewalls
         if not firewalls:
-            # self.logger.warning("No firewalls configured in security.yaml")
             return authenticators
         for firewall_name, config in firewalls.items():
             authenticator_path = config.get("authenticator")
@@ -78,8 +77,8 @@ class FirewallHandler:
 
     async def handle_request(self, request: Request, call_next):
         """
-        Point d'entrée principal pour la gestion des requêtes.
-        Gère l'authentification et l'autorisation.
+        Main entry point for request handling.
+        Manages authentication and authorization.
         """
         if not self.settings.firewalls:
             return await call_next(request)

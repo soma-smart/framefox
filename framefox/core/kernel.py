@@ -82,8 +82,7 @@ class Kernel:
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
         static_path = Path(__file__).parent / "templates" / "static"
-        self._app.mount(
-            "/static", StaticFiles(directory=static_path), name="static")
+        self._app.mount("/static", StaticFiles(directory=static_path), name="static")
 
     @property
     def app(self) -> FastAPI:

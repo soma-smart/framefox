@@ -1,4 +1,3 @@
-
 import uuid
 
 from framefox.core.request.request_stack import RequestStack

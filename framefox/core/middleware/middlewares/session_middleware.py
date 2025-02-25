@@ -1,4 +1,3 @@
-
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -36,14 +35,12 @@ class SessionMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         session_id = request.cookies.get(self.cookie_name)
-        session = self.session_manager.get_session(
-            session_id) if session_id else None
+        session = self.session_manager.get_session(session_id) if session_id else None
 
         RequestStack.set_request(request)
 
         if session:
-            self.logger.info(
-                f"Session expired for session_id: {session_id}")
+            self.logger.info(f"Session expired for session_id: {session_id}")
             self.session_manager.delete_session(session_id)
             request.state.session_id = None
             request.state.session_data = {}
