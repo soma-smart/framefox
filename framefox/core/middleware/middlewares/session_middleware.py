@@ -14,7 +14,7 @@ from framefox.core.request.session.session_manager import SessionManager
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -35,7 +35,8 @@ class SessionMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         session_id = request.cookies.get(self.cookie_name)
-        session = self.session_manager.get_session(session_id) if session_id else None
+        session = self.session_manager.get_session(
+            session_id) if session_id else None
 
         RequestStack.set_request(request)
 

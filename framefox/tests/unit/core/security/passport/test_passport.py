@@ -12,7 +12,7 @@ from framefox.core.security.password.password_hasher import PasswordHasher
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -118,7 +118,8 @@ class TestPassport:
         """Test authentication without provider info"""
         # Setup
         passport = Passport(
-            mock_user_badge, PasswordCredentials("test_password"), mock_csrf_token_badge
+            mock_user_badge, PasswordCredentials(
+                "test_password"), mock_csrf_token_badge
         )
 
         # Execute

@@ -10,7 +10,7 @@ from framefox.core.config.settings import Settings
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -81,7 +81,8 @@ class SessionManager:
         """Cleans up expired sessions"""
         sessions = self.load_sessions()
         current_time = datetime.now(timezone.utc).timestamp()
-        expired = [sid for sid, s in sessions.items() if s["expires_at"] < current_time]
+        expired = [sid for sid, s in sessions.items() if s["expires_at"]
+                   < current_time]
 
         if expired:
             for sid in expired:

@@ -8,7 +8,7 @@ from framefox.terminal.common.class_name_manager import ClassNameManager
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -37,7 +37,8 @@ class RelationManager:
         if not target_entity:
             return False
 
-        config = self._get_relation_config(source_entity, target_entity, property_name)
+        config = self._get_relation_config(
+            source_entity, target_entity, property_name)
         if config.type == "ManyToMany":
             return self._create_many_to_many_relation(
                 source_entity, target_entity, property_name, config
@@ -49,7 +50,8 @@ class RelationManager:
     def _get_relation_config(
         self, source_entity: str, target_entity: str, property_name: str
     ) -> RelationConfig:
-        relation_type = self._request_relation_type(source_entity, target_entity)
+        relation_type = self._request_relation_type(
+            source_entity, target_entity)
 
         if relation_type in ["ManyToOne", "OneToOne"]:
             optional = self._request_optional()
@@ -110,7 +112,8 @@ class RelationManager:
             )
 
             for key, value in display_relation_types.items():
-                self.printer.print_msg(f'{key}. {value}  - "{help_messages[key]}"')
+                self.printer.print_msg(
+                    f'{key}. {value}  - "{help_messages[key]}"')
 
             choice = self.input_manager.wait_input(
                 "Enter the number corresponding to the type of relation",
@@ -146,7 +149,8 @@ class RelationManager:
     ) -> Tuple[bool, Optional[str]]:
         if auto_inverse:
             has_inverse = True
-            self.printer.print_msg("An inverse property will be added automatically.")
+            self.printer.print_msg(
+                "An inverse property will be added automatically.")
         else:
             has_inverse = (
                 self.input_manager.wait_input(
@@ -215,7 +219,8 @@ class RelationManager:
                 .strip()
                 .lower()
             )
-            target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
+            target_file = os.path.join(
+                self.entity_folder, f"{target_entity}.py")
             if os.path.exists(target_file):
                 return target_entity
             else:
@@ -381,13 +386,16 @@ class RelationManager:
             source_entity, target_entity, property_name, intermediate_entity, config
         )
 
-        intermediate_class = ClassNameManager.snake_to_pascal(intermediate_entity)
+        intermediate_class = ClassNameManager.snake_to_pascal(
+            intermediate_entity)
 
         source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
         target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
 
-        self._add_class_import(source_file, intermediate_entity, intermediate_class)
-        self._add_class_import(target_file, intermediate_entity, intermediate_class)
+        self._add_class_import(
+            source_file, intermediate_entity, intermediate_class)
+        self._add_class_import(
+            target_file, intermediate_entity, intermediate_class)
 
         self.printer.print_msg(
             f"ManyToMany relation file '{intermediate_entity}' created between '{source_entity}' and '{target_entity}'.",
@@ -399,7 +407,8 @@ class RelationManager:
     def _create_intermediate_entity(
         self, intermediate_entity: str, source_entity: str, target_entity: str
     ):
-        intermediate_class = ClassNameManager.snake_to_pascal(intermediate_entity)
+        intermediate_class = ClassNameManager.snake_to_pascal(
+            intermediate_entity)
         source_class = ClassNameManager.snake_to_pascal(source_entity)
         target_class = ClassNameManager.snake_to_pascal(target_entity)
         file_path = os.path.join(
@@ -432,7 +441,8 @@ class RelationManager:
     ):
         source_class = ClassNameManager.snake_to_pascal(source_entity)
         target_class = ClassNameManager.snake_to_pascal(target_entity)
-        intermediate_class = ClassNameManager.snake_to_pascal(intermediate_entity)
+        intermediate_class = ClassNameManager.snake_to_pascal(
+            intermediate_entity)
 
         source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
         target_file = os.path.join(self.entity_folder, f"{target_entity}.py")

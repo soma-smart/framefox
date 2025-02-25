@@ -13,7 +13,7 @@ from framefox.core.security.user.entity_user_provider import EntityUserProvider
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -41,7 +41,8 @@ class AbstractAuthenticator:
                 )
 
                 passport.provider_info = (
-                    {"repository": provider_info[0], "property": provider_info[1]}
+                    {"repository": provider_info[0],
+                        "property": provider_info[1]}
                     if provider_info
                     else None
                 )

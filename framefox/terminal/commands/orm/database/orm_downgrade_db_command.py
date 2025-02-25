@@ -11,7 +11,7 @@ from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 

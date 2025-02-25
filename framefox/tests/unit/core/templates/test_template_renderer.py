@@ -11,7 +11,7 @@ from framefox.core.templates.template_renderer import TemplateRenderer
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -62,7 +62,8 @@ class TestTemplateRenderer:
             mock_path.return_value = mock_path_instance
 
             # Configuration of user_template_dir via mock_settings
-            mock_container.get_by_name("Settings").template_dir = "/path/to/templates"
+            mock_container.get_by_name(
+                "Settings").template_dir = "/path/to/templates"
 
             renderer = TemplateRenderer()
             renderer.framework_template_dir = framework_templates
@@ -79,7 +80,8 @@ class TestTemplateRenderer:
         """Test successful URL generation"""
         url = template_renderer._url_for("test-route", param="value")
         assert url == "/test-route"
-        mock_router.url_path_for.assert_called_once_with("test-route", param="value")
+        mock_router.url_path_for.assert_called_once_with(
+            "test-route", param="value")
 
     def test_url_for_error(self, template_renderer, mock_router):
         """Test error handling in url_for"""

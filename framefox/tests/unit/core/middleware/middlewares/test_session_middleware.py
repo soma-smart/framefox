@@ -12,7 +12,7 @@ from framefox.core.request.session.session_manager import SessionManager
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -123,7 +123,8 @@ class TestSessionMiddleware:
 
             assert response.status_code == 440
             assert "Session expired" in response.body.decode()
-            mock_session_manager.delete_session.assert_called_once_with("expired_id")
+            mock_session_manager.delete_session.assert_called_once_with(
+                "expired_id")
 
     def test_cleanup_expired_sessions(self, middleware, mock_session_manager):
         """Test the cleanup of expired sessions"""

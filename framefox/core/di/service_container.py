@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Type, get_type_hints
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -43,7 +43,8 @@ class ServiceContainer:
         src_path = Path(__file__).resolve().parent.parent.parent.parent / "src"
 
         excluded_directories = ["entity", "entities", "Entity"]
-        excluded_modules = ["src.entity", "src.entities", "framefox.core.entity"]
+        excluded_modules = ["src.entity",
+                            "src.entities", "framefox.core.entity"]
 
         paths_to_scan = [core_path, src_path]
         for base_path in paths_to_scan:
@@ -65,7 +66,8 @@ class ServiceContainer:
                         module_path = root_path / file
                         try:
                             module_name = (
-                                self._module_name_from_path(module_path, core_path)
+                                self._module_name_from_path(
+                                    module_path, core_path)
                                 if base_path == core_path
                                 else f"src.{module_path.relative_to(src_path).with_suffix('').as_posix().replace('/', '.')}"
                             )
@@ -183,7 +185,8 @@ class ServiceContainer:
             return None
         if service_cls in self.services:
             return self.services[service_cls]
-        problematic_classes = {"FastAPI", "Panel", "Pretty", "Table", "Built-in", "abc"}
+        problematic_classes = {"FastAPI", "Panel",
+                               "Pretty", "Table", "Built-in", "abc"}
         if service_cls.__name__ in problematic_classes:
             return None
 
@@ -282,7 +285,8 @@ class ServiceContainer:
             return None
 
         if len(services) > 1:
-            service_names = [service.__class__.__name__ for service in services]
+            service_names = [
+                service.__class__.__name__ for service in services]
             raise Exception(
                 f"Multiple services found for tag '{tag}': {', '.join(service_names)}"
             )
