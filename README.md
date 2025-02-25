@@ -109,62 +109,14 @@ your-app/
 ├── main.py
 └── requirements.txt
 ```
+## Configuration
 
-### Entity
-Entities are business objects that represent the application's data and are typically mapped to database tables. They are very easy to use due to their inheritance from the AbstractEntity class. Here is an example of a user entity:
-```python
-from sqlmodel import Field
-from framefox.core.orm.abstract_entity import AbstractEntity
-from datetime import datetime
+Application configurations are defined in the `config` folder. The configuration files are in YAML format and include parameters for the database, sessions, security, and CORS.
 
-class User(AbstractEntity, table=True):
-    """
-    Example entity representing a user.
-    """
+- `application.yaml`: General application settings.
+- `orm.yaml`: ORM (Object-Relational Mapping) settings.
+- `security.yaml`: Security settings including authentication and authorization.
 
-    id: int = Field(default=None, primary_key=True, description="The unique identifier of the user.")
-    name: str = Field(index=True, description="The name of the user.")
-    email: str = Field(index=True, description="The email address of the user.")
-    age: int = Field(default=None, description="The age of the user.")
-    created_at: datetime = Field(default=datetime.utcnow, description="The timestamp when the user was created.")
-```
-AbstractEntity is based on Pydantic, so it implements dynamic model creation that simplifies data validation. To use it, simply use:
-```python
-User.generate_create_model()
-```
-Will see later how to use it with a controller.
-
-### Repository
-A repository is a design pattern that encapsulates data access logic, centralizing data operations and promoting modular, testable, and maintainable code by abstracting the data access layer.
-The repository inherits from the AbstractRepository, making its creation very easy. The idea is to simply connect the repository to the corresponding entity. Here is an example of UserRepository :
-```python
-from framefox.core.orm.abstract_repository import AbstractRepository
-from src.entity.user import User
-
-
-class UserRepository(AbstractRepository):
-    def __init__(self):
-        super().__init__(User)
-```
-Due to its ineritance, the repository implement many features such as :
-- find(id): Retrieve an entity by its ID.
-- find_all(): Retrieve all entities.
-- find_by(criteria): Retrieve entities based on specific criteria.
-- add(entity): Add a new entity.
-- update(entity): Update an existing entity.
-- delete(entity): Delete an entity.
-
-
-
-# External DB 
-
-```python
-external_session = self.entity_manager.external_connection(
-            "sqlite:///app.db")
-
-query = text('SELECT * FROM user')
-result = external_session.execute(query).mappings().all()
-```
 
 ### Use repository with controllers
 Thanks to repository and pydantic it is super easy to create a controller that refines routes. Here is an example of UserController that illustrate all features of UserRepository and the Pydantic data validation :
@@ -218,36 +170,8 @@ class UserController(AbstractController):
         return UserRepository().delete(id)
 
 ```
-Let's detail a bit this route :
-```python
-    @Route("/users", "create_user", methods=["POST"])
-    async def create_user(self, user: UserRepository().create_model):
-        user_instance = UserRepository().model(**user.dict())
-        UserRepository().add(user_instance)
-        return None
-```
-This line define the route by using the @Route decorator
-```python
-    @Route("/users", "create_user", methods=["POST"])
-```
-This function requires a user to do its magic. The user is a Pydantic creation model that validates if you give the correct data for user creation. In our example, at least the name and email are required:
-```python
-    async def create_user(self, user: UserRepository().create_model):
-```
-After all, the user object is instantiated and added to the database:
-```python
-        user_instance = UserRepository().model(**user.dict())
-        UserRepository().add(user_instance)
-        return None
-```
 
-## Configuration
 
-Application configurations are defined in the `config` folder. The configuration files are in YAML format and include parameters for the database, sessions, security, and CORS.
-
-- `application.yaml`: General application settings.
-- `orm.yaml`: ORM (Object-Relational Mapping) settings.
-- `security.yaml`: Security settings including authentication and authorization.
 
 
 ## Authors
