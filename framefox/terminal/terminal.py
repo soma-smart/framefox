@@ -6,6 +6,14 @@ from rich.text import Text
 
 from framefox.terminal.command_handler import CommandHandler
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class Terminal:
     _typers = None
@@ -106,17 +114,15 @@ class Terminal:
         table.add_column("Commands", style="bold orange3", no_wrap=True)
         table.add_column("Description", style="white")
 
-        current_group = None
-
         for category, typer_app in typers.items():
-            if category != "main" and category != "create":
+
+            command_list = typer_app.registered_commands if hasattr(
+                typer_app, "registered_commands") else typer_app.commands.values()
+
+            if category != "main" and category != "create" and len(command_list) > 0:
                 table.add_row("", "")
 
-            for command in (
-                typer_app.registered_commands
-                if hasattr(typer_app, "registered_commands")
-                else typer_app.commands.values()
-            ):
+            for command in command_list:
                 command_name = (
                     f"{category} {command.name}" if category != "main" else command.name
                 )

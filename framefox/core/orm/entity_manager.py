@@ -5,6 +5,14 @@ from sqlmodel import Session, create_engine
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class EntityManager:
     """
