@@ -7,6 +7,14 @@ from framefox.core.di.service_container import ServiceContainer
 from framefox.core.orm.entity_manager import EntityManager
 from framefox.core.orm.query_builder import QueryBuilder
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 T = TypeVar("T", bound=SQLModel)
 
 
@@ -68,9 +76,11 @@ class AbstractRepository(ABC):
         if order_by:
             for field, direction in order_by.items():
                 if direction.lower() == "asc":
-                    statement = statement.order_by(asc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        asc(getattr(self.model, field)))
                 elif direction.lower() == "desc":
-                    statement = statement.order_by(desc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        desc(getattr(self.model, field)))
 
         if limit is not None:
             statement = statement.limit(limit)

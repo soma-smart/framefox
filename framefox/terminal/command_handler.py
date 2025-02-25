@@ -12,6 +12,14 @@ import framefox.terminal.commands.orm
 import framefox.terminal.commands.orm.database
 import framefox.terminal.commands.server
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class CommandHandler:
     def __init__(self):
@@ -42,17 +50,27 @@ class CommandHandler:
             app_dict["orm database"], orm_database_commands_dir, "database", "orm"
         )
 
-        server_commands_dir = pkg_resources.files(framefox.terminal.commands.server)
-        self.load_commands_for_an_app(app_dict["server"], server_commands_dir, "server")
+        server_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.server)
+        self.load_commands_for_an_app(
+            app_dict["server"], server_commands_dir, "server")
 
-        create_commands_dir = pkg_resources.files(framefox.terminal.commands.create)
-        self.load_commands_for_an_app(app_dict["create"], create_commands_dir, "create")
-        debug_commands_dir = pkg_resources.files(framefox.terminal.commands.debug)
-        self.load_commands_for_an_app(app_dict["debug"], debug_commands_dir, "debug")
-        cache_commands_dir = pkg_resources.files(framefox.terminal.commands.cache)
-        self.load_commands_for_an_app(app_dict["cache"], cache_commands_dir, "cache")
-        mock_commands_dir = pkg_resources.files(framefox.terminal.commands.mock)
-        self.load_commands_for_an_app(app_dict["mock"], mock_commands_dir, "mock")
+        create_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.create)
+        self.load_commands_for_an_app(
+            app_dict["create"], create_commands_dir, "create")
+        debug_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.debug)
+        self.load_commands_for_an_app(
+            app_dict["debug"], debug_commands_dir, "debug")
+        cache_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.cache)
+        self.load_commands_for_an_app(
+            app_dict["cache"], cache_commands_dir, "cache")
+        mock_commands_dir = pkg_resources.files(
+            framefox.terminal.commands.mock)
+        self.load_commands_for_an_app(
+            app_dict["mock"], mock_commands_dir, "mock")
 
     def load_commands_for_an_app(
         self, app: typer.Typer, commands_dir, dir=None, parent_dir=None
@@ -100,7 +118,8 @@ class CommandHandler:
                     module_name}",
                 fromlist=[module_name],
             )
-        class_name = "".join(word.capitalize() for word in module_name.split("_"))
+        class_name = "".join(word.capitalize()
+                             for word in module_name.split("_"))
         command_class = getattr(module, class_name)
         command_instance = command_class()
         CommandHandler.register_command(app, command_instance)

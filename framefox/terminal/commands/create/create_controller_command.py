@@ -5,6 +5,14 @@ from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class CreateControllerCommand(AbstractCommand):
     def __init__(self):
