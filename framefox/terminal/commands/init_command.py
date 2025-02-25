@@ -14,7 +14,7 @@ from framefox.terminal.common.file_creator import FileCreator
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen & Leurond Raphael
+Author: BOUMAZA Rayen & LEUROND Raphael
 Github: https://github.com/RayenBou
 Github: https://github.com/Vasulvius
 """

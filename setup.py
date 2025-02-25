@@ -20,12 +20,14 @@ setup(
         "click==8.1.8",
         "passlib==1.7.4",
         "pyjwt==2.10.1",
-        "bcrypt==4.2.1",
+        "bcrypt==4.0.1",
         "python-multipart==0.0.20",
         "pymysql==1.1.1",
         "psycopg2-binary==2.9.10",
         "ruamel.yaml==0.18.10",
         "alembic==1.14.1",
+        "pytest==8.3.4",
+        "httpx==0.28.1"
     ],
     entry_points={
         "console_scripts": [
@@ -33,12 +35,6 @@ setup(
         ],
     },
     package_data={
-        # '': ['*.py'],
-        # 'framefox': [
-        #     'terminal/templates/*',
-        #     'terminal/templates/**/*',
-        #     'terminal/commands/*',
-        #     'terminal/common/*'],
         "framefox": [
             "framefox/**",
             "terminal/templates/**/*",

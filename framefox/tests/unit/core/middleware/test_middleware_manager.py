@@ -16,7 +16,7 @@ from framefox.core.middleware.middlewares.session_middleware import SessionMiddl
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -50,7 +50,8 @@ class TestMiddlewareManager:
             ((RequestMiddleware,), {}),
             ((FirewallMiddleware,), {"settings": middleware_manager.settings}),
             ((SessionMiddleware,), {"settings": middleware_manager.settings}),
-            ((CustomCORSMiddleware,), {"settings": middleware_manager.settings}),
+            ((CustomCORSMiddleware,), {
+             "settings": middleware_manager.settings}),
         ]
 
         # Verify that the number of calls is correct

@@ -15,7 +15,7 @@ from framefox.core.templates.template_renderer import TemplateRenderer
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -53,7 +53,8 @@ class Router:
             if exc.status_code == 404:
                 template_renderer = self.container.get(TemplateRenderer)
                 html_content = template_renderer.render(
-                    "404.html", {"request": request, "error": "Page non trouvée"}
+                    "404.html", {"request": request,
+                                 "error": "Page non trouvée"}
                 )
                 return HTMLResponse(content=html_content, status_code=404)
             raise exc

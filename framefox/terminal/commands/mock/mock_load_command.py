@@ -9,7 +9,7 @@ from framefox.terminal.common.printer import Printer
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -30,7 +30,8 @@ class MockLoadCommand(AbstractCommand):
             )
             return
 
-        mock_files = [f for f in os.listdir(mocks_dir) if f.endswith("_mock.py")]
+        mock_files = [f for f in os.listdir(
+            mocks_dir) if f.endswith("_mock.py")]
 
         if not mock_files:
             Printer().print_msg(

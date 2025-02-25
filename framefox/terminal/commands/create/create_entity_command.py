@@ -15,7 +15,7 @@ from framefox.terminal.common.printer import Printer
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen & Leurond Raphael
+Author: BOUMAZA Rayen & LEUROND Raphael
 Github: https://github.com/RayenBou
 Github: https://github.com/Vasulvius
 """
@@ -81,7 +81,8 @@ class CreateEntityCommand(AbstractCommand):
 
     def _process_entity_properties(self, entity_name: str):
         while True:
-            property_details = self.property_manager.request_property(entity_name)
+            property_details = self.property_manager.request_property(
+                entity_name)
             if property_details is None:
                 continue
             if property_details is False:
@@ -91,7 +92,8 @@ class CreateEntityCommand(AbstractCommand):
                     entity_name, property_details.name, property_details.optional
                 )
             else:
-                self.property_manager.add_property(entity_name, property_details)
+                self.property_manager.add_property(
+                    entity_name, property_details)
 
     def create_entity_and_repository(self, entity_name: str):
         """Crée l'entité et le dépôt associé"""

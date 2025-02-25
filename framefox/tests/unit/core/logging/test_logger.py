@@ -10,7 +10,7 @@ from framefox.core.logging.logger import Logger
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -92,7 +92,8 @@ class TestLogger:
 
         assert logger_name in config["loggers"]
         assert "handlers" in config["loggers"][logger_name]
-        assert set(config["loggers"][logger_name]["handlers"]) == set(expected_handlers)
+        assert set(config["loggers"][logger_name]
+                   ["handlers"]) == set(expected_handlers)
 
     def test_actual_logging(self, tmp_path):
         with patch("pathlib.Path.resolve") as mock_resolve:

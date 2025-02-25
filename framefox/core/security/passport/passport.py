@@ -10,7 +10,7 @@ from framefox.core.security.password.password_hasher import PasswordHasher
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -63,7 +63,8 @@ class Passport:
                     self.user = user
         else:
 
-            self.logger.warning("No provider info available, cannot authenticate user.")
+            self.logger.warning(
+                "No provider info available, cannot authenticate user.")
             return False
 
         if not self.user:

@@ -10,7 +10,7 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 

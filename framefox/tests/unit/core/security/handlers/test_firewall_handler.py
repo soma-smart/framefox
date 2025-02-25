@@ -13,7 +13,7 @@ from framefox.core.security.handlers.firewall_handler import FirewallHandler
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
@@ -44,7 +44,8 @@ class TestFirewallHandler:
                 "user_provider": {"entity": "src.entity.User", "property": "email"},
             }
         }
-        settings.get_firewall_config = Mock(return_value=settings.firewalls["main"])
+        settings.get_firewall_config = Mock(
+            return_value=settings.firewalls["main"])
         return settings
 
     @pytest.fixture
@@ -92,7 +93,8 @@ class TestFirewallHandler:
         # Setup
         mock_passport = Mock()
         mock_passport.user = Mock(roles=["ROLE_USER"])
-        mock_dependencies["csrf_manager"].validate_token = AsyncMock(return_value=True)
+        mock_dependencies["csrf_manager"].validate_token = AsyncMock(
+            return_value=True)
         mock_dependencies["token_manager"].create_token.return_value = "test_token"
 
         # Configure session state
@@ -267,7 +269,8 @@ class TestFirewallHandler:
         # Setup
         mock_request.url.path = "/login"
         mock_next = AsyncMock(return_value=Response(status_code=200))
-        mock_dependencies["csrf_manager"].validate_token = AsyncMock(return_value=True)
+        mock_dependencies["csrf_manager"].validate_token = AsyncMock(
+            return_value=True)
 
         # Configure authenticator
         authenticator = MockAuthenticator()
@@ -285,7 +288,8 @@ class TestFirewallHandler:
         # Assert
         assert response.status_code == 302
 
-        authenticator.authenticate_request.assert_called_once_with(mock_request, "main")
+        authenticator.authenticate_request.assert_called_once_with(
+            mock_request, "main")
 
     @pytest.mark.asyncio
     async def test_handle_request_with_invalid_auth_response(
@@ -295,7 +299,8 @@ class TestFirewallHandler:
         # Setup
         mock_request.url.path = "/login"
         mock_next = AsyncMock(return_value=Response(status_code=200))
-        mock_dependencies["csrf_manager"].validate_token = AsyncMock(return_value=False)
+        mock_dependencies["csrf_manager"].validate_token = AsyncMock(
+            return_value=False)
 
         # Execute
         response = await firewall_handler.handle_request(mock_request, mock_next)
