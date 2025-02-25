@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta, timezone
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
-from datetime import datetime, timezone, timedelta
 from fastapi import Request, Response
+
 from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
 from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.request.session.session_manager import SessionManager
@@ -41,16 +43,22 @@ class TestSessionMiddleware:
         return manager
 
     @pytest.fixture
-    def middleware(self, mock_app, mock_settings, mock_cookie_manager, mock_session_manager):
-        with patch('framefox.core.middleware.middlewares.session_middleware.ServiceContainer') as MockServiceContainer:
+    def middleware(
+        self, mock_app, mock_settings, mock_cookie_manager, mock_session_manager
+    ):
+        with patch(
+            "framefox.core.middleware.middlewares.session_middleware.ServiceContainer"
+        ) as MockServiceContainer:
             container_instance = Mock()
             container_instance.get.side_effect = lambda x: {
                 CookieManager: mock_cookie_manager,
-                SessionManager: mock_session_manager
+                SessionManager: mock_session_manager,
             }[x]
             MockServiceContainer.return_value = container_instance
 
-            with patch('starlette.middleware.base.BaseHTTPMiddleware.__init__') as mock_init:
+            with patch(
+                "starlette.middleware.base.BaseHTTPMiddleware.__init__"
+            ) as mock_init:
                 mock_init.return_value = None
                 middleware = SessionMiddleware(mock_app, mock_settings)
                 middleware.app = mock_app
@@ -78,7 +86,9 @@ class TestSessionMiddleware:
         assert middleware.session_manager is not None
 
     @pytest.mark.asyncio
-    async def test_dispatch_without_session(self, middleware, mock_request, mock_response):
+    async def test_dispatch_without_session(
+        self, middleware, mock_request, mock_response
+    ):
         """Test dispatch without an existing session"""
         mock_call_next = AsyncMock(return_value=mock_response)
 
@@ -90,18 +100,20 @@ class TestSessionMiddleware:
         assert response == mock_response
 
     @pytest.mark.asyncio
-    async def test_dispatch_with_expired_session(self, middleware, mock_request, mock_session_manager):
+    async def test_dispatch_with_expired_session(
+        self, middleware, mock_request, mock_session_manager
+    ):
         """Test dispatch with an expired session"""
         # Configure an expired session
         expired_session = {
             "data": {"user": "test"},
-            "expires_at": (datetime.now(timezone.utc) - timedelta(hours=1)).timestamp()
+            "expires_at": (datetime.now(timezone.utc) - timedelta(hours=1)).timestamp(),
         }
         mock_request.cookies = {"session_id": "expired_id"}
         mock_session_manager.get_session.return_value = expired_session
 
         # Mock the Response creation
-        with patch('fastapi.Response') as MockResponse:
+        with patch("fastapi.Response") as MockResponse:
             mock_response = Mock()
             mock_response.status_code = 440
             mock_response.body = b"Session expired. Please log in again."
@@ -111,8 +123,7 @@ class TestSessionMiddleware:
 
             assert response.status_code == 440
             assert "Session expired" in response.body.decode()
-            mock_session_manager.delete_session.assert_called_once_with(
-                "expired_id")
+            mock_session_manager.delete_session.assert_called_once_with("expired_id")
 
     def test_cleanup_expired_sessions(self, middleware, mock_session_manager):
         """Test the cleanup of expired sessions"""

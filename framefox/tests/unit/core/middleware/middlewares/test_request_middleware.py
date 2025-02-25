@@ -1,6 +1,8 @@
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock
 from fastapi import Request, Response
+
 from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
 from framefox.core.request.request_stack import RequestStack
 
@@ -46,7 +48,9 @@ class TestRequestMiddleware:
         assert middleware.logger is not None
 
     @pytest.mark.asyncio
-    async def test_dispatch(self, middleware, mock_request, mock_call_next, mock_response):
+    async def test_dispatch(
+        self, middleware, mock_request, mock_call_next, mock_response
+    ):
         """Test the dispatch method"""
         response = await middleware.dispatch(mock_request, mock_call_next)
 

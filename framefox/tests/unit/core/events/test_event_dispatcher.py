@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from framefox.core.events.event_dispatcher import EventDispatcher
 
 """

@@ -1,11 +1,13 @@
-import pytest
-from unittest.mock import Mock, patch
 from typing import Optional
-from sqlmodel import Field, SQLModel, select, MetaData
+from unittest.mock import Mock, patch
+
+import pytest
+from sqlmodel import Field, MetaData, SQLModel, select
+
+from framefox.core.orm.abstract_entity import AbstractEntity
 from framefox.core.orm.abstract_repository import AbstractRepository
 from framefox.core.orm.entity_manager import EntityManager
 from framefox.core.orm.query_builder import QueryBuilder
-from framefox.core.orm.abstract_entity import AbstractEntity
 
 """
 Framefox Framework developed by SOMA
@@ -27,8 +29,10 @@ class TestAbstractRepository:
     @pytest.fixture
     def TestModel(self, test_metadata):
         """Fixture that creates a test model"""
+
         class User(AbstractEntity, table=True):
             """Test class inheriting from AbstractEntity"""
+
             __tablename__ = f"user_{id(test_metadata)}"
 
             # Metadata configuration via the Config class
@@ -58,7 +62,9 @@ class TestAbstractRepository:
     @pytest.fixture
     def repository(self, TestModel, mock_entity_manager):
         """Fixture that creates an instance of AbstractRepository"""
-        with patch('framefox.core.orm.abstract_repository.ServiceContainer') as MockContainer:
+        with patch(
+            "framefox.core.orm.abstract_repository.ServiceContainer"
+        ) as MockContainer:
             container_instance = Mock()
             container_instance.get.return_value = mock_entity_manager
             MockContainer._instance = container_instance
@@ -80,20 +86,20 @@ class TestAbstractRepository:
         """Test the find method"""
         test_id = 1
         expected_result = repository.model(
-            id=test_id, name="Test", email="test@test.com")
+            id=test_id, name="Test", email="test@test.com"
+        )
         mock_entity_manager.find.return_value = expected_result
 
         result = repository.find(test_id)
 
-        mock_entity_manager.find.assert_called_once_with(
-            repository.model, test_id)
+        mock_entity_manager.find.assert_called_once_with(repository.model, test_id)
         assert result == expected_result
 
     def test_find_all(self, repository, mock_entity_manager):
         """Test the find_all method"""
         expected_results = [
             repository.model(id=1, name="Test1", email="test1@test.com"),
-            repository.model(id=2, name="Test2", email="test2@test.com")
+            repository.model(id=2, name="Test2", email="test2@test.com"),
         ]
         mock_entity_manager.exec_statement.return_value = expected_results
 
@@ -106,9 +112,7 @@ class TestAbstractRepository:
 
     def test_find_by(self, repository, mock_entity_manager):
         """Test the find_by method with different parameters"""
-        expected_results = [
-            repository.model(id=1, name="Test", email="test@test.com")
-        ]
+        expected_results = [repository.model(id=1, name="Test", email="test@test.com")]
         mock_entity_manager.exec_statement.return_value = expected_results
 
         # Test with simple criteria

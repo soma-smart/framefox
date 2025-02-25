@@ -1,9 +1,14 @@
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 from fastapi import Request, Response
-from framefox.core.security.handlers.firewall_handler import FirewallHandler
-from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+
 from framefox.core.request.request_stack import RequestStack
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
+from framefox.core.security.handlers.firewall_handler import FirewallHandler
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -17,7 +22,7 @@ class MockAuthenticator(AuthenticatorInterface):
     """Mock authenticator for testing"""
 
     async def authenticate(self, request: Request):
-        return self.test_passport if hasattr(self, 'test_passport') else None
+        return self.test_passport if hasattr(self, "test_passport") else None
 
     async def authenticate_request(self, request: Request, firewall_name: str):
         return await self.authenticate(request)
@@ -36,14 +41,10 @@ class TestFirewallHandler:
                 "login_path": "/login",
                 "logout_path": "/logout",
                 "authenticator": "test.MockAuthenticator",
-                "user_provider": {
-                    "entity": "src.entity.User",
-                    "property": "email"
-                }
+                "user_provider": {"entity": "src.entity.User", "property": "email"},
             }
         }
-        settings.get_firewall_config = Mock(
-            return_value=settings.firewalls["main"])
+        settings.get_firewall_config = Mock(return_value=settings.firewalls["main"])
         return settings
 
     @pytest.fixture
@@ -55,18 +56,14 @@ class TestFirewallHandler:
             "session_manager": Mock(),
             "token_manager": Mock(),
             "csrf_manager": Mock(),
-            "access_manager": Mock()
+            "access_manager": Mock(),
         }
 
     @pytest.fixture
     def firewall_handler(self, mock_settings, mock_dependencies):
         """Fixture for FirewallHandler instance"""
-        with patch('importlib.import_module'), \
-                patch('inspect.signature'):
-            return FirewallHandler(
-                settings=mock_settings,
-                **mock_dependencies
-            )
+        with patch("importlib.import_module"), patch("inspect.signature"):
+            return FirewallHandler(settings=mock_settings, **mock_dependencies)
 
     @pytest.fixture(autouse=True)
     def setup_request_context(self, mock_request):
@@ -88,13 +85,14 @@ class TestFirewallHandler:
         return request
 
     @pytest.mark.asyncio
-    async def test_handle_authentication_success(self, firewall_handler, mock_request, mock_dependencies):
+    async def test_handle_authentication_success(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
         """Test successful authentication flow"""
         # Setup
         mock_passport = Mock()
         mock_passport.user = Mock(roles=["ROLE_USER"])
-        mock_dependencies["csrf_manager"].validate_token = AsyncMock(
-            return_value=True)
+        mock_dependencies["csrf_manager"].validate_token = AsyncMock(return_value=True)
         mock_dependencies["token_manager"].create_token.return_value = "test_token"
 
         # Configure session state
@@ -107,16 +105,21 @@ class TestFirewallHandler:
         firewall_handler.authenticators["main"] = authenticator
 
         # Execute
-        response = await firewall_handler.handle_authentication(mock_request, AsyncMock())
+        response = await firewall_handler.handle_authentication(
+            mock_request, AsyncMock()
+        )
 
         # Assert
         assert response.status_code == 302
         assert response.headers["Location"] == "/dashboard"
         mock_dependencies["cookie_manager"].delete_cookie.assert_called_with(
-            response, "csrf_token")
+            response, "csrf_token"
+        )
 
     @pytest.mark.asyncio
-    async def test_handle_logout(self, firewall_handler, mock_request, mock_dependencies):
+    async def test_handle_logout(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
         """Test logout handling"""
         try:
             # Setup
@@ -132,12 +135,13 @@ class TestFirewallHandler:
                 mock_request,
                 firewall_handler.settings.firewalls["main"],
                 "main",
-                AsyncMock()
+                AsyncMock(),
             )
 
             # Assert
             mock_dependencies["session_manager"].delete_session.assert_called_once_with(
-                "test_session")
+                "test_session"
+            )
             assert mock_dependencies["cookie_manager"].delete_cookie.call_count == 3
         finally:
             RequestStack.set_request(None)
@@ -146,8 +150,12 @@ class TestFirewallHandler:
     async def test_handle_get_request(self, firewall_handler, mock_dependencies):
         """Test GET request handling for login page"""
         # Setup
-        mock_dependencies["csrf_manager"].generate_token.return_value = "test_csrf_token"
-        mock_dependencies["template_renderer"].render.return_value = "<html>Login form</html>"
+        mock_dependencies["csrf_manager"].generate_token.return_value = (
+            "test_csrf_token"
+        )
+        mock_dependencies["template_renderer"].render.return_value = (
+            "<html>Login form</html>"
+        )
 
         # Execute
         response = await firewall_handler.handle_get_request(MockAuthenticator(), {})
@@ -156,9 +164,7 @@ class TestFirewallHandler:
         assert response.status_code == 200
         assert response.body.decode() == "<html>Login form</html>"
         mock_dependencies["cookie_manager"].set_cookie.assert_called_with(
-            response=response,
-            key="csrf_token",
-            value="test_csrf_token"
+            response=response, key="csrf_token", value="test_csrf_token"
         )
 
     @pytest.mark.asyncio
@@ -176,7 +182,9 @@ class TestFirewallHandler:
         mock_next.assert_called_once_with(mock_request)
 
     @pytest.mark.asyncio
-    async def test_handle_post_request_failed_authentication(self, firewall_handler, mock_request, mock_dependencies):
+    async def test_handle_post_request_failed_authentication(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
         """Test POST request handling with failed authentication"""
         # Setup
         authenticator = MockAuthenticator()
@@ -184,10 +192,7 @@ class TestFirewallHandler:
 
         # Execute
         response = await firewall_handler.handle_post_request(
-            mock_request,
-            authenticator,
-            {"login_path": "/login"},
-            "main"
+            mock_request, authenticator, {"login_path": "/login"}, "main"
         )
 
         # Assert
@@ -195,25 +200,32 @@ class TestFirewallHandler:
         assert response.body.decode() == "Authentication failed"
 
     @pytest.mark.asyncio
-    async def test_handle_authorization_with_invalid_token(self, firewall_handler, mock_request, mock_dependencies):
+    async def test_handle_authorization_with_invalid_token(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
         """Test authorization with invalid token"""
         # Setup
         mock_dependencies["access_manager"].get_required_roles.return_value = [
-            "ROLE_ADMIN"]
+            "ROLE_ADMIN"
+        ]
         mock_dependencies["token_manager"].decode_token.return_value = None
 
-        with patch('framefox.core.request.session.session.Session') as mock_session:
+        with patch("framefox.core.request.session.session.Session") as mock_session:
             mock_session.get.return_value = "invalid_token"
 
             # Execute
-            response = await firewall_handler.handle_authorization(mock_request, AsyncMock())
+            response = await firewall_handler.handle_authorization(
+                mock_request, AsyncMock()
+            )
 
             # Assert
             assert response.status_code == 403
             assert response.body.decode() == "Forbidden"
 
     @pytest.mark.asyncio
-    async def test_handle_logout_json_response(self, firewall_handler, mock_request, mock_dependencies):
+    async def test_handle_logout_json_response(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
         """Test logout with JSON response"""
         # Setup
         mock_request.headers = {"accept": "application/json"}
@@ -224,7 +236,7 @@ class TestFirewallHandler:
             mock_request,
             firewall_handler.settings.firewalls["main"],
             "other",  # Not main firewall
-            AsyncMock()
+            AsyncMock(),
         )
 
         # Assert
@@ -237,9 +249,7 @@ class TestFirewallHandler:
         """Test authenticator loading with invalid configuration"""
         # Setup
         mock_settings.firewalls = {
-            "error": {
-                "authenticator": "invalid.path.Authenticator"
-            }
+            "error": {"authenticator": "invalid.path.Authenticator"}
         }
 
         # Execute
@@ -250,13 +260,14 @@ class TestFirewallHandler:
         assert len(handler.authenticators) == 0
 
     @pytest.mark.asyncio
-    async def test_handle_request_auth_routes(self, firewall_handler, mock_request, mock_dependencies):
+    async def test_handle_request_auth_routes(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
         """Test request handling for authentication routes"""
         # Setup
         mock_request.url.path = "/login"
         mock_next = AsyncMock(return_value=Response(status_code=200))
-        mock_dependencies["csrf_manager"].validate_token = AsyncMock(
-            return_value=True)
+        mock_dependencies["csrf_manager"].validate_token = AsyncMock(return_value=True)
 
         # Configure authenticator
         authenticator = MockAuthenticator()
@@ -274,5 +285,91 @@ class TestFirewallHandler:
         # Assert
         assert response.status_code == 302
 
-        authenticator.authenticate_request.assert_called_once_with(
-            mock_request, "main")
+        authenticator.authenticate_request.assert_called_once_with(mock_request, "main")
+
+    @pytest.mark.asyncio
+    async def test_handle_request_with_invalid_auth_response(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
+        """Test request handling with an invalid authentication response"""
+        # Setup
+        mock_request.url.path = "/login"
+        mock_next = AsyncMock(return_value=Response(status_code=200))
+        mock_dependencies["csrf_manager"].validate_token = AsyncMock(return_value=False)
+
+        # Execute
+        response = await firewall_handler.handle_request(mock_request, mock_next)
+
+        # Assert
+        assert response.status_code == 400
+        assert response.body.decode() == "Invalid CSRF token"
+
+    @pytest.mark.asyncio
+    async def test_handle_authorization_with_no_required_roles(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
+        """Test authorization with no required roles"""
+        # Setup
+        mock_dependencies["access_manager"].get_required_roles.return_value = None
+        mock_next = AsyncMock(return_value=Response(status_code=200))
+
+        # Execute
+        response = await firewall_handler.handle_authorization(mock_request, mock_next)
+
+        # Assert
+        assert response.status_code == 200
+        mock_next.assert_called_once_with(mock_request)
+
+    @pytest.mark.asyncio
+    async def test_handle_authentication_with_unsupported_method(
+        self, firewall_handler, mock_request
+    ):
+        """Test authentication with an unsupported method"""
+        # Setup
+        mock_request.method = "PUT"
+        mock_next = AsyncMock(return_value=Response(status_code=200))
+
+        # Execute
+        response = await firewall_handler.handle_authentication(mock_request, mock_next)
+
+        # Assert
+        assert response.status_code == 200
+        mock_next.assert_called_once_with(mock_request)
+
+    @pytest.mark.asyncio
+    async def test_handle_logout_without_session(
+        self, firewall_handler, mock_request, mock_dependencies
+    ):
+        """Test logout without session"""
+        # Setup
+        mock_request.cookies = {}
+        mock_next = AsyncMock(return_value=Response(status_code=200))
+
+        # Execute
+        response = await firewall_handler.handle_logout(
+            mock_request, firewall_handler.settings.firewalls["main"], "main", mock_next
+        )
+
+        # Assert
+        assert response.status_code == 200
+        mock_dependencies["session_manager"].delete_session.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_handle_logout_with_html_response(
+        self, firewall_handler, mock_request
+    ):
+        """Test logout with HTML response"""
+        # Setup
+        mock_request.headers = {"accept": "text/html"}
+
+        # Execute
+        response = await firewall_handler.handle_logout(
+            mock_request,
+            firewall_handler.settings.firewalls["main"],
+            "other",
+            AsyncMock(),
+        )
+
+        # Assert
+        assert response.status_code == 302
+        assert response.headers["location"] == "/login"

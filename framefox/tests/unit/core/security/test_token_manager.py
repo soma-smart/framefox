@@ -1,10 +1,12 @@
-import pytest
-from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
+
 import jwt
-from framefox.core.security.token_manager import TokenManager
+import pytest
+
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
+from framefox.core.security.token_manager import TokenManager
 
 """
 Framefox Framework developed by SOMA
@@ -33,7 +35,10 @@ class TestTokenManager:
     @pytest.fixture
     def token_manager(self, mock_container):
         """Fixture for TokenManager instance"""
-        with patch('framefox.core.security.token_manager.ServiceContainer', return_value=mock_container):
+        with patch(
+            "framefox.core.security.token_manager.ServiceContainer",
+            return_value=mock_container,
+        ):
             return TokenManager()
 
     @pytest.fixture
@@ -56,7 +61,7 @@ class TestTokenManager:
         decoded = jwt.decode(
             token,
             token_manager.settings.cookie_secret_key,
-            algorithms=[token_manager.algorithm]
+            algorithms=[token_manager.algorithm],
         )
 
         # Verify token contents
@@ -72,14 +77,14 @@ class TestTokenManager:
             "email": "test@example.com",
             "firewallname": "main",
             "roles": ["ROLE_USER"],
-            "exp": datetime.utcnow() + timedelta(hours=1)
+            "exp": datetime.utcnow() + timedelta(hours=1),
         }
 
         # Create token
         token = jwt.encode(
             payload,
             token_manager.settings.cookie_secret_key,
-            algorithm=token_manager.algorithm
+            algorithm=token_manager.algorithm,
         )
 
         # Decode token
@@ -96,14 +101,14 @@ class TestTokenManager:
             "email": "test@example.com",
             "firewallname": "main",
             "roles": ["ROLE_USER"],
-            "exp": datetime.utcnow() - timedelta(hours=1)
+            "exp": datetime.utcnow() - timedelta(hours=1),
         }
 
         # Create token
         token = jwt.encode(
             payload,
             token_manager.settings.cookie_secret_key,
-            algorithm=token_manager.algorithm
+            algorithm=token_manager.algorithm,
         )
 
         # Attempt to decode expired token

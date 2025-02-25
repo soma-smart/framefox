@@ -27,7 +27,7 @@ class TemplateRenderer:
         self.env.globals["url_for"] = self._url_for
 
     def _url_for(self, name: str, **params) -> str:
-        """Génère une URL à partir du nom de la route"""
+        """Generates a URL from the route name"""
         try:
             router = self.container.get_by_name("Router")
             return str(router.url_path_for(name, **params))
