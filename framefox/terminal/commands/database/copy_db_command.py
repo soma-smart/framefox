@@ -11,7 +11,7 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 
 
-class OrmCopyDbCommand(AbstractCommand):
+class CopyDbCommand(AbstractCommand):
     def __init__(self):
         super().__init__("copy")
         settings = Settings()
@@ -23,19 +23,19 @@ class OrmCopyDbCommand(AbstractCommand):
         """
         Copy database tables from the entity directory to the database without using migrations.
         """
-        if not OrmCopyDbCommand.database_exists(self.database_url):
+        if not CopyDbCommand.database_exists(self.database_url):
             self.printer.print_msg(
                 "The database does not exist. Please create it first.",
                 theme="error",
                 linebefore=True,
             )
             self.printer.print_full_text(
-                "You should try [bold green]framefox orm create_database[/bold green]",
+                "You should try [bold green]framefox database create[/bold green]",
                 newline=True,
             )
             return
         try:
-            OrmCopyDbCommand.create_sqlmodel_tables_from_directory(
+            CopyDbCommand.create_sqlmodel_tables_from_directory(
                 directory=self.entity_directory,
                 database_url=self.database_url,
                 base_model=self.base_model,
@@ -128,7 +128,7 @@ class OrmCopyDbCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".py"):
                     filepath = os.path.join(root, file)
-                    classes = OrmCopyDbCommand.find_sqlmodel_classes_in_file(
+                    classes = CopyDbCommand.find_sqlmodel_classes_in_file(
                         filepath, base_model
                     )
 
@@ -153,7 +153,7 @@ class OrmCopyDbCommand(AbstractCommand):
         Raises:
             None
         """
-        sqlmodel_classes = OrmCopyDbCommand.find_sqlmodel_classes_in_directory(
+        sqlmodel_classes = CopyDbCommand.find_sqlmodel_classes_in_directory(
             directory, base_model
         )
 
@@ -161,7 +161,7 @@ class OrmCopyDbCommand(AbstractCommand):
             engine = create_engine(database_url, echo=True)
 
             for filepath, classes in sqlmodel_classes.items():
-                module = OrmCopyDbCommand.import_module_from_file(filepath)
+                module = CopyDbCommand.import_module_from_file(filepath)
                 for class_name in classes:
                     class_obj = getattr(module, class_name)
                     class_obj.metadata.create_all(engine)
@@ -205,7 +205,8 @@ class OrmCopyDbCommand(AbstractCommand):
                 )
                 connection.autocommit = True
                 cursor = connection.cursor()
-                cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
+                cursor.execute(
+                    f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
                 exists = cursor.fetchone() is not None
 
                 cursor.close()

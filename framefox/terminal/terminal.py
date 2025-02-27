@@ -29,9 +29,6 @@ class Terminal:
         create_app = typer.Typer(
             help="Create various resources like entities or CRUD operations."
         )
-        orm_app = typer.Typer(
-            help="ORM operations like creating or migrating databases."
-        )
         database_app = typer.Typer(
             help="Database operations like creating or migrating databases."
         )
@@ -50,24 +47,21 @@ class Terminal:
         typers = {
             "main": app,
             "create": create_app,
-            "orm": orm_app,
+            "database": database_app,
             "debug": debug_app,
-            "orm database": database_app,
             "server": server_app,
             "cache": cache_app,
             "mock": mock_app,
         }
-
-        app.add_typer(create_app, name="create")
-        app.add_typer(orm_app, name="orm")
-        app.add_typer(server_app, name="server")
-        orm_app.add_typer(database_app, name="database")
-        app.add_typer(debug_app, name="debug")
-        app.add_typer(cache_app, name="cache")
-        app.add_typer(mock_app, name="mock")
         Terminal._typers = typers
-        command_handler = CommandHandler()
-        command_handler.load_commands(typers)
+
+        for category, sub_app in typers.items():
+            if category == "main":
+                continue
+            app.add_typer(sub_app, name=category)
+            Terminal._add_sub_command_callback(sub_app, category)
+
+        CommandHandler().load_commands(typers)
 
         @app.callback(invoke_without_command=True)
         def main(
@@ -79,11 +73,24 @@ class Terminal:
                 is_eager=True,
                 help="Show this message and exit.",
             ),
+            all: bool = typer.Option(
+                False,
+                "--all",
+                '-a',
+                help="Display all available commands in detailed view",
+            ),
         ):
             """Framefox CLI - Swift, smart, and a bit foxy"""
-            if help is not None or ctx.invoked_subcommand is None:
-                Terminal.display_commands_table(Terminal._typers)
-                raise typer.Exit()
+            if ctx.invoked_subcommand is None:
+                if all:
+                    Terminal._display_all_commands_table(Terminal._typers)
+                    raise typer.Exit()
+                elif help:
+                    Terminal._display_simplified_view()
+                    raise typer.Exit()
+                else:
+                    Terminal._display_simplified_view()
+                    raise typer.Exit()
 
         return app
 
@@ -94,22 +101,31 @@ class Terminal:
         return app
 
     @staticmethod
-    def display_commands_table(typers):
-        console = Console()
-        print("")
-        console.print(
-            ":fox_face: Framefox - Swift, smart, and a bit foxy",
-            style="bold orange1",
-        )
-        print("")
+    def _add_sub_command_callback(app, category):
+        @app.callback(invoke_without_command=True)
+        def callback(
+            ctx: typer.Context,
+            help: bool = typer.Option(None, "--help", "-h", is_eager=True)
+        ):
+            """Sub command callback"""
+            command_list = app.registered_commands if hasattr(
+                app, "registered_commands") else app.commands.values()
+            if ctx.invoked_subcommand is None and len(command_list) > 0:
+                Terminal._display_category_commands(
+                    category, Terminal._typers[category])
+                raise typer.Exit()
+            else:
+                console = Terminal._create_standard_console()
+                console.print(
+                    f"Command '{category} {ctx.invoked_subcommand}' not available", style="bold red")
+                console.print("")
+                raise typer.Exit()
 
-        console.print(
-            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
-        console.print("Try 'framefox --help' for more information",
-                      style="bold white")
-        print("")
+    @staticmethod
+    def _display_all_commands_table(typers):
+        console = Terminal._create_standard_console()
 
-        # Créer un tableau pour les commandes
+        # Table
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Commands", style="bold orange3", no_wrap=True)
         table.add_column("Description", style="white")
@@ -119,8 +135,11 @@ class Terminal:
             command_list = typer_app.registered_commands if hasattr(
                 typer_app, "registered_commands") else typer_app.commands.values()
 
-            if category != "main" and category != "create" and len(command_list) > 0:
-                table.add_row("", "")
+            if category != "main" and len(command_list) > 0:
+                if category != "create":
+                    table.add_row("", "")
+                table.add_row(
+                    f"{'_'*5}{category.upper()} COMMANDS{'_'*5}", "")
 
             for command in command_list:
                 command_name = (
@@ -133,3 +152,82 @@ class Terminal:
 
         console.print(table)
         print("")
+
+    @staticmethod
+    def _display_simplified_view():
+        console = Terminal._create_standard_console(False)
+
+        # Options panel
+        options_table = Table(show_header=True, header_style="bold orange1")
+        options_table.add_column("Options", style="bold orange3", no_wrap=True)
+        options_table.add_column("Description", style="white")
+        options_table.add_row(
+            "--all", "Display all available commands in detailed view")
+        options_table.add_row("--install-completion",
+                              "Install completion for the current shell.")
+        options_table.add_row(
+            "--show-completion", "Show completion for the current shell, to copy it or customize the installation.")
+        options_table.add_row("--help", "Show this message and exit.")
+
+        console.print(options_table)
+        console.print("")
+
+        # Command panel
+        commands_table = Table(show_header=True, header_style="bold orange1")
+        commands_table.add_column(
+            "Commands", style="bold orange3", no_wrap=True)
+        commands_table.add_column("Description", style="white")
+
+        for category, typer_app in Terminal._typers.items():
+            if category == "main":
+                continue
+            commands_table.add_row(category, typer_app.info.help)
+
+        console.print(commands_table)
+
+    @staticmethod
+    def _display_category_commands(category: str, typer_app):
+        """Affiche les commandes d'une catégorie spécifique"""
+        console = Terminal._create_standard_console()
+
+        # Title
+        console.print(f"[bold orange1]{category.upper()} COMMANDS[/]")
+        console.print("")
+
+        # Table
+        table = Table(show_header=True, header_style="bold orange1")
+        table.add_column("Command", style="bold orange3", no_wrap=True)
+        table.add_column("Description", style="white")
+
+        # Commands
+        command_list = typer_app.registered_commands if hasattr(
+            typer_app, "registered_commands") else typer_app.commands.values()
+        for command in command_list:
+            command_help = command.callback.__doc__ or ""
+            first_line = command_help.strip().split(
+                "\n")[0] if command_help else ""
+            table.add_row(f"{category} {command.name}", first_line)
+
+        console.print(table)
+
+        # Final instructions
+        console.print("")
+        console.print(
+            f"Run 'framefox {category} COMMAND --help' for specific command details")
+
+    @staticmethod
+    def _create_standard_console(help=True):
+        console = Console()
+        print("")
+        console.print(
+            ":fox_face: Framefox - Swift, smart, and a bit foxy",
+            style="bold orange1",
+        )
+        print("")
+        console.print(
+            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
+        if help:
+            console.print("Try 'framefox --help' for more information",
+                          style="bold white")
+        print("")
+        return console

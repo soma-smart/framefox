@@ -4,7 +4,7 @@ import typer
 from alembic import command
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
+from framefox.terminal.commands.database.copy_db_command import CopyDbCommand
 from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 
 """
@@ -16,7 +16,7 @@ Github: https://github.com/RayenBou
 """
 
 
-class OrmDowngradeDbCommand(AbstractCommand):
+class DowngradeDbCommand(AbstractCommand):
     def __init__(self):
         super().__init__("downgrade")
         self.alembic_manager = AlembicFileManager()
@@ -26,7 +26,7 @@ class OrmDowngradeDbCommand(AbstractCommand):
     ):
         """Rolls back migrations"""
         try:
-            if not OrmCopyDbCommand.database_exists(
+            if not CopyDbCommand.database_exists(
                 self.alembic_manager.get_database_url()
             ):
                 self.printer.print_msg(
