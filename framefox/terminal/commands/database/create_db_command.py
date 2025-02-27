@@ -19,7 +19,7 @@ Github: https://github.com/Vasulvius
 """
 
 
-class OrmCreateDbCommand(AbstractCommand):
+class CreateDbCommand(AbstractCommand):
     def __init__(self):
         super().__init__("create")
         settings = Settings()

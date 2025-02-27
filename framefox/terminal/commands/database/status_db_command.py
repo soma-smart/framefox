@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.table import Table
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
+from framefox.terminal.commands.database.copy_db_command import CopyDbCommand
 from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 
 """
@@ -19,7 +19,7 @@ Github: https://github.com/RayenBou
 """
 
 
-class OrmStatusDbCommand(AbstractCommand):
+class StatusDbCommand(AbstractCommand):
     def __init__(self):
         super().__init__("status")
         self.alembic_manager = AlembicFileManager()
@@ -27,7 +27,7 @@ class OrmStatusDbCommand(AbstractCommand):
     def execute(self):
         """Check the status of migrations"""
         try:
-            if not OrmCopyDbCommand.database_exists(
+            if not CopyDbCommand.database_exists(
                 self.alembic_manager.get_database_url()
             ):
                 self.printer.print_msg(

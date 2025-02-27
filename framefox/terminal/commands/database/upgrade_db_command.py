@@ -3,7 +3,7 @@ from contextlib import closing
 from alembic import command
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
+from framefox.terminal.commands.database.copy_db_command import CopyDbCommand
 from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 
 """
@@ -15,7 +15,7 @@ Github: https://github.com/RayenBou
 """
 
 
-class OrmUpgradeDbCommand(AbstractCommand):
+class UpgradeDbCommand(AbstractCommand):
     def __init__(self):
         super().__init__("upgrade")
         self.alembic_manager = AlembicFileManager()
@@ -24,7 +24,7 @@ class OrmUpgradeDbCommand(AbstractCommand):
         """Apply all migrations to the database"""
         try:
 
-            if not OrmCopyDbCommand.database_exists(
+            if not CopyDbCommand.database_exists(
                 self.alembic_manager.get_database_url()
             ):
                 self.printer.print_msg(
@@ -43,7 +43,7 @@ class OrmUpgradeDbCommand(AbstractCommand):
                 "All migrations have been successfully applied.", theme="success"
             )
             self.printer.print_full_text(
-                "You can use [bold orange1]framefox orm database downgrade[/bold orange1] to roll back migrations, if you need to.",
+                "You can use [bold orange1]framefox database downgrade[/bold orange1] to roll back migrations, if you need to.",
                 linebefore=True,
             )
         except Exception as e:

@@ -29,9 +29,6 @@ class Terminal:
         create_app = typer.Typer(
             help="Create various resources like entities or CRUD operations."
         )
-        orm_app = typer.Typer(
-            help="ORM operations like creating or migrating databases."
-        )
         database_app = typer.Typer(
             help="Database operations like creating or migrating databases."
         )
@@ -50,18 +47,16 @@ class Terminal:
         typers = {
             "main": app,
             "create": create_app,
-            "orm": orm_app,
+            "database": database_app,
             "debug": debug_app,
-            "orm database": database_app,
             "server": server_app,
             "cache": cache_app,
             "mock": mock_app,
         }
 
         app.add_typer(create_app, name="create")
-        app.add_typer(orm_app, name="orm")
+        app.add_typer(database_app, name="database")
         app.add_typer(server_app, name="server")
-        orm_app.add_typer(database_app, name="database")
         app.add_typer(debug_app, name="debug")
         app.add_typer(cache_app, name="cache")
         app.add_typer(mock_app, name="mock")

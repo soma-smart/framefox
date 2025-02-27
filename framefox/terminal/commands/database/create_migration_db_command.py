@@ -3,7 +3,7 @@ import os
 from alembic import command
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.orm.database.orm_copy_db_command import OrmCopyDbCommand
+from framefox.terminal.commands.database.copy_db_command import CopyDbCommand
 from framefox.terminal.common.alembic_file_manager import AlembicFileManager
 
 """
@@ -15,7 +15,7 @@ Github: https://github.com/RayenBou
 """
 
 
-class OrmCreateMigrationDbCommand(AbstractCommand):
+class CreateMigrationDbCommand(AbstractCommand):
     def __init__(self):
         super().__init__("migration")
         self.alembic_manager = AlembicFileManager()
@@ -23,7 +23,7 @@ class OrmCreateMigrationDbCommand(AbstractCommand):
     def execute(self):
         """Create a new migration file with Alembic"""
         try:
-            if not OrmCopyDbCommand.database_exists(
+            if not CopyDbCommand.database_exists(
                 self.alembic_manager.get_database_url()
             ):
                 self.printer.print_msg(
@@ -70,7 +70,7 @@ class OrmCreateMigrationDbCommand(AbstractCommand):
                     "Migration file created with Alembic.", theme="success"
                 )
                 self.printer.print_full_text(
-                    "You can now execute the [bold orange1]framefox orm database upgrade[/bold orange1] command to apply the database upgrades.",
+                    "You can now execute the [bold orange1]framefox database upgrade[/bold orange1] command to apply the database upgrades.",
                     linebefore=True,
                 )
 
