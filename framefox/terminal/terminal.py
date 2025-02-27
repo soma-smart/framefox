@@ -64,6 +64,10 @@ class Terminal:
         command_handler = CommandHandler()
         command_handler.load_commands(typers)
 
+        # TODO : framefox --help = framefox = tableau réduit
+        # TODO : framefox --all = toutes les commandes
+        # TODO : framefox create = afficher toutes les commandes de create
+
         @app.callback(invoke_without_command=True)
         def main(
             ctx: typer.Context,
@@ -74,11 +78,24 @@ class Terminal:
                 is_eager=True,
                 help="Show this message and exit.",
             ),
+            all: bool = typer.Option(
+                False,
+                "--all",
+                '-a',
+                help="Display all available commands in detailed view",
+            ),
         ):
             """Framefox CLI - Swift, smart, and a bit foxy"""
-            if help is not None or ctx.invoked_subcommand is None:
-                Terminal.display_commands_table(Terminal._typers)
-                raise typer.Exit()
+            if ctx.invoked_subcommand is None:
+                if all:
+                    Terminal._display_all_commands_table(Terminal._typers)
+                elif help:
+                    Terminal._display_simplified_view()
+                else:
+                    Terminal._display_simplified_view()
+            # if help is not None or ctx.invoked_subcommand is None:
+            #     Terminal._display_all_commands_table(Terminal._typers)
+            #     raise typer.Exit()
 
         return app
 
@@ -89,20 +106,8 @@ class Terminal:
         return app
 
     @staticmethod
-    def display_commands_table(typers):
-        console = Console()
-        print("")
-        console.print(
-            ":fox_face: Framefox - Swift, smart, and a bit foxy",
-            style="bold orange1",
-        )
-        print("")
-
-        console.print(
-            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
-        console.print("Try 'framefox --help' for more information",
-                      style="bold white")
-        print("")
+    def _display_all_commands_table(typers):
+        console = Terminal._create_standard_console()
 
         # Créer un tableau pour les commandes
         table = Table(show_header=True, header_style="bold orange1")
@@ -115,6 +120,9 @@ class Terminal:
                 typer_app, "registered_commands") else typer_app.commands.values()
 
             if category != "main" and category != "create" and len(command_list) > 0:
+                # TODO : mettre des jolis titre
+                # table.add_row("=============================", "")
+                # table.add_row(category.upper(), "")
                 table.add_row("", "")
 
             for command in command_list:
@@ -128,3 +136,60 @@ class Terminal:
 
         console.print(table)
         print("")
+
+    @staticmethod
+    def _display_simplified_view():
+        console = Terminal._create_standard_console(False)
+
+        # Panel des options
+        options_table = Table(show_header=True, header_style="bold orange1")
+        options_table.add_column("Options", style="bold orange3", no_wrap=True)
+        options_table.add_column("Description", style="white")
+        options_table.add_row(
+            "--all", "Display all available commands in detailed view")
+        options_table.add_row("--install-completion",
+                              "Install completion for the current shell.")
+        options_table.add_row(
+            "--show-completion", "Show completion for the current shell, to copy it or customize the installation.")
+        options_table.add_row("--help", "Show this message and exit.")
+
+        console.print(options_table)
+        console.print("")
+
+        # Panel des commandes
+        commands_table = Table(show_header=True, header_style="bold orange1")
+        commands_table.add_column(
+            "Commands", style="bold orange3", no_wrap=True)
+        commands_table.add_column("Description", style="white")
+
+        # Liste des commandes principales
+        groups = {
+            "create": "Create various resources like entities or CRUD operations.",
+            "database": "Database management commands",
+            "debug": "Debug and development tools",
+            "server": "Server management commands",
+            "cache": "Cache management",
+            "mock": "Mock data management"
+        }
+
+        for group, description in groups.items():
+            commands_table.add_row(group, description)
+
+        console.print(commands_table)
+
+    @staticmethod
+    def _create_standard_console(help=True):
+        console = Console()
+        print("")
+        console.print(
+            ":fox_face: Framefox - Swift, smart, and a bit foxy",
+            style="bold orange1",
+        )
+        print("")
+        console.print(
+            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
+        if help:
+            console.print("Try 'framefox --help' for more information",
+                          style="bold white")
+        print("")
+        return console
