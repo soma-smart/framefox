@@ -53,20 +53,15 @@ class Terminal:
             "cache": cache_app,
             "mock": mock_app,
         }
-
-        app.add_typer(create_app, name="create")
-        app.add_typer(database_app, name="database")
-        app.add_typer(server_app, name="server")
-        app.add_typer(debug_app, name="debug")
-        app.add_typer(cache_app, name="cache")
-        app.add_typer(mock_app, name="mock")
         Terminal._typers = typers
-        command_handler = CommandHandler()
-        command_handler.load_commands(typers)
 
-        # TODO : framefox --help = framefox = tableau réduit
-        # TODO : framefox --all = toutes les commandes
-        # TODO : framefox create = afficher toutes les commandes de create
+        for category, sub_app in typers.items():
+            if category == "main":
+                continue
+            app.add_typer(sub_app, name=category)
+            Terminal._add_sub_command_callback(sub_app, category)
+
+        CommandHandler().load_commands(typers)
 
         @app.callback(invoke_without_command=True)
         def main(
@@ -89,13 +84,13 @@ class Terminal:
             if ctx.invoked_subcommand is None:
                 if all:
                     Terminal._display_all_commands_table(Terminal._typers)
+                    raise typer.Exit()
                 elif help:
                     Terminal._display_simplified_view()
+                    raise typer.Exit()
                 else:
                     Terminal._display_simplified_view()
-            # if help is not None or ctx.invoked_subcommand is None:
-            #     Terminal._display_all_commands_table(Terminal._typers)
-            #     raise typer.Exit()
+                    raise typer.Exit()
 
         return app
 
@@ -106,10 +101,31 @@ class Terminal:
         return app
 
     @staticmethod
+    def _add_sub_command_callback(app, category):
+        @app.callback(invoke_without_command=True)
+        def callback(
+            ctx: typer.Context,
+            help: bool = typer.Option(None, "--help", "-h", is_eager=True)
+        ):
+            """Sub command callback"""
+            command_list = app.registered_commands if hasattr(
+                app, "registered_commands") else app.commands.values()
+            if ctx.invoked_subcommand is None and len(command_list) > 0:
+                Terminal._display_category_commands(
+                    category, Terminal._typers[category])
+                raise typer.Exit()
+            else:
+                console = Terminal._create_standard_console()
+                console.print(
+                    f"Command '{category} {ctx.invoked_subcommand}' not available", style="bold red")
+                console.print("")
+                raise typer.Exit()
+
+    @staticmethod
     def _display_all_commands_table(typers):
         console = Terminal._create_standard_console()
 
-        # Créer un tableau pour les commandes
+        # Table
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Commands", style="bold orange3", no_wrap=True)
         table.add_column("Description", style="white")
@@ -119,11 +135,11 @@ class Terminal:
             command_list = typer_app.registered_commands if hasattr(
                 typer_app, "registered_commands") else typer_app.commands.values()
 
-            if category != "main" and category != "create" and len(command_list) > 0:
-                # TODO : mettre des jolis titre
-                # table.add_row("=============================", "")
-                # table.add_row(category.upper(), "")
-                table.add_row("", "")
+            if category != "main" and len(command_list) > 0:
+                if category != "create":
+                    table.add_row("", "")
+                table.add_row(
+                    f"{'_'*5}{category.upper()} COMMANDS{'_'*5}", "")
 
             for command in command_list:
                 command_name = (
@@ -141,7 +157,7 @@ class Terminal:
     def _display_simplified_view():
         console = Terminal._create_standard_console(False)
 
-        # Panel des options
+        # Options panel
         options_table = Table(show_header=True, header_style="bold orange1")
         options_table.add_column("Options", style="bold orange3", no_wrap=True)
         options_table.add_column("Description", style="white")
@@ -156,26 +172,48 @@ class Terminal:
         console.print(options_table)
         console.print("")
 
-        # Panel des commandes
+        # Command panel
         commands_table = Table(show_header=True, header_style="bold orange1")
         commands_table.add_column(
             "Commands", style="bold orange3", no_wrap=True)
         commands_table.add_column("Description", style="white")
 
-        # Liste des commandes principales
-        groups = {
-            "create": "Create various resources like entities or CRUD operations.",
-            "database": "Database management commands",
-            "debug": "Debug and development tools",
-            "server": "Server management commands",
-            "cache": "Cache management",
-            "mock": "Mock data management"
-        }
-
-        for group, description in groups.items():
-            commands_table.add_row(group, description)
+        for category, typer_app in Terminal._typers.items():
+            if category == "main":
+                continue
+            commands_table.add_row(category, typer_app.info.help)
 
         console.print(commands_table)
+
+    @staticmethod
+    def _display_category_commands(category: str, typer_app):
+        """Affiche les commandes d'une catégorie spécifique"""
+        console = Terminal._create_standard_console()
+
+        # Title
+        console.print(f"[bold orange1]{category.upper()} COMMANDS[/]")
+        console.print("")
+
+        # Table
+        table = Table(show_header=True, header_style="bold orange1")
+        table.add_column("Command", style="bold orange3", no_wrap=True)
+        table.add_column("Description", style="white")
+
+        # Commands
+        command_list = typer_app.registered_commands if hasattr(
+            typer_app, "registered_commands") else typer_app.commands.values()
+        for command in command_list:
+            command_help = command.callback.__doc__ or ""
+            first_line = command_help.strip().split(
+                "\n")[0] if command_help else ""
+            table.add_row(f"{category} {command.name}", first_line)
+
+        console.print(table)
+
+        # Final instructions
+        console.print("")
+        console.print(
+            f"Run 'framefox {category} COMMAND --help' for specific command details")
 
     @staticmethod
     def _create_standard_console(help=True):
