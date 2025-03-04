@@ -8,10 +8,26 @@
 			{% endblock %}{% endraw %}
 		</title>
 
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css" integrity="sha384-9+PGKSqjRdkeAU7Eu4nkJU8RFaH8ace8HGXnkiKMP9I9Te0GJ4/km3L1Z8tXigpG" crossorigin="anonymous">
+		<link rel="icon" href="/static/images/orange_fox.png"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.3/lux/bootstrap.min.css" integrity="sha512-RI2S7J+KOTIVVh6JxrBRNIxJjIioHORVNow+SSz2OMKsDLG5y/YT6iXEK+R0LlKBo/Uwr1O063yT198V6AZh4w==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
 	</head>
 	<body>
-		{% raw %}{% block content %}{% endblock %}{% endraw %}
+	
+		{% raw %}
+		<div class="container mt-3">
+			{% with messages = get_flash_messages() %}
+			{% if messages %}
+				{% for message in messages %}
+					<div class="alert alert-{{ message.category }} alert-dismissible fade show" role="alert">
+						{{ message.message }}
+						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+					</div>
+				{% endfor %}
+			{% endif %}
+			{% endwith %}
+		</div>
+		{% block content %}{% endblock %}{% endraw %}
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 	</body>
 </html>
 {% raw %}{% endraw %}

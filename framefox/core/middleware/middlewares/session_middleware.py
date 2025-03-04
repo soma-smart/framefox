@@ -1,9 +1,9 @@
 import uuid
+import logging
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.request.cookie_manager import CookieManager
@@ -32,7 +32,63 @@ class SessionMiddleware(BaseHTTPMiddleware):
         container = ServiceContainer()
         self.cookie_manager = container.get(CookieManager)
         self.session_manager = container.get(SessionManager)
+        self.logger = logging.getLogger("REQUEST")
 
+    # async def dispatch(self, request: Request, call_next):
+    #     session_id = request.cookies.get(self.cookie_name)
+    #     session = self.session_manager.get_session(
+    #         session_id) if session_id else None
+
+    #     RequestStack.set_request(request)
+
+    #     if session:
+    #         self.logger.info(f"Session expired for session_id: {session_id}")
+    #         self.session_manager.delete_session(session_id)
+    #         request.state.session_id = None
+    #         request.state.session_data = {}
+    #         response = Response(
+    #             content="Session expired. Please log in again.",
+    #             status_code=440,
+    #         )
+    #         self.cookie_manager.delete_cookie(response, self.cookie_name)
+    #         RequestStack.set_request(None)
+    #         return response
+    #     else:
+    #         session_id = None
+    #         request.state.session_data = {}
+
+    #     request.state.session_id = session_id
+    #     request.state.session_data = session["data"] if session else {}
+
+    #     response: Response = await call_next(request)
+
+    #     if request.state.session_data:
+    #         if not session_id:
+    #             session_id = str(uuid.uuid4())
+    #             request.state.session_id = session_id
+    #             self.session_manager.create_session(
+    #                 session_id, request.state.session_data, self.settings.cookie_max_age
+    #             )
+    #         else:
+    #             self.session_manager.update_session(
+    #                 session_id, request.state.session_data, self.settings.cookie_max_age
+    #             )
+
+    #         expiration = datetime.now(timezone.utc) + timedelta(
+    #             seconds=self.settings.cookie_max_age
+    #         )
+    #         self.cookie_manager.set_cookie(
+    #             response=response,
+    #             key=self.cookie_name,
+    #             value=session_id,
+    #             max_age=self.settings.cookie_max_age,
+    #             expires=expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
+    #         )
+
+    #     self.session_manager.cleanup_expired_sessions()
+    #     RequestStack.set_request(None)
+
+    #     return response
     async def dispatch(self, request: Request, call_next):
         session_id = request.cookies.get(self.cookie_name)
         session = self.session_manager.get_session(
@@ -40,7 +96,8 @@ class SessionMiddleware(BaseHTTPMiddleware):
 
         RequestStack.set_request(request)
 
-        if session:
+        # Si une session existe mais qu'elle est expirée
+        if session_id and not session:
             self.logger.info(f"Session expired for session_id: {session_id}")
             self.session_manager.delete_session(session_id)
             request.state.session_id = None
@@ -52,15 +109,15 @@ class SessionMiddleware(BaseHTTPMiddleware):
             self.cookie_manager.delete_cookie(response, self.cookie_name)
             RequestStack.set_request(None)
             return response
-        else:
-            session_id = None
-            request.state.session_data = {}
 
+        # Initialisation de la session
         request.state.session_id = session_id
         request.state.session_data = session["data"] if session else {}
 
-        response: Response = await call_next(request)
+        # Continue avec la requête
+        response = await call_next(request)
 
+        # Gestion de la session après la réponse
         if request.state.session_data:
             if not session_id:
                 session_id = str(uuid.uuid4())
