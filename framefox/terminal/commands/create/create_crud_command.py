@@ -32,7 +32,6 @@ class CreateCrudCommand(AbstractCommand):
         os.makedirs(template_dir, exist_ok=True)
 
         properties = ModelChecker().get_entity_properties(entity_name)
-        print(properties)
 
         templates = {
             "create": "create_template.jinja2",
@@ -93,9 +92,24 @@ class CreateCrudCommand(AbstractCommand):
             theme="bold_normal",
             linebefore=True,
         )
-        user_input = InputManager.wait_input(
-            prompt="Controller type [?]", choices=self.input_choices
+
+        print("")
+
+        self.printer.print_msg(
+            "1.[bold orange1]API CRUD controller[/bold orange1]",
+            theme="normal",
         )
+        self.printer.print_msg(
+            "2.[bold orange1]Templated CRUD controller[/bold orange1]",
+            theme="normal",
+            newline=True,
+        )
+
+        user_choice = InputManager().wait_input(
+            "CRUD controller type", choices=["1", "2"], default="1"
+        )
+
+        user_input = "templated" if user_choice == "2" else "api"
         entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
         class_name = f"{entity_class_name}Controller"
         data = {

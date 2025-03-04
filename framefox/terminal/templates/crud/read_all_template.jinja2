@@ -14,31 +14,33 @@
             <thead>
                 <tr>
                 {% endraw %}
-                    {% for property in properties %}
+                    {%- for property in properties -%}
                     <th>{{ property.name|title }}</th>
-                    {% endfor %}
+                    {%- endfor -%}
                     <th>Actions</th>
-                    {% raw %}
+                {% raw %}
                 </tr>
             </thead>
             <tbody>
-                  {% endraw %}
-                    {% for property in properties %}
-                    <td>{{ property.}}</td>
-                    {% endfor %}
-                    <th>Actions</th>
+                {% for item in items %}
+                <tr>
+                    {% endraw %}
+                    {%- for property in properties -%}
+                    <td>{% raw %}{{ item.{% endraw %}{{ property.name }}{% raw %} }}</td>
+                    {% endraw %}
+                    {%- endfor -%}
                     {% raw %}
-                        <td>
-                            <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read', id=item.id) }}" class="btn btn-info btn-sm">View</a>
-                            <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.update', id=item.id) }}" class="btn btn-primary btn-sm">Edit</a>
-                            <form method="POST" action="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.delete', id=item.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}{% endraw %}
+                    <td>
+                        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read', id=item.id) }}" class="btn btn-info btn-sm">View</a>
+                        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.update', id=item.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                        <form method="POST" action="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.delete', id=item.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-{% raw %}{% endblock %}{% endraw %}
+{% endblock %}{% endraw %}

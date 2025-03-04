@@ -7,8 +7,8 @@
     <h1>Create {{ entity_name|title }}</h1>
     
     <form method="POST" action="{% raw %}{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.create') }}" class="mt-4">{% endraw %}
-        {% for property in properties %}
-        {% if property.name != 'id' %}
+        {%- for property in properties -%}
+        {%- if property.name != 'id' -%}
         <div class="mb-3">
             <label for="{{ property.name }}" class="form-label">{{ property.name|title }}</label>
             <input type="{% if "'str'" in property.type %}text{% elif "'int'" in property.type %}number{% elif "'float'" in property.type %}number{% elif "'bool'" in property.type %}checkbox{% elif "'date'" in property.type %}date{% else %}text{% endif %}"
@@ -17,8 +17,8 @@
                    name="{{ property.name }}" 
                    required>
         </div>
-        {% endif %}
-        {% endfor %}
+        {%- endif -%}
+        {%- endfor -%}
         {% raw %}<button type="submit" class="btn btn-primary">Create</button>
         <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read_all') }}" class="btn btn-secondary">Back</a>
     </form>

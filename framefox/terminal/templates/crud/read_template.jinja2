@@ -8,25 +8,19 @@
     
     <div class="card mt-4">
         <div class="card-body">
+            {%- for property in properties -%}
             <div class="mb-3">
-                <strong>ID:</strong>
-                <span>{% raw %}{{ item.id }}{% endraw %}</span>
+                <strong>{{ property.name|title }}:</strong>
+                <span>{{ '{{' }} item.{{ property.name }} {{ '}}' }}</span>
             </div>
-            <div class="mb-3">
-                <strong>Name:</strong>
-                <span>{% raw %}{{ item.name }}{% endraw %}</span>
-            </div>
-            <div class="mb-3">
-                <strong>Price:</strong>
-                <span>{% raw %}{{ item.price }}{% endraw %}</span>
-            </div>
+            {%- endfor -%}
         </div>
     </div>
 
     <div class="mt-3">
-        <a href="{% raw %}{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.update', id=item.id) }}" class="btn btn-primary">Edit</a>
-        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read_all') }}" class="btn btn-secondary">Back</a>
-        <form method="POST" action="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.delete', id=item.id) }}" class="d-inline">
+        <a href="{{ '{{' }} url_for('{{ entity_name }}.update', id=item.id) {{ '}}' }}" class="btn btn-primary">Edit</a>
+        <a href="{{ '{{' }} url_for('{{ entity_name }}.read_all') {{ '}}' }}" class="btn btn-secondary">Back</a>
+        <form method="POST" action="{{ '{{' }} url_for('{{ entity_name }}.delete', id=item.id) {{ '}}' }}" class="d-inline">
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
         </form>
     </div>

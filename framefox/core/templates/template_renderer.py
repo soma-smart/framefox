@@ -24,9 +24,10 @@ class TemplateRenderer:
                 [self.user_template_dir, str(self.framework_template_dir)]
             )
         )
-        self.env.globals["url_for"] = self._url_for
+        self.env.globals["url_for"] = self.url_for
+        self.env.globals["get_flash_messages"] = self.get_flash_messages
 
-    def _url_for(self, name: str, **params) -> str:
+    def url_for(self, name: str, **params) -> str:
         """Generates a URL from the route name"""
         try:
             router = self.container.get_by_name("Router")
@@ -34,6 +35,14 @@ class TemplateRenderer:
         except Exception as e:
             print(f"Error generating URL for route '{name}': {str(e)}")
             return "#"
+
+    def get_flash_messages(self):
+        """Récupère les messages flash de la session"""
+        session = self.container.get_by_name("Session")
+        messages = session.get("flash_messages", [])
+        if messages:
+            session.set("flash_messages", [])
+            return messages
 
     def render(self, template_name: str, context: dict = {}) -> str:
         template = self.env.get_template(template_name)

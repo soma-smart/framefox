@@ -27,13 +27,17 @@ class AbstractController:
         flash_messages.append({"message": message, "category": category})
         session.set("flash_messages", flash_messages)
 
+    def generate_url(self, route_name: str, **params):
+        router = self._get_container().get_by_name("Router")
+        return router.url_path_for(route_name, **params)
+
     def render(self, template_name: str, context: dict = {}):
         template_renderer = self._get_container().get_by_name("TemplateRenderer")
         session = self._get_container().get_by_name("Session")
         """Renders a view with context variables, including CSRF token."""
-        if session.has("flash_messages"):
-            context["messages"] = session.get("flash_messages")
-            session.remove("flash_messages")
+        # if session.has("flash_messages"):
+        #     context["messages"] = session.get("flash_messages")
+        #     session.remove("flash_messages")
 
         content = template_renderer.render(template_name, context)
         return HTMLResponse(content=content, status_code=200, media_type="text/html")
