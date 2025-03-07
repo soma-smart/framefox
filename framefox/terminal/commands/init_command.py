@@ -62,14 +62,13 @@ class InitCommand(AbstractCommand):
 
     @staticmethod
     def create_empty_project():
-        # Create src directorys
+        # Create src directories
         project_path = "src"
         os.makedirs(os.path.join(project_path, "controllers"))
         os.makedirs(os.path.join(project_path, "tests"))
         os.makedirs(os.path.join(project_path, "entity"))
         os.makedirs(os.path.join(project_path, "repository"))
         os.makedirs(os.path.join(project_path, "security"))
-        os.makedirs(os.path.join("src/security", "authenticator"))
         # Create templates directory
         os.makedirs(os.path.join(".", "templates"))
         # Create public directory
@@ -135,6 +134,13 @@ class InitCommand(AbstractCommand):
             template="init_files/parameter.jinja2",
             path="./config",
             name="parameter.yaml",
+            data={},
+            format="yaml",
+        )
+        FileCreator().create_file(
+            template="init_files/services.jinja2",
+            path="./config",
+            name="services.yaml",
             data={},
             format="yaml",
         )

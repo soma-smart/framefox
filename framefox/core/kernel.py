@@ -39,13 +39,14 @@ class Kernel:
 
     def __init__(self) -> None:
         """Initializes the main components of the framework if not already done."""
-        if self._initialized:
+        if hasattr(self, "_initialized") and self._initialized:
             return
 
         self._container = ServiceContainer()
         self._settings = self._container.get(Settings)
-        self._logger = Logger().get_logger()
-
+        self._logger = self._container.get(Logger).get_logger()
+        # if self._settings.debug_mode:
+        #     self._container.print_container_stats()
         self._app = self._create_fastapi_app()
         self._configure_app()
 
@@ -82,8 +83,7 @@ class Kernel:
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
         static_path = Path(__file__).parent / "templates" / "static"
-        self._app.mount(
-            "/static", StaticFiles(directory=static_path), name="static")
+        self._app.mount("/static", StaticFiles(directory=static_path), name="static")
 
     @property
     def app(self) -> FastAPI:

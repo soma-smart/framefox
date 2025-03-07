@@ -41,3 +41,8 @@ class ImportManager:
             )
             return True
         return False
+
+    def add_import_to_entity(self, entity_name: str, import_line: str) -> bool:
+        """Ajoute une ligne d'import à une entité spécifique"""
+        file_path = os.path.join("src/entity", f"{entity_name}.py")
+        return self.ensure_import(file_path, import_line)

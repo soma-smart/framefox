@@ -1,0 +1,102 @@
+from framefox.core.form.type.form_type_interface import FormTypeInterface
+from framefox.core.form.form_builder import FormBuilder
+{%- for property in properties -%}
+{% if property.is_relation %}
+{% if property.relation_type == 'many' %}
+from framefox.core.form.type.entity_type import EntityType
+{% elif property.relation_type == 'one' %}
+from framefox.core.form.type.entity_type import EntityType
+{% endif %}
+{% elif property.widget_type == 'input' and property.html_type == 'text' %}
+from framefox.core.form.type.text_type import TextType
+{% elif property.widget_type == 'input' and property.html_type == 'email' %}
+from framefox.core.form.type.email_type import EmailType
+{% elif property.widget_type == 'input' and property.html_type == 'password' %}
+from framefox.core.form.type.password_type import PasswordType
+{% elif property.widget_type == 'input' and property.html_type == 'number' %}
+from framefox.core.form.type.number_type import NumberType
+{% elif property.widget_type == 'checkbox' %}
+from framefox.core.form.type.checkbox_type import CheckboxType
+{% elif property.widget_type == 'textarea' %}
+from framefox.core.form.type.textarea_type import TextareaType
+{% elif property.widget_type == 'datetime' or property.html_type == 'date' %}
+from framefox.core.form.type.date_time_type import DateTimeType
+{% endif %}
+{%- endfor -%}
+
+
+class {{ form_type_class_name }}(FormTypeInterface):
+    """Formulaire pour l'entité {{ entity_class_name }}."""
+    
+    def build_form(self, builder: FormBuilder) -> None:
+        """Configure les champs du formulaire."""
+        {% for property in properties %}
+        {% if property.name != 'id' %}
+        {% if property.is_relation %}
+        {% if property.relation_type == 'many' %}
+        builder.add('{{ property.name }}', EntityType, {
+            'class': '{{ property.target_entity }}',
+            'multiple': True,
+            'required': {{ property.required }},
+            'label': '{{ property.name|title }}',
+            'choice_label': 'name',
+            'show_id': True,
+        })
+        {% else %}
+        builder.add('{{ property.name }}', EntityType, {
+            'class': '{{ property.target_entity }}',
+            'required': {{ property.required}},
+            'label': '{{ property.name|title }}',
+            'choice_label': 'name',
+            'show_id': True,
+        })
+        {% endif %}
+        {% elif property.widget_type == 'input' and property.html_type == 'text' %}
+        builder.add('{{ property.name }}', TextType, {
+            'required': {{ property.required }},
+            'label': '{{ property.name|title }}',
+        })
+        {% elif property.widget_type == 'input' and property.html_type == 'email' %}
+        builder.add('{{ property.name }}', EmailType, {
+            'required': {{ property.required}},
+            'label': '{{ property.name|title }}',
+        })
+        {% elif property.widget_type == 'input' and property.html_type == 'password' %}
+        builder.add('{{ property.name }}', PasswordType, {
+            'required': {{ property.required }},
+            'label': '{{ property.name|title }}',
+        })
+        {% elif property.widget_type == 'input' and property.html_type == 'number' %}
+        builder.add('{{ property.name }}', NumberType, {
+            'required': {{ property.required }},
+            'label': '{{ property.name|title }}',
+            {% if property.field_options and property.field_options.step %}
+            'attr': {'step': '{{ property.field_options.step }}'},
+            {% endif %}
+        })
+        {% elif property.widget_type == 'checkbox' %}
+        builder.add('{{ property.name }}', CheckboxType, {
+            'required': {{ property.required }},
+            'label': '{{ property.name|title }}',
+        })
+        {% elif property.widget_type == 'textarea' %}
+        builder.add('{{ property.name }}', TextareaType, {
+            'required': {{ property.required }},
+            'label': '{{ property.name|title }}',
+            {% if property.field_options and property.field_options.rows %}
+            'attr': {'rows': {{ property.field_options.rows }}},
+            {% endif %}
+        })
+        {% elif property.widget_type == 'datetime' or property.html_type == 'date' %}
+        builder.add('{{ property.name }}', DateTimeType, {
+            'required': {{ property.required }},
+            'label': '{{ property.name|title }}',
+        })
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        
+    def get_options(self) -> dict:
+        return {
+            'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}
+        }

@@ -4,17 +4,18 @@ import logging
 from typing import Dict, Optional, Type
 
 from fastapi import Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
+                               Response)
 
 from framefox.core.config.settings import Settings
 from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.request.csrf_token_manager import CsrfTokenManager
 from framefox.core.request.session.session import Session
+from framefox.core.request.session.session_interface import SessionInterface
 from framefox.core.request.session.session_manager import SessionManager
 from framefox.core.security.access_manager import AccessManager
-from framefox.core.security.authenticator.authenticator_interface import (
-    AuthenticatorInterface,
-)
+from framefox.core.security.authenticator.authenticator_interface import \
+    AuthenticatorInterface
 from framefox.core.security.token_manager import TokenManager
 from framefox.core.templates.template_renderer import TemplateRenderer
 
@@ -38,6 +39,7 @@ class FirewallHandler:
         token_manager: TokenManager,
         csrf_manager: CsrfTokenManager,
         access_manager: AccessManager,
+        session: SessionInterface,
     ):
         self.logger = logging.getLogger("FIREWALL")
         self.settings = settings
@@ -46,6 +48,7 @@ class FirewallHandler:
         self.session_manager = session_manager
         self.token_manager = token_manager
         self.csrf_manager = csrf_manager
+        self.session = session
         self.access_manager = access_manager
         self.authenticators = self.load_authenticators()
 
@@ -99,16 +102,14 @@ class FirewallHandler:
                     request, firewall, firewall_name, call_next
                 )
 
-        is_auth_route = any(request.url.path.startswith(route)
-                            for route in auth_routes)
+        is_auth_route = any(request.url.path.startswith(route) for route in auth_routes)
         if is_auth_route:
             auth_response = await self.handle_authentication(request, call_next)
             if auth_response:
                 return auth_response
         auth_result = await self.handle_authorization(request, call_next)
         if auth_result.status_code == 403:
-            self.logger.warning(
-                "Authorization failed - insufficient permissions")
+            self.logger.warning("Authorization failed - insufficient permissions")
 
         return auth_result
 
@@ -188,7 +189,7 @@ class FirewallHandler:
                 roles=(passport.user.roles if passport.user.roles else []),
             )
             response = authenticator.on_auth_success(token)
-            Session.set("access_token", token)
+            self.session.set("access_token", token)
 
             self.logger.info(
                 "Authentication successful and token added to the session."
@@ -201,8 +202,7 @@ class FirewallHandler:
         """
         Handles authorization using the AccessManager class.
         """
-        required_roles = self.access_manager.get_required_roles(
-            request.url.path)
+        required_roles = self.access_manager.get_required_roles(request.url.path)
         if not required_roles:
             response = await call_next(request)
             self.logger.debug(
@@ -211,7 +211,7 @@ class FirewallHandler:
             )
             return response
 
-        token = Session.get("access_token")
+        token = self.session.get("access_token")
         if token:
             payload = self.token_manager.decode_token(token)
             if payload:
@@ -219,8 +219,7 @@ class FirewallHandler:
                 if self.access_manager.is_allowed(user_roles, required_roles):
                     return await call_next(request)
                 else:
-                    self.logger.warning(
-                        "User does not have the required roles.")
+                    self.logger.warning("User does not have the required roles.")
             else:
                 self.logger.warning("Invalid token payload.")
 
@@ -234,8 +233,8 @@ class FirewallHandler:
         if session_id:
             self.session_manager.delete_session(session_id)
 
-        Session.remove("access_token")
-        Session.flush()
+        self.session.remove("access_token")
+        self.session.clear()
 
         if firewall_name == "main":
             response = await call_next(request)

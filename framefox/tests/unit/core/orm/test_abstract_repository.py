@@ -92,8 +92,7 @@ class TestAbstractRepository:
 
         result = repository.find(test_id)
 
-        mock_entity_manager.find.assert_called_once_with(
-            repository.model, test_id)
+        mock_entity_manager.find.assert_called_once_with(repository.model, test_id)
         assert result == expected_result
 
     def test_find_all(self, repository, mock_entity_manager):
@@ -113,8 +112,7 @@ class TestAbstractRepository:
 
     def test_find_by(self, repository, mock_entity_manager):
         """Test the find_by method with different parameters"""
-        expected_results = [repository.model(
-            id=1, name="Test", email="test@test.com")]
+        expected_results = [repository.model(id=1, name="Test", email="test@test.com")]
         mock_entity_manager.exec_statement.return_value = expected_results
 
         # Test with simple criteria

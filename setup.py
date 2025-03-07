@@ -27,7 +27,8 @@ setup(
         "ruamel.yaml==0.18.10",
         "alembic==1.14.1",
         "pytest==8.3.4",
-        "httpx==0.28.1"
+        "httpx==0.28.1",
+        "cryptography==44.0.2",
     ],
     entry_points={
         "console_scripts": [

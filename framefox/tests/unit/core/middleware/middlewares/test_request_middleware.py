@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from fastapi import Request, Response
 
-from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
+from framefox.core.middleware.middlewares.request_middleware import \
+    RequestMiddleware
 from framefox.core.request.request_stack import RequestStack
 
 """

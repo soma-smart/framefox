@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 class DatabaseUrlParser:
     @staticmethod
-    def parse_database_url(database_url: str):
+    def parse(database_url: str):
         # Analyse l'URL
         parsed_url = urlparse(database_url)
 

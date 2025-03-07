@@ -1,8 +1,11 @@
 import os
 import re
 from pathlib import Path
+
 import yaml
 from dotenv import load_dotenv
+
+from framefox.core.orm.database_url_parser import DatabaseUrlParser
 
 """
 Framefox Framework developed by SOMA
@@ -17,21 +20,22 @@ load_dotenv(dotenv_path=env_path)
 
 ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
 
-#APP_ENV = os.getenv("APP_ENV", "prod")
+# APP_ENV = os.getenv("APP_ENV", "prod")
+
 
 class Settings:
     """
     Settings class for loading and managing application configuration.
-    
+
     Attributes:
         app_env (str): The application environment, default is 'prod'.
         config (dict): Dictionary to store the loaded configuration.
     """
 
     def __init__(self):
-        """ 
-        Initializes the Settings object and loads configurations from the specified folder. 
-        
+        """
+        Initializes the Settings object and loads configurations from the specified folder.
+
         Raises:
             Exception: If the configuration files cannot be loaded.
         """
@@ -49,10 +53,10 @@ class Settings:
     def load_configs(self, config_folder):
         """
         Loads configuration files from the specified folder and merges them into the config attribute.
-        
+
         Args:
             config_folder (str): The path to the folder containing the configuration files.
-        
+
         Raises:
             FileNotFoundError: If the configuration folder does not exist.
         """
@@ -72,13 +76,13 @@ class Settings:
                     self.merge_dicts(self.config, config_data)
 
     def merge_dicts(self, base, new):
-        """ 
-        Recursively merges two dictionaries. 
-        
+        """
+        Recursively merges two dictionaries.
+
         Args:
             base: The base dictionary to merge into.
             new: The new dictionary to merge.
-        
+
         Returns:
             The merged dictionary.
         """
@@ -89,12 +93,12 @@ class Settings:
                 base[key] = value
 
     def replace_env_variables(self, data):
-        """ 
-        Recursively replaces environment variable placeholders in the configuration data with their actual values. 
-        
+        """
+        Recursively replaces environment variable placeholders in the configuration data with their actual values.
+
         Args:
             data: The configuration data to process.
-        
+
         Returns:
             The configuration data with environment variables replaced by their values.
         """
@@ -108,12 +112,12 @@ class Settings:
             return data
 
     def get_env_variable(self, match):
-        """ 
+        """
         Retrieves the value of an environment variable given a regex match object.
 
         Args:
             match (re.Match): A regex match object containing the environment variable name.
-        
+
         Returns:
             The value of the environment variable or an empty string if the variable does not exist.
         """
@@ -149,7 +153,7 @@ class Settings:
 
     @property
     def cache_dir(self):
-        """ Returns the cache directory from the configuration. """
+        """Returns the cache directory from the configuration."""
         cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
@@ -158,96 +162,96 @@ class Settings:
 
     @property
     def database_url(self):
-        """ Returns the database URI from the configuration, default is 'sqlite:///app.db'. """
-        return self.config.get("database", {}).get("url")
+        """Returns the database URI from the configuration, default is 'sqlite:///app.db'."""
+        return DatabaseUrlParser.parse_url(self.config.get("database", {}).get("url"))
 
     @property
     def database_echo(self):
-        """ Returns True if the application environment is 'dev', otherwise False. """
+        """Returns True if the application environment is 'dev', otherwise False."""
         return self.app_env == "dev"
 
     @property
     def orm_config(self):
-        """ Returns the ORM configuration from the configuration. """
+        """Returns the ORM configuration from the configuration."""
         return self.config.get("database", {})
 
     # ------------------------------ security ------------------------------
 
     @property
     def access_control(self):
-        """ Returns the access control configuration from the configuration. """
+        """Returns the access control configuration from the configuration."""
         return self.config.get("security", {}).get("access_control", [])
 
     @property
     def firewalls(self):
-        """ Returns the firewalls configuration from the configuration. """
+        """Returns the firewalls configuration from the configuration."""
         return self.config.get("security", {}).get("firewalls", {})
 
     def get_firewall_config(self, firewall_name: str):
-        """ Returns the configuration for a specific firewall. """
+        """Returns the configuration for a specific firewall."""
         firewalls = self.firewalls
         return firewalls.get(firewall_name, {})
 
     @property
     def providers(self):
-        """ Returns the security providers configuration from the configuration. """
+        """Returns the security providers configuration from the configuration."""
         return self.config.get("security", {}).get("providers", {})
 
     # ------------------------------ session ------------------------------
 
     @property
     def cookie_secret_key(self):
-        """ Returns the session secret key from the configuration, default"""
+        """Returns the session secret key from the configuration, default"""
         return self.config.get("cookie", {}).get("secret_key", "default_secret")
 
     @property
     def cookie_type(self):
-        """ Returns the session type from the configuration, default is 'filesystem'. """
+        """Returns the session type from the configuration, default is 'filesystem'."""
         return self.config.get("cookie", {}).get("type", "filesystem")
 
     @property
     def cookie_max_age(self):
-        """ Returns the session max age from the configuration, default is 3600 seconds. """
+        """Returns the session max age from the configuration, default is 3600 seconds."""
         return self.config.get("cookie", {}).get("max_age", 3600)
 
     @property
     def cookie_same_site(self):
-        """ Returns the session same site policy from the configuration, default is 'lax'. """
+        """Returns the session same site policy from the configuration, default is 'lax'."""
         return self.config.get("cookie", {}).get("same_site", "lax")
 
     @property
     def cookie_secure(self):
-        """ Returns True if sessions are HTTPS only, otherwise False. """
+        """Returns True if sessions are HTTPS only, otherwise False."""
         return self.config.get("cookie", {}).get("secure", True)
 
     @property
     def cookie_http_only(self):
-        """ Returns True if sessions are HTTP only, otherwise False. """
+        """Returns True if sessions are HTTP only, otherwise False."""
         return self.config.get("cookie", {}).get("http_only", True)
 
     @property
     def cookie_path(self):
-        """ Returns the session cookie path from the configuration, default is '/'. """
+        """Returns the session cookie path from the configuration, default is '/'."""
         return self.config.get("cookie", {}).get("path", "/")
 
     # ------------------------------ application ------------------------------
     @property
     def openapi_url(self):
-        """ Returns the OpenAPI URL from the configuration. """
+        """Returns the OpenAPI URL from the configuration."""
         if self.app_env == "dev":
             return self.config.get("application", {}).get("openapi_url", None)
         return None
 
     @property
     def redoc_url(self):
-        """ Returns the ReDoc URL from the configuration. """
+        """Returns the ReDoc URL from the configuration."""
         if self.app_env == "dev":
             return self.config.get("application", {}).get("redoc_url", None)
         return None
 
     @property
     def controller_dir(self):
-        """ Returns the controllers directory from the configuration. """
+        """Returns the controllers directory from the configuration."""
         return (
             self.config.get("application", {})
             .get("controllers")
@@ -256,25 +260,25 @@ class Settings:
 
     @property
     def cors_config(self):
-        """ Returns the CORS configuration from the configuration. """
+        """Returns the CORS configuration from the configuration."""
         return self.config.get("application", {}).get("cors", {})
 
     @property
     def debug_mode(self):
-        """ Returns True if the application environment is 'dev', otherwise False. """
+        """Returns True if the application environment is 'dev', otherwise False."""
         return self.app_env == "dev"
 
     @property
     def template_dir(self):
-        """ Returns the template directory from the configuration. """
+        """Returns the template directory from the configuration."""
         return self.config.get("application", {}).get("template_dir", "templates")
 
     @property
     def session_cookie_name(self):
-        """ Returns the session cookie name from the configuration. """
+        """Returns the session cookie name from the configuration."""
         return self.config.get("application", {}).get("session").get("name", None)
 
     @property
     def session_file_path(self):
-        """ Returns the session file path from the configuration. """
+        """Returns the session file path from the configuration."""
         return self.config.get("application", {}).get("session").get("file_path", None)

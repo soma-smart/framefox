@@ -4,7 +4,8 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from fastapi import Request, Response
 
-from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
+from framefox.core.middleware.middlewares.session_middleware import \
+    SessionMiddleware
 from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.request.session.session_manager import SessionManager
 
@@ -123,8 +124,7 @@ class TestSessionMiddleware:
 
             assert response.status_code == 440
             assert "Session expired" in response.body.decode()
-            mock_session_manager.delete_session.assert_called_once_with(
-                "expired_id")
+            mock_session_manager.delete_session.assert_called_once_with("expired_id")
 
     def test_cleanup_expired_sessions(self, middleware, mock_session_manager):
         """Test the cleanup of expired sessions"""

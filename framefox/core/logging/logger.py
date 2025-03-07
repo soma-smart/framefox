@@ -3,7 +3,8 @@ import logging.config
 import os
 from pathlib import Path
 
-from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
+from framefox.core.logging.formatter.sqlmodel_formatter import \
+    SQLModelFormatter
 
 """
 Framefox Framework developed by SOMA
@@ -132,8 +133,13 @@ class Logger:
                 },
                 "sqlalchemy.engine.Engine": {
                     "handlers": ["file_sqlmodel"],
-                    "level": "INFO",
+                    "level": "WARNING",
                     "propagate": True,
+                },
+                "sqlmodel": {
+                    "handlers": ["file_sqlmodel"],
+                    "level": "WARNING",
+                    "propagate": False,
                 },
                 "python_multipart": {
                     "handlers": ["file"],

@@ -52,8 +52,7 @@ class TestSettings:
         assert settings_with_mocked_config.debug_mode is True
 
     def test_access_control_loading(self, settings_with_mocked_config):
-        assert settings_with_mocked_config.access_control == [
-            {"role": "ROLE_USER"}]
+        assert settings_with_mocked_config.access_control == [{"role": "ROLE_USER"}]
 
     def test_get_param(self, settings_with_mocked_config):
         with patch.object(
@@ -61,10 +60,8 @@ class TestSettings:
             "config",
             {"parameters": {"custom": {"api_key": "test_key"}}},
         ):
-            assert settings_with_mocked_config.get_param(
-                "custom.api_key") == "test_key"
-            assert settings_with_mocked_config.get_param(
-                "invalid.path") is None
+            assert settings_with_mocked_config.get_param("custom.api_key") == "test_key"
+            assert settings_with_mocked_config.get_param("invalid.path") is None
 
     def test_controller_dir_default(self, settings_with_mocked_config):
         assert settings_with_mocked_config.controller_dir == "controllers"

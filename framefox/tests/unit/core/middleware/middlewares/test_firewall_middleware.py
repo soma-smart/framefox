@@ -4,7 +4,8 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from fastapi import Request
 
-from framefox.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
+from framefox.core.middleware.middlewares.firewall_middleware import \
+    FirewallMiddleware
 from framefox.core.security.handlers.firewall_handler import FirewallHandler
 
 """

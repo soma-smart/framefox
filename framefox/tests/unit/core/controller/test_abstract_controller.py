@@ -97,8 +97,7 @@ class TestAbstractController:
     def test_flash_with_existing_messages(self, controller, mock_session):
         """Test flash with existing messages"""
         # Setup existing messages
-        existing_messages = [
-            {"message": "Previous message", "category": "info"}]
+        existing_messages = [{"message": "Previous message", "category": "info"}]
         mock_session.get.return_value = existing_messages
 
         # Add a new message

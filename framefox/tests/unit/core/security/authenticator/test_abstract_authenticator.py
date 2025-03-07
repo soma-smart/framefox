@@ -5,9 +5,8 @@ from fastapi import HTTPException, Request
 
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.security.authenticator.abstract_authenticator import (
-    AbstractAuthenticator,
-)
+from framefox.core.security.authenticator.abstract_authenticator import \
+    AbstractAuthenticator
 from framefox.core.security.passport.passport import Passport
 
 """

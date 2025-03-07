@@ -24,6 +24,9 @@ class AccessManager:
         Retrieves the required roles for a specific path from the settings.
         """
         self.logger.debug(f"Evaluating required roles for path: {path}")
+        if not self.settings.access_control:
+            self.logger.debug("No access control rules defined.")
+            return []
         for rule in self.settings.access_control:
             pattern = rule.get("path")
             roles = rule.get("roles", [])

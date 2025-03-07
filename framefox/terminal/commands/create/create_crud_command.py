@@ -31,6 +31,7 @@ class CreateCrudCommand(AbstractCommand):
         template_dir = os.path.join(self.templates_path, entity_name)
         os.makedirs(template_dir, exist_ok=True)
 
+        # Récupérer les propriétés enrichies
         properties = ModelChecker().get_entity_properties(entity_name)
 
         templates = {
@@ -149,7 +150,8 @@ class CreateCrudCommand(AbstractCommand):
                 f"{entity_name}_controller",
                 data,
             )
-
+            # Créer le FormType pour l'entité
+            self._create_form_type(entity_name)
             self._create_view_templates(entity_name)
 
         self.printer.print_msg(
@@ -157,3 +159,37 @@ class CreateCrudCommand(AbstractCommand):
             theme="success",
             linebefore=True,
         )
+
+    def _create_form_type(self, entity_name: str):
+        """Génère un FormType pour l'entité spécifiée."""
+        # Récupérer les propriétés de l'entité
+        properties = ModelChecker().get_entity_properties(entity_name)
+        entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
+
+        # Préparer les données pour le template
+        data = {
+            "entity_name": entity_name,
+            "entity_class_name": entity_class_name,
+            "form_type_class_name": f"{entity_class_name}Type",
+            "properties": properties,
+        }
+
+        # Créer le répertoire des formulaires si nécessaire
+        form_types_dir = "src/form"
+        os.makedirs(form_types_dir, exist_ok=True)
+
+        # Générer le fichier FormType
+        file_creator = FileCreator()
+        file_path = file_creator.create_file(
+            template="form/form_type_template.jinja2",
+            path=form_types_dir,
+            name=f"{entity_name}_type",
+            data=data,
+            format="py",
+        )
+
+        self.printer.print_msg(
+            f"✓ Form type created successfully: {file_path}", theme="success"
+        )
+
+        return file_path

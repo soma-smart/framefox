@@ -2,25 +2,22 @@
 
 {% block title %}{% endraw %}Create {{ entity_name|title }}{% raw %}{% endblock %}
 
-{% block content %}{% endraw %}
+{% block content %}
 <div class="container mt-5">
-    <h1>Create {{ entity_name|title }}</h1>
+    <h1>Create {% endraw %}{{ entity_name|title }}{% raw %}</h1>
     
-    <form method="POST" action="{% raw %}{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.create') }}" class="mt-4">{% endraw %}
-        {%- for property in properties -%}
-        {%- if property.name != 'id' -%}
-        <div class="mb-3">
-            <label for="{{ property.name }}" class="form-label">{{ property.name|title }}</label>
-            <input type="{% if "'str'" in property.type %}text{% elif "'int'" in property.type %}number{% elif "'float'" in property.type %}number{% elif "'bool'" in property.type %}checkbox{% elif "'date'" in property.type %}date{% else %}text{% endif %}"
-                   class="form-control" 
-                   id="{{ property.name }}" 
-                   name="{{ property.name }}" 
-                   required>
+    {{ form_start(form, {'action': url_for('{% endraw %}{{ entity_name }}{% raw %}.create')}) }}
+        {% endraw %}
+        {%- for prop in properties %}
+        {%- if prop.name != 'id' %}
+        {% raw %}{{ form_row(form, '{% endraw %}{{ prop.name }}{% raw %}') }}{% endraw %}
+        {% endif %}
+        {%- endfor %}
+        {% raw %}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read_all') }}" class="btn btn-secondary ms-2">Cancel</a>
         </div>
-        {%- endif -%}
-        {%- endfor -%}
-        {% raw %}<button type="submit" class="btn btn-primary">Create</button>
-        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read_all') }}" class="btn btn-secondary">Back</a>
-    </form>
+    {{ form_end(form) }}
 </div>
 {% endblock %}{% endraw %}

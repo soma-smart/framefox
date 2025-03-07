@@ -5,12 +5,14 @@ from fastapi import FastAPI
 
 from framefox.core.config.settings import Settings
 from framefox.core.middleware.middleware_manager import MiddlewareManager
-from framefox.core.middleware.middlewares.custom_cors_middleware import (
-    CustomCORSMiddleware,
-)
-from framefox.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
-from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
-from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
+from framefox.core.middleware.middlewares.custom_cors_middleware import \
+    CustomCORSMiddleware
+from framefox.core.middleware.middlewares.firewall_middleware import \
+    FirewallMiddleware
+from framefox.core.middleware.middlewares.request_middleware import \
+    RequestMiddleware
+from framefox.core.middleware.middlewares.session_middleware import \
+    SessionMiddleware
 
 """
 Framefox Framework developed by SOMA
@@ -50,8 +52,7 @@ class TestMiddlewareManager:
             ((RequestMiddleware,), {}),
             ((FirewallMiddleware,), {"settings": middleware_manager.settings}),
             ((SessionMiddleware,), {"settings": middleware_manager.settings}),
-            ((CustomCORSMiddleware,), {
-             "settings": middleware_manager.settings}),
+            ((CustomCORSMiddleware,), {"settings": middleware_manager.settings}),
         ]
 
         # Verify that the number of calls is correct
