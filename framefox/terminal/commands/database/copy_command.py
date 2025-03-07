@@ -11,7 +11,7 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 
 
-class CopyDbCommand(AbstractCommand):
+class CopyCommand(AbstractCommand):
     def __init__(self):
         super().__init__("copy")
         settings = Settings()
@@ -23,7 +23,7 @@ class CopyDbCommand(AbstractCommand):
         """
         Copy database tables from the entity directory to the database without using migrations.
         """
-        if not CopyDbCommand.database_exists(self.database_url):
+        if not CopyCommand.database_exists(self.database_url):
             self.printer.print_msg(
                 "The database does not exist. Please create it first.",
                 theme="error",
@@ -35,7 +35,7 @@ class CopyDbCommand(AbstractCommand):
             )
             return
         try:
-            CopyDbCommand.create_sqlmodel_tables_from_directory(
+            CopyCommand.create_sqlmodel_tables_from_directory(
                 directory=self.entity_directory,
                 database_url=self.database_url,
                 base_model=self.base_model,
@@ -128,7 +128,7 @@ class CopyDbCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".py"):
                     filepath = os.path.join(root, file)
-                    classes = CopyDbCommand.find_sqlmodel_classes_in_file(
+                    classes = CopyCommand.find_sqlmodel_classes_in_file(
                         filepath, base_model
                     )
 
@@ -153,7 +153,7 @@ class CopyDbCommand(AbstractCommand):
         Raises:
             None
         """
-        sqlmodel_classes = CopyDbCommand.find_sqlmodel_classes_in_directory(
+        sqlmodel_classes = CopyCommand.find_sqlmodel_classes_in_directory(
             directory, base_model
         )
 
@@ -161,7 +161,7 @@ class CopyDbCommand(AbstractCommand):
             engine = create_engine(database_url, echo=True)
 
             for filepath, classes in sqlmodel_classes.items():
-                module = CopyDbCommand.import_module_from_file(filepath)
+                module = CopyCommand.import_module_from_file(filepath)
                 for class_name in classes:
                     class_obj = getattr(module, class_name)
                     class_obj.metadata.create_all(engine)
@@ -175,16 +175,8 @@ class CopyDbCommand(AbstractCommand):
         """
         Check if a database exists based on its URL.
         Handles SQLite, PostgreSQL, and MySQL.
-
-        Args:
-            db_url (str): The URL of the database.
-
-        Returns:
-            bool: True if the database exists, False otherwise.
         """
-        scheme, user, password, host, port, database = (
-            DatabaseUrlParser.parse_database_url(db_url)
-        )
+        scheme, user, password, host, port, database = DatabaseUrlParser.parse(db_url)
 
         # SQLite
         if scheme == "sqlite":
@@ -201,12 +193,13 @@ class CopyDbCommand(AbstractCommand):
                     password=password,
                     host=host,
                     port=port,
-                    dbname=database,
+                    dbname="postgres",  # Connexion à la base système pour vérifier l'existence
                 )
                 connection.autocommit = True
                 cursor = connection.cursor()
                 cursor.execute(
-                    f"SELECT 1 FROM pg_database WHERE datname = '{db_url}'")
+                    f"SELECT 1 FROM pg_database WHERE datname = '{database}'"
+                )
                 exists = cursor.fetchone() is not None
 
                 cursor.close()
@@ -219,15 +212,16 @@ class CopyDbCommand(AbstractCommand):
         # MySQL
         elif scheme.startswith("mysql"):
             try:
+                # Se connecter au serveur MySQL sans spécifier de base de données
                 connection = pymysql.connect(
                     user=user,
                     password=password,
                     host=host,
-                    port=port,
-                    dbname=database,
+                    port=int(port) if port else 3306,
                 )
                 cursor = connection.cursor()
-                cursor.execute(f"SHOW DATABASES LIKE '{db_url}'")
+                # Vérifier si la base de données existe
+                cursor.execute(f"SHOW DATABASES LIKE '{database}'")
                 exists = cursor.fetchone() is not None
 
                 cursor.close()

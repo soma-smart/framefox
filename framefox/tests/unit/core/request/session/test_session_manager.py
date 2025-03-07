@@ -42,8 +42,7 @@ class TestSessionManager:
 
         try:
             # Create the session
-            session_manager.create_session(
-                session_id, sample_session_data, max_age)
+            session_manager.create_session(session_id, sample_session_data, max_age)
 
             # Verify that the session was created
             session = session_manager.get_session(session_id)
@@ -62,8 +61,7 @@ class TestSessionManager:
 
         try:
             # First create a session
-            session_manager.create_session(
-                session_id, sample_session_data, max_age)
+            session_manager.create_session(session_id, sample_session_data, max_age)
 
             # Update the session
             updated_data = {**sample_session_data, "username": "updated_user"}
@@ -83,8 +81,7 @@ class TestSessionManager:
 
         try:
             # Create a session
-            session_manager.create_session(
-                session_id, sample_session_data, max_age)
+            session_manager.create_session(session_id, sample_session_data, max_age)
 
             # Delete the session
             result = session_manager.delete_session(session_id)

@@ -175,8 +175,7 @@ class TestEntityManager:
     def test_exec_statement(self, entity_manager, TestEntityClass):
         """Test executing a SQL statement"""
         # Create test data
-        entities = [TestEntityClass(name="test1"),
-                    TestEntityClass(name="test2")]
+        entities = [TestEntityClass(name="test1"), TestEntityClass(name="test2")]
         for entity in entities:
             entity_manager.persist(entity)
 

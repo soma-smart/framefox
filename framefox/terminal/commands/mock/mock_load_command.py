@@ -30,8 +30,7 @@ class MockLoadCommand(AbstractCommand):
             )
             return
 
-        mock_files = [f for f in os.listdir(
-            mocks_dir) if f.endswith("_mock.py")]
+        mock_files = [f for f in os.listdir(mocks_dir) if f.endswith("_mock.py")]
 
         if not mock_files:
             Printer().print_msg(

@@ -2,6 +2,8 @@ import os
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
+from framefox.terminal.commands.create.entity.import_manager import \
+    ImportManager
 from framefox.terminal.common.class_name_manager import ClassNameManager
 
 """
@@ -26,6 +28,7 @@ class PropertyManager:
         self.input_manager = input_manager
         self.printer = printer
         self.entity_folder = "src/entity"
+        self.import_manager = ImportManager(printer)
         self.property_types = [
             "str",
             "int",
@@ -57,16 +60,23 @@ class PropertyManager:
         if self._property_exists(entity_name, property_details.name):
             return False
 
+        # Ajouter les imports nécessaires selon le type
+        if property_details.type == "date":
+            self.import_manager.add_import_to_entity(entity_name, "import datetime")
+            # Modifier le type pour utiliser datetime.datetime au lieu de simplement date
+            property_type = "datetime.datetime"
+        else:
+            property_type = property_details.type
+
         property_prompt = self._build_property(
             property_details.name,
-            property_details.type,
+            property_type,  # Utiliser le type modifié
             property_details.constraints,
             property_details.optional,
         )
         file_path = self._insert_property(entity_name, property_prompt)
         self.printer.print_full_text(
-            f"[bold orange1]Property '{
-                property_details.name}' added to[/bold orange1] {file_path}",
+            f"[bold orange1]Property '{property_details.name}' added to[/bold orange1] {file_path}",
             linebefore=True,
             newline=True,
         )
@@ -79,7 +89,14 @@ class PropertyManager:
         property_constraint: Optional[Tuple],
         optional: bool,
     ) -> str:
-        property_header = f"    {property_name}: {property_type}"
+        # Détection des types avec un point (comme datetime.datetime)
+        if "." in property_type:
+            field_type = property_type
+        else:
+            field_type = property_type
+
+        # Utilisez field_type ici au lieu de property_type
+        property_header = f"    {property_name}: {field_type}"
         property_core = " = Field("
         property_parameters = []
 
@@ -91,8 +108,7 @@ class PropertyManager:
             property_parameters.append("nullable=True")
 
         property_parameters_str = ", ".join(property_parameters)
-        final_property = f"{property_header}{
-            property_core}{property_parameters_str})\n"
+        final_property = f"{property_header}{property_core}{property_parameters_str})\n"
         return final_property
 
     def _insert_property(self, entity_name: str, property_prompt: str) -> str:

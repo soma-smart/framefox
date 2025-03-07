@@ -1,7 +1,9 @@
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.create.create_entity_command import CreateEntityCommand
+from framefox.terminal.commands.create.create_entity_command import \
+    CreateEntityCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.entity_property_manager import EntityPropertyManager
+from framefox.terminal.common.entity_property_manager import \
+    EntityPropertyManager
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 
@@ -53,12 +55,14 @@ class CreateUserCommand(AbstractCommand):
                 newline=True,
             )
             return
-        entity_path = self.create_entity_command.create_entity_and_repository(
-            name)
+        entity_path = self.create_entity_command.create_entity_and_repository(name)
 
         self.entity_property_manager.insert_property(
-            name, "    password: str\n")
-        self.entity_property_manager.insert_property(name, "    email: str\n")
+            name, "    password: str= Field(nullable=False)\n"
+        )
+        self.entity_property_manager.insert_property(
+            name, "    email: str= Field(nullable=False)\n"
+        )
         self.entity_property_manager.insert_property(
             name,
             "    roles: list[str] = Field(default_factory=lambda: ['ROLE_USER'], sa_column=Column(JSON))\n",

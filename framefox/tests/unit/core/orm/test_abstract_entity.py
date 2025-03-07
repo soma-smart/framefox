@@ -65,8 +65,7 @@ class TestAbstractEntity:
 
     def test_model_creation(self):
         """Test the creation of a model instance"""
-        user_data = {"name": "Test User",
-                     "email": "test@example.com", "age": 25}
+        user_data = {"name": "Test User", "email": "test@example.com", "age": 25}
         user = TestUser(**user_data)
 
         assert user.name == "Test User"

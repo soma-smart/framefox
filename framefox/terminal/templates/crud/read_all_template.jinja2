@@ -2,45 +2,61 @@
 
 {% block title %}{% endraw %}{{ entity_name|title }}{% raw %} List{% endblock %}
 
-{% block content %}{% endraw %}
+{% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center">
-        <h1>{{ entity_name|title }} List</h1>
-        <a href="{% raw %}{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.create') }}" class="btn btn-primary">Create New</a>
+        <h1>{% endraw %}{{ entity_name|title }}{% raw %} List</h1>
+        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.create') }}" class="btn btn-primary">Create New</a>
     </div>
-
-    <div class="table-responsive mt-4">
-        <table class="table table-striped">
-            <thead>
-                <tr>
+    
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>ID</th>
                 {% endraw %}
-                    {%- for property in properties -%}
-                    <th>{{ property.name|title }}</th>
-                    {%- endfor -%}
-                    <th>Actions</th>
+                {%- for prop in properties %}
+                {% if prop.name != 'id' %}
+                <th>{{ prop.name|title }}</th>
+                {% endif %}
+                {%- endfor %}
                 {% raw %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr>
-                    {% endraw %}
-                    {%- for property in properties -%}
-                    <td>{% raw %}{{ item.{% endraw %}{{ property.name }}{% raw %} }}</td>
-                    {% endraw %}
-                    {%- endfor -%}
-                    {% raw %}
-                    <td>
-                        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read', id=item.id) }}" class="btn btn-info btn-sm">View</a>
-                        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.update', id=item.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.id }}</td>
+                {% endraw %}
+                {%- for prop in properties %}
+                {% if prop.name != 'id' %}
+                {# Affichage adapté selon le type #}
+                {% if prop.is_relation and prop.relation_type == 'many' %}
+                <td>{{ '{{ item.' + prop.name + '|length }} élément(s)' }}</td>
+                {% elif prop.is_relation %}
+                <td>{{ '{{ item.' + prop.name + '.id if item.' + prop.name + ' else "N/A" }}' }}</td>
+                {% elif 'list[str]' in prop.type %}
+                <td>{{ '{{ item.' + prop.name + '|join(", ") if item.' + prop.name + ' else "" }}' }}</td>
+                {% elif 'bool' in prop.type %}
+                <td>{{ '{{ "Oui" if item.' + prop.name + ' else "Non" }}' }}</td>
+                {% else %}
+                <td>{{ '{{ item.' + prop.name + ' }}' }}</td>
+                {% endif %}
+                {% endif %}
+                {%- endfor %}
+                {% raw %}
+                <td>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read', id=item.id) }}" class="btn btn-sm btn-info">View</a>
+                        <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.update', id=item.id) }}" class="btn btn-sm btn-warning">Edit</a>
                         <form method="POST" action="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.delete', id=item.id) }}" class="d-inline">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
                         </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}{% endraw %}

@@ -29,8 +29,7 @@ class CustomCORSMiddleware(CORSMiddleware):
         super().__init__(
             app,
             allow_origins=settings.cors_config.get("allow_origins", ["*"]),
-            allow_credentials=settings.cors_config.get(
-                "allow_credentials", True),
+            allow_credentials=settings.cors_config.get("allow_credentials", True),
             allow_methods=settings.cors_config.get("allow_methods", ["*"]),
             allow_headers=settings.cors_config.get("allow_headers", ["*"]),
         )

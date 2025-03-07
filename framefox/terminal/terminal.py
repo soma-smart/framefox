@@ -1,10 +1,12 @@
+import sys
+from typing import List, Optional
+import os
 import typer
-from rich.console import Console
-from rich.panel import Panel
+from rich.console import Console as RichConsole
 from rich.table import Table
-from rich.text import Text
 
-from framefox.terminal.command_handler import CommandHandler
+from framefox.core.di.service_container import ServiceContainer
+from framefox.terminal.command_registry import CommandRegistry
 
 """
 Framefox Framework developed by SOMA
@@ -16,218 +18,361 @@ Github: https://github.com/Vasulvius
 
 
 class Terminal:
-    _typers = None
+    """
+    Main application console
+    """
 
-    @staticmethod
-    def create_typer_app():
-        app = typer.Typer(
-            help="Framefox CLI",
-            no_args_is_help=False,
+    def __init__(self):
+        self.registry = CommandRegistry()
+        self.rich_console = RichConsole()
+        self.app = typer.Typer(
+            help="🦊 Framefox - Swift, smart, and a bit foxy",
+            no_args_is_help=True,
             rich_markup_mode="rich",
             pretty_exceptions_enable=False,
         )
-        create_app = typer.Typer(
-            help="Create various resources like entities or CRUD operations."
-        )
-        database_app = typer.Typer(
-            help="Database operations like creating or migrating databases."
-        )
-        server_app = typer.Typer(
-            help="Server operations like starting or stopping the server."
-        )
-        debug_app = typer.Typer(
-            help="Debug operations like checking routes or testing security."
-        )
-        cache_app = typer.Typer(
-            help="Cache operations like clearing cache files and directories."
-        )
-        mock_app = typer.Typer(
-            help="mock operations like generating or loading mock.")
 
-        typers = {
-            "main": app,
-            "create": create_app,
-            "database": database_app,
-            "debug": debug_app,
-            "server": server_app,
-            "cache": cache_app,
-            "mock": mock_app,
-        }
-        Terminal._typers = typers
+        self.registry.discover_commands()
 
-        for category, sub_app in typers.items():
-            if category == "main":
-                continue
-            app.add_typer(sub_app, name=category)
-            Terminal._add_sub_command_callback(sub_app, category)
+        self._configure_app()
 
-        CommandHandler().load_commands(typers)
+    def _configure_app(self):
+        """Configure the main application"""
 
-        @app.callback(invoke_without_command=True)
+        @self.app.callback(invoke_without_command=True)
         def main(
             ctx: typer.Context,
-            help: bool = typer.Option(
-                None,
-                "--help",
-                "-h",
-                is_eager=True,
-                help="Show this message and exit.",
-            ),
-            all: bool = typer.Option(
-                False,
-                "--all",
-                '-a',
-                help="Display all available commands in detailed view",
-            ),
+            help: bool = typer.Option(None, "--help", "-h", is_eager=True),
+            all: bool = typer.Option(False, "--all", "-a"),
         ):
             """Framefox CLI - Swift, smart, and a bit foxy"""
             if ctx.invoked_subcommand is None:
+                self._print_header()
                 if all:
-                    Terminal._display_all_commands_table(Terminal._typers)
-                    raise typer.Exit()
-                elif help:
-                    Terminal._display_simplified_view()
-                    raise typer.Exit()
+                    self._display_all_commands()
                 else:
-                    Terminal._display_simplified_view()
-                    raise typer.Exit()
-
-        return app
-
-    @staticmethod
-    def run():
-        """Point d'entrée principal de l'application CLI"""
-        app = Terminal.create_typer_app()
-        return app
-
-    @staticmethod
-    def _add_sub_command_callback(app, category):
-        @app.callback(invoke_without_command=True)
-        def callback(
-            ctx: typer.Context,
-            help: bool = typer.Option(None, "--help", "-h", is_eager=True)
-        ):
-            """Sub command callback"""
-            command_list = app.registered_commands if hasattr(
-                app, "registered_commands") else app.commands.values()
-            if ctx.invoked_subcommand is None and len(command_list) > 0:
-                Terminal._display_category_commands(
-                    category, Terminal._typers[category])
+                    self._display_help()
                 raise typer.Exit()
+
+        # Add a manual "list" command to list all commands
+        @self.app.command("list")
+        def list_commands():
+            """List all available commands"""
+            self._print_header()
+            self._display_all_commands()
+
+    def run(self, args: List[str] = None):
+        """Run the console application with the given arguments"""
+        if args is None:
+            args = sys.argv[1:]
+
+        if not args:
+            self._create_standard_console()
+            self._display_help()
+            return 0
+
+        # Ajout pour gérer spécifiquement la commande 'init'
+        if len(args) == 1 and args[0] == "init":
+            command_class = self.registry.get_command("init")
+            if command_class:
+                try:
+                    # Instantiate and execute the command
+                    instance = self._instantiate_command(command_class)
+                    if instance:
+                        print(f"Executing command init")
+                        return instance.execute()
+                    else:
+                        self.rich_console.print(
+                            f"Error instantiating command init",
+                            style="bold red",
+                        )
+                        return 1
+                except Exception as e:
+                    self.rich_console.print(
+                        f"Error executing command init: {e}",
+                        style="bold red",
+                    )
+                    return 1
+
+        if len(args) == 1 and ":" not in args[0] and args[0] != "list":
+            namespace = args[0]
+            commands_by_namespace = self.registry.list_commands()
+
+            if namespace in commands_by_namespace:
+                self._create_standard_console()
+                self._display_namespace_commands(namespace)
+                return 0
+
+        # Check if we have a command with the format namespace:name
+        if len(args) > 0 and ":" in args[0]:
+            command_id = args[0]
+            command_class = self.registry.get_command(command_id)
+            if command_class:
+                try:
+                    # Instantiate and execute the command
+                    instance = self._instantiate_command(command_class)
+                    if instance:
+                        print(f"Executing command {command_id}")
+                        return instance.execute(*args[1:])
+                    else:
+                        self.rich_console.print(
+                            f"Error instantiating command {command_id}",
+                            style="bold red",
+                        )
+                        return 1
+                except Exception as e:
+                    self.rich_console.print(
+                        f"Error executing command {command_id}: {e}",
+                        style="bold red",
+                    )
+                    return 1
             else:
-                console = Terminal._create_standard_console()
-                console.print(
-                    f"Command '{category} {ctx.invoked_subcommand}' not available", style="bold red")
-                console.print("")
-                raise typer.Exit()
+                self.rich_console.print(f"Command not found", style="bold red")
 
-    @staticmethod
-    def _display_all_commands_table(typers):
-        console = Terminal._create_standard_console()
+                # Calculate Levenshtein distance for all commands
+                command_similarities = []
+                for cmd in self.registry.commands.keys():
+                    # Calculate the distance between the requested command and each available command
+                    distance = self.levenshtein_distance(command_id, cmd)
 
-        # Table
+                    # If the namespace is the same, give a bonus (reduce the distance)
+                    if ":" in cmd and ":" in command_id:
+                        if cmd.split(":")[0] == command_id.split(":")[0]:
+                            distance -= 2
+
+                    # Store the distance and the command
+                    command_similarities.append((distance, cmd))
+
+                # Sort by distance (smaller distance = more similar)
+                command_similarities.sort()
+
+                # Only suggest the most similar command if it has a reasonable distance
+                if command_similarities and command_similarities[0][0] < 5:
+                    best_match = command_similarities[0][1]
+                    self.rich_console.print(
+                        f"Did you mean [bold yellow]{best_match}[/] ?", style="yellow"
+                    )
+
+                return 1
+
+        # Otherwise, use Typer normally
+        try:
+            return self.app()
+        except SystemExit as e:
+            # Intercept Typer's exit to return the status code
+            return e.code
+
+    def _instantiate_command(self, command_class):
+        """Instantiate a command using the service container if necessary"""
+        try:
+            # First try to instantiate simply
+            return command_class()
+        except TypeError:
+            # If it fails, it's probably because it needs dependencies
+            try:
+                # Use the container to resolve dependencies
+                container = ServiceContainer()
+                return container.get(command_class)
+            except Exception as e:
+                self.rich_console.print(
+                    f"Error instantiating with the container: {e}",
+                    style="bold red",
+                )
+                return None
+
+    def _print_header(self):
+        """Print the application header"""
+        print("")
+        self.rich_console.print(
+            "🦊 Framefox - Swift, smart, and a bit foxy", style="bold orange1"
+        )
+        print("")
+
+    def _create_standard_console(self, help=True):
+        """Create a console with the standard Framefox style"""
+        print("")
+        self.rich_console.print(
+            "🦊 Framefox - Swift, smart, and a bit foxy",
+            style="bold orange1",
+        )
+        print("")
+        self.rich_console.print(
+            "Usage: framefox [namespace:command] [OPTIONS]", style="bold white"
+        )
+        if help:
+            self.rich_console.print(
+                "Try 'framefox list' for available commands", style="bold white"
+            )
+        print("")
+        return self.rich_console
+
+    def _display_all_commands(self):
+        """Display all commands with their description in an enhanced style"""
+        # Vérifier si le projet est initialisé
+        project_exists = os.path.exists("src")
+
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Commands", style="bold orange3", no_wrap=True)
         table.add_column("Description", style="white")
 
-        for category, typer_app in typers.items():
+        if not project_exists:
+            # Afficher uniquement la commande init
+            init_command = self.registry.get_command("init")
+            if init_command:
+                doc = init_command.execute.__doc__ or ""
+                first_line = doc.strip().split("\n")[0] if doc else ""
+                table.add_row("init", first_line)
 
-            command_list = typer_app.registered_commands if hasattr(
-                typer_app, "registered_commands") else typer_app.commands.values()
+            self.rich_console.print(table)
+            return
 
-            if category != "main" and len(command_list) > 0:
-                if category != "create":
+        commands_by_namespace = self.registry.list_commands()
+
+        # For each namespace
+        for namespace, commands in sorted(commands_by_namespace.items()):
+            if namespace != "main":
+                # Add an empty row and a section header
+                if namespace != next(iter(sorted(commands_by_namespace))):
                     table.add_row("", "")
-                table.add_row(
-                    f"{'_'*5}{category.upper()} COMMANDS{'_'*5}", "")
+                table.add_row(f"{namespace.upper()}", "")
 
-            for command in command_list:
-                command_name = (
-                    f"{category} {command.name}" if category != "main" else command.name
-                )
-                command_help = command.callback.__doc__ or ""
-                first_line = command_help.strip().split(
-                    "\n")[0] if command_help else ""
-                table.add_row(command_name, first_line)
+                # Add the commands of this namespace
+                for name in sorted(commands):
+                    command_id = f"{namespace}:{name}"
+                    command_class = self.registry.get_command(command_id)
+                    doc = command_class.execute.__doc__ or ""
+                    first_line = doc.strip().split("\n")[0] if doc else ""
+                    table.add_row(command_id, first_line)
 
-        console.print(table)
+        # Display the commands of the main namespace at the end
+        if "main" in commands_by_namespace:
+            table.add_row("", "")
+            table.add_row(f"MAIN", "")
+            for name in sorted(commands_by_namespace["main"]):
+                command_class = self.registry.get_command(name)
+                doc = command_class.execute.__doc__ or ""
+                first_line = doc.strip().split("\n")[0] if doc else ""
+                table.add_row(name, first_line)
+
+        self.rich_console.print(table)
         print("")
 
-    @staticmethod
-    def _display_simplified_view():
-        console = Terminal._create_standard_console(False)
+    def _display_help(self):
+        """Display simplified help in an enhanced style"""
+        project_exists = os.path.exists("src")
 
-        # Options panel
+        if not project_exists:
+            # Afficher uniquement la commande init
+            init_table = Table(show_header=True, header_style="bold orange1")
+            init_table.add_column(
+                "Command", style="bold orange3", no_wrap=True)
+            init_table.add_column("Description", style="white")
+
+            init_command = self.registry.get_command("init")
+            if init_command:
+                doc = init_command.execute.__doc__ or ""
+                first_line = doc.strip().split("\n")[0] if doc else ""
+                init_table.add_row("init", first_line)
+
+            self.rich_console.print(init_table)
+            self.rich_console.print("")
+            self.rich_console.print(
+                "Run 'framefox init --help' for command details",
+                style="bold white",
+            )
+            return
         options_table = Table(show_header=True, header_style="bold orange1")
         options_table.add_column("Options", style="bold orange3", no_wrap=True)
         options_table.add_column("Description", style="white")
         options_table.add_row(
-            "--all", "Display all available commands in detailed view")
-        options_table.add_row("--install-completion",
-                              "Install completion for the current shell.")
-        options_table.add_row(
-            "--show-completion", "Show completion for the current shell, to copy it or customize the installation.")
-        options_table.add_row("--help", "Show this message and exit.")
+            "--all", "Display all available commands in detailed view"
+        )
+        options_table.add_row("namespace:command",
+                              "Execute a specific command")
+        options_table.add_row("list", "Show detailed list of all commands")
 
-        console.print(options_table)
-        console.print("")
+        self.rich_console.print(options_table)
+        self.rich_console.print("")
 
-        # Command panel
+        # Command panel - display namespaces
         commands_table = Table(show_header=True, header_style="bold orange1")
         commands_table.add_column(
-            "Commands", style="bold orange3", no_wrap=True)
+            "Namespace", style="bold orange3", no_wrap=True)
         commands_table.add_column("Description", style="white")
 
-        for category, typer_app in Terminal._typers.items():
-            if category == "main":
-                continue
-            commands_table.add_row(category, typer_app.info.help)
+        namespace_descriptions = {
+            "server": "Server operations like starting or stopping the server.",
+            "create": "Create various resources like entities or CRUD operations.",
+            "database": "Database operations like creating or migrating databases.",
+            "debug": "Debug operations like checking routes or testing security.",
+            "cache": "Cache operations like clearing cache files and directories.",
+            "mock": "Mock operations like generating or loading mock data.",
+        }
 
-        console.print(commands_table)
+        commands_by_namespace = self.registry.list_commands()
 
-    @staticmethod
-    def _display_category_commands(category: str, typer_app):
-        """Affiche les commandes d'une catégorie spécifique"""
-        console = Terminal._create_standard_console()
+        # Display only the namespaces that have commands
+        for namespace in sorted(commands_by_namespace.keys()):
+            if namespace != "main":
+                description = namespace_descriptions.get(namespace, "")
+                commands_table.add_row(namespace, description)
 
+        self.rich_console.print(commands_table)
+        self.rich_console.print("")
+        self.rich_console.print(
+            "Run 'framefox namespace:command --help' for specific command details",
+            style="bold white",
+        )
+
+    def _display_namespace_commands(self, namespace: str):
+        """Display the commands of a specific namespace"""
         # Title
-        console.print(f"[bold orange1]{category.upper()} COMMANDS[/]")
-        console.print("")
+        self.rich_console.print(
+            f"[bold orange1]{namespace.upper()} COMMANDS[/]")
+        self.rich_console.print("")
 
         # Table
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Command", style="bold orange3", no_wrap=True)
         table.add_column("Description", style="white")
 
-        # Commands
-        command_list = typer_app.registered_commands if hasattr(
-            typer_app, "registered_commands") else typer_app.commands.values()
-        for command in command_list:
-            command_help = command.callback.__doc__ or ""
-            first_line = command_help.strip().split(
-                "\n")[0] if command_help else ""
-            table.add_row(f"{category} {command.name}", first_line)
+        commands_by_namespace = self.registry.list_commands()
+        if namespace in commands_by_namespace:
+            for name in sorted(commands_by_namespace[namespace]):
+                command_id = f"{namespace}:{name}"
+                command_class = self.registry.get_command(command_id)
+                doc = command_class.execute.__doc__ or ""
+                first_line = doc.strip().split("\n")[0] if doc else ""
+                table.add_row(command_id, first_line)
 
-        console.print(table)
+        self.rich_console.print(table)
 
         # Final instructions
-        console.print("")
-        console.print(
-            f"Run 'framefox {category} COMMAND --help' for specific command details")
-
-    @staticmethod
-    def _create_standard_console(help=True):
-        console = Console()
-        print("")
-        console.print(
-            ":fox_face: Framefox - Swift, smart, and a bit foxy",
-            style="bold orange1",
+        self.rich_console.print("")
+        self.rich_console.print(
+            f"Run 'framefox {namespace}:COMMAND --help' for specific command details"
         )
-        print("")
-        console.print(
-            "Usage: framefox [COMMAND] [OPTIONS]", style="bold white")
-        if help:
-            console.print("Try 'framefox --help' for more information",
-                          style="bold white")
-        print("")
-        return console
+
+    def levenshtein_distance(self, s1, s2):
+        """
+        Calculate the Levenshtein distance between two strings.
+        This function determines the minimum number of operations (insertion, deletion, substitution)
+        needed to transform one string into another.
+        """
+        if len(s1) < len(s2):
+            return self.levenshtein_distance(s2, s1)
+
+        if len(s2) == 0:
+            return len(s1)
+
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+
+        return previous_row[-1]

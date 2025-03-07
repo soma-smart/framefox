@@ -15,16 +15,11 @@
 	
 		{% raw %}
 		<div class="container mt-3">
-			{% with messages = get_flash_messages() %}
-			{% if messages %}
+			{% for category, messages in get_flash_messages().items() %}
 				{% for message in messages %}
-					<div class="alert alert-{{ message.category }} alert-dismissible fade show" role="alert">
-						{{ message.message }}
-						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-					</div>
+					<div class="alert alert-{{ category }}">{{ message }}</div>
 				{% endfor %}
-			{% endif %}
-			{% endwith %}
+			{% endfor %}
 		</div>
 		{% block content %}{% endblock %}{% endraw %}
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

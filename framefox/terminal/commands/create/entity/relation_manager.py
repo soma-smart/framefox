@@ -37,8 +37,7 @@ class RelationManager:
         if not target_entity:
             return False
 
-        config = self._get_relation_config(
-            source_entity, target_entity, property_name)
+        config = self._get_relation_config(source_entity, target_entity, property_name)
         if config.type == "ManyToMany":
             return self._create_many_to_many_relation(
                 source_entity, target_entity, property_name, config
@@ -50,8 +49,7 @@ class RelationManager:
     def _get_relation_config(
         self, source_entity: str, target_entity: str, property_name: str
     ) -> RelationConfig:
-        relation_type = self._request_relation_type(
-            source_entity, target_entity)
+        relation_type = self._request_relation_type(source_entity, target_entity)
 
         if relation_type in ["ManyToOne", "OneToOne"]:
             optional = self._request_optional()
@@ -112,8 +110,7 @@ class RelationManager:
             )
 
             for key, value in display_relation_types.items():
-                self.printer.print_msg(
-                    f'{key}. {value}  - "{help_messages[key]}"')
+                self.printer.print_msg(f'{key}. {value}  - "{help_messages[key]}"')
 
             choice = self.input_manager.wait_input(
                 "Enter the number corresponding to the type of relation",
@@ -149,8 +146,7 @@ class RelationManager:
     ) -> Tuple[bool, Optional[str]]:
         if auto_inverse:
             has_inverse = True
-            self.printer.print_msg(
-                "An inverse property will be added automatically.")
+            self.printer.print_msg("An inverse property will be added automatically.")
         else:
             has_inverse = (
                 self.input_manager.wait_input(
@@ -219,8 +215,7 @@ class RelationManager:
                 .strip()
                 .lower()
             )
-            target_file = os.path.join(
-                self.entity_folder, f"{target_entity}.py")
+            target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
             if os.path.exists(target_file):
                 return target_entity
             else:
@@ -238,13 +233,14 @@ class RelationManager:
         target_class: str,
         config: RelationConfig,
     ) -> Tuple[str, Optional[str]]:
-        cascade_option = ", cascade_delete=True" if config.cascade_delete else ""
+        # Ne pas appliquer cascade_delete directement, il doit dépendre du type de relation
         nullable_option = ", nullable=True" if config.optional else ""
 
         intermediate_class = ClassNameManager.snake_to_pascal(
             f"{source_entity}_{target_entity}"
         )
 
+        # Appliquer la pluralisation si nécessaire
         if config.type == "ManyToMany":
             if not property_name.endswith("s"):
                 property_name = self._pluralize(property_name)
@@ -253,8 +249,7 @@ class RelationManager:
                 if config.inverse_property
                 else self._pluralize(source_entity)
             )
-
-        if config.type == "OneToMany":
+        elif config.type == "OneToMany":
             inverse_prop = (
                 config.inverse_property if config.inverse_property else source_entity
             )
@@ -264,50 +259,61 @@ class RelationManager:
                 if config.inverse_property
                 else self._pluralize(source_entity)
             )
-        else:
+        else:  # OneToOne
             inverse_prop = (
-                config.inverse_property
-                if config.inverse_property
-                else self._pluralize(source_entity)
+                config.inverse_property if config.inverse_property else source_entity
             )
+
+        # Appliquer la cascade delete au bon endroit selon le type de relation
+        if config.cascade_delete:
+            if config.type == "OneToMany":
+                # Cascade du côté "one" (source) vers les "many" (target)
+                source_cascade = (
+                    ', sa_relationship_kwargs={"cascade": "all, delete-orphan"}'
+                )
+                target_cascade = ""
+            elif config.type == "ManyToOne":
+                # Cascade du côté "one" (target) vers les "many" (source)
+                source_cascade = ""
+                target_cascade = (
+                    ', sa_relationship_kwargs={"cascade": "all, delete-orphan"}'
+                )
+            elif config.type == "OneToOne":
+                # Cascade dans les deux sens possible, mais généralement du côté propriétaire
+                source_cascade = (
+                    ', sa_relationship_kwargs={"cascade": "all, delete-orphan"}'
+                )
+                target_cascade = ""
+            else:  # ManyToMany
+                source_cascade = ""
+                target_cascade = ""
+        else:
+            source_cascade = ""
+            target_cascade = ""
 
         relation_template = {
             "OneToOne": (
-                f"{property_name}: {target_class} | None = Relationship(back_populates='{
-                    inverse_prop}', uselist=False{cascade_option})",
-                f"{inverse_prop}: {source_class} | None = Relationship(back_populates='{
-                    property_name}', uselist=False)",
+                f"{property_name}: {target_class} | None = Relationship(back_populates='{inverse_prop}', uselist=False{source_cascade})",
+                f"{inverse_prop}: {source_class} | None = Relationship(back_populates='{property_name}', uselist=False{target_cascade})",
             ),
             "OneToMany": (
-                f"{property_name}: list['{target_class}'] = Relationship(back_populates='{
-                    inverse_prop}'{cascade_option})",
-                f"{inverse_prop}: {source_class} | None = Relationship(back_populates='{
-                    property_name}')",
+                f"{property_name}: list['{target_class}'] = Relationship(back_populates='{inverse_prop}'{source_cascade})",
+                f"{inverse_prop}: {source_class} | None = Relationship(back_populates='{property_name}'{target_cascade})",
             ),
             "ManyToOne": (
-                f"{property_name}: {target_class} | None = Relationship(back_populates='{
-                    inverse_prop}'{cascade_option})",
-                f"{inverse_prop}: list['{source_class}'] = Relationship(back_populates='{
-                    property_name}')",
+                f"{property_name}: {target_class} | None = Relationship(back_populates='{inverse_prop}'{source_cascade})",
+                f"{inverse_prop}: list['{source_class}'] = Relationship(back_populates='{property_name}'{target_cascade})",
             ),
             "ManyToMany": (
-                f"{property_name}: list['{target_class}'] = Relationship(back_populates='{
-                    inverse_prop}', link_model={intermediate_class})",
-                f"{inverse_prop}: list['{source_class}'] = Relationship(back_populates='{
-                    property_name}', link_model={intermediate_class})",
+                f"{property_name}: list['{target_class}'] = Relationship(back_populates='{inverse_prop}', link_model={intermediate_class}{source_cascade})",
+                f"{inverse_prop}: list['{source_class}'] = Relationship(back_populates='{property_name}', link_model={intermediate_class}{target_cascade})",
             ),
         }
 
-        if config.type == "ManyToMany":
-            source_relation = relation_template["ManyToMany"][0]
-            target_relation = (
-                relation_template["ManyToMany"][1] if config.inverse_relation else None
-            )
-        else:
-            source_relation = relation_template[config.type][0]
-            target_relation = (
-                relation_template[config.type][1] if config.inverse_relation else None
-            )
+        source_relation = relation_template[config.type][0]
+        target_relation = (
+            relation_template[config.type][1] if config.inverse_relation else None
+        )
 
         return source_relation, target_relation
 
@@ -386,16 +392,13 @@ class RelationManager:
             source_entity, target_entity, property_name, intermediate_entity, config
         )
 
-        intermediate_class = ClassNameManager.snake_to_pascal(
-            intermediate_entity)
+        intermediate_class = ClassNameManager.snake_to_pascal(intermediate_entity)
 
         source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
         target_file = os.path.join(self.entity_folder, f"{target_entity}.py")
 
-        self._add_class_import(
-            source_file, intermediate_entity, intermediate_class)
-        self._add_class_import(
-            target_file, intermediate_entity, intermediate_class)
+        self._add_class_import(source_file, intermediate_entity, intermediate_class)
+        self._add_class_import(target_file, intermediate_entity, intermediate_class)
 
         self.printer.print_msg(
             f"ManyToMany relation file '{intermediate_entity}' created between '{source_entity}' and '{target_entity}'.",
@@ -407,8 +410,7 @@ class RelationManager:
     def _create_intermediate_entity(
         self, intermediate_entity: str, source_entity: str, target_entity: str
     ):
-        intermediate_class = ClassNameManager.snake_to_pascal(
-            intermediate_entity)
+        intermediate_class = ClassNameManager.snake_to_pascal(intermediate_entity)
         source_class = ClassNameManager.snake_to_pascal(source_entity)
         target_class = ClassNameManager.snake_to_pascal(target_entity)
         file_path = os.path.join(
@@ -441,8 +443,7 @@ class RelationManager:
     ):
         source_class = ClassNameManager.snake_to_pascal(source_entity)
         target_class = ClassNameManager.snake_to_pascal(target_entity)
-        intermediate_class = ClassNameManager.snake_to_pascal(
-            intermediate_entity)
+        intermediate_class = ClassNameManager.snake_to_pascal(intermediate_entity)
 
         source_file = os.path.join(self.entity_folder, f"{source_entity}.py")
         target_file = os.path.join(self.entity_folder, f"{target_entity}.py")

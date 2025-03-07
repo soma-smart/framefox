@@ -80,8 +80,7 @@ class CacheWarmupCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".html"):
                     template_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(
-                        template_path, template_dir)
+                    relative_path = os.path.relpath(template_path, template_dir)
                     try:
                         self.template_renderer.env.get_template(relative_path)
                         count += 1

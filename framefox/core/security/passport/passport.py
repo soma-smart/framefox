@@ -2,7 +2,8 @@ import logging
 from typing import Dict, List, Optional
 
 from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
-from framefox.core.security.passport.password_credentials import PasswordCredentials
+from framefox.core.security.passport.password_credentials import \
+    PasswordCredentials
 from framefox.core.security.passport.user_badge import UserBadge
 from framefox.core.security.password.password_hasher import PasswordHasher
 
@@ -63,8 +64,7 @@ class Passport:
                     self.user = user
         else:
 
-            self.logger.warning(
-                "No provider info available, cannot authenticate user.")
+            self.logger.warning("No provider info available, cannot authenticate user.")
             return False
 
         if not self.user:

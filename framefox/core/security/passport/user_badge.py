@@ -24,8 +24,7 @@ class UserBadge:
         self.user_identifier_property = user_identifier_property
 
     async def get_user(self, repository):
-        user = repository.find_by(
-            {self.user_identifier_property: self.user_identifier})
+        user = repository.find_by({self.user_identifier_property: self.user_identifier})
         if user:
             return user[0]
         return None

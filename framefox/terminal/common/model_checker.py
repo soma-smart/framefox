@@ -1,4 +1,6 @@
+import importlib
 import os
+from typing import Any, Dict, List
 
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.printer import Printer
@@ -8,6 +10,7 @@ class ModelChecker:
     def __init__(self):
         self.entity_path = r"src/entity"
         self.repositories_path = r"src/repository"
+        self.printer = Printer()
 
     def check_entity_file(self, entity_name: str, verbose: bool = False):
         """
@@ -255,28 +258,50 @@ class ModelChecker:
             return False
         return True
 
-    def get_entity_properties(self, entity_name: str, verbose: bool = False):
-        """
-        Returns the list of properties (fields) of an entity via its annotations.
-        """
-        if not self.check_entity_class(entity_name, verbose):
-            return []
-
-        entity_file_name = ClassNameManager.snake_to_pascal(entity_name)
-        module_name = f"src.entity.{entity_name}"
+    def get_entity_properties(self, entity_name: str) -> List[Dict[str, Any]]:
+        """Utilise SQLModelInspector pour obtenir les propriétés de l'entité"""
         try:
-            module = __import__(module_name, fromlist=[entity_file_name])
-            entity_cls = getattr(module, entity_file_name)
-        except (ImportError, AttributeError):
-            if verbose:
-                Printer().print_msg(
-                    f"Unable to load class {entity_file_name} from {module_name}",
-                    theme="error",
-                )
-            return []
+            import importlib
+            import os
+            import sys
 
-        annotations = getattr(entity_cls, "__annotations__", {})
-        properties = []
-        for field_name, type_hint in annotations.items():
-            properties.append({"name": field_name, "type": str(type_hint)})
-        return properties
+            from framefox.terminal.common.printer import Printer
+
+            # Temporairement ajouter le répertoire du projet au path
+            original_path = sys.path.copy()
+            project_root = os.getcwd()
+            sys.path.insert(0, project_root)
+
+            try:
+                # Importer l'entité
+                entity_module = importlib.import_module(f"src.entity.{entity_name}")
+                entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
+                entity_class = getattr(entity_module, entity_class_name)
+
+                # Utiliser notre nouvel inspecteur spécialisé
+                from framefox.terminal.common.sql_model_inspector import \
+                    SQLModelInspector
+
+                properties = SQLModelInspector.get_entity_properties(entity_class)
+
+                # Debug des propriétés détectées
+                printer = Printer()
+                for prop in properties:
+                    printer.print_msg(
+                        f"Property: {prop['name']}, Type: {prop['type']}, Is Relation: {prop['is_relation']}, Target: {prop['target_entity']}",
+                        theme="debug",
+                    )
+
+                return properties
+
+            finally:
+                # Restaurer le path original
+                sys.path = original_path
+
+        except Exception as e:
+            Printer().print_msg(
+                f"Error getting properties from entity {entity_name}: {str(e)}",
+                theme="error",
+            )
+
+        return []

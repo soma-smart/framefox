@@ -2,9 +2,12 @@ import os
 from typing import Optional
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.create.entity.import_manager import ImportManager
-from framefox.terminal.commands.create.entity.property_manager import PropertyManager
-from framefox.terminal.commands.create.entity.relation_manager import RelationManager
+from framefox.terminal.commands.create.entity.import_manager import \
+    ImportManager
+from framefox.terminal.commands.create.entity.property_manager import \
+    PropertyManager
+from framefox.terminal.commands.create.entity.relation_manager import \
+    RelationManager
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
@@ -81,8 +84,7 @@ class CreateEntityCommand(AbstractCommand):
 
     def _process_entity_properties(self, entity_name: str):
         while True:
-            property_details = self.property_manager.request_property(
-                entity_name)
+            property_details = self.property_manager.request_property(entity_name)
             if property_details is None:
                 continue
             if property_details is False:
@@ -92,8 +94,7 @@ class CreateEntityCommand(AbstractCommand):
                     entity_name, property_details.name, property_details.optional
                 )
             else:
-                self.property_manager.add_property(
-                    entity_name, property_details)
+                self.property_manager.add_property(entity_name, property_details)
 
     def create_entity_and_repository(self, entity_name: str):
         """Crée l'entité et le dépôt associé"""

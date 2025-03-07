@@ -27,7 +27,7 @@ class FirewallMiddleware(BaseHTTPMiddleware):
 
     @DispatchEvent(event_before="auth.auth_attempt", event_after="auth.auth_result")
     async def dispatch(self, request: Request, call_next):
-        if self.settings.access_control:
+        if self.settings.firewalls:
             return await self.handler.handle_request(request, call_next)
-        self.logger.info("No access control rules defined.")
+        self.logger.debug("No firewalls configured.")
         return await call_next(request)

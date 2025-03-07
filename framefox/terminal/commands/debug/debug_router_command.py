@@ -47,8 +47,7 @@ class DebugRouterCommand(AbstractCommand):
         sorted_routes = sorted(unique_routes.values(), key=lambda x: x.path)
 
         for route in sorted_routes:
-            methods = ", ".join(route.methods) if hasattr(
-                route, "methods") else "GET"
+            methods = ", ".join(route.methods) if hasattr(route, "methods") else "GET"
             name = route.name if hasattr(route, "name") else ""
             table.add_row(route.path, name, methods)
 

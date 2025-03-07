@@ -4,7 +4,8 @@ import pytest
 
 from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
 from framefox.core.security.passport.passport import Passport
-from framefox.core.security.passport.password_credentials import PasswordCredentials
+from framefox.core.security.passport.password_credentials import \
+    PasswordCredentials
 from framefox.core.security.passport.user_badge import UserBadge
 from framefox.core.security.password.password_hasher import PasswordHasher
 
@@ -118,8 +119,7 @@ class TestPassport:
         """Test authentication without provider info"""
         # Setup
         passport = Passport(
-            mock_user_badge, PasswordCredentials(
-                "test_password"), mock_csrf_token_badge
+            mock_user_badge, PasswordCredentials("test_password"), mock_csrf_token_badge
         )
 
         # Execute
