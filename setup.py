@@ -16,7 +16,7 @@ setup(
         "colorlog==6.9.0",
         "jinja2==3.1.4",
         "rich==13.9.4",
-        "pydantic-settings==2.7.1",
+        "pydantic-settings==2.8.1",
         "click==8.1.8",
         "passlib==1.7.4",
         "pyjwt==2.10.1",
