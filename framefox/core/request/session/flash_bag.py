@@ -71,7 +71,6 @@ class FlashBag(FlashBagInterface):
 
         for category, messages in flashes.items():
             for message in messages:
-                result.append({"message": message, "category": category})
+                result.append({"category": category, "message": message})
 
-        # Liste de dictionnaires [{"message": "...", "category": "..."}]
         return result

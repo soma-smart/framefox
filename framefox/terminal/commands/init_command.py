@@ -131,6 +131,13 @@ class InitCommand(AbstractCommand):
             format="yaml",
         )
         FileCreator().create_file(
+            template="init_files/mail.jinja2",
+            path="./config",
+            name="mail.yaml",
+            data={},
+            format="yaml",
+        )
+        FileCreator().create_file(
             template="init_files/parameter.jinja2",
             path="./config",
             name="parameter.yaml",
@@ -151,6 +158,13 @@ class InitCommand(AbstractCommand):
             name="env",
             data={},
             format="py",
+        )
+        FileCreator().create_file(
+            template="init_files/script.py.mako",
+            path="./migrations",
+            name="script.py.mako",
+            data={},
+            format="py.mako",
         )
         # env.py in migrations
         FileCreator().create_file(
