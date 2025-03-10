@@ -162,7 +162,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/script.py.mako",
             path="./migrations",
-            name="script",
+            name="script.py.mako",
             data={},
             format="py.mako",
         )
