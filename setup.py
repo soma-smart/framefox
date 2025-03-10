@@ -14,7 +14,7 @@ setup(
         "python-dotenv==1.0.1",
         "pyYAML==6.0.2",
         "colorlog==6.9.0",
-        "jinja2==3.1.4",
+        "jinja2==3.1.6",
         "rich==13.9.4",
         "pydantic-settings==2.7.1",
         "click==8.1.8",
