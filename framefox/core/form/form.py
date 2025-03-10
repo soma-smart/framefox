@@ -82,7 +82,7 @@ class Form:
 
         # Valider le formulaire
         self.valid = self.validate()
-
+        print(f">>> DEBUG: Formulaire soumis, valide: {self.valid}")
         # Si le formulaire est valide, assigner les données au modèle
         if self.valid and self.data:
             self._apply_data_to_model()
@@ -142,6 +142,17 @@ class Form:
         self.errors = {}
 
         for name, field in self.fields.items():
+            # Vérification supplémentaire pour les champs requis mais vides
+            if field.options.get("required", False):
+                value = field.get_value()
+                if value is None or (isinstance(value, str) and value.strip() == ''):
+                    field.errors.append(
+                        f"Le champ {field.options.get('label', name)} est obligatoire")
+                    valid = False
+                    self.errors[name] = field.errors
+                    continue
+
+            # Validation standard du champ
             if not field.validate():
                 self.errors[name] = field.errors
                 valid = False
@@ -168,12 +179,11 @@ class Form:
     def create_view(self) -> "FormView":
         """Crée une vue pour le rendu du formulaire."""
         from framefox.core.form.view.form_view import FormView
-
         return FormView(self)
 
     def is_valid(self) -> bool:
         """Indique si le formulaire est valide."""
-        return self.valid and self.submitted
+        return self.valid
 
     def is_submitted(self) -> bool:
         """Indique si le formulaire a été soumis."""

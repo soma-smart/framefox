@@ -36,19 +36,13 @@ class EntityManager:
         return cls._instance
 
     def __init__(self):
-        self._instance_id = id(self)
         self.settings = ServiceContainer().get(Settings)
         self.connection_manager = ConnectionManager.get_instance()
         self.logger = logging.getLogger(__name__)
-
         # Création de l'engine SQLAlchemy à partir de l'URL formatée
         db_url = self._get_database_url_string()
         self.engine = create_engine(db_url, echo=self.settings.database_echo)
         self.session = Session(self.engine)
-
-    def get_instance_id(self) -> int:
-        """Retourne l'ID unique de cette instance"""
-        return self._instance_id
 
     def _get_database_url_string(self) -> str:
         """Convertit la configuration de base de données en URL utilisable par SQLAlchemy"""
@@ -87,7 +81,8 @@ class EntityManager:
         Returns:
             Session: Une nouvelle session SQLModel.
         """
-        new_engine = create_engine(database_url, echo=self.settings.database_echo)
+        new_engine = create_engine(
+            database_url, echo=self.settings.database_echo)
         new_session = Session(new_engine)
         return new_session
 

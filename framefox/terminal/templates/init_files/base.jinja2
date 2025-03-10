@@ -15,10 +15,9 @@
 	
 		{% raw %}
 		<div class="container mt-3">
-			{% for category, messages in get_flash_messages().items() %}
-				{% for message in messages %}
-					<div class="alert alert-{{ category }}">{{ message }}</div>
-				{% endfor %}
+			{% set flash_messages = get_flash_messages() %}
+			{% for flash in flash_messages %}
+				<div class="alert alert-{{ flash.category }}">{{ flash.message }}</div>
 			{% endfor %}
 		</div>
 		{% block content %}{% endblock %}{% endraw %}

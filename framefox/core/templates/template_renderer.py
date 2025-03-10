@@ -20,12 +20,12 @@ class TemplateRenderer:
         self.settings = self.container.get_by_name("Settings")
         self.user_template_dir = self.settings.template_dir
         self.framework_template_dir = Path(__file__).parent / "views"
-        # Modifier cette ligne pour ajouter undefined=StrictUndefined
+        # Modify this line to add undefined=StrictUndefined
         self.env = Environment(
             loader=FileSystemLoader(
                 [self.user_template_dir, str(self.framework_template_dir)]
             ),
-            undefined=StrictUndefined,  # Cette option active la vérification stricte
+            undefined=StrictUndefined,  # This option enables strict checking
         )
         form_extension = FormExtension(self.env)
         self.env.globals["url_for"] = self.url_for
@@ -41,7 +41,7 @@ class TemplateRenderer:
             return "#"
 
     def get_flash_messages(self):
-        """Récupère les messages flash de la session au format template"""
+        """Retrieves flash messages from the session in template format"""
         session = self.container.get_by_name("Session")
         flash_bag = session.get_flash_bag()
         return flash_bag.get_for_template()
@@ -51,11 +51,11 @@ class TemplateRenderer:
         return template.render(**context)
 
     def _register_filters(self, env):
-        """Enregistre les filtres personnalisés pour Jinja2"""
+        """Registers custom filters for Jinja2"""
         env.filters["relation_display"] = self._relation_display_filter
 
     def _relation_display_filter(self, value):
-        """Filtre pour afficher proprement les relations"""
+        """Filter to properly display relations"""
         if value is None:
             return "None"
         elif isinstance(value, list):
