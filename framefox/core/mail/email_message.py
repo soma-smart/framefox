@@ -1,29 +1,35 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Union
 from datetime import datetime
+from typing import Dict, List, Optional
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 @dataclass
 class EmailMessage:
-    """Classe représentant un email à envoyer."""
+    """Class representing an email to be sent."""
 
-    # Paramètres principaux
     sender: str
-    receiver: str  # Changé de receivers (liste) à receiver (chaîne unique)
+    receiver: str
     subject: str
     body: str
 
-    # Paramètres secondaires
     html_body: Optional[str] = None
     cc: List[str] = field(default_factory=list)
     bcc: List[str] = field(default_factory=list)
     attachments: List[Dict[str, str]] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
-    priority: int = 1  # 1 = Haute priorité, 3 = Basse priorité
-    retry_count: int = 0  # Nombre de tentatives d'envoi
+    priority: int = 1
+    retry_count: int = 0
 
     def add_attachment(self, filepath: str, filename: Optional[str] = None) -> None:
-        """Ajoute une pièce jointe à l'email."""
+        """Adds an attachment to the email."""
         self.attachments.append(
             {"filepath": filepath,
                 "filename": filename or filepath.split("/")[-1]}

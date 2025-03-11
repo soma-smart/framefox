@@ -2,30 +2,37 @@ from typing import Any, Union
 
 from framefox.core.form.type.abstract_form_type import AbstractFormType
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class NumberType(AbstractFormType):
-    """Type pour les champs numériques."""
+    """Type for numeric fields."""
 
     def transform_to_model(self, value: Any) -> Union[float, int]:
-        """Transforme la valeur brute en nombre."""
+        """Transforms the raw value into a number."""
         if not value and value != 0:
             return 0
 
         try:
-            # Détermine si c'est un entier ou un float
             if self.options.get("integer", True):
                 return int(value)
             else:
                 return float(value)
         except ValueError:
-            raise ValueError(f"Valeur numérique invalide: {value}")
+            raise ValueError(f"Invalid numeric value: {value}")
 
     def transform_to_view(self, value: Any) -> str:
-        """Transforme la valeur du modèle en chaîne pour l'affichage."""
+        """Transforms the model value into a string for display."""
         if value is None:
             return ""
         return str(value)
 
     def get_block_prefix(self) -> str:
-        """Retourne le préfixe du bloc pour le rendu."""
+        """Returns the block prefix for rendering."""
         return "number"

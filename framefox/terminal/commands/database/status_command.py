@@ -21,8 +21,7 @@ class StatusCommand(AbstractDatabaseCommand):
             # Affichage du statut de la base de données
             console = Console()
             console.print("")
-            console.print(
-                "[bold orange1]État de la base de données[/bold orange1]")
+            console.print("[bold orange1]État de la base de données[/bold orange1]")
             console.print("")
 
             # Table pour l'état de la connexion
@@ -39,7 +38,7 @@ class StatusCommand(AbstractDatabaseCommand):
             db_table.add_row(
                 "Base de données",
                 "[green]Existe[/green]" if db_exists else "[red]N'existe pas[/red]",
-                db_name
+                db_name,
             )
 
             # Tester la connexion
@@ -49,7 +48,8 @@ class StatusCommand(AbstractDatabaseCommand):
             if db_exists:
                 try:
                     engine = create_engine(
-                        self.alembic_manager.get_database_url_string())
+                        self.alembic_manager.get_database_url_string()
+                    )
                     with engine.connect() as connection:
                         connection_ok = True
                 except Exception as e:
@@ -59,8 +59,11 @@ class StatusCommand(AbstractDatabaseCommand):
             db_table.add_row(
                 "Connexion",
                 "[green]Établie[/green]" if connection_ok else "[red]Échec[/red]",
-                error_message if error_message else (
-                    "OK" if connection_ok else "Non connecté")
+                (
+                    error_message
+                    if error_message
+                    else ("OK" if connection_ok else "Non connecté")
+                ),
             )
 
             # Afficher les détails de la base de données
@@ -70,9 +73,7 @@ class StatusCommand(AbstractDatabaseCommand):
                 port = self.connection_manager.config.port
 
                 db_table.add_row(
-                    "Type",
-                    f"[cyan]{driver_name.upper()}[/cyan]",
-                    f"{host}:{port}"
+                    "Type", f"[cyan]{driver_name.upper()}[/cyan]", f"{host}:{port}"
                 )
 
             console.print(db_table)
@@ -147,8 +148,7 @@ class StatusCommand(AbstractDatabaseCommand):
                             "Aucune migration appliquée", theme="warning"
                         )
                     else:
-                        pending = list(
-                            script.iterate_revisions(current_rev, "head"))
+                        pending = list(script.iterate_revisions(current_rev, "head"))
                         self.printer.print_msg(
                             f"{len(pending)} migration(s) en attente", theme="warning"
                         )

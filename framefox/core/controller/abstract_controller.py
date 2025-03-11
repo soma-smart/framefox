@@ -1,7 +1,5 @@
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.form.form_factory import FormFactory
 
 """
 Framefox Framework developed by SOMA
@@ -15,11 +13,10 @@ Github: https://github.com/RayenBou
 class AbstractController:
     def __init__(self):
         """
-        Initialise un nouveau contrôleur.
-        Les contrôleurs enfants peuvent surcharger cette méthode
-        pour injecter leurs propres dépendances.
+        Initializes a new controller.
+        Child controllers can override this method
+        to inject their own dependencies.
         """
-        # Importation différée pour éviter l'importation circulaire
 
         self._container = ServiceContainer()
         self.template_renderer = self._container.get_by_tag(
@@ -36,7 +33,7 @@ class AbstractController:
         flash_bag.add(category, message)
 
     def _get_container(self):
-        """Méthode d'accès au container pour faciliter les tests."""
+        """Access method to the container to facilitate testing."""
         from framefox.core.di.service_container import ServiceContainer
 
         return ServiceContainer()
@@ -46,7 +43,7 @@ class AbstractController:
         return router.url_path_for(route_name, **params)
 
     def render(self, template_path, context=None):
-        """Rend un template avec le contexte fourni"""
+        """Renders a template with the provided context"""
         template_renderer = self._get_container().get_by_name("TemplateRenderer")
         if context is None:
             context = {}
@@ -72,5 +69,12 @@ class AbstractController:
         """
         Creates a form from a form type class and an entity instance
         """
+        form_factory = self._get_container().get_by_name("FormFactory")
+        return form_factory.create_form(form_type_class, entity_instance)
 
-        return FormFactory.create_form(form_type_class, entity_instance)
+    def get_user(self, user_class=None):
+        """
+        Retrieves the currently authenticated user.
+        """
+        user_provider = self._get_container().get_by_name("UserProvider")
+        return user_provider.get_current_user(user_class)

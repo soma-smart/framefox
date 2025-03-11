@@ -3,6 +3,14 @@ from sqlalchemy import text
 from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.core.orm.driver.database_driver import DatabaseDriver
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class PostgreSQLDriver(DatabaseDriver):
     def __init__(self, config: DatabaseConfig):
@@ -12,34 +20,34 @@ class PostgreSQLDriver(DatabaseDriver):
         import psycopg2
 
         try:
-            password = str(self.config.password) if self.config.password else ""
+            password = str(
+                self.config.password) if self.config.password else ""
 
             return psycopg2.connect(
                 host=str(self.config.host),
                 port=int(self.config.port),
                 user=str(self.config.username),
                 password=password,
-                dbname="postgres",  # Base de données par défaut pour la connexion initiale
+                dbname="postgres",
             )
         except Exception as e:
-            print(f"Erreur de connexion PostgreSQL: {str(e)}")
+            print(f"PostgreSQL connection error: {str(e)}")
             raise
 
     def create_database(self, name: str) -> bool:
         try:
             with self.connect() as connection:
-                connection.autocommit = True  # Nécessaire pour CREATE DATABASE
+                connection.autocommit = True
                 with connection.cursor() as cursor:
-                    # Vérifier si la base existe avant de la créer
                     if not self.database_exists(name):
                         cursor.execute(f'CREATE DATABASE "{name}"')
             return True
         except Exception as e:
-            print(f"Erreur lors de la création de la base de données: {str(e)}")
+            print(f"Error creating database: {str(e)}")
             return False
 
     def create_alembic_version_table(self, engine):
-        """Crée la table alembic_version si elle n'existe pas pour PostgreSQL"""
+        """Creates the alembic_version table if it does not exist for PostgreSQL"""
         try:
             with engine.connect() as connection:
                 connection.execute(
@@ -52,10 +60,10 @@ class PostgreSQLDriver(DatabaseDriver):
                     )
                 )
                 connection.commit()
-                print("Table alembic_version créée avec succès (PostgreSQL)")
+                print("alembic_version table created successfully (PostgreSQL)")
                 return True
         except Exception as e:
-            print(f"Erreur lors de la création de la table alembic_version: {str(e)}")
+            print(f"Error creating alembic_version table: {str(e)}")
             return False
 
     def database_exists(self, name: str) -> bool:
@@ -67,16 +75,16 @@ class PostgreSQLDriver(DatabaseDriver):
                     )
                     return cursor.fetchone() is not None
         except Exception as e:
-            print(f"Erreur lors de la vérification de la base de données: {str(e)}")
+            print(f"Error checking database existence: {str(e)}")
             return False
 
     def drop_database(self, name: str) -> bool:
         try:
             with self.connect() as connection:
-                connection.autocommit = True  # Nécessaire pour DROP DATABASE
+                connection.autocommit = True
                 with connection.cursor() as cursor:
                     cursor.execute(f'DROP DATABASE IF EXISTS "{name}"')
             return True
         except Exception as e:
-            print(f"Erreur lors de la suppression de la base de données: {str(e)}")
+            print(f"Error dropping database: {str(e)}")
             return False

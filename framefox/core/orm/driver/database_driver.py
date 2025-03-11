@@ -1,5 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Any
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class DatabaseDriver(ABC):
@@ -21,5 +28,5 @@ class DatabaseDriver(ABC):
 
     @abstractmethod
     def create_alembic_version_table(self, engine):
-        """Crée la table alembic_version si elle n'existe pas"""
+        """Creates the alembic_version table if it does not exist"""
         pass

@@ -1,12 +1,19 @@
-from typing import Any, Dict, List, Type
+from typing import Any, Dict
 
-from framefox.core.di.service_container import ServiceContainer
 from framefox.core.form.type.abstract_form_type import AbstractFormType
-from framefox.core.form.type.select_type import SelectType
+
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class EntityType(AbstractFormType):
-    """Type pour les champs qui représentent des relations d'entité."""
+    """Type for fields that represent entity relationships."""
 
     def __init__(self, options: Dict[str, Any] = None):
         super().__init__(options or {})
@@ -14,34 +21,33 @@ class EntityType(AbstractFormType):
         self.options.setdefault("multiple", False)
         self.options.setdefault("choice_label", "id")
 
-        # Initialiser le repository
         self._repository = None
 
     def get_repository(self):
-        """Obtient le repository pour l'entité cible."""
+        """Gets the repository for the target entity."""
         if self._repository is None:
             entity_class = self.options.get("class")
             if entity_class:
-                # Trouver le repository correspondant à l'entité
                 from framefox.core.di.service_container import ServiceContainer
 
                 container = ServiceContainer()
-                # Utiliser la convention de nommage pour trouver le repository
                 entity_name = entity_class.lower()
                 repo_class = f"{entity_name}_repository"
                 try:
                     import importlib
 
-                    module = importlib.import_module(f"src.repository.{repo_class}")
+                    module = importlib.import_module(
+                        f"src.repository.{repo_class}")
                     repo_class_name = f"{entity_class}Repository"
                     repository_class = getattr(module, repo_class_name)
                     self._repository = repository_class()
                 except (ImportError, AttributeError) as e:
-                    print(f"Error loading repository for {entity_class}: {str(e)}")
+                    print(
+                        f"Error loading repository for {entity_class}: {str(e)}")
         return self._repository
 
     def get_choices(self) -> Dict[str, str]:
-        """Récupère les choix disponibles pour cette entité."""
+        """Retrieves the available choices for this entity."""
         repository = self.get_repository()
         choices = {}
 
@@ -51,10 +57,8 @@ class EntityType(AbstractFormType):
             show_id = self.options.get("show_id", True)
 
             for item in items:
-                # La valeur est toujours l'ID
-                value = getattr(item, "id", None)
 
-                # L'étiquette peut être configurée
+                value = getattr(item, "id", None)
                 if hasattr(item, choice_label):
                     label = getattr(item, choice_label)
                 elif hasattr(item, "name"):
@@ -64,7 +68,6 @@ class EntityType(AbstractFormType):
                 else:
                     label = f"ID: {value}"
 
-                # Format conditionnel selon l'option show_id_in_label
                 if show_id:
                     choices[value] = f"{value} - {label}"
                 else:
@@ -73,7 +76,7 @@ class EntityType(AbstractFormType):
         return choices
 
     def transform_to_model(self, value: Any) -> Any:
-        """Transforme la valeur du formulaire en entité ou liste d'entités."""
+        """Transforms the form value into an entity or list of entities."""
         if not value:
             return [] if self.options.get("multiple") else None
 
@@ -82,57 +85,48 @@ class EntityType(AbstractFormType):
             return value
 
         if self.options.get("multiple"):
-            # Pour les relations multiple, value est une liste d'IDs
             if isinstance(value, list):
                 entities = []
                 for id in value:
-                    if id:  # Ignorer les valeurs vides
+                    if id:
                         entity = repository.find({"id": int(id)})
                         if entity:
                             entities.append(entity)
                 return entities
-            # Si c'est une seule valeur mais devrait être multiple
             entity = repository.find({"id": int(value)}) if value else None
             return [entity] if entity else []
         else:
-            # Pour les relations simples, value est un ID unique
             return repository.find({"id": int(value)}) if value else None
 
     def transform_to_view(self, value: Any) -> Any:
-        """Transforme l'entité ou liste d'entités en valeur(s) pour le formulaire."""
+        """Transforms the entity or list of entities into form value(s)."""
         if not value:
             return [] if self.options.get("multiple") else None
 
         if self.options.get("multiple"):
-            # Pour les relations multiple, retourner une liste d'IDs
             if not isinstance(value, list):
                 value = [value] if value else []
             return [getattr(item, "id") for item in value if item is not None]
         else:
-            # Pour les relations simples, retourner l'ID
             return getattr(value, "id", None)
 
     def get_block_prefix(self) -> str:
-        """Retourne le préfixe du bloc pour le rendu."""
+        """Returns the block prefix for rendering."""
         return "entity"
 
     def render(self, options: Dict[str, Any] = None) -> str:
-        """Rendu HTML du champ entité (délégation à SelectType)."""
+        """HTML rendering of the entity field (delegation to SelectType)."""
         options = options or {}
 
-        # Créer un SelectType pour faire le rendu
         select_options = self.options.copy()
         select_options["choices"] = self.get_choices()
 
-        # S'assurer que l'option multiple est bien transmise
         if self.options.get("multiple", False):
             select_options["multiple"] = True
 
-        # Créer une instance de SelectType
         from framefox.core.form.type.select_type import SelectType
 
         select_type = SelectType(select_options)
-        select_type.name = self.name  # Important: transférer le nom
+        select_type.name = self.name
 
-        # Déléguer le rendu
         return select_type.render(options)

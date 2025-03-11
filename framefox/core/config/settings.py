@@ -5,8 +5,8 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from framefox.core.orm.database_url_parser import DatabaseUrlParser
 from framefox.core.mail.mail_url_parser import MailUrlParser
+from framefox.core.orm.database_url_parser import DatabaseUrlParser
 
 """
 Framefox Framework developed by SOMA
@@ -155,8 +155,7 @@ class Settings:
     @property
     def cache_dir(self):
         """Returns the cache directory from the configuration."""
-        cache_path = os.path.join(
-            os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 
@@ -284,6 +283,7 @@ class Settings:
     def session_file_path(self):
         """Returns the session file path from the configuration."""
         return self.config.get("application", {}).get("session").get("file_path", None)
+
     # ------------------------------ mail ------------------------------
 
     @property

@@ -4,20 +4,29 @@ from typing import Any, Dict
 from framefox.core.form.form_builder import FormBuilder
 
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
+
 class FormTypeInterface(ABC):
-    """Interface pour définir des types de formulaire."""
+    """Interface to define form types."""
 
     @abstractmethod
     def build_form(self, builder: FormBuilder) -> None:
         """
-        Configure le formulaire avec le builder.
+        Configure the form with the builder.
 
-        Cette méthode est appelée pour définir les champs du formulaire.
+        This method is called to define the fields of the form.
         """
         pass
 
     def get_options(self) -> Dict[str, Any]:
         """
-        Retourne les options par défaut pour le formulaire.
+        Returns the default options for the form.
         """
         return {}

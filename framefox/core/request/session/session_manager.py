@@ -1,8 +1,9 @@
 import json
 import logging
 import os
+import sqlite3
 from datetime import datetime, timezone
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from framefox.core.config.settings import Settings
 
@@ -19,72 +20,193 @@ class SessionManager:
 
     def __init__(self, settings: Settings):
         self.settings = settings
-
         self.logger = logging.getLogger("SESSION_MANAGER")
+        db_dir = os.path.dirname(os.path.abspath(
+            self.settings.session_file_path))
+        os.makedirs(db_dir, exist_ok=True)
+        self.db_path = os.path.join(db_dir, "sessions.db")
+        self._init_database()
 
-        self.session_file_path = self.settings.session_file_path
+    def _init_database(self) -> None:
+        """Initialize the SQLite database"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS sessions (
+                    session_id TEXT PRIMARY KEY,
+                    data TEXT NOT NULL,
+                    expires_at REAL NOT NULL
+                )
+            """
+            )
+
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_expires_at ON sessions(expires_at)"
+            )
+
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error initializing session database: {e}"
+            )
 
     def load_sessions(self) -> Dict:
-        """Loads the session file"""
-        absolute_path = os.path.abspath(self.settings.session_file_path)
+        """Load all sessions (API compatibility)"""
+        sessions = {}
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-        if os.path.exists(absolute_path):
-            with open(absolute_path, "r") as f:
-                return json.load(f)
-        return {}
+            cursor.execute("SELECT session_id, data, expires_at FROM sessions")
+            rows = cursor.fetchall()
+
+            for row in rows:
+                session_id = row["session_id"]
+                data = json.loads(row["data"])
+                expires_at = row["expires_at"]
+                sessions[session_id] = {"data": data, "expires_at": expires_at}
+
+            conn.close()
+        except sqlite3.Error as e:
+            self.logger.error(f"Error loading sessions: {e}")
+
+        return sessions
 
     def save_sessions(self, session_store: Dict) -> None:
-        """Saves the session store"""
-        absolute_path = os.path.abspath(self.settings.session_file_path)
+        """
+        Compatibility method for bulk saving sessions
+        This method is less efficient with SQLite but maintained for the API
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM sessions")
 
-        os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
-        with open(absolute_path, "w") as f:
-            json.dump(session_store, f)
+            for session_id, session_data in session_store.items():
+                serialized_data = json.dumps(session_data.get("data", {}))
+                expires_at = session_data.get("expires_at", 0)
+
+                cursor.execute(
+                    "INSERT INTO sessions (session_id, data, expires_at) VALUES (?, ?, ?)",
+                    (session_id, serialized_data, expires_at),
+                )
+
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error saving sessions: {e}")
 
     def get_session(self, session_id: str) -> Optional[Dict]:
-        """Retrieves a session by its ID"""
-        sessions = self.load_sessions()
+        """Retrieve a session by its ID"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-        return sessions.get(session_id)
+            cursor.execute(
+                "SELECT data, expires_at FROM sessions WHERE session_id = ?",
+                (session_id,),
+            )
+            row = cursor.fetchone()
+            conn.close()
+
+            if row:
+                return {
+                    "data": json.loads(row["data"]),
+                    "expires_at": row["expires_at"],
+                }
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error retrieving session {session_id}: {e}"
+            )
+
+        return None
 
     def create_session(self, session_id: str, data: Dict, max_age: int) -> None:
-        """Creates a new session"""
-        sessions = self.load_sessions()
-        sessions[session_id] = {
-            "data": data,
-            "expires_at": (datetime.now(timezone.utc).timestamp() + max_age),
-        }
-        self.save_sessions(sessions)
+        """Create a new session"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            expires_at = datetime.now(timezone.utc).timestamp() + max_age
+            serialized_data = json.dumps(data)
+
+            cursor.execute(
+                "INSERT OR REPLACE INTO sessions (session_id, data, expires_at) VALUES (?, ?, ?)",
+                (session_id, serialized_data, expires_at),
+            )
+
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error creating session {session_id}: {e}"
+            )
 
     def update_session(self, session_id: str, data: Dict, max_age: int) -> None:
-        """Updates an existing session"""
-        sessions = self.load_sessions()
-        if session_id in sessions:
-            sessions[session_id].update(
-                {
-                    "data": data,
-                    "expires_at": (datetime.now(timezone.utc).timestamp() + max_age),
-                }
+        """Update an existing session"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            expires_at = datetime.now(timezone.utc).timestamp() + max_age
+            serialized_data = json.dumps(data)
+
+            cursor.execute(
+                "UPDATE sessions SET data = ?, expires_at = ? WHERE session_id = ?",
+                (serialized_data, expires_at, session_id),
             )
-            self.save_sessions(sessions)
+
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error updating session {session_id}: {e}"
+            )
 
     def delete_session(self, session_id: str) -> bool:
-        """Deletes a session"""
-        sessions = self.load_sessions()
-        if session_id in sessions:
-            del sessions[session_id]
-            self.save_sessions(sessions)
-            return True
-        return False
+        """Delete a session"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "DELETE FROM sessions WHERE session_id = ?", (session_id,))
+            deleted = cursor.rowcount > 0
+
+            conn.commit()
+            conn.close()
+
+            return deleted
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error deleting session {session_id}: {e}"
+            )
+            return False
 
     def cleanup_expired_sessions(self) -> None:
-        """Cleans up expired sessions"""
-        sessions = self.load_sessions()
-        current_time = datetime.now(timezone.utc).timestamp()
-        expired = [sid for sid, s in sessions.items() if s["expires_at"] < current_time]
+        """Clean up expired sessions"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
 
-        if expired:
-            for sid in expired:
-                del sessions[sid]
-            self.save_sessions(sessions)
-            self.logger.info(f"Expired sessions cleaned up: {len(expired)}")
+            current_time = datetime.now(timezone.utc).timestamp()
+            cursor.execute(
+                "DELETE FROM sessions WHERE expires_at < ?", (current_time,))
+            deleted_count = cursor.rowcount
+
+            if deleted_count > 0:
+                self.logger.info(
+                    f"Expired sessions cleaned up: {deleted_count}")
+
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error cleaning up expired sessions: {e}")

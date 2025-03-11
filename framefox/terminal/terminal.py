@@ -1,6 +1,7 @@
+import os
 import sys
 from typing import List, Optional
-import os
+
 import typer
 from rich.console import Console as RichConsole
 from rich.table import Table
@@ -264,8 +265,7 @@ class Terminal:
         if not project_exists:
             # Afficher uniquement la commande init
             init_table = Table(show_header=True, header_style="bold orange1")
-            init_table.add_column(
-                "Command", style="bold orange3", no_wrap=True)
+            init_table.add_column("Command", style="bold orange3", no_wrap=True)
             init_table.add_column("Description", style="white")
 
             init_command = self.registry.get_command("init")
@@ -287,8 +287,7 @@ class Terminal:
         options_table.add_row(
             "--all", "Display all available commands in detailed view"
         )
-        options_table.add_row("namespace:command",
-                              "Execute a specific command")
+        options_table.add_row("namespace:command", "Execute a specific command")
         options_table.add_row("list", "Show detailed list of all commands")
 
         self.rich_console.print(options_table)
@@ -296,8 +295,7 @@ class Terminal:
 
         # Command panel - display namespaces
         commands_table = Table(show_header=True, header_style="bold orange1")
-        commands_table.add_column(
-            "Namespace", style="bold orange3", no_wrap=True)
+        commands_table.add_column("Namespace", style="bold orange3", no_wrap=True)
         commands_table.add_column("Description", style="white")
 
         namespace_descriptions = {
@@ -327,8 +325,7 @@ class Terminal:
     def _display_namespace_commands(self, namespace: str):
         """Display the commands of a specific namespace"""
         # Title
-        self.rich_console.print(
-            f"[bold orange1]{namespace.upper()} COMMANDS[/]")
+        self.rich_console.print(f"[bold orange1]{namespace.upper()} COMMANDS[/]")
         self.rich_console.print("")
 
         # Table

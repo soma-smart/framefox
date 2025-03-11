@@ -1,8 +1,16 @@
-import sys
+
 from pathlib import Path
-from typing import Any, Dict, List, Set, Type
+from typing import Any, Dict, List
 
 import yaml
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class ServiceConfig:
@@ -11,18 +19,12 @@ class ServiceConfig:
     def __init__(self):
         if hasattr(self, "_initialized") and self._initialized:
             return
-
-        # Path to the service configuration file
         config_path = Path("config/services.yaml")
-
-        # Load the configuration
         self.config = self._load_config(config_path)
 
-        # Initialize parameters
         self.excluded_dirs = set()
         self.excluded_modules = set()
 
-        # Parse the configuration
         self._parse_config()
 
         self._initialized = True
@@ -48,32 +50,25 @@ class ServiceConfig:
         services_config = self.config.get("services", {})
         defaults = services_config.get("_defaults", {})
 
-        # Global parameters
         self.autowire_enabled = defaults.get("autowire", True)
         self.autoconfigure_enabled = defaults.get("autoconfigure", True)
         self.default_public = defaults.get("public", False)
 
-        # Initialize exclusion lists
         self.excluded_modules = set()
         self.excluded_classes = set()
         self.excluded_dirs = set()
 
-        # Handle explicit exclusions
         exclude_config = services_config.get("_exclude", {})
 
-        # Exclude modules
         for module in exclude_config.get("modules", []):
             self.excluded_modules.add(module)
 
-        # Exclude classes
         for class_name in exclude_config.get("classes", []):
             self.excluded_classes.add(class_name)
 
-        # Exclude directories
         for directory in exclude_config.get("directories", []):
             self.excluded_dirs.add(directory)
 
-        # Also handle old exclusions (for compatibility)
         for key, value in services_config.items():
             if key.endswith("\\"):
                 if "exclude" in value:
@@ -84,7 +79,6 @@ class ServiceConfig:
                         for exclude in excludes:
                             self._parse_exclude_pattern(exclude)
 
-    # Add these new methods
     def is_excluded_module(self, module_name: str) -> bool:
         """Checks if a module should be excluded"""
         return any(
@@ -120,8 +114,6 @@ class ServiceConfig:
                 ".", "\\"
             )
         )
-
-        # Check specific configurations
         for pattern, config in self.config.get("services", {}).items():
             if pattern != "_defaults" and not pattern.endswith("\\"):
                 if pattern.lower() == service_name:
@@ -137,14 +129,11 @@ class ServiceConfig:
             )
         )
         tags = []
-
-        # Default tags based on implemented interfaces
         if self.autoconfigure_enabled:
             for base in service_class.__mro__:
                 if base.__name__.startswith("I") and not base.__name__ == "Interface":
                     tags.append(f"interface.{base.__name__[1:].lower()}")
 
-        # Tags explicitly defined in the configuration
         for pattern, config in self.config.get("services", {}).items():
             if pattern != "_defaults" and not pattern.endswith("\\"):
                 if pattern.lower() == service_name and "tags" in config:

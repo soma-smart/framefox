@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="framefox",
-    version="1.0.3",
+    version="1.0.7",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -29,17 +29,22 @@ setup(
         "pytest==8.3.4",
         "httpx==0.28.1",
         "cryptography==44.0.2",
-        "aiosmtplib==4.0.0"
+        "aiosmtplib==4.0.0",
     ],
     entry_points={
         "console_scripts": [
             "framefox=framefox.cli:app",
         ],
     },
+    package_dir={"src": "src"},
     package_data={
         "framefox": [
-            "framefox/**",
+            "core/**/*",
+            "terminal/**/*",
             "terminal/templates/**/*",
+            "terminal/commands/**/*",
+            "terminal/common/**/*",
         ],
+        "": ["src/**/*"],
     },
 )

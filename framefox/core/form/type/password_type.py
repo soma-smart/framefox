@@ -1,11 +1,18 @@
-from typing import Any
 
 from framefox.core.form.type.text_type import TextType
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class PasswordType(TextType):
-    """Type pour les champs de mot de passe."""
+    """Type for password fields."""
 
     def get_block_prefix(self) -> str:
-        """Retourne le préfixe du bloc pour le rendu."""
+        """Returns the block prefix for rendering."""
         return "password"

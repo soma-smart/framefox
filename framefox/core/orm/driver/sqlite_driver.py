@@ -3,6 +3,14 @@ from sqlalchemy.sql import text
 from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.core.orm.driver.database_driver import DatabaseDriver
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class SQLiteDriver(DatabaseDriver):
     def __init__(self, config: DatabaseConfig):
@@ -12,25 +20,22 @@ class SQLiteDriver(DatabaseDriver):
         import sqlite3
 
         try:
-            # Pour SQLite, database est le chemin du fichier
             return sqlite3.connect(self.config.database)
         except Exception as e:
-            print(f"Erreur de connexion SQLite: {str(e)}")
+            print(f"SQLite connection error: {str(e)}")
             raise
 
     def create_database(self, name: str) -> bool:
         try:
-            # Pour SQLite, la création de la base se fait à la connexion
-            # On crée simplement le fichier s'il n'existe pas
             with self.connect() as connection:
-                connection.execute("SELECT 1")  # Simple test de connexion
+                connection.execute("SELECT 1")
             return True
         except Exception as e:
-            print(f"Erreur lors de la création de la base de données: {str(e)}")
+            print(f"Error creating database: {str(e)}")
             return False
 
     def create_alembic_version_table(self, engine):
-        """Crée la table alembic_version si elle n'existe pas pour SQLite"""
+        """Creates the alembic_version table if it does not exist for SQLite"""
         try:
             with engine.connect() as connection:
                 connection.execute(
@@ -43,16 +48,15 @@ class SQLiteDriver(DatabaseDriver):
                     )
                 )
                 connection.commit()
-                print("Table alembic_version créée avec succès (SQLite)")
+                print("alembic_version table created successfully (SQLite)")
                 return True
         except Exception as e:
-            print(f"Erreur lors de la création de la table alembic_version: {str(e)}")
+            print(f"Error creating alembic_version table: {str(e)}")
             return False
 
     def database_exists(self, name: str) -> bool:
         import os
 
-        # Pour SQLite, on vérifie si le fichier existe
         return os.path.exists(self.config.database)
 
     def drop_database(self, name: str) -> bool:
@@ -63,5 +67,5 @@ class SQLiteDriver(DatabaseDriver):
                 os.remove(self.config.database)
             return True
         except Exception as e:
-            print(f"Erreur lors de la suppression de la base de données: {str(e)}")
+            print(f"Error dropping database: {str(e)}")
             return False

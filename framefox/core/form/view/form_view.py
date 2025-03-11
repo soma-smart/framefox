@@ -2,39 +2,45 @@ from typing import Any, Dict, Optional
 
 from framefox.core.form.form import Form
 from framefox.core.form.view.form_view_field import FormViewField
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class FormView:
-    """Vue pour le rendu d'un formulaire."""
+    """View for rendering a form."""
 
     def __init__(self, form: Form):
         self.form = form
         self.fields = {}
 
-        # Créer les vues des champs
         for name, field in form.fields.items():
             self.fields[name] = FormViewField(field)
 
     def get_field(self, name: str) -> Optional[FormViewField]:
-        """Récupère la vue d'un champ par son nom."""
+        """Retrieve the view of a field by its name."""
         return self.fields.get(name)
 
     def get_fields(self) -> Dict[str, FormViewField]:
-        """Récupère toutes les vues des champs."""
+        """Retrieve all field views."""
         return self.fields
 
     def get_errors(self) -> Dict[str, Any]:
-        """Récupère les erreurs du formulaire."""
+        """Retrieve form errors."""
         return self.form.errors
 
     def has_errors(self) -> bool:
-        """Vérifie si le formulaire a des erreurs."""
+        """Check if the form has errors."""
         return len(self.form.errors) > 0
 
     def is_submitted(self) -> bool:
-        """Vérifie si le formulaire a été soumis."""
+        """Check if the form has been submitted."""
         return self.form.submitted
 
     def is_valid(self) -> bool:
-        """Vérifie si le formulaire est valide."""
+        """Check if the form is valid."""
         return self.form.valid

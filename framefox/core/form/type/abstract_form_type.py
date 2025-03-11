@@ -1,8 +1,16 @@
 from typing import Any, Dict, List
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class AbstractFormType:
-    """Classe de base abstraite pour les types de champs de formulaire."""
+    """Abstract base class for form field types."""
 
     def __init__(self, options: Dict[str, Any] = None):
         self.options = options or {}
@@ -11,47 +19,47 @@ class AbstractFormType:
         self.value = None
 
     def set_name(self, name: str) -> None:
-        """Définit le nom du champ associé à ce type."""
+        """Sets the name of the field associated with this type."""
         self.name = name
 
     def get_name(self) -> str:
-        """Retourne le nom du champ."""
+        """Returns the name of the field."""
         return self.name
 
     def get_id(self) -> str:
-        """Retourne l'identifiant du champ."""
+        """Returns the identifier of the field."""
         return self.name
 
     def has_errors(self) -> bool:
-        """Vérifie si le champ a des erreurs."""
+        """Checks if the field has errors."""
         return len(self.errors) > 0
 
     def get_errors(self) -> List[str]:
-        """Retourne les erreurs du champ."""
+        """Returns the errors of the field."""
         return self.errors
 
     def set_value(self, value: Any) -> None:
-        """Définit la valeur du champ."""
+        """Sets the value of the field."""
         self.value = value
 
     def get_value(self) -> Any:
-        """Retourne la valeur du champ."""
+        """Returns the value of the field."""
         return self.value
 
     def transform_to_model(self, value: Any) -> Any:
-        """Transforme la valeur du formulaire en valeur pour le modèle."""
+        """Transforms the form value to a model value."""
         raise NotImplementedError(
-            "Cette méthode doit être implémentée par les sous-classes"
+            "This method must be implemented by subclasses"
         )
 
     def transform_to_view(self, value: Any) -> Any:
-        """Transforme la valeur du modèle en valeur pour l'affichage."""
+        """Transforms the model value to a view value."""
         raise NotImplementedError(
-            "Cette méthode doit être implémentée par les sous-classes"
+            "This method must be implemented by subclasses"
         )
 
     def get_block_prefix(self) -> str:
-        """Retourne le préfixe du bloc pour le rendu."""
+        """Returns the block prefix for rendering."""
         raise NotImplementedError(
-            "Cette méthode doit être implémentée par les sous-classes"
+            "This method must be implemented by subclasses"
         )
