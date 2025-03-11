@@ -1,3 +1,4 @@
-recursive-include framefox/terminal/templates/*
-recursive-include framefox/terminal/commands/ *
-recursive-include framefox/terminal/common/ *
+recursive-include framefox/terminal/templates *
+recursive-include framefox/terminal/commands *
+recursive-include framefox/terminal/common *
+recursive-include framefox/core *

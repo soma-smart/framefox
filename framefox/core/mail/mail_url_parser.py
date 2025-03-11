@@ -1,19 +1,26 @@
 from urllib.parse import parse_qs, urlparse
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class MailUrlParser:
-    """Parser pour les URLs de configuration mail"""
+    """Parser for mail configuration URLs"""
 
     @staticmethod
     def parse_url(url_string: str) -> dict:
         """
-        Parse une URL au format smtp://username:password@host:port?tls=true
+        Parse a URL in the format smtp://username:password@host:port?tls=true
 
         Args:
-            url_string: URL de configuration mail
+            url_string: Mail configuration URL
 
         Returns:
-            Dictionnaire avec les paramètres extraits
+            Dictionary with extracted parameters
         """
         if not url_string:
             return {
@@ -22,36 +29,26 @@ class MailUrlParser:
                 "username": "",
                 "password": "",
                 "use_tls": False,
-                "use_ssl": False
+                "use_ssl": False,
             }
 
         parsed_url = urlparse(url_string)
-
-        # Protocole détermine SSL/TLS par défaut
         is_ssl = parsed_url.scheme == "smtps"
-
-        # Extraire host et port
         host = parsed_url.hostname or "localhost"
-        port = parsed_url.port or (465 if is_ssl else 587)  # Ports par défaut
-
-        # Extraire username et password
+        port = parsed_url.port or (465 if is_ssl else 587)
         username = parsed_url.username or ""
         password = parsed_url.password or ""
-
-        # Extraire les paramètres de la query string
         query_params = parse_qs(parsed_url.query)
 
-        # Paramètres par défaut (sans from_address)
         result = {
             "host": host,
             "port": port,
             "username": username,
             "password": password,
-            "use_tls": not is_ssl,  # TLS par défaut pour SMTP standard
-            "use_ssl": is_ssl       # SSL par défaut pour SMTPS
+            "use_tls": not is_ssl,
+            "use_ssl": is_ssl,
         }
 
-        # Paramètres de la query string (sans from)
         if "tls" in query_params:
             result["use_tls"] = query_params["tls"][0].lower() == "true"
         if "ssl" in query_params:

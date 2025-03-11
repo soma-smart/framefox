@@ -1,21 +1,26 @@
 from urllib.parse import urlparse
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël & BOUMAZA Rayen
+Github: https://github.com/Vasulvius & https://github.com/RayenBou
+"""
+
 
 class DatabaseUrlParser:
     @staticmethod
     def parse_url(url: str):
-        """Parse une URL de base de données et retourne une configuration"""
+        """Parse a database URL and return a configuration"""
         from framefox.core.orm.driver.database_config import DatabaseConfig
 
         parsed = urlparse(url)
 
-        # Extraire le driver et le dialecte (ex: mysql+pymysql -> mysql)
         driver = parsed.scheme.split("+")[0]
 
-        # Gestion des ports par défaut
         default_ports = {"mysql": 3306, "postgresql": 5432, "sqlite": None}
 
-        # Gestion spéciale pour SQLite
         if driver == "sqlite":
             return DatabaseConfig(
                 driver="sqlite",
@@ -33,5 +38,5 @@ class DatabaseUrlParser:
             username=parsed.username,
             password=parsed.password,
             database=parsed.path.lstrip("/"),
-            charset="utf8mb4",  # Par défaut pour MySQL
+            charset="utf8mb4",
         )

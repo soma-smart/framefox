@@ -2,9 +2,8 @@ import importlib
 import inspect
 import os
 import sys
-from abc import ABC
 from pathlib import Path
-from typing import (Any, Callable, Dict, List, Optional, Set, Type,
+from typing import (Any, Callable, Dict, List, Optional, Type,
                     get_type_hints)
 
 from framefox.core.di.service_config import ServiceConfig
@@ -137,25 +136,30 @@ class ServiceContainer:
 
     def _load_services(self):
 
-        # print("Loading services...")
+        src_paths = []
 
-        # Add all possible module paths
         project_root = Path(__file__).resolve().parent.parent.parent.parent
-        sys.path.insert(0, str(project_root))
+        src_path_dev = project_root / "src"
+        if src_path_dev.exists():
+            src_paths.append(src_path_dev)
 
-        # Create module aliases for compatibility framefox.X -> framefox.core.X
+        cwd_path = Path.cwd() / "src"
+        if cwd_path.exists() and cwd_path not in src_paths:
+            src_paths.append(cwd_path)
+        parent = Path.cwd().parent
+        for _ in range(3):
+            if (parent / "src").exists() and (parent / "src") not in src_paths:
+                src_paths.append(parent / "src")
+            parent = parent.parent
+
+        src_path = src_paths[0] if src_paths else None
         self._create_module_aliases()
-        # print("Module aliases created")
 
-        # Load essential services that must always be available
         self._register_essential_services()
-        # print("Essential services registered")
 
-        # Load service definitions from files
         core_path = Path(__file__).resolve().parent.parent
-        src_path = project_root / "src"
+        # Supprimez cette ligne : src_path = project_root / "src"
 
-        # Exclusion configuration
         excluded_directories = list(self._config.excluded_dirs) + [
             "entity",
             "entities",
@@ -167,15 +171,12 @@ class ServiceContainer:
             "framefox.core.entity",
         ]
 
-        # Load definitions from the core
-        # print(f"Scanning core path: {core_path}")
         self._scan_for_service_definitions(
             core_path, "framefox.core", excluded_directories, excluded_modules
         )
 
         # Load definitions from src if it exists
-        if src_path.exists():
-            # print(f"Scanning src path: {src_path}")
+        if src_path and src_path.exists():
             self._scan_for_service_definitions(
                 src_path, "src", excluded_directories, excluded_modules
             )
@@ -497,7 +498,8 @@ class ServiceContainer:
                     return instance
                 except Exception as e:
                     print(
-                        f"Factory {factory.__class__.__name__} failed for {service_class.__name__}: {e}")
+                        f"Factory {factory.__class__.__name__} failed for {service_class.__name__}: {e}"
+                    )
                     continue
 
         # If arguments are explicitly defined, use them
@@ -524,7 +526,8 @@ class ServiceContainer:
                     method(*args)
                 except Exception as e:
                     print(
-                        f"Error calling {method_name} on {service_class.__name__}: {e}")
+                        f"Error calling {method_name} on {service_class.__name__}: {e}"
+                    )
 
             return instance
         except Exception as e:

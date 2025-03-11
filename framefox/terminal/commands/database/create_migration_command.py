@@ -38,8 +38,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
             )
 
             if not created_file:
-                self.printer.print_msg(
-                    "No migration generated.", theme="warning")
+                self.printer.print_msg("No migration generated.", theme="warning")
                 return
 
             # Check if the migration contains changes
@@ -62,9 +61,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
                 )
 
         except Exception as e:
-            self.printer.print_msg(
-                f"Error creating migration: {str(e)}", theme="error"
-            )
+            self.printer.print_msg(f"Error creating migration: {str(e)}", theme="error")
             self.printer.print_msg(
                 "Please check your migration or entity files",
                 theme="error",

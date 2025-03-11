@@ -12,6 +12,9 @@ from framefox.core.events.event_dispatcher import dispatcher
 from framefox.core.logging.logger import Logger
 from framefox.core.middleware.middleware_manager import MiddlewareManager
 from framefox.core.routing.router import Router
+from framefox.core.security.token_storage import TokenStorage
+from framefox.core.security.user.entity_user_provider import EntityUserProvider
+from framefox.core.security.user.user_provider import UserProvider
 
 """
 Framefox Framework developed by SOMA
@@ -45,12 +48,26 @@ class Kernel:
         self._container = ServiceContainer()
         self._settings = self._container.get(Settings)
         self._logger = self._container.get(Logger).get_logger()
-        # if self._settings.debug_mode:
-        #     self._container.print_container_stats()
+        self._init_security_services()
         self._app = self._create_fastapi_app()
         self._configure_app()
+        # if self._settings.debug_mode:
+        #     self._container.print_container_stats()
 
         self._initialized = True
+
+    def _init_security_services(self) -> None:
+        """Initialise les services liés à la sécurité et l'authentification."""
+
+        session = self._container.get_by_name("Session")
+        token_storage = TokenStorage(session)
+        self._container.set_instance(TokenStorage, token_storage)
+        entity_user_provider = self._container.get(EntityUserProvider)
+        user_provider = UserProvider(
+            token_storage, session, entity_user_provider)
+        self._container.set_instance(UserProvider, user_provider)
+
+        self._logger.debug("Security services initialized")
 
     def _create_fastapi_app(self) -> FastAPI:
         """Creates and configures the FastAPI instance."""
@@ -83,7 +100,8 @@ class Kernel:
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
         static_path = Path(__file__).parent / "templates" / "static"
-        self._app.mount("/static", StaticFiles(directory=static_path), name="static")
+        self._app.mount(
+            "/static", StaticFiles(directory=static_path), name="static")
 
     @property
     def app(self) -> FastAPI:

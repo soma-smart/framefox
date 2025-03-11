@@ -25,6 +25,7 @@ class TokenManager:
     def create_token(self, user, firewallname: str, roles: list) -> str:
 
         payload = {
+            "sub": str(user.id),
             "email": user.email,
             "firewallname": firewallname,
             "roles": roles,

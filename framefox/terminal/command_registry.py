@@ -39,7 +39,7 @@ class CommandRegistry:
             # Si le namespace est un préfixe du nom de la classe, le supprimer proprement
             if namespace and class_name.lower().startswith(namespace.lower()):
                 # Par exemple, pour ServerStartCommand avec namespace=server, donne Start
-                class_name = class_name[len(namespace.title()):]
+                class_name = class_name[len(namespace.title()) :]
 
             # Convertir en kebab-case
             name = ""
@@ -77,14 +77,14 @@ class CommandRegistry:
             # Charger uniquement la commande init
             try:
                 module = importlib.import_module(
-                    "framefox.terminal.commands.init_command")
+                    "framefox.terminal.commands.init_command"
+                )
                 command_class = getattr(module, "InitCommand")
                 self.add_command(command_class)
                 self.initialized = True
                 return
             except (ImportError, AttributeError) as e:
-                print(
-                    f"Erreur lors du chargement de la commande d'initialisation: {e}")
+                print(f"Erreur lors du chargement de la commande d'initialisation: {e}")
                 # Continuer avec la découverte normale si la commande init n'est pas trouvée
 
         # Parcourir les modules dans framefox/terminal/commands

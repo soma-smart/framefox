@@ -2,10 +2,18 @@ from typing import Any, Dict, List
 
 from framefox.core.request.session.flash_bag_interface import FlashBagInterface
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class FlashBag(FlashBagInterface):
     """
-    Implémentation du système de messages flash temporaires.
+    Implementation of the temporary flash message system.
     """
 
     def __init__(self):
@@ -13,19 +21,19 @@ class FlashBag(FlashBagInterface):
         self._storage_key = "_flash_messages"
 
     def add(self, type: str, message: Any) -> None:
-        """Ajoute un message flash"""
+        """Adds a flash message"""
         if type not in self._flashes:
             self._flashes[type] = []
         self._flashes[type].append(message)
 
     def peek(self, type: str, default: Any = None) -> List:
-        """Récupère les messages sans les supprimer"""
+        """Retrieves messages without deleting them"""
         if type not in self._flashes:
             return default if default is not None else []
         return self._flashes[type]
 
     def get(self, type: str, default: Any = None) -> List:
-        """Récupère les messages et les supprime"""
+        """Retrieves messages and deletes them"""
         if type not in self._flashes:
             return default if default is not None else []
         messages = self._flashes[type]
@@ -33,33 +41,33 @@ class FlashBag(FlashBagInterface):
         return messages
 
     def set_all(self, messages: Dict[str, List]) -> None:
-        """Remplace tous les messages flash"""
+        """Replaces all flash messages"""
         self._flashes = messages
 
     def get_all(self) -> Dict[str, List]:
-        """Récupère tous les messages et les supprime"""
+        """Retrieves all messages and deletes them"""
         all_flashes = self._flashes
         self._flashes = {}
         return all_flashes
 
     def has(self, type: str) -> bool:
-        """Vérifie si des messages du type existent"""
+        """Checks if messages of the type exist"""
         return type in self._flashes and len(self._flashes[type]) > 0
 
     def keys(self) -> List[str]:
-        """Liste tous les types de messages disponibles"""
+        """Lists all available message types"""
         return list(self._flashes.keys())
 
     def get_storage_key(self) -> str:
-        """Clé utilisée pour stocker les flashes dans la session"""
+        """Key used to store flashes in the session"""
         return self._storage_key
 
     def initialize_from_session(self, session) -> None:
-        """Charge les messages depuis la session"""
+        """Loads messages from the session"""
         self._flashes = session.get(self._storage_key, {})
 
     def save_to_session(self, session) -> None:
-        """Enregistre les messages dans la session"""
+        """Saves messages to the session"""
         if self._flashes:
             session.set(self._storage_key, self._flashes)
         else:

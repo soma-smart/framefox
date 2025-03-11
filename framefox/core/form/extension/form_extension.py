@@ -1,5 +1,13 @@
 from jinja2 import Environment
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class FormExtension:
 
@@ -21,21 +29,17 @@ class FormExtension:
         )
 
     def form_start(self, form_view, options=None):
-        """Rendu du début du formulaire."""
+        """Render the start of the form."""
         options = options or {}
         action = options.get("action", "")
         method = options.get("method", "POST")
-
-        # Récupérer les attributs définis dans FormType via get_options()
         form_attrs = {}
         if hasattr(form_view.form, "options") and "attr" in form_view.form.options:
             form_attrs = form_view.form.options["attr"].copy()
 
-        # Ajouter ou remplacer par les attributs définis dans le template
         attr = options.get("attr", {})
         form_attrs.update(attr)
 
-        # Toujours ajouter enctype pour les formulaires avec uploads
         has_file_field = False
         for field in form_view.form.fields.values():
             if (
@@ -53,16 +57,16 @@ class FormExtension:
         return f'<form method="{method}" action="{action}" {attr_str}>'
 
     def form_end(self, form_view, options=None):
-        """Rendu de la fin du formulaire."""
+        """Render the end of the form."""
         return "</form>"
 
     def form_row(self, form_view, field_name, options=None):
-        """Rendu d'une ligne complète de formulaire (label + widget + erreurs)."""
+        """Render a complete form row (label + widget + errors)."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
         if not field_view:
-            return f"<!-- Champ {field_name} non trouvé -->"
+            return f"<!-- Field {field_name} not found -->"
 
         label = self.form_label(form_view, field_name)
         widget = self.form_widget(form_view, field_name)
@@ -77,12 +81,12 @@ class FormExtension:
         """
 
     def form_label(self, form_view, field_name, options=None):
-        """Rendu du label d'un champ."""
+        """Render the label of a field."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
         if not field_view:
-            return f"<!-- Champ {field_name} non trouvé -->"
+            return f"<!-- Field {field_name} not found -->"
 
         label_text = options.get("label", field_view.get_label())
         label_attr = options.get("label_attr", {})
@@ -94,18 +98,17 @@ class FormExtension:
         return f"<label {attr_str}>{label_text}</label>"
 
     def form_widget(self, form_view, field_name, options=None):
-        """Rendu du widget d'un champ."""
+        """Render the widget of a field."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
         if not field_view:
-            return f"<!-- Champ {field_name} non trouvé -->"
+            return f"<!-- Field {field_name} not found -->"
 
-        # Déléguer le rendu au widget du champ
         return field_view.render(options)
 
     def form_errors(self, form_view, field_name, options=None):
-        """Rendu des erreurs d'un champ."""
+        """Render the errors of a field."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
@@ -122,4 +125,4 @@ class FormExtension:
 
 def form_widget(self, form_view, field_name, options=None):
     field_view = form_view.get_field(field_name)
-    return field_view.render(options)  # FormViewField.render()
+    return field_view.render(options)

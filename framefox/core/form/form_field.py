@@ -1,10 +1,18 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Dict, List
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 @dataclass
 class FormField:
-    """Représente un champ de formulaire."""
+    """Represents a form field."""
 
     name: str
     type: "FormType"
@@ -14,24 +22,18 @@ class FormField:
     submitted: bool = False
 
     def __post_init__(self):
-        """Initialisation après création de l'instance."""
-        # Transmettre le nom au type
         if hasattr(self.type, "set_name"):
             self.type.set_name(self.name)
 
     def set_value(self, value: Any) -> None:
-        """Définit la valeur du champ à partir des données brutes du formulaire."""
         self.submitted = True
         try:
-            # Traitement spécial pour les valeurs de type liste représentées comme chaînes
             if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
                 import json
 
                 try:
-                    # Tenter de désérialiser la chaîne JSON
                     value = json.loads(value)
                 except json.JSONDecodeError:
-                    # Si ce n'est pas un JSON valide, garder la valeur telle quelle
                     pass
 
             self.value = self.type.transform_to_model(value)
@@ -39,23 +41,19 @@ class FormField:
             self.errors.append(str(e))
 
     def get_value(self) -> Any:
-        """Récupère la valeur transformée du champ."""
         return self.value
 
     def validate(self) -> bool:
-        """Valide le champ selon ses contraintes."""
         self.errors = []
 
-        # Vérifier si le champ est requis
         if (
             self.options.get("required", False)
             and not self.value
             and self.value is not False
         ):
-            self.errors.append(f"Le champ {self.name} est obligatoire")
+            self.errors.append(f"The field {self.name} is required")
             return False
 
-        # Exécuter les validateurs personnalisés
         for validator in self.options.get("validators", []):
             if not validator.validate(self.value):
                 self.errors.append(validator.message)
@@ -64,5 +62,4 @@ class FormField:
         return len(self.errors) == 0
 
     def is_submitted(self) -> bool:
-        """Indique si le champ a été soumis."""
         return self.submitted

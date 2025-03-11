@@ -8,9 +8,9 @@ from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
                                Response)
 
 from framefox.core.config.settings import Settings
+from framefox.core.di.service_container import ServiceContainer
 from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.request.csrf_token_manager import CsrfTokenManager
-from framefox.core.request.session.session import Session
 from framefox.core.request.session.session_interface import SessionInterface
 from framefox.core.request.session.session_manager import SessionManager
 from framefox.core.security.access_manager import AccessManager
@@ -50,6 +50,7 @@ class FirewallHandler:
         self.csrf_manager = csrf_manager
         self.session = session
         self.access_manager = access_manager
+
         self.authenticators = self.load_authenticators()
 
     def load_authenticators(self) -> Dict[str, AuthenticatorInterface]:
@@ -102,14 +103,16 @@ class FirewallHandler:
                     request, firewall, firewall_name, call_next
                 )
 
-        is_auth_route = any(request.url.path.startswith(route) for route in auth_routes)
+        is_auth_route = any(request.url.path.startswith(route)
+                            for route in auth_routes)
         if is_auth_route:
             auth_response = await self.handle_authentication(request, call_next)
             if auth_response:
                 return auth_response
         auth_result = await self.handle_authorization(request, call_next)
         if auth_result.status_code == 403:
-            self.logger.warning("Authorization failed - insufficient permissions")
+            self.logger.warning(
+                "Authorization failed - insufficient permissions")
 
         return auth_result
 
@@ -175,53 +178,56 @@ class FirewallHandler:
         Handles POST requests for login.
         """
         self.logger.debug(
-            f"Handling a POST request for {
-                type(authenticator).__name__}."
+            f"Handling a POST request for {type(authenticator).__name__}."
         )
 
         passport = await authenticator.authenticate_request(request, firewall_name)
         if passport:
+
             token = self.token_manager.create_token(
                 user=passport.user,
-                firewallname=firewall_config.get(
-                    "name", firewall_config.get("login_path", "main_firewall")
-                ),
+                firewallname=firewall_name,
                 roles=(passport.user.roles if passport.user.roles else []),
             )
+            token_storage = ServiceContainer().get_by_name("TokenStorage")
+
+            token_storage.set_token(token)
+            self.session.set("user_id", passport.user.id)
+
+            self.session.save()
+
             response = authenticator.on_auth_success(token)
-            self.session.set("access_token", token)
+            self.cookie_manager.delete_cookie(response, "csrf_token")
 
             self.logger.info(
-                "Authentication successful and token added to the session."
-            )
-            self.cookie_manager.delete_cookie(response, "csrf_token")
+                "Authentication successful and token stored securely.")
             return response
+
         return Response(content="Authentication failed", status_code=400)
 
     async def handle_authorization(self, request: Request, call_next):
         """
         Handles authorization using the AccessManager class.
         """
-        required_roles = self.access_manager.get_required_roles(request.url.path)
+        required_roles = self.access_manager.get_required_roles(
+            request.url.path)
         if not required_roles:
             response = await call_next(request)
             self.logger.debug(
-                f"Response from call_next: Status={
-                    response.status_code}"
-            )
+                f"Response from call_next: Status={response.status_code}")
             return response
 
-        token = self.session.get("access_token")
-        if token:
-            payload = self.token_manager.decode_token(token)
-            if payload:
-                user_roles = payload.get("roles", [])
-                if self.access_manager.is_allowed(user_roles, required_roles):
-                    return await call_next(request)
-                else:
-                    self.logger.warning("User does not have the required roles.")
+        from framefox.core.security.token_storage import TokenStorage
+
+        token_storage = ServiceContainer().get(TokenStorage)
+        payload = token_storage.get_payload()
+
+        if payload:
+            user_roles = payload.get("roles", [])
+            if self.access_manager.is_allowed(user_roles, required_roles):
+                return await call_next(request)
             else:
-                self.logger.warning("Invalid token payload.")
+                self.logger.warning("User does not have the required roles.")
 
         self.logger.warning(f"Access forbidden for path: {request.url.path}")
         return Response(content="Forbidden", status_code=403)
@@ -229,12 +235,15 @@ class FirewallHandler:
     async def handle_logout(
         self, request: Request, firewall_config: Dict, firewall_name: str, call_next
     ) -> Response:
+
+        token_storage = ServiceContainer().get_by_name("TokenStorage")
+        token_storage.clear_token()
         session_id = request.cookies.get("session_id")
         if session_id:
-            self.session_manager.delete_session(session_id)
+            success = self.session_manager.delete_session(session_id)
 
-        self.session.remove("access_token")
         self.session.clear()
+        request.state.session_data = {}
 
         if firewall_name == "main":
             response = await call_next(request)
@@ -246,7 +255,6 @@ class FirewallHandler:
                 )
             else:
                 response = RedirectResponse(url="/login", status_code=302)
-
         self.cookie_manager.delete_cookie(response, "session_id")
         self.cookie_manager.delete_cookie(response, "csrf_token")
         self.cookie_manager.delete_cookie(response, "access_token")
