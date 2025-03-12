@@ -5,6 +5,7 @@ from sqlmodel import Session, create_engine
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.orm.connection_manager import ConnectionManager
+from framefox.core.orm.abstract_repository import AbstractRepository
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -175,3 +176,22 @@ class EntityManager:
         from sqlmodel import SQLModel
 
         SQLModel.metadata.drop_all(self.engine)
+
+    def get_repository(self, entity_class):
+        """
+        Obtient un repository pour une classe d'entité spécifique.
+
+        Args:
+            entity_class: La classe de l'entité.
+
+        Returns:
+            AbstractRepository: Une instance de repository pour l'entité spécifiée.
+        """
+        container = ServiceContainer()
+        repositories = container.get_by_tag_prefix("repository.")
+
+        for repo in repositories:
+            if getattr(repo, "model", None) == entity_class:
+                return repo
+            else:
+                return None
