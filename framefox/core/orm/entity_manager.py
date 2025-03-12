@@ -5,7 +5,7 @@ from sqlmodel import Session, create_engine
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.orm.connection_manager import ConnectionManager
-from framefox.core.orm.abstract_repository import AbstractRepository
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

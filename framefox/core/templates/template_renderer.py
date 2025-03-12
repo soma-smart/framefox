@@ -20,16 +20,19 @@ class TemplateRenderer:
         self.settings = self.container.get_by_name("Settings")
         self.user_template_dir = self.settings.template_dir
         self.framework_template_dir = Path(__file__).parent / "views"
-        # Modify this line to add undefined=StrictUndefined
         self.env = Environment(
             loader=FileSystemLoader(
                 [self.user_template_dir, str(self.framework_template_dir)]
             ),
-            undefined=StrictUndefined,  # This option enables strict checking
+            undefined=StrictUndefined,
         )
         form_extension = FormExtension(self.env)
         self.env.globals["url_for"] = self.url_for
         self.env.globals["get_flash_messages"] = self.get_flash_messages
+        self.env.globals["current_user"] = self.get_current_user
+
+        # N'oubliez pas d'appeler la méthode pour enregistrer les filtres
+        self._register_filters(self.env)
 
     def url_for(self, name: str, **params) -> str:
         """Generates a URL from the route name"""
@@ -71,3 +74,12 @@ class TemplateRenderer:
             return f"ID: {value.id}"
         else:
             return str(value)
+
+    def get_current_user(self):
+        """Récupère l'utilisateur actuellement connecté pour les templates"""
+        try:
+            user_provider = self.container.get_by_name("UserProvider")
+            return user_provider.get_current_user()
+        except Exception as e:
+            print(f"Error retrieving current user: {str(e)}")
+            return None
