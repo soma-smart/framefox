@@ -6,6 +6,15 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
+
 class AbstractDatabaseCommand(AbstractCommand, ABC):
     def __init__(self, name: str):
         super().__init__(name)
@@ -22,7 +31,7 @@ class AbstractDatabaseCommand(AbstractCommand, ABC):
         )
 
         config = DatabaseConfig(
-            driver=scheme.split("+")[0],  # Gère mysql+pymysql
+            driver=scheme.split("+")[0],
             host=host,
             port=port or self._get_default_port(scheme),
             username=user,

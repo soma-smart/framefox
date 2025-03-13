@@ -1,5 +1,7 @@
 from pathlib import Path
-
+import os
+import hashlib
+import json
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from framefox.core.di.service_container import ServiceContainer
@@ -20,6 +22,8 @@ class TemplateRenderer:
         self.settings = self.container.get_by_name("Settings")
         self.user_template_dir = self.settings.template_dir
         self.framework_template_dir = Path(__file__).parent / "views"
+        self.public_path = self.settings.public_path if hasattr(
+            self.settings, 'public_path') else 'public'
         self.env = Environment(
             loader=FileSystemLoader(
                 [self.user_template_dir, str(self.framework_template_dir)]
@@ -30,8 +34,8 @@ class TemplateRenderer:
         self.env.globals["url_for"] = self.url_for
         self.env.globals["get_flash_messages"] = self.get_flash_messages
         self.env.globals["current_user"] = self.get_current_user
-
-        # N'oubliez pas d'appeler la méthode pour enregistrer les filtres
+        self.env.globals["asset"] = self.asset
+        self.env.globals["dump"] = self._dump_function
         self._register_filters(self.env)
 
     def url_for(self, name: str, **params) -> str:
@@ -56,6 +60,57 @@ class TemplateRenderer:
     def _register_filters(self, env):
         """Registers custom filters for Jinja2"""
         env.filters["relation_display"] = self._relation_display_filter
+        env.filters["date"] = self._date_filter
+        env.filters["format_date"] = self._format_date_filter
+        env.filters["filesizeformat"] = self._filesize_format_filter
+        env.filters["json_encode"] = self._json_encode_filter
+
+        env.filters["split"] = self._split_filter
+        env.filters["last"] = self._last_filter
+        env.filters["lower"] = self._lower_filter
+
+    def _split_filter(self, value, delimiter=','):
+        """Splits a string by a delimiter"""
+        if not value:
+            return []
+        return value.split(delimiter)
+
+    def _last_filter(self, value):
+        """Returns the last element of a list"""
+        if not value or not isinstance(value, (list, tuple)):
+            return ''
+        return value[-1] if value else ''
+
+    def _lower_filter(self, value):
+        """Converts a string to lowercase"""
+        if value is None:
+            return ''
+        return str(value).lower()
+
+    def _json_encode_filter(self, value):
+        """Converts a Python value to a JSON string"""
+        try:
+            return json.dumps(value)
+        except TypeError:
+            return json.dumps(str(value))
+
+    def _filesize_format_filter(self, size):
+        """Format file size in human readable format"""
+        if size is None:
+            return "0 B"
+
+        try:
+            size = float(size)
+        except (ValueError, TypeError):
+            return str(size)
+
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if size < 1024.0:
+                if unit == 'B':
+                    return f"{int(size)} {unit}"
+                return f"{size:.2f} {unit}"
+            size /= 1024.0
+        return f"{size:.2f} PB"
 
     def _relation_display_filter(self, value):
         """Filter to properly display relations"""
@@ -75,6 +130,27 @@ class TemplateRenderer:
         else:
             return str(value)
 
+    def _date_filter(self, value, format="%d/%m/%Y"):
+        """Filter to format dates in templates"""
+        if value is None:
+            return ""
+
+        if isinstance(value, str):
+            try:
+                from datetime import datetime
+                value = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            except (ValueError, TypeError):
+                return value
+
+        try:
+            return value.strftime(format)
+        except:
+            return str(value)
+
+    def _format_date_filter(self, value, format="%d/%m/%Y %H:%M"):
+        """Filter to format dates with time in templates"""
+        return self._date_filter(value, format)
+
     def get_current_user(self):
         """Récupère l'utilisateur actuellement connecté pour les templates"""
         try:
@@ -83,3 +159,36 @@ class TemplateRenderer:
         except Exception as e:
             print(f"Error retrieving current user: {str(e)}")
             return None
+
+    def asset(self, path: str, versioning: bool = True) -> str:
+        """
+        Generates a URL for a static resource
+
+        Args:
+            path: Relative path of the file in the public folder
+            versioning: Enables versioning for cache invalidation
+
+        Returns:
+            Full URL to the resource
+        """
+        path = path.lstrip('/')
+        base_url = self.settings.base_url if hasattr(
+            self.settings, 'base_url') else ''
+        asset_url = f"{base_url}/{path}"
+
+        if versioning:
+            file_path = os.path.join(self.public_path, path)
+            if os.path.exists(file_path):
+                timestamp = os.path.getmtime(file_path)
+                version = hashlib.md5(str(timestamp).encode()).hexdigest()[:8]
+                asset_url += f"?v={version}"
+            else:
+                import time
+                asset_url += f"?v={int(time.time())}"
+
+        return asset_url
+
+    def _dump_function(self, obj):
+        """Fonction pour afficher le contenu d'un objet dans les templates"""
+        import pprint
+        return pprint.pformat(obj, depth=3)

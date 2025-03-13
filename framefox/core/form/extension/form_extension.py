@@ -72,13 +72,32 @@ class FormExtension:
         widget = self.form_widget(form_view, field_name)
         errors = self.form_errors(form_view, field_name)
 
-        return f"""
-        <div class="mb-3">
-            {label}
-            {widget}
-            {errors}
-        </div>
-        """
+        # Détecter si c'est un choix étendu
+        is_expanded_choice = False
+        if hasattr(field_view, 'type'):
+            is_expanded_choice = (hasattr(field_view.type, 'options') and
+                                  field_view.type.options.get('expanded', False) and
+                                  'choices' in field_view.type.options)
+
+        # Adapter le HTML selon le type de champ
+        if is_expanded_choice:
+            return f"""
+            <div class="mb-3">
+                {label}
+                <div class="choice-group mt-2">
+                    {widget}
+                </div>
+                {errors}
+            </div>
+            """
+        else:
+            return f"""
+            <div class="mb-3">
+                {label}
+                {widget}
+                {errors}
+            </div>
+            """
 
     def form_label(self, form_view, field_name, options=None):
         """Render the label of a field."""
