@@ -2,12 +2,12 @@ from framefox.core.controller.abstract_controller import AbstractController
 from framefox.core.routing.decorator.route import Route
 
 class LoginController(AbstractController):
-    @Route("/login", "login", methods=["GET", "POST"])
+    @Route("/login", "security.login", methods=["GET", "POST"])
     async def login(self):
 
         return self.render("security/login.html", {})
 
-    @Route("/logout", "logout", methods=["GET"])
+    @Route("/logout", "security.logout", methods=["GET"])
     async def logout(self):
 
         return self.redirect("/")

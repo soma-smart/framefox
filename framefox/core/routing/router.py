@@ -3,7 +3,7 @@ import inspect
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRouter
@@ -22,11 +22,23 @@ Github: https://github.com/RayenBou
 
 class Router:
     _routes = {}
+    _instance = None
 
-    def __init__(self, app: FastAPI):
-        self.app = app
-        self.container = ServiceContainer()
-        self.settings = self.container.get_by_name("Settings")
+    def __new__(cls, app=None):
+        if cls._instance is None:
+            cls._instance = super(Router, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
+    def __init__(self, app=None):
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+
+        if app:
+            self.app = app
+            self.container = ServiceContainer()
+            self.settings = self.container.get_by_name("Settings")
+            self._initialized = True
 
     def _get_module_name(self, module_path: str) -> str:
         """Convert file path to module name."""
@@ -53,7 +65,8 @@ class Router:
             if exc.status_code == 404:
                 template_renderer = self.container.get(TemplateRenderer)
                 html_content = template_renderer.render(
-                    "404.html", {"request": request, "error": "Page non trouvée"}
+                    "404.html", {"request": request,
+                                 "error": "Page non trouvée"}
                 )
                 return HTMLResponse(content=html_content, status_code=404)
             raise exc

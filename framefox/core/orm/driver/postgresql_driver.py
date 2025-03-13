@@ -36,11 +36,22 @@ class PostgreSQLDriver(DatabaseDriver):
 
     def create_database(self, name: str) -> bool:
         try:
-            with self.connect() as connection:
-                connection.autocommit = True
-                with connection.cursor() as cursor:
-                    if not self.database_exists(name):
-                        cursor.execute(f'CREATE DATABASE "{name}"')
+            import psycopg2
+            conn = psycopg2.connect(
+                host=str(self.config.host),
+                port=int(self.config.port),
+                user=str(self.config.username),
+                password=str(
+                    self.config.password) if self.config.password else "",
+                dbname="postgres"
+            )
+            conn.autocommit = True
+
+            with conn.cursor() as cursor:
+                if not self.database_exists(name):
+                    cursor.execute(f'CREATE DATABASE "{name}"')
+
+            conn.close()
             return True
         except Exception as e:
             print(f"Error creating database: {str(e)}")
@@ -80,10 +91,21 @@ class PostgreSQLDriver(DatabaseDriver):
 
     def drop_database(self, name: str) -> bool:
         try:
-            with self.connect() as connection:
-                connection.autocommit = True
-                with connection.cursor() as cursor:
-                    cursor.execute(f'DROP DATABASE IF EXISTS "{name}"')
+            import psycopg2
+            conn = psycopg2.connect(
+                host=str(self.config.host),
+                port=int(self.config.port),
+                user=str(self.config.username),
+                password=str(
+                    self.config.password) if self.config.password else "",
+                dbname="postgres"
+            )
+            conn.autocommit = True
+
+            with conn.cursor() as cursor:
+                cursor.execute(f'DROP DATABASE IF EXISTS "{name}"')
+
+            conn.close()
             return True
         except Exception as e:
             print(f"Error dropping database: {str(e)}")

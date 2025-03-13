@@ -1,5 +1,6 @@
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from framefox.core.di.service_container import ServiceContainer
+from framefox.core.form.form_factory import FormFactory
 
 """
 Framefox Framework developed by SOMA
@@ -69,8 +70,8 @@ class AbstractController:
         """
         Creates a form from a form type class and an entity instance
         """
-        form_factory = self._get_container().get_by_name("FormFactory")
-        return form_factory.create_form(form_type_class, entity_instance)
+
+        return FormFactory.create_form(form_type_class, entity_instance)
 
     def get_user(self, user_class=None):
         """

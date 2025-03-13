@@ -95,6 +95,7 @@ class Kernel:
     def _setup_routing(self) -> None:
         """Configures the application routing."""
         router = Router(self._app)
+        self._container.set_instance(Router, router)
         router.register_controllers()
 
     def _setup_static_files(self) -> None:
