@@ -1,120 +1,183 @@
 from pathlib import Path
-from typing import ClassVar, Optional
+import os
+import hashlib
+import json
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-
-from framefox.core.config.settings import Settings
-from framefox.core.debug.exception.debug_exception import DebugException
-from framefox.core.debug.handler.debug_handler import DebugHandler
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.events.event_dispatcher import dispatcher
-from framefox.core.logging.logger import Logger
-from framefox.core.middleware.middleware_manager import MiddlewareManager
-from framefox.core.routing.router import Router
-from framefox.core.security.token_storage import TokenStorage
-from framefox.core.security.user.entity_user_provider import EntityUserProvider
-from framefox.core.security.user.user_provider import UserProvider
+from framefox.core.form.extension.form_extension import FormExtension
 
 """
 Framefox Framework developed by SOMA
-Github: https://github.com/soma-smart/framefox 
+Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
 
-class Kernel:
-    """
-    Core kernel of the Framefox framework.
-    Implements the Singleton pattern and manages the application lifecycle.
-    """
-
-    _instance: ClassVar[Optional["Kernel"]] = None
-
-    def __new__(cls) -> "Kernel":
-        """Ensures that only one instance of the Kernel exists."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-
-    def __init__(self) -> None:
-        """Initializes the main components of the framework if not already done."""
-        if hasattr(self, "_initialized") and self._initialized:
-            return
-
-        self._container = ServiceContainer()
-        self._settings = self._container.get(Settings)
-        self._logger = self._container.get(Logger).get_logger()
-        self._init_security_services()
-        self._app = self._create_fastapi_app()
-        self._configure_app()
-        # if self._settings.debug_mode:
-        #     self._container.print_container_stats()
-
-        self._initialized = True
-
-    def _init_security_services(self) -> None:
-        """Initialise les services liés à la sécurité et l'authentification."""
-
-        session = self._container.get_by_name("Session")
-        token_storage = TokenStorage(session)
-        self._container.set_instance(TokenStorage, token_storage)
-        entity_user_provider = self._container.get(EntityUserProvider)
-        user_provider = UserProvider(
-            token_storage, session, entity_user_provider)
-        self._container.set_instance(UserProvider, user_provider)
-
-        self._logger.debug("Security services initialized")
-
-    def _create_fastapi_app(self) -> FastAPI:
-        """Creates and configures the FastAPI instance."""
-        return FastAPI(
-            debug=self._settings.debug_mode,
-            openapi_url=self._settings.openapi_url,
-            redoc_url=self._settings.redoc_url,
+class TemplateRenderer:
+    def __init__(self):
+        self.container = ServiceContainer()
+        self.settings = self.container.get_by_name("Settings")
+        self.user_template_dir = self.settings.template_dir
+        self.framework_template_dir = Path(__file__).parent / "views"
+        self._project_root = Path(os.getcwd())
+        self.env = Environment(
+            loader=FileSystemLoader(
+                [self.user_template_dir, str(self.framework_template_dir)]
+            ),
+            undefined=StrictUndefined,
         )
+        form_extension = FormExtension(self.env)
+        self.env.globals["url_for"] = self.url_for
+        self.env.globals["get_flash_messages"] = self.get_flash_messages
+        self.env.globals["current_user"] = self.get_current_user
+        self.env.globals["asset"] = self.asset
+        self.env.globals["dump"] = self._dump_function
+        self._register_filters(self.env)
 
-    def _configure_app(self) -> None:
-        """Configures all application components."""
-        self._app.add_exception_handler(
-            DebugException, DebugHandler.debug_exception_handler
-        )
-        self._setup_middlewares()
-        self._setup_routing()
-        self._setup_static_files()
-        dispatcher.load_listeners()
+    def url_for(self, name: str, **params) -> str:
+        """Generates a URL from the route name"""
+        try:
+            router = self.container.get_by_name("Router")
+            return str(router.url_path_for(name, **params))
+        except Exception as e:
+            print(f"Error generating URL for route '{name}': {str(e)}")
+            return "#"
 
-    def _setup_middlewares(self) -> None:
-        """Configures the application middlewares."""
-        middleware_manager = MiddlewareManager(self._app, self._settings)
-        middleware_manager.setup_middlewares()
+    def get_flash_messages(self):
+        """Retrieves flash messages from the session in template format"""
+        session = self.container.get_by_name("Session")
+        flash_bag = session.get_flash_bag()
+        return flash_bag.get_for_template()
 
-    def _setup_routing(self) -> None:
-        """Configures the application routing."""
-        router = Router(self._app)
-        self._container.set_instance(Router, router)
-        router.register_controllers()
+    def render(self, template_name: str, context: dict = {}) -> str:
+        template = self.env.get_template(template_name)
+        return template.render(**context)
 
-    def _setup_static_files(self) -> None:
-        """Configures the static files handler."""
-        static_path = Path(__file__).parent / "templates" / "static"
-        self._app.mount(
-            "/static", StaticFiles(directory=static_path), name="static")
+    def _register_filters(self, env):
+        """Registers custom filters for Jinja2"""
+        env.filters["relation_display"] = self._relation_display_filter
+        env.filters["date"] = self._date_filter
+        env.filters["format_date"] = self._format_date_filter
+        env.filters["filesizeformat"] = self._filesize_format_filter
+        env.filters["json_encode"] = self._json_encode_filter
 
-    @property
-    def app(self) -> FastAPI:
-        """Returns the configured FastAPI instance."""
-        return self._app
+        env.filters["split"] = self._split_filter
+        env.filters["last"] = self._last_filter
+        env.filters["lower"] = self._lower_filter
 
-    @property
-    def settings(self) -> Settings:
-        """Returns the configuration settings."""
-        return self._settings
+    def _split_filter(self, value, delimiter=','):
+        """Splits a string by a delimiter"""
+        if not value:
+            return []
+        return value.split(delimiter)
 
-    @property
-    def logger(self) -> Logger:
-        """Returns the configured logger."""
-        return self._logger
+    def _last_filter(self, value):
+        """Returns the last element of a list"""
+        if not value or not isinstance(value, (list, tuple)):
+            return ''
+        return value[-1] if value else ''
+
+    def _lower_filter(self, value):
+        """Converts a string to lowercase"""
+        if value is None:
+            return ''
+        return str(value).lower()
+
+    def _json_encode_filter(self, value):
+        """Converts a Python value to a JSON string"""
+        try:
+            return json.dumps(value)
+        except TypeError:
+            return json.dumps(str(value))
+
+    def _filesize_format_filter(self, size):
+        """Format file size in human readable format"""
+        if size is None:
+            return "0 B"
+
+        try:
+            size = float(size)
+        except (ValueError, TypeError):
+            return str(size)
+
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if size < 1024.0:
+                if unit == 'B':
+                    return f"{int(size)} {unit}"
+                return f"{size:.2f} {unit}"
+            size /= 1024.0
+        return f"{size:.2f} PB"
+
+    def _relation_display_filter(self, value):
+        """Filter to properly display relations"""
+        if value is None:
+            return "None"
+        elif isinstance(value, list):
+            if len(value) == 0:
+                return "None"
+            elif hasattr(value[0], "id") and hasattr(value[0], "name"):
+                return ", ".join([item.name for item in value])
+            else:
+                return f"{len(value)} items"
+        elif hasattr(value, "id") and hasattr(value, "name"):
+            return value.name
+        elif hasattr(value, "id"):
+            return f"ID: {value.id}"
+        else:
+            return str(value)
+
+    def _date_filter(self, value, format="%d/%m/%Y"):
+        """Filter to format dates in templates"""
+        if value is None:
+            return ""
+
+        if isinstance(value, str):
+            try:
+                from datetime import datetime
+                value = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            except (ValueError, TypeError):
+                return value
+
+        try:
+            return value.strftime(format)
+        except:
+            return str(value)
+
+    def _format_date_filter(self, value, format="%d/%m/%Y %H:%M"):
+        """Filter to format dates with time in templates"""
+        return self._date_filter(value, format)
+
+    def get_current_user(self):
+        """Récupère l'utilisateur actuellement connecté pour les templates"""
+        try:
+            user_provider = self.container.get_by_name("UserProvider")
+            return user_provider.get_current_user()
+        except Exception as e:
+            print(f"Error retrieving current user: {str(e)}")
+            return None
+
+    def asset(self, path: str) -> str:
+        """
+        Generates a URL for a static resource
+
+        Args:
+            path: Relative path of the file in the public folder
+            versioning: Ignore cette option, désactivée par défaut
+
+        Returns:
+            Full URL to the resource
+        """
+        path = path.lstrip('/')
+        base_url = self.settings.base_url if hasattr(
+            self.settings, 'base_url') else ''
+        asset_url = f"{base_url}/{path}"
+
+        return asset_url
+
+    def _dump_function(self, obj):
+        """Function to display the content of an object in templates"""
+        import pprint
+        return pprint.pformat(obj, depth=3)
