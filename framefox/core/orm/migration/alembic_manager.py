@@ -32,11 +32,7 @@ class AlembicManager:
 
     def __init__(self):
         if not self._initialized:
-            self._project_root = Path(
-                os.path.abspath(
-                    os.path.join(os.path.dirname(__file__), "../../../../")
-                )
-            )
+            self._project_root = Path(os.getcwd())
             self._migrations_dir = self._project_root / "migrations"
             self._versions_dir = self._migrations_dir / "versions"
             self._templates_dir = (
