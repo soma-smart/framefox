@@ -43,3 +43,13 @@ class FormBuilder:
     def get_form(self) -> Form:
         """Creates and returns the form with the defined fields."""
         return Form(fields=self.fields, data=self.data, options=self.options)
+
+    def get_initial_data(self) -> Dict[str, Any]:
+        """
+        Returns the initial data of the form.
+        """
+        if isinstance(self.data, dict):
+            return self.data
+        elif hasattr(self.data, '__dict__'):
+            return self.data.__dict__
+        return {}
