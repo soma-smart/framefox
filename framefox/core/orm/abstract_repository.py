@@ -1,11 +1,9 @@
 from abc import ABC
-from typing import Annotated, List, Optional, Type, TypeVar
+from typing import List, Optional, Type, TypeVar
 
 from sqlmodel import SQLModel, asc, desc, select
-
-from framefox.core.di.service_container import ServiceContainer
-from framefox.core.orm.entity_manager import EntityManager
 from framefox.core.orm.query_builder import QueryBuilder
+from framefox.core.orm.entity_manager_registry import EntityManagerRegistry
 
 """
 Framefox Framework developed by SOMA
@@ -32,10 +30,13 @@ class AbstractRepository(ABC):
         model: Type[T],
     ):
         self.model = model
-        self.entity_manager = ServiceContainer().get(EntityManager)
 
         self.create_model = self.model.generate_create_model()
         # self.response_model = self.model.generate_models_response()
+
+    @property
+    def entity_manager(self):
+        return EntityManagerRegistry.get_entity_manager_for_request()
 
     def find(self, id) -> Optional[T]:
         """
@@ -76,9 +77,11 @@ class AbstractRepository(ABC):
         if order_by:
             for field, direction in order_by.items():
                 if direction.lower() == "asc":
-                    statement = statement.order_by(asc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        asc(getattr(self.model, field)))
                 elif direction.lower() == "desc":
-                    statement = statement.order_by(desc(getattr(self.model, field)))
+                    statement = statement.order_by(
+                        desc(getattr(self.model, field)))
 
         if limit is not None:
             statement = statement.limit(limit)

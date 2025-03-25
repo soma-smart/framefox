@@ -9,7 +9,8 @@ from framefox.core.middleware.middlewares.request_middleware import \
     RequestMiddleware
 from framefox.core.middleware.middlewares.session_middleware import \
     SessionMiddleware
-
+from framefox.core.middleware.middlewares.entity_manager_middleware import \
+    EntityManagerMiddleware
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -40,6 +41,7 @@ class MiddlewareManager:
 
         # self.app.add_middleware(HTTPSRedirectMiddleware)
         self.app.add_middleware(RequestMiddleware)
+        self.app.add_middleware(EntityManagerMiddleware)
 
         self.app.add_middleware(FirewallMiddleware, settings=self.settings)
         self.app.add_middleware(SessionMiddleware, settings=self.settings)

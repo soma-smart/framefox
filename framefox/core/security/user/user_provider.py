@@ -59,9 +59,6 @@ class UserProvider:
                 repository, _ = provider_info
                 user = repository.find(user_id_cache)
                 if user:
-                    self.logger.debug(
-                        f"User {user_id_cache} retrieved from cache"
-                    )
                     return user
 
         payload = self.token_storage.get_payload()

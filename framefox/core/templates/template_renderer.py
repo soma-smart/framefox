@@ -36,6 +36,7 @@ class TemplateRenderer:
         self.env.globals["current_user"] = self.get_current_user
         self.env.globals["asset"] = self.asset
         self.env.globals["dump"] = self._dump_function
+
         self._register_filters(self.env)
 
     def url_for(self, name: str, **params) -> str:
@@ -68,6 +69,23 @@ class TemplateRenderer:
         env.filters["split"] = self._split_filter
         env.filters["last"] = self._last_filter
         env.filters["lower"] = self._lower_filter
+        env.filters["format_number"] = self._format_number_filter
+        env.filters["min"] = self._min_filter
+        env.filters["max"] = self._max_filter
+
+    def _max_filter(self, value, max_value):
+        """Retourne la valeur maximale entre deux nombres"""
+        try:
+            return max(float(value), float(max_value))
+        except (ValueError, TypeError):
+            return value
+
+    def _min_filter(self, value, max_value):
+        """Retourne la valeur minimale entre deux nombres"""
+        try:
+            return min(float(value), float(max_value))
+        except (ValueError, TypeError):
+            return value
 
     def _split_filter(self, value, delimiter=','):
         """Splits a string by a delimiter"""
@@ -189,6 +207,44 @@ class TemplateRenderer:
         return asset_url
 
     def _dump_function(self, obj):
-        """Fonction pour afficher le contenu d'un objet dans les templates"""
+        """Function to display the content of an object in templates"""
         import pprint
         return pprint.pformat(obj, depth=3)
+
+    def _format_number_filter(self, value, decimal_places=2, decimal_separator=',', thousand_separator=' '):
+        """
+        Formats a number with thousand separators and decimals.
+
+        Args:
+            value: The number to format
+            decimal_places: Number of decimal places to display
+            decimal_separator: Character for decimal separator
+            thousand_separator: Character for thousand separator
+
+        Usage: 
+            {{ 1234.5678|format_number }}           -> 1 234,57
+            {{ 1234.5678|format_number(1) }}        -> 1 234,6
+            {{ 1234.5678|format_number(3, '.') }}   -> 1 234.568
+            {{ 1234.5678|format_number(0, ',', '.') }} -> 1.235
+        """
+        if value is None:
+            return "0"
+
+        try:
+            value = float(value)
+        except (ValueError, TypeError):
+            return str(value)
+
+        format_string = "{:,.%df}" % decimal_places
+        formatted = format_string.format(value)
+
+        if thousand_separator != ',' or decimal_separator != '.':
+            parts = formatted.split('.')
+            if len(parts) == 2:
+                formatted = thousand_separator.join(
+                    parts[0].split(',')
+                ) + decimal_separator + parts[1]
+            else:
+                formatted = thousand_separator.join(formatted.split(','))
+
+        return formatted

@@ -2,9 +2,13 @@ from setuptools import find_packages, setup
 
 setup(
     name="framefox",
-    version="1.0.9",
+    version="1.0.17",
     packages=find_packages(),
     include_package_data=True,
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    author="Boumaza Rayen",
+    author_email="boumaza.rayen@outlook.fr",
     install_requires=[
         "typer==0.15.1",
         "fastapi==0.115.7",
@@ -30,6 +34,16 @@ setup(
         "httpx==0.28.1",
         "cryptography==44.0.2",
         "aiosmtplib==4.0.0",
+    ],
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     entry_points={
         "console_scripts": [
