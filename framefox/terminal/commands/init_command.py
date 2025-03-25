@@ -182,6 +182,14 @@ class InitCommand(AbstractCommand):
             data={},
             format="gitignore",
         )
+        # requirements.txt
+        FileCreator().create_file(
+            template="init_files/requirements.jinja2",
+            path=".",
+            name="requirements.txt",
+            data={},
+            format="txt",
+        )
 
     def check_requirements(self):
         """

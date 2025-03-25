@@ -237,6 +237,7 @@ class ServiceContainer:
         essential_services = [
             "framefox.core.config.settings.Settings",
             "framefox.core.logging.logger.Logger",
+            "framefox.core.orm.entity_manager_registry.EntityManagerRegistry"
         ]
 
         for service_path in essential_services:

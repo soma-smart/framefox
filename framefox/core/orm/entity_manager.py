@@ -1,10 +1,11 @@
 import logging
-from typing import Any
-from sqlalchemy.engine import Engine
-from sqlmodel import Session, create_engine
-from framefox.core.config.settings import Settings
+import contextlib
+from typing import Any, Generator, Type
+from sqlmodel import SQLModel, Session
+from sqlalchemy.orm.session import object_session
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.orm.connection_manager import ConnectionManager
+from framefox.core.orm.entity_manager_registry import EntityManagerRegistry
+
 
 """
 Framefox Framework developed by SOMA
@@ -17,143 +18,137 @@ Github: https://github.com/Vasulvius & https://github.com/RayenBou
 
 class EntityManager:
     """
-    The EntityManager class provides methods for managing entities in a session.
-
-    Attributes:
-        engine: The database engine.
-        logger: The logger object.
-        session: The session object.
+    Entity manager scoped to the current request.
     """
 
-    _instance = None
-
-    @classmethod
-    def get_instance(cls) -> "EntityManager":
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
-
-    def __init__(self):
-        self.settings = ServiceContainer().get(Settings)
-        self.connection_manager = ConnectionManager.get_instance()
+    def __init__(self, connection_name: str = "default"):
+        self.registry = EntityManagerRegistry.get_instance()
         self.logger = logging.getLogger(__name__)
-        db_url = self._get_database_url_string()
-        self.engine = create_engine(db_url, echo=self.settings.database_echo)
-        self.session = Session(self.engine)
+        self.engine = self.registry.get_engine(connection_name)
+        self._session = None
+        self._transaction_depth = 0
+        self._identity_map = {}
 
-    def _get_database_url_string(self) -> str:
-        db_config = self.settings.database_url
+    @property
+    def session(self) -> Session:
+        """Returns the active session or creates a new one"""
+        if self._session is None:
+            self._session = Session(self.engine)
+        return self._session
 
-        if isinstance(db_config, str):
-            return db_config
+    def close_session(self):
+        """Closes the active session if it exists"""
+        if self._session is not None:
+            self._session.close()
+            self._session = None
 
-        if db_config.driver == "sqlite":
-            return f"sqlite:///{db_config.database}"
-
-        dialect = "mysql+pymysql" if db_config.driver == "mysql" else db_config.driver
-
-        username = str(db_config.username) if db_config.username else ""
-        password = str(db_config.password) if db_config.password else ""
-        host = str(db_config.host) if db_config.host else "localhost"
-        port = str(db_config.port) if db_config.port else "3306"
-        database = str(db_config.database) if db_config.database else ""
-
-        return f"{dialect}://{username}:{password}@{host}:{port}/{database}"
-
-    def get_engine(self) -> Engine:
-        """Returns the SQLAlchemy engine instance"""
-        return self.engine
-
-    def external_connection(self, database_url: str) -> Session:
-        """
-        Creates a new session with a different database URL.
-
-        Args:
-            database_url (str): The database URL to connect to.
-
-        Returns:
-            Session: A new SQLModel session.
-        """
-        new_engine = create_engine(
-            database_url, echo=self.settings.database_echo)
-        new_session = Session(new_engine)
-        return new_session
+    @contextlib.contextmanager
+    def transaction(self) -> Generator[Session, None, None]:
+        """Context manager for transactions"""
+        session = self.session
+        self._transaction_depth += 1
+        try:
+            yield session
+            if self._transaction_depth == 1:
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            self._transaction_depth -= 1
 
     def commit(self) -> None:
-        """Commits the changes made in the session."""
-        self.session.commit()
+        """Commit if we are not in a nested transaction"""
+        if self._transaction_depth <= 1:
+            self.session.commit()
 
     def rollback(self) -> None:
-        """Rolls back the uncommitted changes in the session."""
+        """Rolls back the current transaction"""
         self.session.rollback()
 
-    def persist(self, entity) -> None:
+    def persist(self, entity):
         """
-        Persists an entity in the session.
-
-        Args:
-            entity: The entity to persist.
+        Adds an entity to the session and identity map.
+        If the entity already exists in the session, it merges it.
         """
-        db_entity = self.find_existing_entity(entity)
-        if db_entity:
-            self.session.merge(entity)
-        else:
+        try:
             self.session.add(entity)
+        except Exception as e:
+            if "already attached to session" in str(e):
+                try:
+                    current_session = object_session(entity)
+                    if current_session and current_session is not self.session:
+                        current_session.expunge(entity)
+
+                    entity = self.session.merge(entity)
+                except Exception as merge_error:
+                    self.logger.warning(
+                        f"Entity merge failed: {str(merge_error)}")
+                    primary_keys = entity.get_primary_keys()
+                    pk_value = getattr(
+                        entity, primary_keys[0]) if primary_keys else None
+
+                    if pk_value:
+                        fresh_entity = self.session.get(type(entity), pk_value)
+                        if fresh_entity:
+                            for attr, value in vars(entity).items():
+                                if not attr.startswith('_') and hasattr(fresh_entity, attr):
+                                    setattr(fresh_entity, attr, value)
+                            entity = fresh_entity
+                            self.session.add(entity)
+            else:
+                raise
+        primary_keys = entity.get_primary_keys()
+        if primary_keys:
+            pk_name = primary_keys[0]
+            pk_value = getattr(entity, pk_name)
+            if pk_value:
+                self._identity_map[(type(entity), pk_value)] = entity
+
+        return entity
 
     def delete(self, entity) -> None:
         """
-        Deletes an entity from the session.
-
-        Args:
-            entity: The entity to delete.
+        Deletes the specified entity from the database session.
         """
-        if self.session.object_session(entity) is not self.session:
-            entity = self.session.merge(entity)
         self.session.delete(entity)
 
     def refresh(self, entity) -> None:
         """
-        Refreshes the state of an entity in the session.
-
-        Args:
-            entity: The entity to refresh.
+        Refresh the state of the given entity from the database, overwriting any local changes.
+        This is useful when you want to ensure that the entity reflects the current state in the database.
         """
         self.session.refresh(entity)
 
     def exec_statement(self, statement) -> list:
         """
-        Executes an SQL statement.
-
-        Args:
-            statement: The SQL statement to execute.
-
-        Returns:
-            list: List of results.
+        Executes the given SQL statement and returns the result as a list.
         """
         return self.session.exec(statement).all()
 
-    def find(self, entity_class, primary_keys) -> Any:
+    def find(self, entity_class, primary_key):
         """
-        Retrieves an entity from the session by its primary key.
+        Retrieve an entity from the identity map or database session.
 
-        Args:
-            entity_class: The entity class.
-            primary_keys (dict): The primary key values of the entity.
-
-        Returns:
-            The found entity or None.
+        This method first checks if the entity identified by the given class and primary key
+        is present in the identity map. If found, it returns the cached entity. If not found,
+        it queries the database session for the entity. If the entity is found in the database,
+        it is added to the identity map and then returned.
         """
-        return self.session.get(entity_class, primary_keys)
+        map_key = (entity_class, primary_key)
+        if map_key in self._identity_map:
+            return self._identity_map[map_key]
+        entity = self.session.get(entity_class, primary_key)
+        if entity:
+            self._identity_map[map_key] = entity
+        return entity
 
     def find_existing_entity(self, entity) -> Any:
         """
-        Finds an existing entity in the database based on its primary keys.
+        Finds an existing entity in the database.
 
-        Args:
-            entity: The entity object to search for.
-
-        Returns:
-            The found entity object, or None if not found.
+        This method retrieves the primary keys of the given entity and uses them to
+        search for the corresponding entity in the database.
         """
         primary_keys = entity.get_primary_keys()
         keys = {key: getattr(entity, key) for key in primary_keys}
@@ -161,31 +156,25 @@ class EntityManager:
 
     def create_all_tables(self) -> None:
         """
-        Creates all tables defined in SQLModel.metadata.
-        Useful for database initialization.
-        """
-        from sqlmodel import SQLModel
+        Create all tables in the database.
 
+        This method uses the SQLModel metadata to create all tables defined in the
+        models associated with this entity manager's engine. It ensures that the
+        database schema is up-to-date with the current models.
+        """
         SQLModel.metadata.create_all(self.engine)
 
     def drop_all_tables(self) -> None:
         """
-        Drops all tables defined in SQLModel.metadata.
-        Warning: this operation is destructive!
-        """
-        from sqlmodel import SQLModel
+        Drops all tables in the database.
 
+        """
         SQLModel.metadata.drop_all(self.engine)
 
-    def get_repository(self, entity_class):
+    def get_repository(self, entity_class: Type) -> Any:
         """
-        Obtient un repository pour une classe d'entité spécifique.
+        Retrieve the repository instance associated with the given entity class.
 
-        Args:
-            entity_class: La classe de l'entité.
-
-        Returns:
-            AbstractRepository: Une instance de repository pour l'entité spécifiée.
         """
         container = ServiceContainer()
         repositories = container.get_by_tag_prefix("repository.")
@@ -193,5 +182,4 @@ class EntityManager:
         for repo in repositories:
             if getattr(repo, "model", None) == entity_class:
                 return repo
-            else:
-                return None
+        return None
