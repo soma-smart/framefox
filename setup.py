@@ -11,7 +11,7 @@ setup(
     author_email="boumaza.rayen@outlook.fr",
     install_requires=[
         "typer==0.15.1",
-        "fastapi==0.115.7",
+        "fastapi==0.115.12",
         "uvicorn==0.34.0",
         "starlette==0.45.3",
         "sqlmodel==0.0.22",
