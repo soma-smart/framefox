@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="framefox",
-    version="1.0.17",
+    version="1.0.19",
     packages=find_packages(),
     include_package_data=True,
     long_description=open("README.md").read(),

@@ -48,8 +48,6 @@ class AlembicManager:
 
     def setup_templates(self) -> None:
         """Copies necessary template files"""
-        if not os.path.exists(self._templates_dir):
-            os.makedirs(self._templates_dir, exist_ok=True)
         script_template_dst = self._migrations_dir / "script.py.mako"
         if not script_template_dst.exists():
             script_template_src = self._templates_dir / "script.py.mako"

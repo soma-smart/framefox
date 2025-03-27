@@ -28,17 +28,20 @@ class EntityManagerRegistry:
         self._initialized = True
 
     def get_engine(self, connection_name: str = "default") -> Engine:
-        """Retrieves or creates a configured database engine"""
+        """Récupère ou crée un moteur de base de données configuré"""
         if connection_name not in self._engines:
             db_url = self._get_database_url_string(connection_name)
+            db_config = self.settings.config.get("database", {})
+
+            # Get pool settings from configuration with fallbacks
             self._engines[connection_name] = create_engine(
                 db_url,
                 echo=self.settings.database_echo,
-                pool_size=20,  # Maximum number of connections in the pool
-                max_overflow=10,  # Additional connections allowed
-                pool_timeout=30,  # Wait time for a connection
-                pool_recycle=1800,  # Recycle connections after 30 min
-                pool_pre_ping=True,  # Check connections before use
+                pool_size=db_config.get("pool_size", 20),
+                max_overflow=db_config.get("max_overflow", 10),
+                pool_timeout=db_config.get("pool_timeout", 30),
+                pool_recycle=db_config.get("pool_recycle", 1800),
+                pool_pre_ping=db_config.get("pool_pre_ping", True),
             )
         return self._engines[connection_name]
 

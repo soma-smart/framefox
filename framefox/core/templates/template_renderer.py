@@ -6,6 +6,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.form.extension.form_extension import FormExtension
+from framefox.core.request.request_stack import RequestStack
 
 """
 Framefox Framework developed by SOMA
@@ -36,6 +37,7 @@ class TemplateRenderer:
         self.env.globals["current_user"] = self.get_current_user
         self.env.globals["asset"] = self.asset
         self.env.globals["dump"] = self._dump_function
+        self.env.globals["request"] = self.get_current_request
 
         self._register_filters(self.env)
 
@@ -48,6 +50,14 @@ class TemplateRenderer:
             print(f"Error generating URL for route '{name}': {str(e)}")
             return "#"
 
+    def get_current_request(self):
+        """Récupère la requête actuelle depuis le RequestStack"""
+        try:
+            return RequestStack.get_request()
+        except Exception as e:
+            print(f"Error retrieving current request: {str(e)}")
+            return None
+
     def get_flash_messages(self):
         """Retrieves flash messages from the session in template format"""
         session = self.container.get_by_name("Session")
@@ -55,6 +65,12 @@ class TemplateRenderer:
         return flash_bag.get_for_template()
 
     def render(self, template_name: str, context: dict = {}) -> str:
+        # Assurez-vous que le contexte contient toujours l'objet request
+        if "request" not in context:
+            request = self.get_current_request()
+            if request:
+                context["request"] = request
+
         template = self.env.get_template(template_name)
         return template.render(**context)
 
