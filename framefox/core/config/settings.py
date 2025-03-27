@@ -155,7 +155,8 @@ class Settings:
     @property
     def cache_dir(self):
         """Returns the cache directory from the configuration."""
-        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(
+            os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 
@@ -163,12 +164,59 @@ class Settings:
 
     @property
     def database_url(self):
-        """Returns the database URI from the configuration, default is 'sqlite:///app.db'."""
-        return DatabaseUrlParser.parse_url(self.config.get("database", {}).get("url"))
+        """
+        Returns the database configuration, either from the URL in .env 
+        or from the detailed configuration in orm.yaml.
+
+        Priority:
+        1. DATABASE_URL environment variable
+        2. Detailed configuration in orm.yaml
+        3. Raise exception if both are missing
+        """
+
+        db_url = os.getenv("DATABASE_URL")
+        if db_url:
+            return DatabaseUrlParser.parse_url(db_url)
+
+        db_config = self.config.get("database", {})
+        if db_config:
+
+            if "url" in db_config and not db_config["url"]:
+                del db_config["url"]
+
+            if "url" in db_config and db_config["url"]:
+                return DatabaseUrlParser.parse_url(db_config["url"])
+
+            has_required_details = all(
+                key in db_config for key in ["driver", "host", "database"]
+            ) or (
+                "driver" in db_config and db_config["driver"] == "sqlite" and "database" in db_config
+            )
+
+            if has_required_details:
+
+                return DatabaseUrlParser.parse_url(db_config)
+
+        raise ValueError(
+            "No database configuration found. Please set DATABASE_URL in .env file "
+            "or provide detailed configuration in config/orm.yaml file."
+        )
 
     @property
     def database_echo(self):
-        """Returns True if the application environment is 'dev', otherwise False."""
+        """
+        Returns whether SQL statements should be echoed.
+        True if APP_ENV is 'dev' or if explicitly set in configuration.
+        """
+        # Check if explicitly configured in orm.yaml
+        if "echo" in self.config.get("database", {}):
+            config_value = self.config["database"]["echo"]
+            # Handle string values like "true", "false" from environment variables
+            if isinstance(config_value, str):
+                return config_value.lower() == "true"
+            return bool(config_value)
+
+        # Default behavior based on APP_ENV
         return self.app_env == "dev"
 
     @property
