@@ -230,7 +230,17 @@ class FirewallHandler:
                 self.logger.warning("User does not have the required roles.")
 
         self.logger.warning(f"Access forbidden for path: {request.url.path}")
-        return Response(content="Forbidden", status_code=403)
+
+        # Vérifier si le client accepte du HTML (navigateur)
+        accept_header = request.headers.get("accept", "")
+        if "text/html" in accept_header:
+            # Pour les navigateurs, rediriger vers la page d'accueil
+            self.logger.info(
+                f"Redirecting to / after session expiration from {request.url.path}")
+            return RedirectResponse(url="/", status_code=302)
+        else:
+            # Pour les API, renvoyer un statut 403 comme avant
+            return Response(content="Forbidden", status_code=403)
 
     async def handle_logout(
         self, request: Request, firewall_config: Dict, firewall_name: str, call_next
