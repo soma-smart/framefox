@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 from framefox.core.form.form_field import FormField
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

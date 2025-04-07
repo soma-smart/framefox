@@ -5,7 +5,6 @@ from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 
-
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

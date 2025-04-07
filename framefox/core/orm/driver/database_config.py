@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

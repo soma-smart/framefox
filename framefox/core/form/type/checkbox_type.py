@@ -2,7 +2,6 @@ from typing import Any
 
 from framefox.core.form.type.abstract_form_type import AbstractFormType
 
-
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

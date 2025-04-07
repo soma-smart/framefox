@@ -96,8 +96,7 @@ class MailManager:
             attachments = kwargs.get("attachments", [])
             for att in attachments:
                 if isinstance(att, dict):
-                    message.add_attachment(
-                        att["filepath"], att.get("filename"))
+                    message.add_attachment(att["filepath"], att.get("filename"))
                 else:
                     message.add_attachment(att)
 
@@ -126,9 +125,7 @@ class MailManager:
             return False
 
         if not message.sender:
-            self.logger.error(
-                "No sender address defined for this email"
-            )
+            self.logger.error("No sender address defined for this email")
             return False
 
         msg = MIMEMultipart("alternative")
@@ -155,9 +152,7 @@ class MailManager:
                     part["Content-Disposition"] = f'attachment; filename="{filename}"'
                     msg.attach(part)
             except Exception as e:
-                self.logger.error(
-                    f"Error adding attachment {filepath}: {str(e)}"
-                )
+                self.logger.error(f"Error adding attachment {filepath}: {str(e)}")
 
         try:
             all_receivers = [message.receiver]
@@ -176,8 +171,7 @@ class MailManager:
                 sender=msg["From"],
             )
 
-            self.logger.info(
-                f"Email sent: {message.subject} to {message.receiver}")
+            self.logger.info(f"Email sent: {message.subject} to {message.receiver}")
             return True
 
         except Exception as e:

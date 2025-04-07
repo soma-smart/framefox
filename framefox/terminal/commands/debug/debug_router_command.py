@@ -29,7 +29,7 @@ class DebugRouterCommand(AbstractCommand):
 
     def execute(self):
         """
-        Print the list of routes
+        Display the list of routes
         """
         console = Console()
         print("")

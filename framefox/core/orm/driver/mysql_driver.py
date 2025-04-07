@@ -2,6 +2,7 @@ from sqlalchemy.sql import text
 
 from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.core.orm.driver.database_driver import DatabaseDriver
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -19,8 +20,7 @@ class MySQLDriver(DatabaseDriver):
         import pymysql
 
         try:
-            password = str(
-                self.config.password) if self.config.password else ""
+            password = str(self.config.password) if self.config.password else ""
 
             return pymysql.connect(
                 host=str(self.config.host),

@@ -21,8 +21,7 @@ class SessionManager:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.logger = logging.getLogger("SESSION_MANAGER")
-        db_dir = os.path.dirname(os.path.abspath(
-            self.settings.session_file_path))
+        db_dir = os.path.dirname(os.path.abspath(self.settings.session_file_path))
         os.makedirs(db_dir, exist_ok=True)
         self.db_path = os.path.join(db_dir, "sessions.db")
         self._init_database()
@@ -50,9 +49,7 @@ class SessionManager:
             conn.commit()
             conn.close()
         except sqlite3.Error as e:
-            self.logger.error(
-                f"Error initializing session database: {e}"
-            )
+            self.logger.error(f"Error initializing session database: {e}")
 
     def load_sessions(self) -> Dict:
         """Load all sessions (API compatibility)"""
@@ -99,8 +96,7 @@ class SessionManager:
             conn.commit()
             conn.close()
         except sqlite3.Error as e:
-            self.logger.error(
-                f"Error saving sessions: {e}")
+            self.logger.error(f"Error saving sessions: {e}")
 
     def get_session(self, session_id: str) -> Optional[Dict]:
         """Retrieve a session by its ID"""
@@ -122,9 +118,7 @@ class SessionManager:
                     "expires_at": row["expires_at"],
                 }
         except sqlite3.Error as e:
-            self.logger.error(
-                f"Error retrieving session {session_id}: {e}"
-            )
+            self.logger.error(f"Error retrieving session {session_id}: {e}")
 
         return None
 
@@ -145,9 +139,7 @@ class SessionManager:
             conn.commit()
             conn.close()
         except sqlite3.Error as e:
-            self.logger.error(
-                f"Error creating session {session_id}: {e}"
-            )
+            self.logger.error(f"Error creating session {session_id}: {e}")
 
     def update_session(self, session_id: str, data: Dict, max_age: int) -> None:
         """Update an existing session"""
@@ -166,9 +158,7 @@ class SessionManager:
             conn.commit()
             conn.close()
         except sqlite3.Error as e:
-            self.logger.error(
-                f"Error updating session {session_id}: {e}"
-            )
+            self.logger.error(f"Error updating session {session_id}: {e}")
 
     def delete_session(self, session_id: str) -> bool:
         """Delete a session"""
@@ -176,8 +166,7 @@ class SessionManager:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            cursor.execute(
-                "DELETE FROM sessions WHERE session_id = ?", (session_id,))
+            cursor.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
             deleted = cursor.rowcount > 0
 
             conn.commit()
@@ -185,9 +174,7 @@ class SessionManager:
 
             return deleted
         except sqlite3.Error as e:
-            self.logger.error(
-                f"Error deleting session {session_id}: {e}"
-            )
+            self.logger.error(f"Error deleting session {session_id}: {e}")
             return False
 
     def cleanup_expired_sessions(self) -> None:
@@ -197,16 +184,13 @@ class SessionManager:
             cursor = conn.cursor()
 
             current_time = datetime.now(timezone.utc).timestamp()
-            cursor.execute(
-                "DELETE FROM sessions WHERE expires_at < ?", (current_time,))
+            cursor.execute("DELETE FROM sessions WHERE expires_at < ?", (current_time,))
             deleted_count = cursor.rowcount
 
             if deleted_count > 0:
-                self.logger.info(
-                    f"Expired sessions cleaned up: {deleted_count}")
+                self.logger.info(f"Expired sessions cleaned up: {deleted_count}")
 
             conn.commit()
             conn.close()
         except sqlite3.Error as e:
-            self.logger.error(
-                f"Error cleaning up expired sessions: {e}")
+            self.logger.error(f"Error cleaning up expired sessions: {e}")

@@ -1,4 +1,3 @@
-
 from framefox.core.form.type.text_type import TextType
 
 """

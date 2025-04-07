@@ -1,11 +1,12 @@
-import logging
 import contextlib
+import logging
 from typing import Any, Generator, Type
-from sqlmodel import SQLModel, Session
+
 from sqlalchemy.orm.session import object_session
+from sqlmodel import Session, SQLModel
+
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.orm.entity_manager_registry import EntityManagerRegistry
-
 
 """
 Framefox Framework developed by SOMA
@@ -82,17 +83,19 @@ class EntityManager:
 
                     entity = self.session.merge(entity)
                 except Exception as merge_error:
-                    self.logger.warning(
-                        f"Entity merge failed: {str(merge_error)}")
+                    self.logger.warning(f"Entity merge failed: {str(merge_error)}")
                     primary_keys = entity.get_primary_keys()
-                    pk_value = getattr(
-                        entity, primary_keys[0]) if primary_keys else None
+                    pk_value = (
+                        getattr(entity, primary_keys[0]) if primary_keys else None
+                    )
 
                     if pk_value:
                         fresh_entity = self.session.get(type(entity), pk_value)
                         if fresh_entity:
                             for attr, value in vars(entity).items():
-                                if not attr.startswith('_') and hasattr(fresh_entity, attr):
+                                if not attr.startswith("_") and hasattr(
+                                    fresh_entity, attr
+                                ):
                                     setattr(fresh_entity, attr, value)
                             entity = fresh_entity
                             self.session.add(entity)

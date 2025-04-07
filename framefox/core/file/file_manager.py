@@ -6,7 +6,6 @@ from typing import List
 
 from fastapi import UploadFile
 
-
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -84,9 +83,7 @@ class FileManager:
             return rel_path
 
         except Exception as e:
-            self.logger.error(
-                f"Error saving file: {str(e)}", exc_info=True
-            )
+            self.logger.error(f"Error saving file: {str(e)}", exc_info=True)
             raise e
 
     def delete(self, file_path: str) -> bool:

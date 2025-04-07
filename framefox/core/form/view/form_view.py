@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional
 
 from framefox.core.form.form import Form
 from framefox.core.form.view.form_view_field import FormViewField
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

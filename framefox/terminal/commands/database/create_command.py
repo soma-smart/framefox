@@ -29,23 +29,26 @@ class CreateCommand(AbstractDatabaseCommand):
         self.database_url = settings.database_url
 
     def execute(self):
+        """
+        Create the database if it doesn't exist.
+        """
         try:
             database = self.connection_manager.config.database
 
             if self.driver.database_exists(database):
                 self.printer.print_msg(
-                    f"La base de données '{database}' existe déjà", theme="warning"
+                    f"The database '{database}' already exists", theme="warning"
                 )
                 return
 
             self.driver.create_database(database)
             self.printer.print_msg(
-                f"Base de données '{database}' créée avec succès", theme="success"
+                f"Database '{database}' created successfully", theme="success"
             )
 
         except Exception as e:
             self.printer.print_msg(
-                f"Erreur lors de la création de la base de données : {str(e)}",
+                f"Error while creating the database: {str(e)}",
                 theme="error",
             )
 

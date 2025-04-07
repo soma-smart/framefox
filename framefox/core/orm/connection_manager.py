@@ -39,8 +39,7 @@ class ConnectionManager:
     def _create_driver(self) -> DatabaseDriver:
         driver_class = self._drivers.get(self.config.driver)
         if not driver_class:
-            raise ValueError(
-                f"Unsupported database driver: {self.config.driver}")
+            raise ValueError(f"Unsupported database driver: {self.config.driver}")
         return driver_class(self.config)
 
     @property

@@ -2,17 +2,24 @@ import sys
 
 from framefox.terminal.terminal import Terminal
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 def main():
     """
-    Point d'entrée principal de l'application CLI Framefox.
+    Main entry point of the Framefox CLI application.
     """
     console = Terminal()
     return console.run()
 
 
-# Ne pas appeler directement app() dans le point d'entrée
 if __name__ == "__main__":
     sys.exit(main())
 else:
-    app = main  # Ceci est important pour que `python -m framefox` fonctionne
+    app = main

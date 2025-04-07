@@ -3,14 +3,15 @@ from typing import Annotated
 from framefox.core.config.settings import Settings
 from framefox.core.middleware.middlewares.custom_cors_middleware import \
     CustomCORSMiddleware
+from framefox.core.middleware.middlewares.entity_manager_middleware import \
+    EntityManagerMiddleware
 from framefox.core.middleware.middlewares.firewall_middleware import \
     FirewallMiddleware
 from framefox.core.middleware.middlewares.request_middleware import \
     RequestMiddleware
 from framefox.core.middleware.middlewares.session_middleware import \
     SessionMiddleware
-from framefox.core.middleware.middlewares.entity_manager_middleware import \
-    EntityManagerMiddleware
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

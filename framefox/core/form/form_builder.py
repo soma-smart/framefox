@@ -50,6 +50,6 @@ class FormBuilder:
         """
         if isinstance(self.data, dict):
             return self.data
-        elif hasattr(self.data, '__dict__'):
+        elif hasattr(self.data, "__dict__"):
             return self.data.__dict__
         return {}

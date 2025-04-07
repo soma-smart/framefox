@@ -17,31 +17,29 @@ class StatusCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self):
+        """
+        Check the status of the database and migrations.
+        """
         try:
-            # Affichage du statut de la base de données
             console = Console()
             console.print("")
-            console.print("[bold orange1]État de la base de données[/bold orange1]")
+            console.print("[bold orange1]Database Status[/bold orange1]")
             console.print("")
 
-            # Table pour l'état de la connexion
             db_table = Table(show_header=True, header_style="bold orange1")
-            db_table.add_column("Composant", style="bold orange3")
-            db_table.add_column("Statut", style="white")
-            db_table.add_column("Détails", style="white")
+            db_table.add_column("Component", style="bold orange3")
+            db_table.add_column("Status", style="white")
+            db_table.add_column("Details", style="white")
 
-            # Récupérer les informations de connexion
             db_name = self.connection_manager.config.database
             db_exists = self.driver.database_exists(db_name)
 
-            # Ligne pour l'existence de la base de données
             db_table.add_row(
-                "Base de données",
-                "[green]Existe[/green]" if db_exists else "[red]N'existe pas[/red]",
+                "Database",
+                "[green]Exists[/green]" if db_exists else "[red]Does not exist[/red]",
                 db_name,
             )
 
-            # Tester la connexion
             connection_ok = False
             error_message = ""
 
@@ -55,18 +53,16 @@ class StatusCommand(AbstractDatabaseCommand):
                 except Exception as e:
                     error_message = str(e)
 
-            # Ligne pour la connexion
             db_table.add_row(
-                "Connexion",
-                "[green]Établie[/green]" if connection_ok else "[red]Échec[/red]",
+                "Connection",
+                "[green]Established[/green]" if connection_ok else "[red]Failed[/red]",
                 (
                     error_message
                     if error_message
-                    else ("OK" if connection_ok else "Non connecté")
+                    else ("OK" if connection_ok else "Not connected")
                 ),
             )
 
-            # Afficher les détails de la base de données
             if db_exists and connection_ok:
                 driver_name = self.connection_manager.config.driver
                 host = self.connection_manager.config.host
@@ -79,23 +75,20 @@ class StatusCommand(AbstractDatabaseCommand):
             console.print(db_table)
             console.print("")
 
-            # Si la base de données n'existe pas, on s'arrête ici
             if not db_exists:
                 self.printer.print_msg(
-                    "La base de données n'existe pas. Veuillez exécuter 'framefox database:create' d'abord.",
+                    "The database does not exist. Please run 'framefox database:create' first.",
                     theme="error",
                 )
                 return
 
-            # Si la connexion a échoué, on s'arrête ici
             if not connection_ok:
                 self.printer.print_msg(
-                    f"Impossible de se connecter à la base de données: {error_message}",
+                    f"Unable to connect to the database: {error_message}",
                     theme="error",
                 )
                 return
 
-            # ---- Code existant pour les migrations ----
             alembic_cfg = self.alembic_manager.create_config()
             script = ScriptDirectory.from_config(alembic_cfg)
 
@@ -144,26 +137,22 @@ class StatusCommand(AbstractDatabaseCommand):
 
                 if current_rev != head_rev:
                     if current_rev is None:
-                        self.printer.print_msg(
-                            "Aucune migration appliquée", theme="warning"
-                        )
+                        self.printer.print_msg("No migrations applied", theme="warning")
                     else:
                         pending = list(script.iterate_revisions(current_rev, "head"))
                         self.printer.print_msg(
-                            f"{len(pending)} migration(s) en attente", theme="warning"
+                            f"{len(pending)} pending migration(s)", theme="warning"
                         )
                 else:
                     self.printer.print_msg(
-                        "La base de données est à jour", theme="success"
+                        "The database is up to date", theme="success"
                     )
 
-                # Une fois terminé, nettoyer les fichiers temporaires
                 self.alembic_manager.cleanup_temp_files()
 
         except Exception as e:
             self.printer.print_msg(
-                f"Erreur lors de la vérification des migrations: {str(e)}",
+                f"Error while checking migrations: {str(e)}",
                 theme="error",
             )
-            # S'assurer que les fichiers temporaires sont nettoyés même en cas d'erreur
             self.alembic_manager.cleanup_temp_files()

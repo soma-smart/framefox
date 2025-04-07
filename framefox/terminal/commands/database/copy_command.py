@@ -10,6 +10,14 @@ from framefox.core.config.settings import Settings
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.database_url_parser import DatabaseUrlParser
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphaël
+Github: https://github.com/Vasulvius
+"""
+
 
 class CopyCommand(AbstractCommand):
     def __init__(self):

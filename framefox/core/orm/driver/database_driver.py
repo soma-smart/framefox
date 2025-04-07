@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

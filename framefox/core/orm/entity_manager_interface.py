@@ -1,26 +1,40 @@
-from typing import Any, Generator, Type
 import contextlib
+from typing import Any, Generator, Type
+
 from sqlmodel import Session
-from framefox.core.request.request_stack import RequestStack
+
 from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.request.request_stack import RequestStack
 
 
 class EntityManagerInterface:
     """
-    Interface that delegates calls to the EntityManager specific to the current request.
-    Can be injected into the constructor of controllers.
+    Interface that delegates calls to the EntityManager specific to the execution context.
     """
+
+    def __init__(self, entity_manager=None):
+        """
+        Initializes the interface with an optional fixed entity manager.
+
+        Args:
+            entity_manager: If provided, it will always be used instead of the request context
+        """
+        self.entity_manager = entity_manager
 
     def _get_current_entity_manager(self):
         """
-        Retrieves the EntityManager linked to the current request,
-        or creates a new one if we are out of HTTP context
+        Retrieves the EntityManager linked to the current context:
+        - The fixed EntityManager if provided during initialization
+        - The EntityManager linked to the HTTP request if in a web context
+        - A new default EntityManager otherwise
         """
+
+        if self.entity_manager:
+            return self.entity_manager
+
         current_request = RequestStack.get_request()
         if current_request and hasattr(current_request.state, "entity_manager"):
             return current_request.state.entity_manager
-
-        # Fallback for non-HTTP contexts (CLI, tests, etc.)
 
         return EntityManager()
 

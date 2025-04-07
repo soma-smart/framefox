@@ -1,7 +1,8 @@
-from pathlib import Path
-import os
 import hashlib
 import json
+import os
+from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from framefox.core.di.service_container import ServiceContainer
@@ -23,8 +24,11 @@ class TemplateRenderer:
         self.settings = self.container.get_by_name("Settings")
         self.user_template_dir = self.settings.template_dir
         self.framework_template_dir = Path(__file__).parent / "views"
-        self.public_path = self.settings.public_path if hasattr(
-            self.settings, 'public_path') else 'public'
+        self.public_path = (
+            self.settings.public_path
+            if hasattr(self.settings, "public_path")
+            else "public"
+        )
         self.env = Environment(
             loader=FileSystemLoader(
                 [self.user_template_dir, str(self.framework_template_dir)]
@@ -103,7 +107,7 @@ class TemplateRenderer:
         except (ValueError, TypeError):
             return value
 
-    def _split_filter(self, value, delimiter=','):
+    def _split_filter(self, value, delimiter=","):
         """Splits a string by a delimiter"""
         if not value:
             return []
@@ -112,13 +116,13 @@ class TemplateRenderer:
     def _last_filter(self, value):
         """Returns the last element of a list"""
         if not value or not isinstance(value, (list, tuple)):
-            return ''
-        return value[-1] if value else ''
+            return ""
+        return value[-1] if value else ""
 
     def _lower_filter(self, value):
         """Converts a string to lowercase"""
         if value is None:
-            return ''
+            return ""
         return str(value).lower()
 
     def _json_encode_filter(self, value):
@@ -138,9 +142,9 @@ class TemplateRenderer:
         except (ValueError, TypeError):
             return str(size)
 
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size < 1024.0:
-                if unit == 'B':
+                if unit == "B":
                     return f"{int(size)} {unit}"
                 return f"{size:.2f} {unit}"
             size /= 1024.0
@@ -172,7 +176,8 @@ class TemplateRenderer:
         if isinstance(value, str):
             try:
                 from datetime import datetime
-                value = datetime.fromisoformat(value.replace('Z', '+00:00'))
+
+                value = datetime.fromisoformat(value.replace("Z", "+00:00"))
             except (ValueError, TypeError):
                 return value
 
@@ -205,9 +210,8 @@ class TemplateRenderer:
         Returns:
             Full URL to the resource
         """
-        path = path.lstrip('/')
-        base_url = self.settings.base_url if hasattr(
-            self.settings, 'base_url') else ''
+        path = path.lstrip("/")
+        base_url = self.settings.base_url if hasattr(self.settings, "base_url") else ""
         asset_url = f"{base_url}/{path}"
 
         if versioning:
@@ -218,6 +222,7 @@ class TemplateRenderer:
                 asset_url += f"?v={version}"
             else:
                 import time
+
                 asset_url += f"?v={int(time.time())}"
 
         return asset_url
@@ -225,9 +230,12 @@ class TemplateRenderer:
     def _dump_function(self, obj):
         """Function to display the content of an object in templates"""
         import pprint
+
         return pprint.pformat(obj, depth=3)
 
-    def _format_number_filter(self, value, decimal_places=2, decimal_separator=',', thousand_separator=' '):
+    def _format_number_filter(
+        self, value, decimal_places=2, decimal_separator=",", thousand_separator=" "
+    ):
         """
         Formats a number with thousand separators and decimals.
 
@@ -237,7 +245,7 @@ class TemplateRenderer:
             decimal_separator: Character for decimal separator
             thousand_separator: Character for thousand separator
 
-        Usage: 
+        Usage:
             {{ 1234.5678|format_number }}           -> 1 234,57
             {{ 1234.5678|format_number(1) }}        -> 1 234,6
             {{ 1234.5678|format_number(3, '.') }}   -> 1 234.568
@@ -254,13 +262,15 @@ class TemplateRenderer:
         format_string = "{:,.%df}" % decimal_places
         formatted = format_string.format(value)
 
-        if thousand_separator != ',' or decimal_separator != '.':
-            parts = formatted.split('.')
+        if thousand_separator != "," or decimal_separator != ".":
+            parts = formatted.split(".")
             if len(parts) == 2:
-                formatted = thousand_separator.join(
-                    parts[0].split(',')
-                ) + decimal_separator + parts[1]
+                formatted = (
+                    thousand_separator.join(parts[0].split(","))
+                    + decimal_separator
+                    + parts[1]
+                )
             else:
-                formatted = thousand_separator.join(formatted.split(','))
+                formatted = thousand_separator.join(formatted.split(","))
 
         return formatted
