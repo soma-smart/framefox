@@ -151,6 +151,13 @@ class InitCommand(AbstractCommand):
             data={},
             format="yaml",
         )
+        FileCreator().create_file(
+            template="init_files/tasks.jinja2",
+            path="./config",
+            name="tasks.yaml",
+            data={},
+            format="yaml",
+        )
         # env.py in migrations
         FileCreator().create_file(
             template="init_files/env.py.jinja2",

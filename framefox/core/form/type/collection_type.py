@@ -20,8 +20,7 @@ class CollectionType(AbstractFormType):
         self.allow_add = options.get("allow_add", True)
         self.allow_delete = options.get("allow_delete", True)
         if self.entry_type:
-            self.entry_type_instance = self.entry_type(
-                options.get("entry_options", {}))
+            self.entry_type_instance = self.entry_type(options.get("entry_options", {}))
 
     def transform_to_model(self, value: Any) -> List[Any]:
         """Transforms raw values into a list of elements."""

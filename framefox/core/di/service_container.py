@@ -3,8 +3,7 @@ import inspect
 import os
 import sys
 from pathlib import Path
-from typing import (Any, Callable, Dict, List, Optional, Type,
-                    get_type_hints)
+from typing import Any, Callable, Dict, List, Optional, Type, get_type_hints
 
 from framefox.core.di.service_config import ServiceConfig
 
@@ -158,7 +157,6 @@ class ServiceContainer:
         self._register_essential_services()
 
         core_path = Path(__file__).resolve().parent.parent
-        # Supprimez cette ligne : src_path = project_root / "src"
 
         excluded_directories = list(self._config.excluded_dirs) + [
             "entity",
@@ -237,7 +235,7 @@ class ServiceContainer:
         essential_services = [
             "framefox.core.config.settings.Settings",
             "framefox.core.logging.logger.Logger",
-            "framefox.core.orm.entity_manager_registry.EntityManagerRegistry"
+            "framefox.core.orm.entity_manager_registry.EntityManagerRegistry",
         ]
 
         for service_path in essential_services:
@@ -257,8 +255,7 @@ class ServiceContainer:
                 # Immediately instantiate these essential services
                 self.get(service_cls)
             except Exception as e:
-                print(
-                    f"Error registering essential service {service_path}: {e}")
+                print(f"Error registering essential service {service_path}: {e}")
 
     def _scan_for_service_definitions(
         self,
@@ -323,15 +320,12 @@ class ServiceContainer:
                                         attr
                                     ):
                                         # Create a service definition
-                                        is_public = self._config.is_public(
-                                            attr)
+                                        is_public = self._config.is_public(attr)
                                         autowire = self._config.autowire_enabled
-                                        tags = self._config.get_service_tags(
-                                            attr)
+                                        tags = self._config.get_service_tags(attr)
 
                                         # Add a default tag based on the module
-                                        default_tag = self._get_default_tag(
-                                            attr)
+                                        default_tag = self._get_default_tag(attr)
                                         if default_tag and default_tag not in tags:
                                             tags.append(default_tag)
 
@@ -342,8 +336,7 @@ class ServiceContainer:
                                             tags=tags,
                                             autowire=autowire,
                                         )
-                                        self._add_service_definition(
-                                            attr, definition)
+                                        self._add_service_definition(attr, definition)
 
                                 except Exception as e:
                                     if not "access" in str(e).lower():
@@ -362,11 +355,9 @@ class ServiceContainer:
                             if not any(
                                 debug_module in str(e) for debug_module in debug_modules
                             ):
-                                print(
-                                    f"Error importing module {module_name}: {e}")
+                                print(f"Error importing module {module_name}: {e}")
                         except ImportError as e:
-                            print(
-                                f"Import error for module {module_name}: {e}")
+                            print(f"Import error for module {module_name}: {e}")
 
                     except Exception as e:
                         print(f"Error processing file {file_path}: {e}")
@@ -470,14 +461,12 @@ class ServiceContainer:
             silent_classes = {"FastAPI", "Depends", "Request", "Response"}
 
             if service_class.__name__ not in silent_classes:
-                print(
-                    f"No service definition found for {service_class.__name__}")
+                print(f"No service definition found for {service_class.__name__}")
             return None
 
         # Do not instantiate abstract classes
         if definition.abstract:
-            print(
-                f"Cannot instantiate abstract class {service_class.__name__}")
+            print(f"Cannot instantiate abstract class {service_class.__name__}")
             return None
 
         # Use a factory if available
@@ -510,8 +499,7 @@ class ServiceContainer:
                 self._instances[service_class] = instance
                 return instance
             except Exception as e:
-                print(
-                    f"Error creating {service_class.__name__} with arguments: {e}")
+                print(f"Error creating {service_class.__name__} with arguments: {e}")
                 # Do not return here, try autowiring as fallback
 
         # Standard autowiring as a last resort
@@ -588,11 +576,9 @@ class ServiceContainer:
                             f"Warning: Parameter {name} of {service_class.__name__} has no type hint and no default value"
                         )
             except Exception as e:
-                print(
-                    f"Error getting type hints for {service_class.__name__}: {e}")
+                print(f"Error getting type hints for {service_class.__name__}: {e}")
         except Exception as e:
-            print(
-                f"Error analyzing constructor of {service_class.__name__}: {e}")
+            print(f"Error analyzing constructor of {service_class.__name__}: {e}")
 
         return dependencies
 

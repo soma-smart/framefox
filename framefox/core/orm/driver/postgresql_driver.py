@@ -20,8 +20,7 @@ class PostgreSQLDriver(DatabaseDriver):
         import psycopg2
 
         try:
-            password = str(
-                self.config.password) if self.config.password else ""
+            password = str(self.config.password) if self.config.password else ""
 
             return psycopg2.connect(
                 host=str(self.config.host),
@@ -37,13 +36,13 @@ class PostgreSQLDriver(DatabaseDriver):
     def create_database(self, name: str) -> bool:
         try:
             import psycopg2
+
             conn = psycopg2.connect(
                 host=str(self.config.host),
                 port=int(self.config.port),
                 user=str(self.config.username),
-                password=str(
-                    self.config.password) if self.config.password else "",
-                dbname="postgres"
+                password=str(self.config.password) if self.config.password else "",
+                dbname="postgres",
             )
             conn.autocommit = True
 
@@ -92,13 +91,13 @@ class PostgreSQLDriver(DatabaseDriver):
     def drop_database(self, name: str) -> bool:
         try:
             import psycopg2
+
             conn = psycopg2.connect(
                 host=str(self.config.host),
                 port=int(self.config.port),
                 user=str(self.config.username),
-                password=str(
-                    self.config.password) if self.config.password else "",
-                dbname="postgres"
+                password=str(self.config.password) if self.config.password else "",
+                dbname="postgres",
             )
             conn.autocommit = True
 

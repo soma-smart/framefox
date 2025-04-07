@@ -3,7 +3,6 @@ from typing import Any, Dict
 
 from framefox.core.form.form_builder import FormBuilder
 
-
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

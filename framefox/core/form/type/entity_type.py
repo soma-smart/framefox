@@ -2,7 +2,6 @@ from typing import Any, Dict
 
 from framefox.core.form.type.abstract_form_type import AbstractFormType
 
-
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -36,14 +35,12 @@ class EntityType(AbstractFormType):
                 try:
                     import importlib
 
-                    module = importlib.import_module(
-                        f"src.repository.{repo_class}")
+                    module = importlib.import_module(f"src.repository.{repo_class}")
                     repo_class_name = f"{entity_class}Repository"
                     repository_class = getattr(module, repo_class_name)
                     self._repository = repository_class()
                 except (ImportError, AttributeError) as e:
-                    print(
-                        f"Error loading repository for {entity_class}: {str(e)}")
+                    print(f"Error loading repository for {entity_class}: {str(e)}")
         return self._repository
 
     def get_choices(self) -> Dict[str, str]:

@@ -52,8 +52,7 @@ class AlembicManager:
         if not script_template_dst.exists():
             script_template_src = self._templates_dir / "script.py.mako"
             if script_template_src.exists():
-                shutil.copy2(str(script_template_src),
-                             str(script_template_dst))
+                shutil.copy2(str(script_template_src), str(script_template_dst))
 
     def create_config(self) -> Config:
         """Creates an Alembic configuration via a temporary INI file"""

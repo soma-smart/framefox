@@ -1,4 +1,5 @@
 from urllib.parse import parse_qs, urlparse
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox

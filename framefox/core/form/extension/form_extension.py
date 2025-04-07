@@ -74,10 +74,12 @@ class FormExtension:
 
         # Détecter si c'est un choix étendu
         is_expanded_choice = False
-        if hasattr(field_view, 'type'):
-            is_expanded_choice = (hasattr(field_view.type, 'options') and
-                                  field_view.type.options.get('expanded', False) and
-                                  'choices' in field_view.type.options)
+        if hasattr(field_view, "type"):
+            is_expanded_choice = (
+                hasattr(field_view.type, "options")
+                and field_view.type.options.get("expanded", False)
+                and "choices" in field_view.type.options
+            )
 
         # Adapter le HTML selon le type de champ
         if is_expanded_choice:

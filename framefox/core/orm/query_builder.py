@@ -61,8 +61,7 @@ class QueryBuilder:
         elif self._update is not None:
             self._update = self._update.join(*joins)
         else:
-            raise ValueError(
-                "No query (select, delete, update) has been initiated.")
+            raise ValueError("No query (select, delete, update) has been initiated.")
         return self
 
     def having(self, condition: Any) -> "QueryBuilder":
@@ -95,8 +94,7 @@ class QueryBuilder:
             query = self._update
             query_type = "update"
         else:
-            raise ValueError(
-                "No query has been initiated (select, delete, update).")
+            raise ValueError("No query has been initiated (select, delete, update).")
 
         if self._where:
             query = query.where(*self._where)
@@ -152,8 +150,7 @@ class QueryBuilder:
         query = self.get_query()
 
         if not self._order_by:
-            raise ValueError(
-                "A sort order must be defined to use the 'last' method.")
+            raise ValueError("A sort order must be defined to use the 'last' method.")
 
         reversed_order = []
         for condition in self._order_by:

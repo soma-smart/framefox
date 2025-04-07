@@ -1,5 +1,6 @@
 import logging
 from typing import Dict
+
 from sqlalchemy.engine import Engine
 from sqlmodel import create_engine
 
@@ -82,3 +83,10 @@ class EntityManagerRegistry:
             request.state.entity_manager = em
 
         return em
+
+    @classmethod
+    def get_entity_manager_for_worker(cls):
+        """Crée un EntityManager persistant pour les workers (contexte non-HTTP)"""
+        from framefox.core.orm.entity_manager import EntityManager
+
+        return EntityManager()

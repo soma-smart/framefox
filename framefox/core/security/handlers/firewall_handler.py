@@ -103,16 +103,14 @@ class FirewallHandler:
                     request, firewall, firewall_name, call_next
                 )
 
-        is_auth_route = any(request.url.path.startswith(route)
-                            for route in auth_routes)
+        is_auth_route = any(request.url.path.startswith(route) for route in auth_routes)
         if is_auth_route:
             auth_response = await self.handle_authentication(request, call_next)
             if auth_response:
                 return auth_response
         auth_result = await self.handle_authorization(request, call_next)
         if auth_result.status_code == 403:
-            self.logger.warning(
-                "Authorization failed - insufficient permissions")
+            self.logger.warning("Authorization failed - insufficient permissions")
 
         return auth_result
 
@@ -199,8 +197,7 @@ class FirewallHandler:
             response = authenticator.on_auth_success(token)
             self.cookie_manager.delete_cookie(response, "csrf_token")
 
-            self.logger.info(
-                "Authentication successful and token stored securely.")
+            self.logger.info("Authentication successful and token stored securely.")
             return response
 
         return Response(content="Authentication failed", status_code=400)
@@ -209,12 +206,10 @@ class FirewallHandler:
         """
         Handles authorization using the AccessManager class.
         """
-        required_roles = self.access_manager.get_required_roles(
-            request.url.path)
+        required_roles = self.access_manager.get_required_roles(request.url.path)
         if not required_roles:
             response = await call_next(request)
-            self.logger.debug(
-                f"Response from call_next: Status={response.status_code}")
+            self.logger.debug(f"Response from call_next: Status={response.status_code}")
             return response
 
         from framefox.core.security.token_storage import TokenStorage
@@ -230,7 +225,18 @@ class FirewallHandler:
                 self.logger.warning("User does not have the required roles.")
 
         self.logger.warning(f"Access forbidden for path: {request.url.path}")
-        return Response(content="Forbidden", status_code=403)
+
+        # Vérifier si le client accepte du HTML (navigateur)
+        accept_header = request.headers.get("accept", "")
+        if "text/html" in accept_header:
+            # Pour les navigateurs, rediriger vers la page d'accueil
+            self.logger.info(
+                f"Redirecting to / after session expiration from {request.url.path}"
+            )
+            return RedirectResponse(url="/", status_code=302)
+        else:
+            # Pour les API, renvoyer un statut 403 comme avant
+            return Response(content="Forbidden", status_code=403)
 
     async def handle_logout(
         self, request: Request, firewall_config: Dict, firewall_name: str, call_next

@@ -14,25 +14,20 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
     def execute(self):
         """Create a new migration file with Alembic"""
         try:
-            # Check if the database exists without creating it
+
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(
                     "The database does not exist. Please run 'framefox database:create' first.",
                     theme="warning",
                 )
-                # Do not exit, continue with migration generation even without a database
 
-            # Ensure the alembic_version table exists
-            # Only if the database exists
             if self.driver.database_exists(self.connection_manager.config.database):
                 db_url = self.alembic_manager.get_database_url_string()
                 self.alembic_manager.create_alembic_version_table(db_url)
 
-            # Generate a message for the migration
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             migration_message = f"{timestamp}_migration"
 
-            # Create the migration
             created_file = self.alembic_manager.create_migration(
                 migration_message, autogenerate=True
             )
@@ -41,7 +36,6 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
                 self.printer.print_msg("No migration generated.", theme="warning")
                 return
 
-            # Check if the migration contains changes
             content = self.alembic_manager.get_migration_content(created_file)
 
             if not self.alembic_manager.has_changes(content):

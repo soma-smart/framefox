@@ -48,18 +48,12 @@ class AbstractFormType:
 
     def transform_to_model(self, value: Any) -> Any:
         """Transforms the form value to a model value."""
-        raise NotImplementedError(
-            "This method must be implemented by subclasses"
-        )
+        raise NotImplementedError("This method must be implemented by subclasses")
 
     def transform_to_view(self, value: Any) -> Any:
         """Transforms the model value to a view value."""
-        raise NotImplementedError(
-            "This method must be implemented by subclasses"
-        )
+        raise NotImplementedError("This method must be implemented by subclasses")
 
     def get_block_prefix(self) -> str:
         """Returns the block prefix for rendering."""
-        raise NotImplementedError(
-            "This method must be implemented by subclasses"
-        )
+        raise NotImplementedError("This method must be implemented by subclasses")

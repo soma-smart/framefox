@@ -31,7 +31,7 @@ class Router:
         return cls._instance
 
     def __init__(self, app=None):
-        if hasattr(self, '_initialized') and self._initialized:
+        if hasattr(self, "_initialized") and self._initialized:
             return
 
         if app:
@@ -65,8 +65,7 @@ class Router:
             if exc.status_code == 404:
                 template_renderer = self.container.get(TemplateRenderer)
                 html_content = template_renderer.render(
-                    "404.html", {"request": request,
-                                 "error": "Page non trouvée"}
+                    "404.html", {"request": request, "error": "Page non trouvée"}
                 )
                 return HTMLResponse(content=html_content, status_code=404)
             raise exc

@@ -30,8 +30,6 @@ class CreateCrudCommand(AbstractCommand):
     def _create_view_templates(self, entity_name: str):
         template_dir = os.path.join(self.templates_path, entity_name)
         os.makedirs(template_dir, exist_ok=True)
-
-        # Récupérer les propriétés enrichies
         properties = ModelChecker().get_entity_properties(entity_name)
 
         templates = {
@@ -55,7 +53,7 @@ class CreateCrudCommand(AbstractCommand):
 
     def execute(self, entity_name: str = None):
         """
-        Make a CRUD controller for the given entity name.
+        Create a CRUD controller for the given entity name.
 
         Args:
             entity_name (str): The name of the entity in snake_case.

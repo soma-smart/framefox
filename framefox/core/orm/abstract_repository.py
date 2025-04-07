@@ -2,8 +2,9 @@ from abc import ABC
 from typing import List, Optional, Type, TypeVar
 
 from sqlmodel import SQLModel, asc, desc, select
-from framefox.core.orm.query_builder import QueryBuilder
+
 from framefox.core.orm.entity_manager_registry import EntityManagerRegistry
+from framefox.core.orm.query_builder import QueryBuilder
 
 """
 Framefox Framework developed by SOMA
@@ -77,11 +78,9 @@ class AbstractRepository(ABC):
         if order_by:
             for field, direction in order_by.items():
                 if direction.lower() == "asc":
-                    statement = statement.order_by(
-                        asc(getattr(self.model, field)))
+                    statement = statement.order_by(asc(getattr(self.model, field)))
                 elif direction.lower() == "desc":
-                    statement = statement.order_by(
-                        desc(getattr(self.model, field)))
+                    statement = statement.order_by(desc(getattr(self.model, field)))
 
         if limit is not None:
             statement = statement.limit(limit)

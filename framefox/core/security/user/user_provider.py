@@ -1,5 +1,6 @@
 import logging
 from typing import Any, Dict, Optional, Type, TypeVar
+
 from framefox.core.request.session.session_interface import SessionInterface
 from framefox.core.security.token_storage import TokenStorage
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
@@ -48,9 +49,7 @@ class UserProvider:
         user_id_cache = self.session.get("_current_user_id")
         if user_id_cache:
 
-            firewall_name = (
-                "main"
-            )
+            firewall_name = "main"
             provider_info = self.entity_user_provider.get_repository_and_property(
                 firewall_name
             )
@@ -70,9 +69,7 @@ class UserProvider:
 
         firewall_name = payload.get("firewallname", "main")
         if firewall_name.startswith("/"):
-            self.logger.debug(
-                f"Convert path {firewall_name} to firewall name 'main'"
-            )
+            self.logger.debug(f"Convert path {firewall_name} to firewall name 'main'")
             firewall_name = "main"
 
         if not user_id:
@@ -83,9 +80,7 @@ class UserProvider:
         )
 
         if not provider_info:
-            self.logger.warning(
-                f"No provider found for firewall '{firewall_name}'"
-            )
+            self.logger.warning(f"No provider found for firewall '{firewall_name}'")
             return None
         repository, _ = provider_info
         user = repository.find(user_id)
@@ -94,8 +89,6 @@ class UserProvider:
             self.session.save()
             self.logger.debug(f"User {user_id} cached")
         else:
-            self.logger.warning(
-                f"User with ID {user_id} not found in repository"
-            )
+            self.logger.warning(f"User with ID {user_id} not found in repository")
 
         return user

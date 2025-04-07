@@ -21,8 +21,6 @@ load_dotenv(dotenv_path=env_path)
 
 ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
 
-# APP_ENV = os.getenv("APP_ENV", "prod")
-
 
 class Settings:
     """
@@ -155,8 +153,7 @@ class Settings:
     @property
     def cache_dir(self):
         """Returns the cache directory from the configuration."""
-        cache_path = os.path.join(
-            os.path.dirname(__file__), "../../../var/cache")
+        cache_path = os.path.join(os.path.dirname(__file__), "../../../var/cache")
         os.makedirs(cache_path, exist_ok=True)
         return cache_path
 
@@ -165,7 +162,7 @@ class Settings:
     @property
     def database_url(self):
         """
-        Returns the database configuration, either from the URL in .env 
+        Returns the database configuration, either from the URL in .env
         or from the detailed configuration in orm.yaml.
 
         Priority:
@@ -190,7 +187,9 @@ class Settings:
             has_required_details = all(
                 key in db_config for key in ["driver", "host", "database"]
             ) or (
-                "driver" in db_config and db_config["driver"] == "sqlite" and "database" in db_config
+                "driver" in db_config
+                and db_config["driver"] == "sqlite"
+                and "database" in db_config
             )
 
             if has_required_details:
@@ -338,3 +337,59 @@ class Settings:
     def mail_config(self):
         """Returns the parsed mail configuration from the URL."""
         return MailUrlParser.parse_url(self.config.get("mail", {}).get("url", ""))
+
+    # ------------------------------ tasks ------------------------------
+
+    @property
+    def task_broker_type(self) -> str:
+        """Returns the type of broker to use (database, redis, rabbitmq)"""
+        return self.config.get("tasks", {}).get("type", "database")
+
+    # Ajouter cette propriété à la classe Settings après task_broker_type
+
+    @property
+    def task_transport_url(self) -> str:
+        """Returns the transport URL for RabbitMQ"""
+        return self.config.get("tasks", {}).get(
+            "task_transport_url", "amqp://guest:guest@localhost:5672/%2F"
+        )
+
+    @property
+    def task_worker_concurrency(self) -> int:
+        """Number of simultaneous tasks"""
+        return self.config.get("tasks", {}).get("worker", {}).get("concurrency", 5)
+
+    @property
+    def task_polling_interval(self) -> int:
+        """Interval between checks for new tasks (seconds)"""
+        return self.config.get("tasks", {}).get("worker", {}).get("polling_interval", 5)
+
+    @property
+    def task_default_queues(self) -> list:
+        """Default queues"""
+        return (
+            self.config.get("tasks", {})
+            .get("worker", {})
+            .get("default_queues", ["default"])
+        )
+
+    @property
+    def task_cleanup_interval(self) -> int:
+        """Task cleanup interval in hours"""
+        return self.config.get("tasks", {}).get("cleanup", {}).get("interval_hours", 24)
+
+    @property
+    def task_retention_days(self) -> int:
+        """Number of days to retain failed tasks"""
+        return self.config.get("tasks", {}).get("cleanup", {}).get("retention_days", 7)
+
+    @property
+    def task_defaults(self) -> dict:
+        """Default parameters for tasks"""
+        defaults = {
+            "queue": "default",
+            "priority": 0,
+            "max_retries": 3,
+            "retry_delay": 300,
+        }
+        return {**defaults, **self.config.get("tasks", {}).get("defaults", {})}

@@ -11,11 +11,11 @@ from framefox.core.di.service_container import ServiceContainer
 from framefox.core.events.event_dispatcher import dispatcher
 from framefox.core.logging.logger import Logger
 from framefox.core.middleware.middleware_manager import MiddlewareManager
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
 from framefox.core.routing.router import Router
 from framefox.core.security.token_storage import TokenStorage
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
 from framefox.core.security.user.user_provider import UserProvider
-from framefox.core.orm.entity_manager_interface import EntityManagerInterface
 
 """
 Framefox Framework developed by SOMA
@@ -64,11 +64,9 @@ class Kernel:
         token_storage = TokenStorage(session)
         self._container.set_instance(TokenStorage, token_storage)
         entity_user_provider = self._container.get(EntityUserProvider)
-        user_provider = UserProvider(
-            token_storage, session, entity_user_provider)
+        user_provider = UserProvider(token_storage, session, entity_user_provider)
         self._container.set_instance(UserProvider, user_provider)
-        self._container.set_instance(
-            EntityManagerInterface, EntityManagerInterface())
+        self._container.set_instance(EntityManagerInterface, EntityManagerInterface())
         self._logger.debug("Security services initialized")
 
     def _create_fastapi_app(self) -> FastAPI:
@@ -103,10 +101,10 @@ class Kernel:
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
         static_path = Path(__file__).parent / "templates" / "static"
+        self._app.mount("/static", StaticFiles(directory=static_path), name="static")
         self._app.mount(
-            "/static", StaticFiles(directory=static_path), name="static")
-        self._app.mount(
-            "/", StaticFiles(directory=Path("public")), name="public_assets")
+            "/", StaticFiles(directory=Path("public")), name="public_assets"
+        )
 
     @property
     def app(self) -> FastAPI:
