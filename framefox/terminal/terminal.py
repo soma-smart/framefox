@@ -1,5 +1,7 @@
 import typer
+import os
 
+from .commands import add_init_commands
 from .commands.cache import add_cache_commands
 from .commands.create import add_create_commands
 from .commands.database import add_database_commands
@@ -29,15 +31,21 @@ class Terminal:
             pretty_exceptions_enable=False,
         )
 
-        add_cache_commands(self.app)
-        add_create_commands(self.app)
-        add_database_commands(self.app)
-        add_debug_commands(self.app)
-        add_mock_commands(self.app)
-        add_server_commands(self.app)
+        if self.is_project_exists():
+            add_cache_commands(self.app)
+            add_create_commands(self.app)
+            add_database_commands(self.app)
+            add_debug_commands(self.app)
+            add_mock_commands(self.app)
+            add_server_commands(self.app)
+        else:
+            add_init_commands(self.app)
 
     def run(self):
         """
         Run the application
         """
         self.app()
+
+    def is_project_exists(self):
+        return os.path.exists("src")

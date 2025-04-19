@@ -20,12 +20,11 @@ Github: https://github.com/Vasulvius
 """
 
 
-class InitCommand(AbstractCommand):
-    def __init__(self):
-        super().__init__("init")
-        self.MIN_PYTHON_VERSION = (3, 11)
-        self.MIN_DISK_SPACE = 100 * 1024 * 1024
+MIN_PYTHON_VERSION = (3, 11)
+MIN_DISK_SPACE = 100 * 1024 * 1024
 
+
+class InitCommand(AbstractCommand):
     def execute(self):
         """
         Initializes a new Framefox project
@@ -212,11 +211,11 @@ class InitCommand(AbstractCommand):
         table.add_column("Current", style="white")
 
         python_version = sys.version_info
-        python_ok = python_version >= self.MIN_PYTHON_VERSION
+        python_ok = python_version >= MIN_PYTHON_VERSION
         table.add_row(
             "Python Version",
             "[green]OK[/green]" if python_ok else "[red]Error[/red]",
-            f"Python {'.'.join(map(str, self.MIN_PYTHON_VERSION))}+",
+            f"Python {'.'.join(map(str, MIN_PYTHON_VERSION))}+",
             f"Python {'.'.join(map(str, python_version[:3]))}",
         )
 
@@ -238,7 +237,7 @@ class InitCommand(AbstractCommand):
         )
 
         _, _, free = shutil.disk_usage(home)
-        space_ok = free > self.MIN_DISK_SPACE
+        space_ok = free > MIN_DISK_SPACE
         table.add_row(
             "Disk Space",
             "[green]OK[/green]" if space_ok else "[red]Insufficient[/red]",
