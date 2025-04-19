@@ -12,12 +12,12 @@ def add_mock_commands(app: Typer) -> None:
     )
 
     @mock_commands.command()
-    def create(*args, **kwargs):
-        MockCreateCommand().execute(*args, **kwargs)
+    def create(name: str | None):
+        MockCreateCommand().execute(name)
 
     @mock_commands.command()
-    def load(*args, **kwargs):
-        MockLoadCommand().execute(*args, **kwargs)
+    def load():
+        MockLoadCommand().execute()
 
     app.add_typer(
         mock_commands,

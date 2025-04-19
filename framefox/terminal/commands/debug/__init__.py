@@ -12,12 +12,12 @@ def add_debug_commands(app: Typer) -> None:
     )
 
     @debug_commands.command()
-    def router(*args, **kwargs):
-        DebugRouterCommand().execute(*args, **kwargs)
+    def router():
+        DebugRouterCommand().execute()
 
     @debug_commands.command()
-    def service(*args, **kwargs):
-        DebugServiceCommand().execute(*args, **kwargs)
+    def service():
+        DebugServiceCommand().execute()
 
     app.add_typer(
         debug_commands,

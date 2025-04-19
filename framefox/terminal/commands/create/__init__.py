@@ -17,32 +17,32 @@ def add_create_commands(app: Typer) -> None:
     )
 
     @create_commands.command()
-    def auth(*args, **kwargs):
-        CreateAuthCommand().execute(*args, **kwargs)
+    def auth():
+        CreateAuthCommand().execute()
 
     @create_commands.command()
-    def controller(*args, **kwargs):
-        CreateControllerCommand().execute(*args, **kwargs)
+    def controller(name: str | None):
+        CreateControllerCommand().execute(name)
 
     @create_commands.command()
-    def crud(*args, **kwargs):
-        CreateCrudCommand().execute(*args, **kwargs)
+    def crud(entity_name: str | None):
+        CreateCrudCommand().execute(entity_name)
 
     @create_commands.command()
-    def entity(*args, **kwargs):
-        CreateEntityCommand().execute(*args, **kwargs)
+    def entity(name: str | None):
+        CreateEntityCommand().execute(name)
 
     @create_commands.command()
-    def hash(*args, **kwargs):
-        CreateHashCommand().execute(*args, **kwargs)
+    def hash():
+        CreateHashCommand().execute()
 
     @create_commands.command()
-    def register(*args, **kwargs):
-        CreateRegisterCommand().execute(*args, **kwargs)
+    def register():
+        CreateRegisterCommand().execute()
 
     @create_commands.command()
-    def user(*args, **kwargs):
-        CreateUserCommand().execute(*args, **kwargs)
+    def user(name: str | None):
+        CreateUserCommand().execute()
 
     app.add_typer(
         create_commands,

@@ -12,12 +12,12 @@ def add_server_commands(app: Typer) -> None:
     )
 
     @server_commands.command()
-    def start(*args, **kwargs):
-        ServerStartCommand().execute(*args, **kwargs)
+    def start(port: int | None):
+        ServerStartCommand().execute(port)
 
     @server_commands.command()
-    def worker(*args, **kwargs):
-        WorkerCommand().execute(*args, **kwargs)
+    def worker():
+        WorkerCommand().execute()
 
     app.add_typer(
         server_commands,

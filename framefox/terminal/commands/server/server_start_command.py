@@ -17,7 +17,7 @@ class ServerStartCommand(AbstractCommand):
         self.worker_thread = None
         self.worker_stop_event = None
 
-    def execute(self, port: int = 8000, *args, **kwargs):
+    def execute(self, port: int = 8000):
         """
         Démarre le serveur de développement avec Uvicorn
         Start the uvicorn server.

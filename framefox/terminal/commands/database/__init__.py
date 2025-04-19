@@ -18,36 +18,36 @@ def add_database_commands(app: Typer) -> None:
     )
 
     @database_commands.command()
-    def clear(*args, **kwargs):
-        ClearMetadataCommand().execute(*args, **kwargs)
+    def clear():
+        ClearMetadataCommand().execute()
 
     @database_commands.command()
-    def copy(*args, **kwargs):
-        CopyCommand().execute(*args, **kwargs)
+    def copy():
+        CopyCommand().execute()
 
     @database_commands.command()
-    def create(*args, **kwargs):
-        CreateCommand().execute(*args, **kwargs)
+    def create():
+        CreateCommand().execute()
 
     @database_commands.command()
-    def migration(*args, **kwargs):
-        CreateMigrationCommand().execute(*args, **kwargs)
+    def migration():
+        CreateMigrationCommand().execute()
 
     @database_commands.command()
-    def downgrade(*args, **kwargs):
-        DowngradeCommand().execute(*args, **kwargs)
+    def downgrade(steps: int | None):
+        DowngradeCommand().execute()
 
     @database_commands.command()
-    def drop(*args, **kwargs):
-        DropCommand().execute(*args, **kwargs)
+    def drop():
+        DropCommand().execute()
 
     @database_commands.command()
-    def status(*args, **kwargs):
-        StatusCommand().execute(*args, **kwargs)
+    def status():
+        StatusCommand().execute()
 
     @database_commands.command()
-    def upgrade(*args, **kwargs):
-        UpgradeCommand().execute(*args, **kwargs)
+    def upgrade():
+        UpgradeCommand().execute()
 
     app.add_typer(
         database_commands,

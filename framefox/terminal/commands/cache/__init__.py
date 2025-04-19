@@ -12,12 +12,12 @@ def add_cache_commands(app: Typer) -> None:
     )
 
     @cache_commands.command()
-    def clear(*args, **kwargs):
-        CacheClearCommand().execute(*args, **kwargs)
+    def clear():
+        CacheClearCommand().execute()
 
     @cache_commands.command()
-    def warmup(*args, **kwargs):
-        CacheWarmupCommand().execute(*args, **kwargs)
+    def warmup():
+        CacheWarmupCommand().execute()
 
     app.add_typer(
         cache_commands,
