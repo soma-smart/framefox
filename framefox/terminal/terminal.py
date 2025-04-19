@@ -5,6 +5,7 @@ from .commands.create import add_create_commands
 from .commands.database import add_database_commands
 from .commands.debug import add_debug_commands
 from .commands.mock import add_mock_commands
+from .commands.server import add_server_commands
 
 """
 Framefox Framework developed by SOMA
@@ -33,6 +34,7 @@ class Terminal:
         add_database_commands(self.app)
         add_debug_commands(self.app)
         add_mock_commands(self.app)
+        add_server_commands(self.app)
 
     def run(self):
         """
