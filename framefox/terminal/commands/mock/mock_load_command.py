@@ -19,6 +19,7 @@ class MockLoadCommand(AbstractCommand):
         """
         Load all mocks found in the mocks directory.
         """
+        super().__init__()
         mocks_dir = os.path.join("src", "mocks")
         if not os.path.exists(mocks_dir):
             Printer().print_msg(

@@ -18,6 +18,7 @@ Github: https://github.com/Vasulvius
 
 class CreateCrudCommand(AbstractCommand):
     def __init__(self):
+        super().__init__()
         self.api_controller_template = r"api_crud_controller_template.jinja2"
         self.templated_controller_template = (
             r"templated_crud_controller_template.jinja2"

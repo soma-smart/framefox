@@ -17,18 +17,12 @@ class ServerStartCommand(AbstractCommand):
         self.worker_thread = None
         self.worker_stop_event = None
 
-    def execute(self, port: int = 8000):
+    def execute(self, port: int = 8000, with_workers: bool = False):
         """
         Démarre le serveur de développement avec Uvicorn
         Start the uvicorn server.
         """
-        with_workers = False
-
-        # Traiter les arguments supplémentaires
-        for arg in args:
-            if arg == "--with-workers":
-                with_workers = True
-
+        super().__init__()
         self.printer.print_msg(
             f"Starting the server on port {port}",
             theme="success",

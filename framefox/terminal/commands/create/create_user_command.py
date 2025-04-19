@@ -19,6 +19,7 @@ Github: https://github.com/Vasulvius
 
 class CreateUserCommand(AbstractCommand):
     def __init__(self):
+        super().__init__()
         self.create_entity_command = CreateEntityCommand()
         self.entity_property_manager = EntityPropertyManager()
 

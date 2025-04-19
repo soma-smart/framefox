@@ -17,6 +17,7 @@ Github: https://github.com/RayenBou
 
 class CreateRegisterCommand(AbstractCommand):
     def __init__(self):
+        super().__init__()
         self.register_controller_template_name = (
             r"security/register_controller_template.jinja2"
         )

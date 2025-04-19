@@ -18,6 +18,7 @@ Github: https://github.com/RayenBou
 
 class MockCreateCommand(AbstractCommand):
     def __init__(self):
+        super().__init__()
         self.file_creator = FileCreator()
         self.model_checker = ModelChecker()
 

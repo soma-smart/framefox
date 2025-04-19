@@ -18,6 +18,7 @@ Github: https://github.com/RayenBou
 
 class DebugRouterCommand(AbstractCommand):
     def __init__(self):
+        super().__init__()
         current_dir = os.getcwd()
         if current_dir not in sys.path:
             sys.path.insert(0, current_dir)

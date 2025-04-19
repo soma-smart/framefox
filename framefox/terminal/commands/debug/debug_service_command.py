@@ -18,6 +18,7 @@ Github: https://github.com/RayenBou
 
 class DebugServiceCommand(AbstractCommand):
     def __init__(self):
+        super().__init__()
         self.container = Application().container
 
 

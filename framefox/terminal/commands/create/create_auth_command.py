@@ -19,6 +19,7 @@ Github: https://github.com/Vasulvius
 
 class CreateAuthCommand(AbstractCommand):
     def __init__(self):
+        super().__init__()
         self.default_template_name = r"security/default_authenticator_template.jinja2"
         self.custom_template_name = r"security/custom_authenticator_template.jinja2"
         self.login_controller_template_name = (

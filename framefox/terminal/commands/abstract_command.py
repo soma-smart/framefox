@@ -6,6 +6,8 @@ class AbstractCommand:
     Classe abstraite de base pour toutes les commandes.
 
     """
+    def __init__(self):
+        self.printer = Printer()
 
     def execute(self, *args, **kwargs):
         """
