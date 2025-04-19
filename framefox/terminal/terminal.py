@@ -31,6 +31,11 @@ class Terminal:
             pretty_exceptions_enable=False,
         )
 
+        @self.app.callback(invoke_without_command=True)
+        def default_help(ctx: typer.Context):
+            if ctx.invoked_subcommand is None:
+                self.app.echo(ctx.get_help())
+
         if self.is_project_exists():
             add_cache_commands(self.app)
             add_create_commands(self.app)
