@@ -1,5 +1,7 @@
 import typer
 
+from .commands.cache import add_cache_commands
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -21,6 +23,8 @@ class Terminal:
             rich_markup_mode="rich",
             pretty_exceptions_enable=False,
         )
+
+        add_cache_commands(self.app)
 
     def run(self):
         """
