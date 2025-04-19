@@ -23,6 +23,12 @@ Github: https://github.com/RayenBou
 Github: https://github.com/Vasulvius
 """
 
+ENTITY_TEMPLATE = r"entity_template.jinja2"
+REPOSITORY_TEMPLATE = r"repository_template.jinja2"
+
+ENTITY_PATH = r"src/entity"
+REPOSITORY_PATH = r"src/repository"
+
 
 class CreateEntityCommand(AbstractCommand):
     def __init__(self):
@@ -82,36 +88,33 @@ class CreateEntityCommand(AbstractCommand):
     def _process_entity_properties(self, entity_name: str):
         while True:
             property_details = self.property_manager.request_property(entity_name)
-            if property_details is None:
-                continue
-            if property_details is False:
-                break
-            if property_details.type == "relation":
-                self.relation_manager.create_relation(
-                    entity_name, property_details.name, property_details.optional
-                )
-            else:
-                self.property_manager.add_property(entity_name, property_details)
+            match property_details:
+                case None:
+                    continue
+                case False:
+                    break
+                case "relation":
+                    self.relation_manager.create_relation(
+                        entity_name, property_details.name, property_details.optional
+                    )
+                case _:
+                    self.property_manager.add_property(entity_name, property_details)
 
     def create_entity_and_repository(self, entity_name: str):
         """Crée l'entité et le dépôt associé"""
         entity_class = ClassNameManager.snake_to_pascal(entity_name)
         repository_class = f"{entity_class}Repository"
-        entity_file_path = os.path.join("src/entity", f"{entity_name}.py")
-        repository_file_path = os.path.join(
-            "src/repository", f"{entity_name}_repository.py"
-        )
 
         self.file_creator.create_file(
-            template="entity_template.jinja2",
-            path="src/entity",
+            template=ENTITY_TEMPLATE,
+            path=ENTITY_PATH,
             name=entity_name,
             data={"class_name": entity_class, "properties": []},
         )
 
         self.file_creator.create_file(
-            template="repository_template.jinja2",
-            path="src/repository",
+            template=REPOSITORY_TEMPLATE,
+            path=REPOSITORY_PATH,
             name=f"{entity_name}_repository",
             data={
                 "snake_case_name": entity_name,

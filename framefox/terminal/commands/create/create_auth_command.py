@@ -17,19 +17,20 @@ Github: https://github.com/Vasulvius
 """
 
 
+DEFAULT_TEMPLATE_NAME = r"security/default_authenticator_template.jinja2"
+CUSTOM_TEMPLATE_NAME = r"security/custom_authenticator_template.jinja2"
+LOGIN_CONTROLLER_TEMPLATE_NAME = r"security/login_controller_template.jinja2"
+LOGIN_VIEW_TEMPLATE_NAME = r"security/login_view_template.jinja2"
+
+AUTHENTICATOR_PATH = r"src/security"
+CONTROLLER_PATH = r"src/controllers"
+VIEW_PATH = r"templates/security"
+
+
 class CreateAuthCommand(AbstractCommand):
     def __init__(self):
         super().__init__()
-        self.default_template_name = r"security/default_authenticator_template.jinja2"
-        self.custom_template_name = r"security/custom_authenticator_template.jinja2"
-        self.login_controller_template_name = (
-            r"security/login_controller_template.jinja2"
-        )
-        self.login_view_template_name = r"security/login_view_template.jinja2"
-        self.authenticator_path = r"src/security"
-        self.controller_path = r"src/controllers"
-        self.view_path = r"templates/security"
-        os.makedirs(self.view_path, exist_ok=True)
+        os.makedirs(VIEW_PATH, exist_ok=True)
 
     def execute(self):
         auth_type = self._ask_authenticator_type()
@@ -123,7 +124,7 @@ class CreateAuthCommand(AbstractCommand):
     def _create_login_files(self, auth_type: str, auth_name: str) -> str:
         class_name = ClassNameManager.snake_to_pascal(auth_name)
         file_name = f"{auth_name.lower()}_authenticator"
-        auth_path = os.path.join("src/security", f"{file_name}.py")
+        auth_path = os.path.join(AUTHENTICATOR_PATH, f"{file_name}.py")
 
         # Vérifier l'existence de l'authenticator dans tous les cas
         if os.path.exists(auth_path):
@@ -136,8 +137,8 @@ class CreateAuthCommand(AbstractCommand):
 
         if auth_type == "default":
             # Vérifier l'existence des fichiers supplémentaires pour default
-            controller_path = os.path.join("src/controllers", "login_controller.py")
-            view_path = os.path.join("templates/security", "login.html")
+            controller_path = os.path.join(CONTROLLER_PATH, "login_controller.py")
+            view_path = os.path.join(VIEW_PATH, "login.html")
 
             existing_files = []
             if os.path.exists(controller_path):
@@ -155,8 +156,8 @@ class CreateAuthCommand(AbstractCommand):
                 return None
 
             file_path = FileCreator().create_file(
-                self.login_controller_template_name,
-                self.controller_path,
+                LOGIN_CONTROLLER_TEMPLATE_NAME,
+                CONTROLLER_PATH,
                 name="login_controller",
                 data={},
             )
@@ -167,8 +168,8 @@ class CreateAuthCommand(AbstractCommand):
             )
 
             file_path = FileCreator().create_file(
-                self.login_view_template_name,
-                self.view_path,
+                LOGIN_VIEW_TEMPLATE_NAME,
+                VIEW_PATH,
                 name="login.html",
                 data={},
                 format="html",
@@ -178,8 +179,8 @@ class CreateAuthCommand(AbstractCommand):
                     file_path}",
             )
             file_path = FileCreator().create_file(
-                self.default_template_name,
-                self.authenticator_path,
+                DEFAULT_TEMPLATE_NAME,
+                AUTHENTICATOR_PATH,
                 name=file_name,
                 data={"authenticator_name": class_name},
             )
@@ -190,8 +191,8 @@ class CreateAuthCommand(AbstractCommand):
             )
         else:
             file_path = FileCreator().create_file(
-                self.custom_template_name,
-                self.authenticator_path,
+                CUSTOM_TEMPLATE_NAME,
+                AUTHENTICATOR_PATH,
                 name=file_name,
                 data={"authenticator_name": class_name},
             )
@@ -206,7 +207,6 @@ class CreateAuthCommand(AbstractCommand):
         return authenticator_import_path
 
     def _validate_provider(self, provider_name: str) -> bool:
-
         if not ClassNameManager.is_snake_case(provider_name):
             self.printer.print_msg(
                 "Invalid provider name. Must be in snake_case.",

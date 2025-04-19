@@ -14,13 +14,16 @@ Github: https://github.com/Vasulvius
 """
 
 
+CONTROLLER_TEMPLATE = r"controller_template.jinja2"
+VIEW_TEMPLATE = r"view_template.jinja2"
+
+CONTROLLER_PATH = r"src/controllers"
+VIEW_PATH = r"templates"
+
+
 class CreateControllerCommand(AbstractCommand):
     def __init__(self):
         super().__init__()
-        self.controller_path = r"src/controllers"
-        self.view_path = r"templates"
-        self.controller_template = r"controller_template.jinja2"
-        self.view_template = r"view_template.jinja2"
 
     def execute(self, name: str = None):
         self.printer.print_msg(
@@ -43,7 +46,6 @@ class CreateControllerCommand(AbstractCommand):
             return
 
         class_name = f"{ClassNameManager.snake_to_pascal(name)}Controller"
-        view_name = f"{name}.html"
 
         data_controller = {
             "controller_class_name": class_name,
@@ -56,7 +58,7 @@ class CreateControllerCommand(AbstractCommand):
             "controller_class_name": class_name,
         }
         file_creator = FileCreator()
-        if file_creator.check_if_exists(self.controller_path, f"{name}_controller"):
+        if file_creator.check_if_exists(CONTROLLER_PATH, f"{name}_controller"):
             self.printer.print_msg(
                 f"Controller {name} already exists!",
                 theme="error",
@@ -66,7 +68,7 @@ class CreateControllerCommand(AbstractCommand):
             return
 
         # Vérifier si le template existe
-        if os.path.exists(os.path.join(self.view_path, name)):
+        if os.path.exists(os.path.join(VIEW_PATH, name)):
             self.printer.print_msg(
                 f"View folder {name} already exists!",
                 theme="error",
@@ -74,15 +76,15 @@ class CreateControllerCommand(AbstractCommand):
                 newline=True,
             )
         controller_path = FileCreator().create_file(
-            template=self.controller_template,
-            path=self.controller_path,
+            template=CONTROLLER_TEMPLATE,
+            path=CONTROLLER_PATH,
             name=f"{name}_controller",
             data=data_controller,
         )
-        os.makedirs(os.path.join(self.view_path, name))
+        os.makedirs(os.path.join(VIEW_PATH, name))
         view_path = FileCreator().create_file(
-            template=self.view_template,
-            path=os.path.join(self.view_path, name),
+            template=VIEW_TEMPLATE,
+            path=os.path.join(VIEW_PATH, name),
             name="index.html",
             data=data_view,
             format="html",

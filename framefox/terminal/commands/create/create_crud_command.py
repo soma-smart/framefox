@@ -16,19 +16,16 @@ Github: https://github.com/Vasulvius
 """
 
 
-class CreateCrudCommand(AbstractCommand):
-    def __init__(self):
-        super().__init__()
-        self.api_controller_template = r"api_crud_controller_template.jinja2"
-        self.templated_controller_template = (
-            r"templated_crud_controller_template.jinja2"
-        )
-        self.controllers_path = r"src/controllers"
-        self.input_choices = ["api", "templated"]
-        self.templates_path = r"templates"
+API_CONTROLLER_TEMPLATE = r"api_crud_controller_template.jinja2"
+TEMPLATED_CONTROLLER_TEMPLATE = r"templated_crud_controller_template.jinja2"
 
+CONTROLLERS_PATH = r"src/controllers"
+TEMPLATES_PATH = r"templates"
+
+
+class CreateCrudCommand(AbstractCommand):
     def _create_view_templates(self, entity_name: str):
-        template_dir = os.path.join(self.templates_path, entity_name)
+        template_dir = os.path.join(TEMPLATES_PATH, entity_name)
         os.makedirs(template_dir, exist_ok=True)
         properties = ModelChecker().get_entity_properties(entity_name)
 
@@ -116,7 +113,7 @@ class CreateCrudCommand(AbstractCommand):
 
         file_creator = FileCreator()
         if file_creator.check_if_exists(
-            self.controllers_path, f"{entity_name}_controller"
+            CONTROLLERS_PATH, f"{entity_name}_controller"
         ):
             self.printer.print_msg(
                 f"Controller {entity_name} already exists!",
@@ -128,8 +125,8 @@ class CreateCrudCommand(AbstractCommand):
 
         if user_input == "api":
             file_path = FileCreator().create_file(
-                self.api_controller_template,
-                self.controllers_path,
+                API_CONTROLLER_TEMPLATE,
+                CONTROLLERS_PATH,
                 f"{entity_name}_controller",
                 data,
             )
@@ -137,8 +134,8 @@ class CreateCrudCommand(AbstractCommand):
         if user_input == "templated":
 
             file_path = FileCreator().create_file(
-                self.templated_controller_template,
-                self.controllers_path,
+                TEMPLATED_CONTROLLER_TEMPLATE,
+                CONTROLLERS_PATH,
                 f"{entity_name}_controller",
                 data,
             )

@@ -15,18 +15,22 @@ Github: https://github.com/RayenBou
 """
 
 
+CACHE_DIRS = [
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "var/cache",
+    "var/log/*.log",
+    "var/session/*",
+]
+EXCLUDED_DIRS = [
+    "migrations/versions/__pycache__",
+]
+
+
 class CacheClearCommand(AbstractCommand):
     def __init__(self):
         super().__init__()
-        self.cache_dirs = [
-            "__pycache__",
-            ".pytest_cache",
-            ".mypy_cache",
-            "var/cache",
-            "var/log/*.log",
-            "var/session/*",
-        ]
-        self.excluded_dirs = ["migrations/versions/__pycache__"]
 
     def execute(self):
         console = Console()
@@ -36,8 +40,8 @@ class CacheClearCommand(AbstractCommand):
         table.add_column("Location", style="bold orange3")
         table.add_column("Status", style="white")
 
-        for cache_dir in self.cache_dirs:
-            if cache_dir in self.excluded_dirs:
+        for cache_dir in CACHE_DIRS:
+            if cache_dir in EXCLUDED_DIRS:
                 table.add_row(cache_dir, "[yellow]Excluded[/yellow]")
                 continue
 

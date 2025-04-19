@@ -64,21 +64,26 @@ class InitCommand(AbstractCommand):
         os.makedirs(os.path.join(project_path, "entity"))
         os.makedirs(os.path.join(project_path, "repository"))
         os.makedirs(os.path.join(project_path, "security"))
+
         # Create templates directory
         os.makedirs(os.path.join(".", "templates"))
+
         # Create public directory
         os.makedirs(os.path.join(".", "public"))
 
         # Create config directory
         os.makedirs(os.path.join(".", "config"))
+
         # Create var directory
         os.makedirs(os.path.join(".", "var"))
         os.makedirs(os.path.join("./var", "log"))
         os.makedirs(os.path.join("./var", "session"))
+
         # Create migrations directory
         os.makedirs(os.path.join(".", "migrations"))
         os.makedirs(os.path.join("./migrations", "versions"))
         os.makedirs(os.path.join("./migrations", "versions", "__pycache__"))
+
         # Create usefull files
         # main.py
         FileCreator().create_file(
@@ -87,6 +92,7 @@ class InitCommand(AbstractCommand):
             name="main",
             data={},
         )
+
         # .env
         FileCreator().create_file(
             template="init_files/env.jinja2",
@@ -95,6 +101,7 @@ class InitCommand(AbstractCommand):
             data={"session_secret_key": InitCommand.generate_secret_key()},
             format="env",
         )
+
         # base.html
         FileCreator().create_file(
             template="init_files/base.jinja2",
@@ -103,6 +110,7 @@ class InitCommand(AbstractCommand):
             data={},
             format="html",
         )
+
         # yaml files
         FileCreator().create_file(
             template="init_files/application.jinja2",
@@ -153,6 +161,7 @@ class InitCommand(AbstractCommand):
             data={},
             format="yaml",
         )
+
         # env.py in migrations
         FileCreator().create_file(
             template="init_files/env.py.jinja2",
@@ -168,6 +177,7 @@ class InitCommand(AbstractCommand):
             data={},
             format="py.mako",
         )
+
         # env.py in migrations
         FileCreator().create_file(
             template="init_files/blank.jinja2",
@@ -176,6 +186,7 @@ class InitCommand(AbstractCommand):
             data={},
             format="gitkeep",
         )
+
         # gitignore
         FileCreator().create_file(
             template="init_files/gitignore.jinja2",
@@ -184,6 +195,7 @@ class InitCommand(AbstractCommand):
             data={},
             format="gitignore",
         )
+
         # requirements.txt
         FileCreator().create_file(
             template="init_files/requirements.jinja2",
@@ -251,9 +263,9 @@ class InitCommand(AbstractCommand):
                 linebefore=True,
             )
             return True
-        else:
-            self.printer.print_full_text(
-                "[bold red]✗ Your system does not meet all the required conditions[/bold red]",
-                linebefore=True,
-            )
-            return False
+
+        self.printer.print_full_text(
+            "[bold red]✗ Your system does not meet all the required conditions[/bold red]",
+            linebefore=True,
+        )
+        return False

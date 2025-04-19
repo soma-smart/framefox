@@ -14,17 +14,17 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
+REGISTER_CONTROLLER_TEMPLATE = r"security/register_controller_template.jinja2"
+REGISTER_VIEW_TEMPLATE = r"security/register_view_template.jinja2"
+
+CONTROLLER_PATH = r"src/controllers"
+VIEW_PATH = r"templates/security"
+
 
 class CreateRegisterCommand(AbstractCommand):
     def __init__(self):
         super().__init__()
-        self.register_controller_template_name = (
-            r"security/register_controller_template.jinja2"
-        )
-        self.register_view_template_name = r"security/register_view_template.jinja2"
-        self.controller_path = r"src/controllers"
-        self.view_path = r"templates/security"
-        os.makedirs(self.view_path, exist_ok=True)
+        os.makedirs(VIEW_PATH, exist_ok=True)
 
     def execute(self):
         self.printer.print_msg(
@@ -37,7 +37,6 @@ class CreateRegisterCommand(AbstractCommand):
         self._create_register_files(provider_name)
 
     def _create_register_files(self, provider_name: str):
-
         controller_path = os.path.join("src/controllers", "register_controller.py")
         view_path = os.path.join("templates/security", "register.html")
 
@@ -57,8 +56,8 @@ class CreateRegisterCommand(AbstractCommand):
             return None
 
         file_path = FileCreator().create_file(
-            self.register_controller_template_name,
-            self.controller_path,
+            REGISTER_CONTROLLER_TEMPLATE,
+            CONTROLLER_PATH,
             name=r"register_controller",
             data={
                 "entity_file_name": provider_name,
@@ -72,8 +71,8 @@ class CreateRegisterCommand(AbstractCommand):
         )
 
         file_path = FileCreator().create_file(
-            self.register_view_template_name,
-            self.view_path,
+            REGISTER_VIEW_TEMPLATE,
+            VIEW_PATH,
             name=r"register.html",
             data={},
             format="html",

@@ -40,7 +40,6 @@ class ClearMetadataCommand(AbstractDatabaseCommand):
     def clear_sqlalchemy_registry(self):
         """Resets the SQLAlchemy registry"""
         try:
-
             clear_mappers()
 
             try:

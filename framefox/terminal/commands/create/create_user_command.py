@@ -49,7 +49,6 @@ class CreateUserCommand(AbstractCommand):
                 newline=True,
             )
             return
-        entity_path = self.create_entity_command.create_entity_and_repository(name)
 
         self.entity_property_manager.insert_property(
             name, "    password: str= Field(nullable=False)\n"

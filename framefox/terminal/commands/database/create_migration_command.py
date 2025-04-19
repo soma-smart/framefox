@@ -13,7 +13,6 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
 
     def execute(self):
         try:
-
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(
                     "The database does not exist. Please run 'framefox database:create' first.",

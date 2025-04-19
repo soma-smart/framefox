@@ -18,13 +18,14 @@ Author: LEUROND Raphaël
 Github: https://github.com/Vasulvius
 """
 
+ENTITY_DIRECTORY = r"src/entity"
+
 
 class CopyCommand(AbstractCommand):
     def __init__(self):
         super().__init__()
         settings = Settings()
         self.database_url = settings.database_url
-        self.entity_directory = r"src/entity"
         self.base_model = "AbstractEntity"
 
     def execute(self):
@@ -41,7 +42,7 @@ class CopyCommand(AbstractCommand):
             return
         try:
             CopyCommand.create_sqlmodel_tables_from_directory(
-                directory=self.entity_directory,
+                directory=ENTITY_DIRECTORY,
                 database_url=self.database_url,
                 base_model=self.base_model,
             )
@@ -61,11 +62,6 @@ class CopyCommand(AbstractCommand):
                 theme="error",
                 linebefore=True,
             )
-            # self.printer.print_msg(
-            #     "The database does not exist. Please create it first.",
-            #     theme="error",
-            #     newline=True,
-            # )
 
     @staticmethod
     def find_sqlmodel_classes_in_file(filepath, base_model):

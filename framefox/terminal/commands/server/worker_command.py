@@ -52,7 +52,6 @@ class WorkerCommand(AbstractCommand):
         worker_manager.set_cleanup_config(cleanup_hours, retention_days)
 
         try:
-
             asyncio.run(worker_manager.start())
         except KeyboardInterrupt:
             self.printer.print_msg("Stopping workers...", "warning")
