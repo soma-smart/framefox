@@ -21,7 +21,6 @@ Github: https://github.com/Vasulvius
 
 class CopyCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("copy")
         settings = Settings()
         self.database_url = settings.database_url
         self.entity_directory = r"src/entity"

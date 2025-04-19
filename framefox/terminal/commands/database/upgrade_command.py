@@ -13,7 +13,7 @@ Github: https://github.com/RayenBou
 
 class UpgradeCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("upgrade")
+        super().__init__()
         self.alembic_manager = AlembicManager()
 
     def execute(self):

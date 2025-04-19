@@ -26,7 +26,6 @@ Github: https://github.com/Vasulvius
 
 class CreateEntityCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("entity")
         self.property_manager = PropertyManager(InputManager(), Printer())
         self.relation_manager = RelationManager(
             InputManager(), Printer(), FileCreator(), ImportManager(Printer())

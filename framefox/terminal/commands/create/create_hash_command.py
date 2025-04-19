@@ -14,7 +14,6 @@ Github: https://github.com/RayenBou
 
 class CreateHashCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("hash")
 
         self.password_hasher = PasswordHasher()
 

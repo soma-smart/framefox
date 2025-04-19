@@ -15,9 +15,6 @@ Github: https://github.com/RayenBou
 
 
 class MockLoadCommand(AbstractCommand):
-    def __init__(self):
-        super().__init__("load")
-
     def execute(self):
         """
         Load all mocks found in the mocks directory.

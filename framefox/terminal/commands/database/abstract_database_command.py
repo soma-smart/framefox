@@ -15,8 +15,7 @@ Github: https://github.com/Vasulvius
 
 
 class AbstractDatabaseCommand(AbstractCommand, ABC):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self):
         self.connection_manager = ConnectionManager.get_instance()
 
     @property

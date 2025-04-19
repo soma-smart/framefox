@@ -18,7 +18,7 @@ Github: https://github.com/RayenBou
 
 class ClearMetadataCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("clear-metadata")
+        super().__init__()
 
     def execute(self):
         """Cleans SQLAlchemy metadata and Python cache to resolve mapper issues"""

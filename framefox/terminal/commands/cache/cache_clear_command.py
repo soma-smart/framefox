@@ -17,7 +17,6 @@ Github: https://github.com/RayenBou
 
 class CacheClearCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("clear")
         self.cache_dirs = [
             "__pycache__",
             ".pytest_cache",

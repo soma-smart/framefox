@@ -22,7 +22,6 @@ Github: https://github.com/RayenBou
 
 class WorkerCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("worker")
         self.service_container = ServiceContainer()
         WorkerLoggerConfigurator.configure()
         sql_logger = logging.getLogger("SQLMODEL")

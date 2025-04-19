@@ -13,7 +13,7 @@ from framefox.terminal.commands.database.abstract_database_command import \
 
 class StatusCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("status")
+        super().__init__()
         self.alembic_manager = AlembicManager()
 
     def execute(self):

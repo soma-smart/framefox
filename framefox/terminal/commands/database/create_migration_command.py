@@ -8,7 +8,7 @@ from framefox.terminal.commands.database.abstract_database_command import \
 
 class CreateMigrationCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("migration")
+        super().__init__()
         self.alembic_manager = AlembicManager()
 
     def execute(self):

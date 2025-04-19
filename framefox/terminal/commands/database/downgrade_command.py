@@ -7,7 +7,7 @@ from framefox.terminal.commands.database.abstract_database_command import \
 
 class DowngradeCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("downgrade")
+        super().__init__()
         self.alembic_manager = AlembicManager()
 
     def execute(self, steps: int = 1):

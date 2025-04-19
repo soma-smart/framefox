@@ -21,7 +21,6 @@ Github: https://github.com/RayenBou
 
 class CacheWarmupCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("warmup")
         self.kernel = Kernel()
         self.container = ServiceContainer()
         self.settings = self.container.get(Settings)

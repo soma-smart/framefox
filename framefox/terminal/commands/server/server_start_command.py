@@ -12,7 +12,6 @@ from framefox.terminal.commands.server.worker_command import WorkerCommand
 
 class ServerStartCommand(AbstractCommand):
     def __init__(self):
-        super().__init__("server:start")
         self.process = None
         self.running = True
         self.worker_thread = None

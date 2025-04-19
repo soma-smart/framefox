@@ -23,7 +23,7 @@ Github: https://github.com/Vasulvius
 
 class CreateCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("create")
+        super().__init__()
         settings = Settings()
         self.db_types = ["sqlite", "postgresql", "mysql"]
         self.database_url = settings.database_url
