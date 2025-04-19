@@ -3,6 +3,7 @@ import typer
 from .commands.cache import add_cache_commands
 from .commands.create import add_create_commands
 from .commands.database import add_database_commands
+from .commands.debug import add_debug_commands
 
 """
 Framefox Framework developed by SOMA
@@ -29,6 +30,7 @@ class Terminal:
         add_cache_commands(self.app)
         add_create_commands(self.app)
         add_database_commands(self.app)
+        add_debug_commands(self.app)
 
     def run(self):
         """
