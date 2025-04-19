@@ -16,9 +16,6 @@ Github: https://github.com/RayenBou
 
 class MockLoadCommand(AbstractCommand):
     def execute(self):
-        """
-        Load all mocks found in the mocks directory.
-        """
         super().__init__()
         mocks_dir = os.path.join("src", "mocks")
         if not os.path.exists(mocks_dir):

@@ -17,9 +17,6 @@ class StatusCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self):
-        """
-        Check the status of the database and migrations.
-        """
         try:
             console = Console()
             console.print("")

@@ -21,7 +21,6 @@ class ClearMetadataCommand(AbstractDatabaseCommand):
         super().__init__()
 
     def execute(self):
-        """Cleans SQLAlchemy metadata and Python cache to resolve mapper issues"""
         try:
             self.printer.print_msg("Cleaning SQLAlchemy metadata...", theme="info")
 

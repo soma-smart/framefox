@@ -29,9 +29,6 @@ class CacheClearCommand(AbstractCommand):
         self.excluded_dirs = ["migrations/versions/__pycache__"]
 
     def execute(self):
-        """
-        Clear all cache files and directories
-        """
         console = Console()
         print("")
 

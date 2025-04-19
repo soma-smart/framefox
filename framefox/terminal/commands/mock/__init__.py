@@ -13,10 +13,19 @@ def add_mock_commands(app: Typer) -> None:
 
     @mock_commands.command()
     def create(name: str | None = None):
+        """
+        Create mock file for an entity
+        
+        Args:
+            name (str, optional): Name of the entity. Defaults to None.
+        """
         MockCreateCommand().execute(name)
 
     @mock_commands.command()
     def load():
+        """
+        Load all mocks found in the mocks directory.
+        """
         MockLoadCommand().execute()
 
     app.add_typer(

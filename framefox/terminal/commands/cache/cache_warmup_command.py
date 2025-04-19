@@ -28,9 +28,6 @@ class CacheWarmupCommand(AbstractCommand):
         self.template_renderer = self.container.get(TemplateRenderer)
 
     def execute(self):
-        """
-        Warm up the application cache
-        """
         console = Console()
         print("")
         start_time = time.time()

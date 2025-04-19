@@ -29,9 +29,6 @@ class CreateCommand(AbstractDatabaseCommand):
         self.database_url = settings.database_url
 
     def execute(self):
-        """
-        Create the database if it doesn't exist.
-        """
         try:
             database = self.connection_manager.config.database
 

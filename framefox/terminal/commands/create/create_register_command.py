@@ -27,9 +27,6 @@ class CreateRegisterCommand(AbstractCommand):
         os.makedirs(self.view_path, exist_ok=True)
 
     def execute(self):
-        """
-        Create the register controller and view
-        """
         self.printer.print_msg(
             "What is the name of the entity that will be used as the provider?",
             theme="bold_normal",

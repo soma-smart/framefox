@@ -23,7 +23,6 @@ class MockCreateCommand(AbstractCommand):
         self.model_checker = ModelChecker()
 
     def execute(self, name: Optional[str] = None):
-        """Create mock file for an entity"""
         self.printer.print_msg(
             "On which entity you want to create this mock?(snake_case)",
             theme="bold_normal",

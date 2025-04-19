@@ -12,7 +12,6 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self):
-        """Create a new migration file with Alembic"""
         try:
 
             if not self.driver.database_exists(self.connection_manager.config.database):

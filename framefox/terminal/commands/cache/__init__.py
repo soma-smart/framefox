@@ -13,10 +13,16 @@ def add_cache_commands(app: Typer) -> None:
 
     @cache_commands.command()
     def clear():
+        """
+        Clear all cache files and directories
+        """
         CacheClearCommand().execute()
 
     @cache_commands.command()
     def warmup():
+        """
+        Warm up the application cache
+        """
         CacheWarmupCommand().execute()
 
     app.add_typer(

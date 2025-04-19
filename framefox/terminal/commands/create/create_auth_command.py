@@ -32,9 +32,6 @@ class CreateAuthCommand(AbstractCommand):
         os.makedirs(self.view_path, exist_ok=True)
 
     def execute(self):
-        """
-        Create a new authenticator
-        """
         auth_type = self._ask_authenticator_type()
         auth_name = self._ask_authenticator_name(auth_type)
         provider_name = None

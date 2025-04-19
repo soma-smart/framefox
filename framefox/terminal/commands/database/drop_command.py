@@ -6,7 +6,6 @@ from framefox.terminal.commands.database.abstract_database_command import \
 
 class DropCommand(AbstractDatabaseCommand):
     def execute(self):
-        """Deletes the configured database"""
         super().__init__()
         self.printer.print_msg("drop")
 

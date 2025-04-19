@@ -23,12 +23,6 @@ class CreateControllerCommand(AbstractCommand):
         self.view_template = r"view_template.jinja2"
 
     def execute(self, name: str = None):
-        """
-        Create a simple controller and view.
-
-        Args:
-            name (str): The name of the controller.
-        """
         self.printer.print_msg(
             "What is the name of the controller ?(snake_case)",
             theme="bold_normal",

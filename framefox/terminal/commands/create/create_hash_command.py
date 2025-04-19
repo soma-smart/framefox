@@ -18,9 +18,6 @@ class CreateHashCommand(AbstractCommand):
         self.password_hasher = PasswordHasher()
 
     def execute(self):
-        """
-        Create a hashed password and display the result
-        """
         self.printer.print_msg(
             "Enter the password to hash:",
             theme="bold_normal",

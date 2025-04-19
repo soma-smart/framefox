@@ -11,7 +11,6 @@ class DowngradeCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self, steps: int = 1):
-        """Reverts the last migration(s) applied to the database."""
         try:
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(

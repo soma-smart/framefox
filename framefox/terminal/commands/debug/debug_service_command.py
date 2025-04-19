@@ -23,9 +23,6 @@ class DebugServiceCommand(AbstractCommand):
 
 
     def execute(self):
-        """
-        Display the list of registered services
-        """
         console = Console()
         print("")
 

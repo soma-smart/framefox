@@ -24,12 +24,6 @@ class CreateUserCommand(AbstractCommand):
         self.entity_property_manager = EntityPropertyManager()
 
     def execute(self, name: str = None):
-        """
-        Create a user entity for the authentication.
-
-        Args:
-            name (str, optional): The name of the entity in snake_case. Defaults to None.
-        """
         self.printer.print_msg(
             "What is the name of the user entity ?(snake_case)",
             theme="bold_normal",

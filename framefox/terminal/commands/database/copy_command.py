@@ -28,9 +28,6 @@ class CopyCommand(AbstractCommand):
         self.base_model = "AbstractEntity"
 
     def execute(self):
-        """
-        Copy database tables from the entity directory to the database without using migrations.
-        """
         if not CopyCommand.database_exists(self.database_url):
             self.printer.print_msg(
                 "The database does not exist. Please create it first.",

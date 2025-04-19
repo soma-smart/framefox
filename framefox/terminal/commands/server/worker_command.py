@@ -31,8 +31,6 @@ class WorkerCommand(AbstractCommand):
         self.settings = self.service_container.get(Settings)
 
     def execute(self) -> None:
-        """Start the worker process to consume tasks from the queue."""
-
         queues = self.settings.task_default_queues
         concurrency = self.settings.task_worker_concurrency
         interval = self.settings.task_polling_interval

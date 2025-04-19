@@ -13,10 +13,16 @@ def add_debug_commands(app: Typer) -> None:
 
     @debug_commands.command()
     def router():
+        """
+        Display the list of routes
+        """
         DebugRouterCommand().execute()
 
     @debug_commands.command()
     def service():
+        """
+        Display the list of registered services
+        """
         DebugServiceCommand().execute()
 
     app.add_typer(

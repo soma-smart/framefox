@@ -35,9 +35,6 @@ class CreateEntityCommand(AbstractCommand):
         self.file_creator = FileCreator()
 
     def execute(self, name: Optional[str] = None):
-        """
-        Create a new entity
-        """
         self.printer.print_msg(
             "What is the name of the Entity ?(snake_case)",
             theme="bold_normal",

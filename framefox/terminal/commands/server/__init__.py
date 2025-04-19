@@ -13,10 +13,18 @@ def add_server_commands(app: Typer) -> None:
 
     @server_commands.command()
     def start(port: int | None = None, with_worker: bool = False):
+        """
+        Start the uvicorn server.
+
+        Args:
+            port (int, optional): The port to run the server on.
+        """
         ServerStartCommand().execute(port, with_worker)
 
     @server_commands.command()
     def worker():
+        """
+        Start the worker process to consume tasks from the queue."""
         WorkerCommand().execute()
 
     app.add_typer(

@@ -17,7 +17,6 @@ class UpgradeCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self):
-        """Apply all migrations to the database"""
         try:
             # Vérifier si la base de données existe
             if not self.driver.database_exists(self.connection_manager.config.database):

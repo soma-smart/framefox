@@ -52,12 +52,6 @@ class CreateCrudCommand(AbstractCommand):
             )
 
     def execute(self, entity_name: str = None):
-        """
-        Create a CRUD controller for the given entity name.
-
-        Args:
-            entity_name (str): The name of the entity in snake_case.
-        """
         self.printer.print_msg(
             "What is the name of the entity you want to create a CRUD with ?(snake_case)",
             theme="bold_normal",

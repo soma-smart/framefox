@@ -26,10 +26,6 @@ MIN_DISK_SPACE = 100 * 1024 * 1024
 
 class InitCommand(AbstractCommand):
     def execute(self):
-        """
-        Initializes a new Framefox project
-        """
-
         if not self.check_requirements():
             return
 
