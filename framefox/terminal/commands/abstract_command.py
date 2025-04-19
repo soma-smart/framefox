@@ -16,8 +16,5 @@ class AbstractCommand:
         Args:
             *args: Arguments positionnels
             **kwargs: Arguments nommés
-
-        Returns:
-            int: Code de retour (0 = succès, autre = échec)
         """
         raise NotImplementedError("Les sous-classes doivent implémenter cette méthode")
