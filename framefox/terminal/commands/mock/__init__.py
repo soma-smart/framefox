@@ -1,4 +1,4 @@
-from typer import Typer
+from typer import Typer, Option
 
 from .mock_create_command import MockCreateCommand
 from .mock_load_command import MockLoadCommand
@@ -12,12 +12,9 @@ def add_mock_commands(app: Typer) -> None:
     )
 
     @mock_commands.command()
-    def create(name: str | None = None):
+    def create(name: str = Option(None, help="Name of the entity")):
         """
         Create mock file for an entity
-        
-        Args:
-            name (str, optional): Name of the entity. Defaults to None.
         """
         MockCreateCommand().execute(name)
 

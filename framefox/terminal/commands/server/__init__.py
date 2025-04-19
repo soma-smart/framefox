@@ -1,4 +1,4 @@
-from typer import Typer
+from typer import Typer, Option
 
 from .server_start_command import ServerStartCommand
 from .worker_command import WorkerCommand
@@ -12,12 +12,9 @@ def add_server_commands(app: Typer) -> None:
     )
 
     @server_commands.command()
-    def start(port: int | None = None, with_worker: bool = False):
+    def start(port: int = Option(None, help="The port to run the server on."), with_worker: bool = Option(False, help="Whete to start the process with workers.")):
         """
         Start the uvicorn server.
-
-        Args:
-            port (int, optional): The port to run the server on.
         """
         ServerStartCommand().execute(port, with_worker)
 

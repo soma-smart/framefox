@@ -1,4 +1,4 @@
-from typer import Typer
+from typer import Typer, Option
 
 from .create_auth_command import CreateAuthCommand
 from .create_controller_command import CreateControllerCommand
@@ -24,32 +24,23 @@ def add_create_commands(app: Typer) -> None:
         CreateAuthCommand().execute()
 
     @create_commands.command()
-    def controller(name: str | None = None):
+    def controller(name: str = Option(None, help="The name of the controller")):
         """
         Create a simple controller and view.
-
-        Args:
-            name (str): The name of the controller;
         """
         CreateControllerCommand().execute(name)
 
     @create_commands.command()
-    def crud(entity_name: str | None = None):
+    def crud(entity_name: str = Option(None, help="The name of the entity in snake_case")):
         """
         Create a CRUD controller for the given entity name.
-
-        Args:
-            entity_name (str): The name of the entity in snake_case.
         """
         CreateCrudCommand().execute(entity_name)
 
     @create_commands.command()
-    def entity(name: str | None = None):
+    def entity(name: str = Option(None, help="The name of the entity in snake_case")):
         """
         Create a new entity
-
-        Args:
-            entity_name (str, optional): The name of the entity in snake_case
         """
         CreateEntityCommand().execute(name)
 
@@ -68,12 +59,9 @@ def add_create_commands(app: Typer) -> None:
         CreateRegisterCommand().execute()
 
     @create_commands.command()
-    def user(name: str | None = None):
+    def user(name: str = Option(None, help="The name of the entity in snake_case")):
         """
         Create a user entity for the authentication.
-
-        Args:
-            name (str, optional): The name of the entity in snake_case. Defaults to None.
         """
         CreateUserCommand().execute(name)
 

@@ -1,4 +1,4 @@
-from typer import Typer
+from typer import Typer, Option
 
 from .clear_metadata_command import ClearMetadataCommand
 from .copy_command import CopyCommand
@@ -46,12 +46,9 @@ def add_database_commands(app: Typer) -> None:
         CreateMigrationCommand().execute()
 
     @database_commands.command()
-    def downgrade(steps: int | None = None):
+    def downgrade(steps: int = Option(None, help="The number of migrations to revert. If not provided, reverts the last migration")):
         """
         Reverts the last migration(s) applied to the database.
-
-        @Args:
-            steps: The number of migrations to revert. If not provided, reverts the last migration.
         """
         DowngradeCommand().execute(steps)
 
