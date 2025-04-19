@@ -34,8 +34,8 @@ def add_database_commands(app: Typer) -> None:
         CreateMigrationCommand().execute()
 
     @database_commands.command()
-    def downgrade(steps: int | None):
-        DowngradeCommand().execute()
+    def downgrade(steps: int | None = None):
+        DowngradeCommand().execute(steps)
 
     @database_commands.command()
     def drop():

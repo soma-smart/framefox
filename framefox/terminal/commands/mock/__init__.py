@@ -12,7 +12,7 @@ def add_mock_commands(app: Typer) -> None:
     )
 
     @mock_commands.command()
-    def create(name: str | None):
+    def create(name: str | None = None):
         MockCreateCommand().execute(name)
 
     @mock_commands.command()

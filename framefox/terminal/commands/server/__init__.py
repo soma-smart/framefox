@@ -12,8 +12,8 @@ def add_server_commands(app: Typer) -> None:
     )
 
     @server_commands.command()
-    def start(port: int | None, with_worker: bool = False):
-        ServerStartCommand().execute(port, with_worker=with_worker)
+    def start(port: int | None = None, with_worker: bool = False):
+        ServerStartCommand().execute(port, with_worker)
 
     @server_commands.command()
     def worker():

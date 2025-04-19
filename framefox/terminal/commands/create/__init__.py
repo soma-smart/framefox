@@ -21,15 +21,15 @@ def add_create_commands(app: Typer) -> None:
         CreateAuthCommand().execute()
 
     @create_commands.command()
-    def controller(name: str | None):
+    def controller(name: str | None = None):
         CreateControllerCommand().execute(name)
 
     @create_commands.command()
-    def crud(entity_name: str | None):
+    def crud(entity_name: str | None = None):
         CreateCrudCommand().execute(entity_name)
 
     @create_commands.command()
-    def entity(name: str | None):
+    def entity(name: str | None = None):
         CreateEntityCommand().execute(name)
 
     @create_commands.command()
@@ -41,8 +41,8 @@ def add_create_commands(app: Typer) -> None:
         CreateRegisterCommand().execute()
 
     @create_commands.command()
-    def user(name: str | None):
-        CreateUserCommand().execute()
+    def user(name: str | None = None):
+        CreateUserCommand().execute(name)
 
     app.add_typer(
         create_commands,
