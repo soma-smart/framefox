@@ -10,7 +10,11 @@ from .create_user_command import CreateUserCommand
 
 
 def add_create_commands(app: Typer) -> None:
-    create_commands = Typer()
+    create_commands = Typer(
+        no_args_is_help=True,
+        rich_markup_mode="rich",
+        pretty_exceptions_enable=False,
+    )
 
     @create_commands.command()
     def auth(*args, **kwargs):

@@ -5,7 +5,11 @@ from .cache_warmup_command import CacheWarmupCommand
 
 
 def add_cache_commands(app: Typer) -> None:
-    cache_commands = Typer()
+    cache_commands = Typer(
+        no_args_is_help=True,
+        rich_markup_mode="rich",
+        pretty_exceptions_enable=False,
+    )
 
     @cache_commands.command()
     def clear(*args, **kwargs):
