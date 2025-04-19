@@ -30,5 +30,5 @@ def add_server_commands(app: Typer) -> None:
     app.add_typer(
         server_commands,
         name="server",
-        help="Server management commands",
+        help="Server operations like starting or stopping the server.",
     )

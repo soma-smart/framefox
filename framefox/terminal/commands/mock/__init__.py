@@ -31,5 +31,5 @@ def add_mock_commands(app: Typer) -> None:
     app.add_typer(
         mock_commands,
         name="mock",
-        help="Mock management commands",
+        help="Mock operations like generating or loading mock data.",
     )

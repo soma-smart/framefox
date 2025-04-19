@@ -80,5 +80,5 @@ def add_create_commands(app: Typer) -> None:
     app.add_typer(
         create_commands,
         name="create",
-        help="Create management commands",
+        help="Create various resources like entities or CRUD operations.",
     )

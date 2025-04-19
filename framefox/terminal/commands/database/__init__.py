@@ -79,5 +79,5 @@ def add_database_commands(app: Typer) -> None:
     app.add_typer(
         database_commands,
         name="database",
-        help="Database management commands",
+        help="Database operations like creating or migrating databases.",
     )

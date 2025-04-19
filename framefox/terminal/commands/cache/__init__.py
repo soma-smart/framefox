@@ -28,5 +28,5 @@ def add_cache_commands(app: Typer) -> None:
     app.add_typer(
         cache_commands,
         name="cache",
-        help="Cache management commands",
+        help="Cache operations like clearing cache files and directories.",
     )
