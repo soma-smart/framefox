@@ -89,7 +89,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/main.jinja2",
             path=".",
-            file_name="main",
+            file_name="main.py",
         )
 
         # .env
@@ -98,7 +98,6 @@ class InitCommand(AbstractCommand):
             path=".",
             file_name=".env",
             data={"session_secret_key": InitCommand.generate_secret_key()},
-            format="env",
         )
 
         # base.html
@@ -106,7 +105,6 @@ class InitCommand(AbstractCommand):
             template="init_files/base.jinja2",
             path="./templates",
             file_name="base.html",
-            format="html",
         )
 
         # yaml files
@@ -114,57 +112,48 @@ class InitCommand(AbstractCommand):
             template="init_files/application.jinja2",
             path="./config",
             file_name="application.yaml",
-            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/orm.jinja2",
             path="./config",
             file_name="orm.yaml",
-            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/security.jinja2",
             path="./config",
             file_name="security.yaml",
-            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/mail.jinja2",
             path="./config",
             file_name="mail.yaml",
-            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/parameter.jinja2",
             path="./config",
             file_name="parameter.yaml",
-            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/services.jinja2",
             path="./config",
             file_name="services.yaml",
-            format="yaml",
         )
         FileCreator().create_file(
             template="init_files/tasks.jinja2",
             path="./config",
             file_name="tasks.yaml",
-            format="yaml",
         )
 
         # env.py in migrations
         FileCreator().create_file(
             template="init_files/env.py.jinja2",
             path="./migrations",
-            file_name="env",
-            format="py",
+            file_name="env.py",
         )
         FileCreator().create_file(
             template="init_files/script.py.mako",
             path="./migrations",
             file_name="script.py.mako",
-            format="py.mako",
         )
 
         # env.py in migrations
@@ -172,7 +161,6 @@ class InitCommand(AbstractCommand):
             template="init_files/blank.jinja2",
             path="./migrations/versions/__pycache__",
             file_name=".gitkeep",
-            format="gitkeep",
         )
 
         # gitignore
@@ -180,7 +168,6 @@ class InitCommand(AbstractCommand):
             template="init_files/gitignore.jinja2",
             path=".",
             file_name=".gitignore",
-            format="gitignore",
         )
 
         # requirements.txt
@@ -188,7 +175,6 @@ class InitCommand(AbstractCommand):
             template="init_files/requirements.jinja2",
             path=".",
             file_name="requirements.txt",
-            format="txt",
         )
 
     def check_requirements(self):

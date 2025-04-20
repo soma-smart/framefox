@@ -43,9 +43,8 @@ class CreateCrudCommand(AbstractCommand):
             file_creator.create_file(
                 template=f"crud/{template_file}",
                 path=template_dir,
-                file_name=output_name + ".html",
+                file_name=f"{output_name}.html",
                 data=data,
-                format="html",
             )
 
     def execute(self, entity_name: str = None):
@@ -127,7 +126,7 @@ class CreateCrudCommand(AbstractCommand):
             file_path = FileCreator().create_file(
                 API_CONTROLLER_TEMPLATE,
                 CONTROLLERS_PATH,
-                f"{entity_name}_controller",
+                f"{entity_name}_controller.py",
                 data,
             )
 
@@ -136,7 +135,7 @@ class CreateCrudCommand(AbstractCommand):
             file_path = FileCreator().create_file(
                 TEMPLATED_CONTROLLER_TEMPLATE,
                 CONTROLLERS_PATH,
-                f"{entity_name}_controller",
+                f"{entity_name}_controller.py",
                 data,
             )
             # Créer le FormType pour l'entité
@@ -172,9 +171,8 @@ class CreateCrudCommand(AbstractCommand):
         file_path = file_creator.create_file(
             template="form/form_type_template.jinja2",
             path=form_types_dir,
-            file_name=f"{entity_name}_type",
+            file_name=f"{entity_name}_type.py",
             data=data,
-            format="py",
         )
 
         self.printer.print_msg(

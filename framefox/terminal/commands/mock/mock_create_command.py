@@ -75,7 +75,7 @@ class MockCreateCommand(AbstractCommand):
         self.file_creator.create_file(
             template="mock_create_template.jinja2",
             path=mocks_dir,
-            file_name=f"{entity_name}_mock",
+            file_name=f"{entity_name}_mock.py",
             data={
                 "entity_name": entity_name,
                 "entity_class_name": entity_class,

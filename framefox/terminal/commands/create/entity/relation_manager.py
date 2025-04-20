@@ -423,7 +423,7 @@ class RelationManager:
             self.file_creator.create_file(
                 template="intermediate_entity_template.jinja2",
                 path=self.entity_folder,
-                name=intermediate_entity,
+                file_name=f"{intermediate_entity}.py",
                 data={
                     "intermediate_class": intermediate_class,
                     "source_entity": source_entity,

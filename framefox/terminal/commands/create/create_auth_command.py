@@ -123,8 +123,10 @@ class CreateAuthCommand(AbstractCommand):
 
     def _create_login_files(self, auth_type: str, auth_name: str) -> str:
         class_name = ClassNameManager.snake_to_pascal(auth_name)
-        file_name = f"{auth_name.lower()}_authenticator"
-        auth_path = os.path.join(AUTHENTICATOR_PATH, f"{file_name}.py")
+
+        base_file = f"{auth_name.lower()}_authenticator"
+        file_name = f"{base_file}.py"
+        auth_path = os.path.join(AUTHENTICATOR_PATH, file_name)
 
         # Vérifier l'existence de l'authenticator dans tous les cas
         if os.path.exists(auth_path):
@@ -158,7 +160,7 @@ class CreateAuthCommand(AbstractCommand):
             file_path = FileCreator().create_file(
                 LOGIN_CONTROLLER_TEMPLATE_NAME,
                 CONTROLLER_PATH,
-                file_name="login_controller",
+                file_name="login_controller.py",
             )
             self.printer.print_full_text(
                 f"[bold orange1]Login controller created successfully:[/bold orange1] {
@@ -170,7 +172,6 @@ class CreateAuthCommand(AbstractCommand):
                 LOGIN_VIEW_TEMPLATE_NAME,
                 VIEW_PATH,
                 file_name="login.html",
-                format="html",
             )
             self.printer.print_full_text(
                 f"[bold orange1]Login view created successfully:[/bold orange1] {
@@ -200,8 +201,7 @@ class CreateAuthCommand(AbstractCommand):
                 linebefore=True,
             )
 
-        authenticator_import_path = f"src.security.{
-            file_name}.{class_name}Authenticator"
+        authenticator_import_path = f"src.security.{base_file}.{class_name}Authenticator"
         return authenticator_import_path
 
     def _validate_provider(self, provider_name: str) -> bool:
