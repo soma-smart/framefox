@@ -14,29 +14,22 @@ class FileCreator:
         )
 
     def create_file(
-        self, template: str, path: str, file_name: str, data: dict = {}
+        self, template: str, output_path: str, data: dict = {}
     ):
         """
         Create a file using a template.
 
         Args:
             template (str): The name of the template file.
-            path (str): The path where the file will be created.
-            file_name (str): The name of the file.
+            output_path (str): The output path where the file will be created.
             data (str): The data to be rendered in the template.
-
-        Returns:
-            file_path (str): The path of the created file.
         """
         env = Environment(loader=FileSystemLoader(self.template_path))
         template = env.get_template(template)
         code = template.render(data)
 
-        output_file = f"{path}/{file_name}"
-        with open(output_file, "w") as file:
+        with open(output_path, "w") as file:
             file.write(code)
-
-        return output_file
 
     def check_if_exists(self, path: str, name: str, format: str = "py") -> bool:
         """Check if a file already exists"""

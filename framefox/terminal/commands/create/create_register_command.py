@@ -37,8 +37,8 @@ class CreateRegisterCommand(AbstractCommand):
         self._create_register_files(provider_name)
 
     def _create_register_files(self, provider_name: str):
-        controller_path = os.path.join("src/controllers", "register_controller.py")
-        view_path = os.path.join("templates/security", "register.html")
+        controller_path = os.path.join(CONTROLLER_PATH, "register_controller.py")
+        view_path = os.path.join(VIEW_PATH, "register.html")
 
         existing_files = []
         if os.path.exists(controller_path):
@@ -55,10 +55,9 @@ class CreateRegisterCommand(AbstractCommand):
                 self.printer.print_msg(f"• {file}", theme="error")
             return None
 
-        file_path = FileCreator().create_file(
+        FileCreator().create_file(
             REGISTER_CONTROLLER_TEMPLATE,
-            CONTROLLER_PATH,
-            file_name="register_controller.py",
+            controller_path,
             data={
                 "entity_file_name": provider_name,
                 "entity_class_name": ClassNameManager.snake_to_pascal(provider_name),
@@ -66,16 +65,15 @@ class CreateRegisterCommand(AbstractCommand):
         )
         self.printer.print_full_text(
             f"[bold orange1]Register controller created successfully:[/bold orange1] {
-                file_path}",
+                controller_path}",
             linebefore=True,
         )
 
-        file_path = FileCreator().create_file(
+        FileCreator().create_file(
             REGISTER_VIEW_TEMPLATE,
-            VIEW_PATH,
-            file_name="register.html",
+            view_path,
         )
         self.printer.print_full_text(
             f"[bold orange1]Register view created successfully:[/bold orange1] {
-                file_path}",
+                view_path}",
         )

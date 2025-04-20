@@ -157,47 +157,43 @@ class CreateAuthCommand(AbstractCommand):
                     self.printer.print_msg(f"• {file}", theme="error")
                 return None
 
-            file_path = FileCreator().create_file(
+            FileCreator().create_file(
                 LOGIN_CONTROLLER_TEMPLATE_NAME,
-                CONTROLLER_PATH,
-                file_name="login_controller.py",
+                controller_path,
             )
             self.printer.print_full_text(
                 f"[bold orange1]Login controller created successfully:[/bold orange1] {
-                    file_path}",
+                    controller_path}",
                 linebefore=True,
             )
 
-            file_path = FileCreator().create_file(
+            FileCreator().create_file(
                 LOGIN_VIEW_TEMPLATE_NAME,
-                VIEW_PATH,
-                file_name="login.html",
+                view_path
             )
             self.printer.print_full_text(
                 f"[bold orange1]Login view created successfully:[/bold orange1] {
-                    file_path}",
+                    view_path}",
             )
-            file_path = FileCreator().create_file(
+            FileCreator().create_file(
                 DEFAULT_TEMPLATE_NAME,
-                AUTHENTICATOR_PATH,
-                file_name=file_name,
+                auth_path,
                 data={"authenticator_name": class_name},
             )
             self.printer.print_full_text(
                 f"[bold orange1]Form login authenticator created successfully:[/bold orange1] {
-                    file_path}",
+                    auth_path}",
                 linebefore=True,
             )
         else:
-            file_path = FileCreator().create_file(
+            FileCreator().create_file(
                 CUSTOM_TEMPLATE_NAME,
-                AUTHENTICATOR_PATH,
-                file_name=file_name,
+                auth_path,
                 data={"authenticator_name": class_name},
             )
             self.printer.print_full_text(
                 f"[bold orange1]Custom authenticator created successfully:[/bold orange1] {
-                    file_path}",
+                    auth_path}",
                 linebefore=True,
             )
 

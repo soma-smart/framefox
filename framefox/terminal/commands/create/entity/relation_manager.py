@@ -415,15 +415,13 @@ class RelationManager:
         target_class = ClassNameManager.snake_to_pascal(target_entity)
         file_path = os.path.join(
             self.entity_folder,
-            f"{
-                intermediate_entity}.py",
+            f"{intermediate_entity}.py",
         )
 
         if not os.path.exists(file_path):
             self.file_creator.create_file(
-                template="intermediate_entity_template.jinja2",
-                path=self.entity_folder,
-                file_name=f"{intermediate_entity}.py",
+                "intermediate_entity_template.jinja2",
+                file_path,
                 data={
                     "intermediate_class": intermediate_class,
                     "source_entity": source_entity,

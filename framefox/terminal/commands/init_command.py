@@ -87,94 +87,79 @@ class InitCommand(AbstractCommand):
         # Create usefull files
         # main.py
         FileCreator().create_file(
-            template="init_files/main.jinja2",
-            path=".",
-            file_name="main.py",
+            "init_files/main.jinja2",
+            "main.py",
         )
 
         # .env
         FileCreator().create_file(
-            template="init_files/env.jinja2",
-            path=".",
-            file_name=".env",
+            "init_files/env.jinja2",
+            ".env",
             data={"session_secret_key": InitCommand.generate_secret_key()},
         )
 
         # base.html
         FileCreator().create_file(
-            template="init_files/base.jinja2",
-            path="./templates",
-            file_name="base.html",
+            "init_files/base.jinja2",
+            "templates/base.html",
         )
 
         # yaml files
         FileCreator().create_file(
-            template="init_files/application.jinja2",
-            path="./config",
-            file_name="application.yaml",
+            "init_files/application.jinja2",
+            "config/application.yaml",
         )
         FileCreator().create_file(
-            template="init_files/orm.jinja2",
-            path="./config",
-            file_name="orm.yaml",
+            "init_files/orm.jinja2",
+            "config/orm.yaml",
         )
         FileCreator().create_file(
-            template="init_files/security.jinja2",
-            path="./config",
-            file_name="security.yaml",
+            "init_files/security.jinja2",
+            "config/security.yaml",
         )
         FileCreator().create_file(
-            template="init_files/mail.jinja2",
-            path="./config",
-            file_name="mail.yaml",
+            "init_files/mail.jinja2",
+            "config/mail.yaml",
         )
         FileCreator().create_file(
-            template="init_files/parameter.jinja2",
-            path="./config",
-            file_name="parameter.yaml",
+            "init_files/parameter.jinja2",
+            "config/parameter.yaml",
         )
         FileCreator().create_file(
-            template="init_files/services.jinja2",
-            path="./config",
-            file_name="services.yaml",
+            "init_files/services.jinja2",
+            "config/services.yaml",
         )
         FileCreator().create_file(
-            template="init_files/tasks.jinja2",
-            path="./config",
-            file_name="tasks.yaml",
+            "init_files/tasks.jinja2",
+            "config/tasks.yaml",
         )
 
         # env.py in migrations
         FileCreator().create_file(
-            template="init_files/env.py.jinja2",
-            path="./migrations",
-            file_name="env.py",
+            "init_files/env.py.jinja2",
+            "migrations/env.py",
         )
         FileCreator().create_file(
-            template="init_files/script.py.mako",
-            path="./migrations",
-            file_name="script.py.mako",
+            "init_files/script.py.mako",
+            "migrations/script.py.mako",
         )
 
         # env.py in migrations
         FileCreator().create_file(
-            template="init_files/blank.jinja2",
-            path="./migrations/versions/__pycache__",
-            file_name=".gitkeep",
+            "init_files/blank.jinja2",
+            "migrations/versions/__pycache__/.gitkeep",
         )
 
         # gitignore
         FileCreator().create_file(
-            template="init_files/gitignore.jinja2",
-            path=".",
-            file_name=".gitignore",
+            "init_files/gitignore.jinja2",
+            ".gitignore",
         )
 
         # requirements.txt
         FileCreator().create_file(
-            template="init_files/requirements.jinja2",
-            path=".",
-            file_name="requirements.txt",
+            "init_files/requirements.jinja2",
+            "requirements.txt",
         )
 
     def check_requirements(self):

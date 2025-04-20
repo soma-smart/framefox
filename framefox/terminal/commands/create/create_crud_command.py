@@ -41,9 +41,8 @@ class CreateCrudCommand(AbstractCommand):
         file_creator = FileCreator()
         for output_name, template_file in templates.items():
             file_creator.create_file(
-                template=f"crud/{template_file}",
-                path=template_dir,
-                file_name=f"{output_name}.html",
+                f"crud/{template_file}",
+                os.path.join(template_dir, f"{output_name}.html"),
                 data=data,
             )
 
@@ -111,9 +110,8 @@ class CreateCrudCommand(AbstractCommand):
         }
 
         file_creator = FileCreator()
-        if file_creator.check_if_exists(
-            CONTROLLERS_PATH, f"{entity_name}_controller"
-        ):
+        output_path = os.path.join(CONTROLLERS_PATH, f"{entity_name}_controller.py")
+        if file_creator.check_if_exists(output_path):
             self.printer.print_msg(
                 f"Controller {entity_name} already exists!",
                 theme="error",
@@ -123,19 +121,16 @@ class CreateCrudCommand(AbstractCommand):
             return
 
         if user_input == "api":
-            file_path = FileCreator().create_file(
+            FileCreator().create_file(
                 API_CONTROLLER_TEMPLATE,
-                CONTROLLERS_PATH,
-                f"{entity_name}_controller.py",
+                output_path,
                 data,
             )
 
         if user_input == "templated":
-
-            file_path = FileCreator().create_file(
+            FileCreator().create_file(
                 TEMPLATED_CONTROLLER_TEMPLATE,
-                CONTROLLERS_PATH,
-                f"{entity_name}_controller.py",
+                output_path,
                 data,
             )
             # Créer le FormType pour l'entité
@@ -143,7 +138,7 @@ class CreateCrudCommand(AbstractCommand):
             self._create_view_templates(entity_name)
 
         self.printer.print_msg(
-            f"✓ CRUD Controller created successfully: {file_path}",
+            f"✓ CRUD Controller created successfully: {output_path}",
             theme="success",
             linebefore=True,
         )
@@ -168,15 +163,15 @@ class CreateCrudCommand(AbstractCommand):
 
         # Générer le fichier FormType
         file_creator = FileCreator()
-        file_path = file_creator.create_file(
-            template="form/form_type_template.jinja2",
-            path=form_types_dir,
-            file_name=f"{entity_name}_type.py",
+        output_path = os.path.join(form_types_dir, f"{entity_name}_type.py")
+        file_creator.create_file(
+            "form/form_type_template.jinja2",
+            output_path,
             data=data,
         )
 
         self.printer.print_msg(
-            f"✓ Form type created successfully: {file_path}", theme="success"
+            f"✓ Form type created successfully: {output_path}", theme="success"
         )
 
-        return file_path
+        return output_path

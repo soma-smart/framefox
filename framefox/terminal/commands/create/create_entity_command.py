@@ -106,16 +106,14 @@ class CreateEntityCommand(AbstractCommand):
         repository_class = f"{entity_class}Repository"
 
         self.file_creator.create_file(
-            template=ENTITY_TEMPLATE,
-            path=ENTITY_PATH,
-            file_name=f"{entity_name}.py",
+            ENTITY_TEMPLATE,
+            os.path.join(ENTITY_PATH, f"{entity_name}.py"),
             data={"class_name": entity_class, "properties": []},
         )
 
         self.file_creator.create_file(
-            template=REPOSITORY_TEMPLATE,
-            path=REPOSITORY_PATH,
-            file_name=f"{entity_name}_repository.py",
+            REPOSITORY_TEMPLATE,
+            os.path.join(REPOSITORY_PATH, f"{entity_name}_repository.py"),
             data={
                 "snake_case_name": entity_name,
                 "entity_class_name": entity_class,

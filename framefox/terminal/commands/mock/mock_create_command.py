@@ -72,10 +72,10 @@ class MockCreateCommand(AbstractCommand):
 
         properties_list = [prop for prop in properties_list if prop["name"] != "id"]
 
+        output_path = os.path.join(mocks_dir, f"{entity_name}_mock.py")
         self.file_creator.create_file(
-            template="mock_create_template.jinja2",
-            path=mocks_dir,
-            file_name=f"{entity_name}_mock.py",
+            "mock_create_template.jinja2",
+            output_path,
             data={
                 "entity_name": entity_name,
                 "entity_class_name": entity_class,
@@ -86,6 +86,6 @@ class MockCreateCommand(AbstractCommand):
         )
 
         self.printer.print_msg(
-            f"mock file created: {mocks_dir}/{entity_name}_mock.py",
+            f"mock file created: {output_path}",
             theme="success",
         )
