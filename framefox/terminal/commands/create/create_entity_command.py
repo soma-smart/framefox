@@ -35,10 +35,9 @@ class CreateEntityCommand(AbstractCommand):
         super().__init__()
         self.property_manager = PropertyManager(InputManager(), Printer())
         self.relation_manager = RelationManager(
-            InputManager(), Printer(), FileCreator(), ImportManager(Printer())
+            InputManager(), Printer(), ImportManager(Printer())
         )
         self.import_manager = ImportManager(Printer())
-        self.file_creator = FileCreator()
 
     def execute(self, name: Optional[str] = None):
         self.printer.print_msg(
@@ -105,13 +104,13 @@ class CreateEntityCommand(AbstractCommand):
         entity_class = ClassNameManager.snake_to_pascal(entity_name)
         repository_class = f"{entity_class}Repository"
 
-        self.file_creator.create_file(
+        FileCreator.create_file(
             ENTITY_TEMPLATE,
             os.path.join(ENTITY_PATH, f"{entity_name}.py"),
             data={"class_name": entity_class, "properties": []},
         )
 
-        self.file_creator.create_file(
+        FileCreator.create_file(
             REPOSITORY_TEMPLATE,
             os.path.join(REPOSITORY_PATH, f"{entity_name}_repository.py"),
             data={

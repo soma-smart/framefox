@@ -19,7 +19,6 @@ Github: https://github.com/RayenBou
 class MockCreateCommand(AbstractCommand):
     def __init__(self):
         super().__init__()
-        self.file_creator = FileCreator()
         self.model_checker = ModelChecker()
 
     def execute(self, name: Optional[str] = None):
@@ -73,7 +72,7 @@ class MockCreateCommand(AbstractCommand):
         properties_list = [prop for prop in properties_list if prop["name"] != "id"]
 
         output_path = os.path.join(mocks_dir, f"{entity_name}_mock.py")
-        self.file_creator.create_file(
+        FileCreator.create_file(
             "mock_create_template.jinja2",
             output_path,
             data={

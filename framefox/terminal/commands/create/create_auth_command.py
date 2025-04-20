@@ -157,7 +157,7 @@ class CreateAuthCommand(AbstractCommand):
                     self.printer.print_msg(f"• {file}", theme="error")
                 return None
 
-            FileCreator().create_file(
+            FileCreator.create_file(
                 LOGIN_CONTROLLER_TEMPLATE_NAME,
                 controller_path,
             )
@@ -167,7 +167,7 @@ class CreateAuthCommand(AbstractCommand):
                 linebefore=True,
             )
 
-            FileCreator().create_file(
+            FileCreator.create_file(
                 LOGIN_VIEW_TEMPLATE_NAME,
                 view_path
             )
@@ -175,7 +175,7 @@ class CreateAuthCommand(AbstractCommand):
                 f"[bold orange1]Login view created successfully:[/bold orange1] {
                     view_path}",
             )
-            FileCreator().create_file(
+            FileCreator.create_file(
                 DEFAULT_TEMPLATE_NAME,
                 auth_path,
                 data={"authenticator_name": class_name},
@@ -186,7 +186,7 @@ class CreateAuthCommand(AbstractCommand):
                 linebefore=True,
             )
         else:
-            FileCreator().create_file(
+            FileCreator.create_file(
                 CUSTOM_TEMPLATE_NAME,
                 auth_path,
                 data={"authenticator_name": class_name},

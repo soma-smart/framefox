@@ -55,7 +55,7 @@ class CreateRegisterCommand(AbstractCommand):
                 self.printer.print_msg(f"• {file}", theme="error")
             return None
 
-        FileCreator().create_file(
+        FileCreator.create_file(
             REGISTER_CONTROLLER_TEMPLATE,
             controller_path,
             data={
@@ -69,7 +69,7 @@ class CreateRegisterCommand(AbstractCommand):
             linebefore=True,
         )
 
-        FileCreator().create_file(
+        FileCreator.create_file(
             REGISTER_VIEW_TEMPLATE,
             view_path,
         )

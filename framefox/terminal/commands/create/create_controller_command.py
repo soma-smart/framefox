@@ -57,8 +57,8 @@ class CreateControllerCommand(AbstractCommand):
             "pascal_case_name": ClassNameManager.snake_to_pascal(name),
             "controller_class_name": class_name,
         }
-        file_creator = FileCreator()
-        if file_creator.check_if_exists(CONTROLLER_PATH, f"{name}_controller"):
+        controller_path = os.path.join(CONTROLLER_PATH, f"{name}_controller.py")
+        if FileCreator.check_if_exists(controller_path):
             self.printer.print_msg(
                 f"Controller {name} already exists!",
                 theme="error",
@@ -75,15 +75,14 @@ class CreateControllerCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
-        controller_path = os.path.join(CONTROLLER_PATH, f"{name}_controller.py")
-        FileCreator().create_file(
+        FileCreator.create_file(
             CONTROLLER_TEMPLATE,
             controller_path,
             data=data_controller,
         )
         os.makedirs(os.path.join(VIEW_PATH, name))
         view_path = os.path.join(VIEW_PATH, name, "index.html")
-        FileCreator().create_file(
+        FileCreator.create_file(
             VIEW_TEMPLATE,
             view_path,
             data=data_view,

@@ -38,9 +38,8 @@ class CreateCrudCommand(AbstractCommand):
 
         data = {"entity_name": entity_name, "properties": properties}
 
-        file_creator = FileCreator()
         for output_name, template_file in templates.items():
-            file_creator.create_file(
+            FileCreator.create_file(
                 f"crud/{template_file}",
                 os.path.join(template_dir, f"{output_name}.html"),
                 data=data,
@@ -109,9 +108,8 @@ class CreateCrudCommand(AbstractCommand):
             "entity_name": entity_name,
         }
 
-        file_creator = FileCreator()
         output_path = os.path.join(CONTROLLERS_PATH, f"{entity_name}_controller.py")
-        if file_creator.check_if_exists(output_path):
+        if FileCreator.check_if_exists(output_path):
             self.printer.print_msg(
                 f"Controller {entity_name} already exists!",
                 theme="error",
@@ -121,14 +119,14 @@ class CreateCrudCommand(AbstractCommand):
             return
 
         if user_input == "api":
-            FileCreator().create_file(
+            FileCreator.create_file(
                 API_CONTROLLER_TEMPLATE,
                 output_path,
                 data,
             )
 
         if user_input == "templated":
-            FileCreator().create_file(
+            FileCreator.create_file(
                 TEMPLATED_CONTROLLER_TEMPLATE,
                 output_path,
                 data,
@@ -162,9 +160,8 @@ class CreateCrudCommand(AbstractCommand):
         os.makedirs(form_types_dir, exist_ok=True)
 
         # Générer le fichier FormType
-        file_creator = FileCreator()
         output_path = os.path.join(form_types_dir, f"{entity_name}_type.py")
-        file_creator.create_file(
+        FileCreator.create_file(
             "form/form_type_template.jinja2",
             output_path,
             data=data,

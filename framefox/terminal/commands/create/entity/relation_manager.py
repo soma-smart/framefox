@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 
 from framefox.terminal.common.class_name_manager import ClassNameManager
+from framefox.terminal.common.file_creator import FileCreator
 
 """
 Framefox Framework developed by SOMA
@@ -23,10 +24,9 @@ class RelationConfig:
 
 
 class RelationManager:
-    def __init__(self, input_manager, printer, file_creator, import_manager):
+    def __init__(self, input_manager, printer, import_manager):
         self.input_manager = input_manager
         self.printer = printer
-        self.file_creator = file_creator
         self.import_manager = import_manager
         self.entity_folder = "src/entity"
 
@@ -419,7 +419,7 @@ class RelationManager:
         )
 
         if not os.path.exists(file_path):
-            self.file_creator.create_file(
+            FileCreator.create_file(
                 "intermediate_entity_template.jinja2",
                 file_path,
                 data={
