@@ -2,7 +2,7 @@ import os
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.file_template_renderer import FileTemplateRenderer
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 
@@ -39,7 +39,7 @@ class CreateCrudCommand(AbstractCommand):
         data = {"entity_name": entity_name, "properties": properties}
 
         for output_name, template_file in templates.items():
-            FileCreator.create_file(
+            FileTemplateRenderer.create_file(
                 f"crud/{template_file}",
                 os.path.join(template_dir, f"{output_name}.html"),
                 data=data,
@@ -109,7 +109,7 @@ class CreateCrudCommand(AbstractCommand):
         }
 
         output_path = os.path.join(CONTROLLERS_PATH, f"{entity_name}_controller.py")
-        if FileCreator.check_if_exists(output_path):
+        if FileTemplateRenderer.check_if_exists(output_path):
             self.printer.print_msg(
                 f"Controller {entity_name} already exists!",
                 theme="error",
@@ -119,14 +119,14 @@ class CreateCrudCommand(AbstractCommand):
             return
 
         if user_input == "api":
-            FileCreator.create_file(
+            FileTemplateRenderer.create_file(
                 API_CONTROLLER_TEMPLATE,
                 output_path,
                 data,
             )
 
         if user_input == "templated":
-            FileCreator.create_file(
+            FileTemplateRenderer.create_file(
                 TEMPLATED_CONTROLLER_TEMPLATE,
                 output_path,
                 data,
@@ -161,7 +161,7 @@ class CreateCrudCommand(AbstractCommand):
 
         # Générer le fichier FormType
         output_path = os.path.join(form_types_dir, f"{entity_name}_type.py")
-        FileCreator.create_file(
+        FileTemplateRenderer.create_file(
             "form/form_type_template.jinja2",
             output_path,
             data=data,

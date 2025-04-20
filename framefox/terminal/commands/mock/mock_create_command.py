@@ -3,7 +3,7 @@ from typing import Optional
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.file_template_renderer import FileTemplateRenderer
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 
@@ -72,7 +72,7 @@ class MockCreateCommand(AbstractCommand):
         properties_list = [prop for prop in properties_list if prop["name"] != "id"]
 
         output_path = os.path.join(mocks_dir, f"{entity_name}_mock.py")
-        FileCreator.create_file(
+        FileTemplateRenderer.create_file(
             "mock_create_template.jinja2",
             output_path,
             data={

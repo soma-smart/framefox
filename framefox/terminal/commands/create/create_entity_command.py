@@ -9,7 +9,7 @@ from framefox.terminal.commands.create.entity.property_manager import \
 from framefox.terminal.commands.create.entity.relation_manager import \
     RelationManager
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.file_template_renderer import FileTemplateRenderer
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.printer import Printer
@@ -104,13 +104,13 @@ class CreateEntityCommand(AbstractCommand):
         entity_class = ClassNameManager.snake_to_pascal(entity_name)
         repository_class = f"{entity_class}Repository"
 
-        FileCreator.create_file(
+        FileTemplateRenderer.create_file(
             ENTITY_TEMPLATE,
             os.path.join(ENTITY_PATH, f"{entity_name}.py"),
             data={"class_name": entity_class, "properties": []},
         )
 
-        FileCreator.create_file(
+        FileTemplateRenderer.create_file(
             REPOSITORY_TEMPLATE,
             os.path.join(REPOSITORY_PATH, f"{entity_name}_repository.py"),
             data={

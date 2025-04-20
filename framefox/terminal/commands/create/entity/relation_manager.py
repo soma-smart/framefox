@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.file_template_renderer import FileTemplateRenderer
 
 """
 Framefox Framework developed by SOMA
@@ -419,7 +419,7 @@ class RelationManager:
         )
 
         if not os.path.exists(file_path):
-            FileCreator.create_file(
+            FileTemplateRenderer.create_file(
                 "intermediate_entity_template.jinja2",
                 file_path,
                 data={

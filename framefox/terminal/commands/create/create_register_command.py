@@ -2,7 +2,7 @@ import os
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
-from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.file_template_renderer import FileTemplateRenderer
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 
@@ -55,7 +55,7 @@ class CreateRegisterCommand(AbstractCommand):
                 self.printer.print_msg(f"• {file}", theme="error")
             return None
 
-        FileCreator.create_file(
+        FileTemplateRenderer.create_file(
             REGISTER_CONTROLLER_TEMPLATE,
             controller_path,
             data={
@@ -69,7 +69,7 @@ class CreateRegisterCommand(AbstractCommand):
             linebefore=True,
         )
 
-        FileCreator.create_file(
+        FileTemplateRenderer.create_file(
             REGISTER_VIEW_TEMPLATE,
             view_path,
         )

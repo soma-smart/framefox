@@ -9,7 +9,7 @@ import framefox.terminal
 TEMPLATE_PATH = pkg_resources.files(framefox.terminal).joinpath("templates")
 
 
-class FileCreator:
+class FileTemplateRenderer:
     @staticmethod
     def create_file(
         template: str, output_path: str, data: dict = {}
