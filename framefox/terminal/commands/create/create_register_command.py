@@ -58,7 +58,7 @@ class CreateRegisterCommand(AbstractCommand):
         file_path = FileCreator().create_file(
             REGISTER_CONTROLLER_TEMPLATE,
             CONTROLLER_PATH,
-            name=r"register_controller",
+            file_name=r"register_controller",
             data={
                 "entity_file_name": provider_name,
                 "entity_class_name": ClassNameManager.snake_to_pascal(provider_name),
@@ -73,7 +73,7 @@ class CreateRegisterCommand(AbstractCommand):
         file_path = FileCreator().create_file(
             REGISTER_VIEW_TEMPLATE,
             VIEW_PATH,
-            name=r"register.html",
+            file_name=r"register.html",
             data={},
             format="html",
         )

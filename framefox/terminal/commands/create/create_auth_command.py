@@ -158,7 +158,7 @@ class CreateAuthCommand(AbstractCommand):
             file_path = FileCreator().create_file(
                 LOGIN_CONTROLLER_TEMPLATE_NAME,
                 CONTROLLER_PATH,
-                name="login_controller",
+                file_name="login_controller",
                 data={},
             )
             self.printer.print_full_text(
@@ -170,7 +170,7 @@ class CreateAuthCommand(AbstractCommand):
             file_path = FileCreator().create_file(
                 LOGIN_VIEW_TEMPLATE_NAME,
                 VIEW_PATH,
-                name="login.html",
+                file_name="login.html",
                 data={},
                 format="html",
             )
@@ -181,7 +181,7 @@ class CreateAuthCommand(AbstractCommand):
             file_path = FileCreator().create_file(
                 DEFAULT_TEMPLATE_NAME,
                 AUTHENTICATOR_PATH,
-                name=file_name,
+                file_name=file_name,
                 data={"authenticator_name": class_name},
             )
             self.printer.print_full_text(
@@ -193,7 +193,7 @@ class CreateAuthCommand(AbstractCommand):
             file_path = FileCreator().create_file(
                 CUSTOM_TEMPLATE_NAME,
                 AUTHENTICATOR_PATH,
-                name=file_name,
+                file_name=file_name,
                 data={"authenticator_name": class_name},
             )
             self.printer.print_full_text(

@@ -78,14 +78,14 @@ class CreateControllerCommand(AbstractCommand):
         controller_path = FileCreator().create_file(
             template=CONTROLLER_TEMPLATE,
             path=CONTROLLER_PATH,
-            name=f"{name}_controller",
+            file_name=f"{name}_controller",
             data=data_controller,
         )
         os.makedirs(os.path.join(VIEW_PATH, name))
         view_path = FileCreator().create_file(
             template=VIEW_TEMPLATE,
             path=os.path.join(VIEW_PATH, name),
-            name="index.html",
+            file_name="index.html",
             data=data_view,
             format="html",
         )

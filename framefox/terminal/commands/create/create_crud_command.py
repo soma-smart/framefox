@@ -43,7 +43,7 @@ class CreateCrudCommand(AbstractCommand):
             file_creator.create_file(
                 template=f"crud/{template_file}",
                 path=template_dir,
-                name=output_name + ".html",
+                file_name=output_name + ".html",
                 data=data,
                 format="html",
             )
@@ -172,7 +172,7 @@ class CreateCrudCommand(AbstractCommand):
         file_path = file_creator.create_file(
             template="form/form_type_template.jinja2",
             path=form_types_dir,
-            name=f"{entity_name}_type",
+            file_name=f"{entity_name}_type",
             data=data,
             format="py",
         )

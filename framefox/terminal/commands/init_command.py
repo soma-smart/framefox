@@ -89,7 +89,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/main.jinja2",
             path=".",
-            name="main",
+            file_name="main",
             data={},
         )
 
@@ -97,7 +97,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/env.jinja2",
             path=".",
-            name=".env",
+            file_name=".env",
             data={"session_secret_key": InitCommand.generate_secret_key()},
             format="env",
         )
@@ -106,7 +106,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/base.jinja2",
             path="./templates",
-            name="base.html",
+            file_name="base.html",
             data={},
             format="html",
         )
@@ -115,49 +115,49 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/application.jinja2",
             path="./config",
-            name="application.yaml",
+            file_name="application.yaml",
             data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/orm.jinja2",
             path="./config",
-            name="orm.yaml",
+            file_name="orm.yaml",
             data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/security.jinja2",
             path="./config",
-            name="security.yaml",
+            file_name="security.yaml",
             data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/mail.jinja2",
             path="./config",
-            name="mail.yaml",
+            file_name="mail.yaml",
             data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/parameter.jinja2",
             path="./config",
-            name="parameter.yaml",
+            file_name="parameter.yaml",
             data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/services.jinja2",
             path="./config",
-            name="services.yaml",
+            file_name="services.yaml",
             data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/tasks.jinja2",
             path="./config",
-            name="tasks.yaml",
+            file_name="tasks.yaml",
             data={},
             format="yaml",
         )
@@ -166,14 +166,14 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/env.py.jinja2",
             path="./migrations",
-            name="env",
+            file_name="env",
             data={},
             format="py",
         )
         FileCreator().create_file(
             template="init_files/script.py.mako",
             path="./migrations",
-            name="script.py.mako",
+            file_name="script.py.mako",
             data={},
             format="py.mako",
         )
@@ -182,7 +182,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/blank.jinja2",
             path="./migrations/versions/__pycache__",
-            name=".gitkeep",
+            file_name=".gitkeep",
             data={},
             format="gitkeep",
         )
@@ -191,7 +191,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/gitignore.jinja2",
             path=".",
-            name=".gitignore",
+            file_name=".gitignore",
             data={},
             format="gitignore",
         )
@@ -200,7 +200,7 @@ class InitCommand(AbstractCommand):
         FileCreator().create_file(
             template="init_files/requirements.jinja2",
             path=".",
-            name="requirements.txt",
+            file_name="requirements.txt",
             data={},
             format="txt",
         )
