@@ -8,7 +8,6 @@ def add_mock_commands(app: Typer) -> None:
     mock_commands = Typer(
         no_args_is_help=True,
         rich_markup_mode="rich",
-        pretty_exceptions_enable=False,
     )
 
     @mock_commands.command()

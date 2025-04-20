@@ -28,7 +28,6 @@ class Terminal:
             help="🦊 Framefox - Swift, smart, and a bit foxy",
             no_args_is_help=True,
             rich_markup_mode="rich",
-            pretty_exceptions_enable=False,
         )
 
         @self.app.callback(invoke_without_command=True)

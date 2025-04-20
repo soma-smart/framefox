@@ -14,7 +14,6 @@ def add_database_commands(app: Typer) -> None:
     database_commands = Typer(
         no_args_is_help=True,
         rich_markup_mode="rich",
-        pretty_exceptions_enable=False,
     )
 
     @database_commands.command()

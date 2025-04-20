@@ -8,7 +8,6 @@ def add_server_commands(app: Typer) -> None:
     server_commands = Typer(
         no_args_is_help=True,
         rich_markup_mode="rich",
-        pretty_exceptions_enable=False,
     )
 
     @server_commands.command()

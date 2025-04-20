@@ -8,7 +8,6 @@ def add_debug_commands(app: Typer) -> None:
     debug_commands = Typer(
         no_args_is_help=True,
         rich_markup_mode="rich",
-        pretty_exceptions_enable=False,
     )
 
     @debug_commands.command()
