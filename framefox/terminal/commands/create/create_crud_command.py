@@ -109,7 +109,7 @@ class CreateCrudCommand(AbstractCommand):
         }
 
         output_path = os.path.join(CONTROLLERS_PATH, f"{entity_name}_controller.py")
-        if FileTemplateRenderer.check_if_exists(output_path):
+        if os.path.exists(output_path):
             self.printer.print_msg(
                 f"Controller {entity_name} already exists!",
                 theme="error",

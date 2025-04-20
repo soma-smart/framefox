@@ -28,8 +28,3 @@ class FileTemplateRenderer:
 
         with open(output_path, "w") as file:
             file.write(code)
-
-    @staticmethod
-    def check_if_exists(output_path: str) -> bool:
-        """Check if a file already exists"""
-        return os.path.exists(output_path)

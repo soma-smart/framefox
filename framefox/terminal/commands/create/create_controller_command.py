@@ -58,7 +58,7 @@ class CreateControllerCommand(AbstractCommand):
             "controller_class_name": class_name,
         }
         controller_path = os.path.join(CONTROLLER_PATH, f"{name}_controller.py")
-        if FileTemplateRenderer.check_if_exists(controller_path):
+        if os.path.exists(controller_path):
             self.printer.print_msg(
                 f"Controller {name} already exists!",
                 theme="error",
