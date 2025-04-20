@@ -90,7 +90,6 @@ class InitCommand(AbstractCommand):
             template="init_files/main.jinja2",
             path=".",
             file_name="main",
-            data={},
         )
 
         # .env
@@ -107,7 +106,6 @@ class InitCommand(AbstractCommand):
             template="init_files/base.jinja2",
             path="./templates",
             file_name="base.html",
-            data={},
             format="html",
         )
 
@@ -116,49 +114,42 @@ class InitCommand(AbstractCommand):
             template="init_files/application.jinja2",
             path="./config",
             file_name="application.yaml",
-            data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/orm.jinja2",
             path="./config",
             file_name="orm.yaml",
-            data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/security.jinja2",
             path="./config",
             file_name="security.yaml",
-            data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/mail.jinja2",
             path="./config",
             file_name="mail.yaml",
-            data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/parameter.jinja2",
             path="./config",
             file_name="parameter.yaml",
-            data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/services.jinja2",
             path="./config",
             file_name="services.yaml",
-            data={},
             format="yaml",
         )
         FileCreator().create_file(
             template="init_files/tasks.jinja2",
             path="./config",
             file_name="tasks.yaml",
-            data={},
             format="yaml",
         )
 
@@ -167,14 +158,12 @@ class InitCommand(AbstractCommand):
             template="init_files/env.py.jinja2",
             path="./migrations",
             file_name="env",
-            data={},
             format="py",
         )
         FileCreator().create_file(
             template="init_files/script.py.mako",
             path="./migrations",
             file_name="script.py.mako",
-            data={},
             format="py.mako",
         )
 
@@ -183,7 +172,6 @@ class InitCommand(AbstractCommand):
             template="init_files/blank.jinja2",
             path="./migrations/versions/__pycache__",
             file_name=".gitkeep",
-            data={},
             format="gitkeep",
         )
 
@@ -192,7 +180,6 @@ class InitCommand(AbstractCommand):
             template="init_files/gitignore.jinja2",
             path=".",
             file_name=".gitignore",
-            data={},
             format="gitignore",
         )
 
@@ -201,7 +188,6 @@ class InitCommand(AbstractCommand):
             template="init_files/requirements.jinja2",
             path=".",
             file_name="requirements.txt",
-            data={},
             format="txt",
         )
 

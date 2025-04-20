@@ -14,7 +14,7 @@ class FileCreator:
         )
 
     def create_file(
-        self, template: str, path: str, file_name: str, data: str, format: str = "py"
+        self, template: str, path: str, file_name: str, data: dict = {}, format: str = "py"
     ):
         """
         Create a file using a template.

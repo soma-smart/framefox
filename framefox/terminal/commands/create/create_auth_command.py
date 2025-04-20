@@ -159,7 +159,6 @@ class CreateAuthCommand(AbstractCommand):
                 LOGIN_CONTROLLER_TEMPLATE_NAME,
                 CONTROLLER_PATH,
                 file_name="login_controller",
-                data={},
             )
             self.printer.print_full_text(
                 f"[bold orange1]Login controller created successfully:[/bold orange1] {
@@ -171,7 +170,6 @@ class CreateAuthCommand(AbstractCommand):
                 LOGIN_VIEW_TEMPLATE_NAME,
                 VIEW_PATH,
                 file_name="login.html",
-                data={},
                 format="html",
             )
             self.printer.print_full_text(

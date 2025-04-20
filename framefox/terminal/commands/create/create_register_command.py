@@ -74,7 +74,6 @@ class CreateRegisterCommand(AbstractCommand):
             REGISTER_VIEW_TEMPLATE,
             VIEW_PATH,
             file_name=r"register.html",
-            data={},
             format="html",
         )
         self.printer.print_full_text(
