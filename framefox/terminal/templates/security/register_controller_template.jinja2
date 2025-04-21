@@ -11,19 +11,23 @@ class RegisterController(AbstractController):
     def __init__(self):
         self.entity_manager = EntityManager()
 
-    @Route("/register", "security.register", methods=["GET", "POST"])
+    @Route("/register", "security.register_specs", methods=["GET"])
+    async def register_specs(self, request: Request):
+        provider = {{ entity_class_name }}()
+
+        return self.render("security/register.html")
+
+    @Route("/register", "security.register", methods=["POST"])
     async def register(self, request: Request):
         provider = {{ entity_class_name }}()
 
-        if request.method == "POST":
-            form = await request.form()
-            provider = {{ entity_class_name }}()
-            provider.email = form.get("email")
-            provider.password = PasswordHasher().hash(form.get("password"))
+        form = await request.form()
+        provider = {{ entity_class_name }}()
+        provider.email = form.get("email")
+        provider.password = PasswordHasher().hash(form.get("password"))
 
-            self.entity_manager.persist(provider)
-            self.entity_manager.commit()
-            return self.redirect("/login")
+        self.entity_manager.persist(provider)
+        self.entity_manager.commit()
+        return self.redirect("/login")
 
-        return self.render("security/register.html")
 {% raw %}{% endraw %}

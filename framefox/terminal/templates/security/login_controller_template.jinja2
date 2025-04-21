@@ -4,7 +4,6 @@ from framefox.core.routing.decorator.route import Route
 class LoginController(AbstractController):
     @Route("/login", "security.login", methods=["GET", "POST"])
     async def login(self):
-
         return self.render("security/login.html", {})
 
     @Route("/logout", "security.logout", methods=["GET"])
