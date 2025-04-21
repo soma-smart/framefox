@@ -27,21 +27,30 @@ def add_create_commands(app: Typer) -> None:
         """
         Create a simple controller and view.
         """
-        CreateControllerCommand().execute(name)
+        if name:
+            CreateControllerCommand().execute(name)
+        else:
+            CreateControllerCommand().execute()
 
     @create_commands.command()
     def crud(entity_name: str = Option(None, help="The name of the entity in snake_case")):
         """
         Create a CRUD controller for the given entity name.
         """
-        CreateCrudCommand().execute(entity_name)
+        if entity_name:
+            CreateCrudCommand().execute(entity_name)
+        else:
+            CreateCrudCommand().execute()
 
     @create_commands.command()
     def entity(name: str = Option(None, help="The name of the entity in snake_case")):
         """
         Create a new entity
         """
-        CreateEntityCommand().execute(name)
+        if name:
+            CreateEntityCommand().execute(name)
+        else:
+            CreateEntityCommand().execute()
 
     @create_commands.command()
     def hash():
@@ -62,7 +71,10 @@ def add_create_commands(app: Typer) -> None:
         """
         Create a user entity for the authentication.
         """
-        CreateUserCommand().execute(name)
+        if name:
+            CreateUserCommand().execute(name)
+        else:
+            CreateUserCommand().execute()
 
     app.add_typer(
         create_commands,

@@ -49,7 +49,10 @@ def add_database_commands(app: Typer) -> None:
         """
         Reverts the last migration(s) applied to the database.
         """
-        DowngradeCommand().execute(steps)
+        if steps:
+            DowngradeCommand().execute(steps)
+        else:
+            DowngradeCommand().execute()
 
     @database_commands.command()
     def drop():

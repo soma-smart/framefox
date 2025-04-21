@@ -15,7 +15,10 @@ def add_server_commands(app: Typer) -> None:
         """
         Start the uvicorn server.
         """
-        ServerStartCommand().execute(port, with_worker)
+        if port:
+            ServerStartCommand().execute(port, with_worker)
+        else:
+            ServerStartCommand().execute(with_workers=with_worker)
 
     @server_commands.command()
     def worker():

@@ -15,7 +15,10 @@ def add_mock_commands(app: Typer) -> None:
         """
         Create mock file for an entity
         """
-        MockCreateCommand().execute(name)
+        if name:
+            MockCreateCommand().execute(name)
+        else:
+            MockCreateCommand().execute()
 
     @mock_commands.command()
     def load():
