@@ -28,4 +28,5 @@ def add_debug_commands(app: Typer) -> None:
         debug_commands,
         name="debug",
         help="Debug operations like checking routes or testing security.",
+        rich_help_panel="tools",
     )

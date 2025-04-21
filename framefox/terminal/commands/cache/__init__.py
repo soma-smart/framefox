@@ -28,4 +28,5 @@ def add_cache_commands(app: Typer) -> None:
         cache_commands,
         name="cache",
         help="Cache operations like clearing cache files and directories.",
+        rich_help_panel="tools",
     )
