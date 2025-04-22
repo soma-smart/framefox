@@ -11,7 +11,7 @@ class {{ controller_class_name }}(AbstractController):
         self.entity_manager = entityManager
         self.repository = {{ repository_class_name }}()
 
-    @Route("/{{ entity_name }}s", "{{ entity_file_name }}.read_all", methods=["GET"])
+    @Route("/{{ entity_name }}", "{{ entity_file_name }}.read_all", methods=["GET"])
     async def read_all(self):
         items = self.repository.find_all()
         return self.render("{{ entity_name }}/index.html", {"items": items})
@@ -28,7 +28,7 @@ class {{ controller_class_name }}(AbstractController):
 
         return self.render_create(form)
 
-    @Route("/{{ entity_name }}/create", "{{ entity_name }}.create", methods=["POST"])
+    @Route("/{{ entity_name }}", "{{ entity_name }}.create", methods=["POST"])
     async def create(self, request: Request):
         entity_instance = {{ entity_class_name }}()
         form = self.create_form({{ entity_class_name }}Type, entity_instance)
@@ -64,7 +64,7 @@ class {{ controller_class_name }}(AbstractController):
         self.render_update(form, entity_instance)
 
 
-    @Route("/{{ entity_name }}/{id}/update", "{{ entity_file_name }}.update", methods=["POST"])
+    @Route("/{{ entity_name }}/{id}", "{{ entity_file_name }}.update", methods=["PUT"])
     async def update(self, request: Request, id: int):
         entity_instance = self.repository.find({"id": id})
         form = self.create_form({{ entity_class_name }}Type, entity_instance)
@@ -78,7 +78,7 @@ class {{ controller_class_name }}(AbstractController):
 
         self.render_update(form, entity_instance)
 
-    @Route("/{{ entity_name }}/delete/{id}", "{{ entity_file_name }}.delete", methods=["POST"])
+    @Route("/{{ entity_name }}/{id}", "{{ entity_file_name }}.delete", methods=["DELETE"])
     async def delete(self, id: int):
         try:
             entity_instance = self.repository.find({"id": id})
