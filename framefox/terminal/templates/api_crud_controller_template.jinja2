@@ -10,7 +10,7 @@ class {{ controller_class_name }}(AbstractController):
     def __init__(self, entityManager: EntityManager):
         self.entity_manager = entityManager
 
-    @Route("/{{ entity_name }}s", "{{ entity_file_name }}.read_all", methods=["GET"])
+    @Route("/{{ entity_name }}", "{{ entity_file_name }}.read_all", methods=["GET"])
     async def read_all(self):
         return {{ repository_class_name }}().find_all()
 
@@ -29,7 +29,7 @@ class {{ controller_class_name }}(AbstractController):
             status=201
         )
 
-    @Route("/{{ entity_name }}/edit/{id}", "{{ entity_file_name }}.update", methods=["PUT"])
+    @Route("/{{ entity_name }}/{id}", "{{ entity_file_name }}.update", methods=["PUT"])
     async def update(self, {{ entity_name }}: {{ entity_class_name }}):
         self.entity_manager.persist({{ entity_name }})
         self.entity_manager.commit()
@@ -38,7 +38,7 @@ class {{ controller_class_name }}(AbstractController):
             status=200
         )
 
-    @Route("/{{ entity_name }}/delete/{id}", "{{ entity_file_name }}.delete", methods=["DELETE"])
+    @Route("/{{ entity_name }}/{id}", "{{ entity_file_name }}.delete", methods=["DELETE"])
     async def delete(self, id: int):
         entity_instance = {{ repository_class_name }}().find(id)
         self.entity_manager.delete(entity_instance)
