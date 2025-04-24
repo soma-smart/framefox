@@ -5,6 +5,7 @@ from rich.table import Table
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.application import Application
 
 """
 Framefox Framework developed by SOMA
@@ -18,7 +19,9 @@ Github: https://github.com/RayenBou
 class DebugServiceCommand(AbstractCommand):
     def __init__(self):
         super().__init__("service")
-        self.container = ServiceContainer()
+        # Utiliser le conteneur de l'Application au lieu d'en créer un nouveau
+        self.container = Application().container
+
 
     def execute(self):
         """

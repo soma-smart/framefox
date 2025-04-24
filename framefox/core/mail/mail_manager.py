@@ -5,13 +5,17 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List, Optional, Union
+import re
 
 import aiosmtplib
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from bs4 import BeautifulSoup
 
 from framefox.core.config.settings import Settings
 from framefox.core.mail.email_message import EmailMessage
+from framefox.core.mail.mail_url_parser import MailUrlParser
+from datetime import datetime
 
 """
 Framefox Framework developed by SOMA
@@ -21,23 +25,167 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
-
 class MailManager:
-    """Email management service."""
+    """Service de gestion des emails."""
 
     def __init__(self, settings: Settings):
+        """
+        Initialise le gestionnaire d'emails.
+        
+        Args:
+            settings: Configuration de l'application
+        """
         self.settings = settings
         self.logger = logging.getLogger("MAIL")
         self.queue = []
         self.is_processing = False
         self.templates_env = None
+        templates_dir = None
+        
 
-        templates_dir = Path(os.getcwd()) / self.settings.mail_templates_dir
-        if templates_dir.exists():
-            self.templates_env = Environment(
-                loader=FileSystemLoader(str(templates_dir))
-            )
+        if "mail" in self.settings.config and "templates_dir" in self.settings.config["mail"]:
+            templates_dir = self.settings.config["mail"]["templates_dir"]
+        
+        else:
+            self.logger.warning("Dossier de templates non trouvé dans config['mail']")
+        
+   
+        if not templates_dir:
+            templates_dir = self.settings.get_param("mail.templates_dir")
+    
+        
+ 
+        if not templates_dir:
+            templates_dir = "templates/emails"
+  
+   
+        possible_paths = [
+            Path(os.getcwd()) / templates_dir,              
+            Path(os.getcwd()) / "src" / templates_dir,        
+            Path(os.getcwd()) / templates_dir.lstrip("/"),    
+        ]
+        
+        template_path_found = False
+        
+        for path in possible_paths:
+            if path.exists() and path.is_dir():
+                self.templates_env = Environment(
+                    loader=FileSystemLoader(str(path)),
+                    autoescape=select_autoescape(['html', 'xml']),
+                    extensions=['jinja2.ext.do']
+                )
+                self.templates_env.globals['now'] = datetime.now
+                template_path_found = True
+                break
+        
+        if not template_path_found:
+            self.logger.warning(f"Aucun dossier de templates trouvé parmi les chemins testés: {possible_paths}")
 
+    def _validate_config(self) -> bool:
+        """
+        Validates the SMTP configuration.
+        
+        Returns:
+            True if the configuration is valid
+        """
+        mail_config = getattr(self.settings, "mail_config", None)
+
+        if not mail_config:
+            mail_url = None
+            
+            if "mail" in self.settings.config and "url" in self.settings.config["mail"]:
+                mail_url = self.settings.config["mail"]["url"]
+            else:
+                mail_url = self.settings.get_param("mail.url") or self.settings.get_param("mail_url")
+            
+            if mail_url:
+                mail_config = MailUrlParser.parse_url(mail_url)
+                self.settings.mail_config = mail_config
+            else:
+                self.logger.error("No mail configuration found")
+                return False
+        
+        required_params = ["host", "port"]
+        for param in required_params:
+            if param not in mail_config:
+                self.logger.error(f"Missing required mail parameter: {param}")
+                return False
+                
+        return True
+
+    def _html_to_text(self, html_content: str) -> str:
+        """
+        Converts HTML content to plain text.
+        
+        Args:
+            html_content: HTML content to convert
+            
+        Returns:
+            Plain text version of the HTML content
+        """
+        try:
+            soup = BeautifulSoup(html_content, "html.parser")
+            text = soup.get_text(separator='\n')
+            text = re.sub(r'\n\s*\n', '\n\n', text)
+            return text.strip()
+        except ImportError:
+            text = html_content
+            text = re.sub(r'<br\s*/?>|<p>|</p>|<div>|</div>|<tr>|</tr>', '\n', text)
+            text = re.sub(r'<[^>]*>', '', text)
+            text = re.sub(r'\n\s*\n', '\n\n', text)
+            return text.strip()
+
+    async def send_mail(
+        self, 
+        sender: str,
+        receiver: str,
+        subject: str,
+        text_content: str,
+        html_content: Optional[str] = None,
+        cc: Optional[List[str]] = None,
+        bcc: Optional[List[str]] = None,
+        attachments: Optional[List[Union[str, Dict[str, str]]]] = None,
+        queue: bool = False
+    ) -> bool:
+        """
+        Sends an email without using a template.
+        
+        Args:
+            sender: Sender's email address
+            receiver: Recipient's email address
+            subject: Email subject
+            text_content: Email text content
+            html_content: Email HTML content (optional)
+            cc: List of CC recipients (optional)
+            bcc: List of BCC recipients (optional)
+            attachments: List of attachments (optional)
+            queue: Queue the email (optional)
+            
+        Returns:
+            True if the email was successfully sent or queued
+        """
+        cc = cc or []
+        bcc = bcc or []
+        attachments = attachments or []
+        
+        message = EmailMessage(
+            sender=sender,
+            receiver=receiver,
+            subject=subject,
+            body=text_content,
+            html_body=html_content,
+            cc=cc,
+            bcc=bcc,
+            priority=1,
+        )
+        
+        for attachment in attachments:
+            if isinstance(attachment, dict):
+                message.add_attachment(attachment["filepath"], attachment.get("filename"))
+            else:
+                message.add_attachment(attachment)
+        
+        return await self._process_message(message, queue)
     async def send_template_email(
         self,
         sender: str,
@@ -47,133 +195,200 @@ class MailManager:
         context: Dict,
         **kwargs,
     ) -> bool:
-        """
-        Sends an email using a template.
-
-        Args:
-            sender: Sender's email address
-            receiver: Email recipient (single address)
-            subject: Email subject
-            template_name: Template file name (without extension)
-            context: Data to pass to the template
-            **kwargs: Other options for EmailMessage
-
-        Returns:
-            True if the email was successfully sent or queued
-        """
         if not self.templates_env:
-            self.logger.error(
-                f"Template folder not found: {self.settings.mail_templates_dir}"
-            )
+            self.logger.error("No template available. Check the templates/emails folder")
             return False
-
+            
         try:
-            html_template = self.templates_env.get_template(
-                f"{template_name}.html.jinja2"
-            )
-            html_content = html_template.render(**context)
-
+            html_content = None
             text_content = None
-            try:
-                text_template = self.templates_env.get_template(
-                    f"{template_name}.txt.jinja2"
-                )
-                text_content = text_template.render(**context)
-            except:
+            
+            html_extensions = ['.html', '.html.jinja2', '.html.twig']
+            for ext in html_extensions:
+                try:
+                    template = f"{template_name}{ext}"
+                    self.logger.debug(f"Attempting to load HTML template: {template}")
+                    html_template = self.templates_env.get_template(template)
+                    html_content = html_template.render(**context)
+                    self.logger.info(f"HTML template successfully loaded: {template}")
+                    break
+                except Exception as e:
+                    self.logger.debug(f"Failed to load template {template}: {str(e)}")
+            
+            if not html_content:
+                self.logger.error(f"No HTML template found for {template_name}")
+                return False
+            
+            text_extensions = ['.txt', '.txt.jinja2', '.txt.twig']
+            for ext in text_extensions:
+                try:
+                    template = f"{template_name}{ext}"
+                    self.logger.debug(f"Attempting to load text template: {template}")
+                    text_template = self.templates_env.get_template(template)
+                    text_content = text_template.render(**context)
+                  
+                    break
+                except Exception as e:
+                    self.logger.debug(f"Failed to load text template {template}: {str(e)}")
+            
+            if not text_content:
+                self.logger.debug(f"Converting HTML content to text for {template_name}")
                 text_content = self._html_to_text(html_content)
-
-            message = EmailMessage(
+                
+            return await self.send_mail(
                 sender=sender,
                 receiver=receiver,
                 subject=subject,
-                body=text_content,
-                html_body=html_content,
+                text_content=text_content,
+                html_content=html_content,
                 cc=kwargs.get("cc", []),
                 bcc=kwargs.get("bcc", []),
-                priority=kwargs.get("priority", 1),
+                attachments=kwargs.get("attachments", []),
+                queue=kwargs.get("queue", False)
             )
-
-            attachments = kwargs.get("attachments", [])
-            for att in attachments:
-                if isinstance(att, dict):
-                    message.add_attachment(att["filepath"], att.get("filename"))
-                else:
-                    message.add_attachment(att)
-
-            return await self.send_email(message, queue=kwargs.get("queue"))
-
         except Exception as e:
-            self.logger.error(
-                f"Error sending template email '{template_name}': {str(e)}"
-            )
+            self.logger.error(f"Error sending template {template_name}: {str(e)}")
             return False
+    
+    async def _process_message(self, message: EmailMessage, queue: bool = False) -> bool:
+        queue_enabled = False
+        
+        if "mail" in self.settings.config and "queue" in self.settings.config["mail"]:
+            queue_enabled = self.settings.config["mail"]["queue"].get("enabled", False)
+        else:
+            queue_enabled = self.settings.get_param("mail.queue.enabled", False)
+        
+        if queue or queue_enabled:
+            self.queue.append(message)
+
+            
+            if not self.is_processing:
+                asyncio.create_task(self._process_queue())
+            
+            return True
+        
+        return await self._send_email_now(message)
+            
+    async def _process_queue(self) -> None:
+        """Processes queued emails."""
+        if self.is_processing:
+            return
+            
+        self.is_processing = True
+
+        
+        max_retries = 3
+        retry_interval = 300
+        
+        if "mail" in self.settings.config and "queue" in self.settings.config["mail"]:
+            max_retries = self.settings.config["mail"]["queue"].get("max_retries", 3)
+            retry_interval = self.settings.config["mail"]["queue"].get("retry_interval", 300)
+        else:
+            max_retries = self.settings.get_param("mail.queue.max_retries", 3)
+            retry_interval = self.settings.get_param("mail.queue.retry_interval", 300)
+        
+        try:
+            queue_copy = self.queue.copy()
+            self.queue = []
+            
+            for message in queue_copy:
+                try:
+                    result = await self._send_email_now(message)
+                    if not result:
+                        if message.retry_count < max_retries:
+                            message.retry_count += 1
+                            self.queue.append(message)
+                            self.logger.warning(
+                                f"Send failed, retry scheduled ({message.retry_count}/{max_retries})"
+                                f" for {message.subject} to {message.receiver}"
+                            )
+                        else:
+                            self.logger.error(
+                                f"Abandoning send after {max_retries} attempts: {message.subject} to {message.receiver}"
+                            )
+                except Exception as e:
+                    self.logger.error(f"Error processing a queued message: {str(e)}")
+                    if message.retry_count < max_retries:
+                        message.retry_count += 1
+                        self.queue.append(message)
+        except Exception as e:
+            self.logger.error(f"Error processing the queue: {str(e)}")
+        finally:
+            self.is_processing = False
+            
+            if self.queue:
+                self.logger.info(f"{len(self.queue)} emails remain in the queue. Next attempt in {retry_interval}s")
+                await asyncio.sleep(retry_interval)
+                asyncio.create_task(self._process_queue())
 
     async def _send_email_now(self, message: EmailMessage) -> bool:
         """
-        Sends an email immediately.
-
+        Sends an email immediately via SMTP.
+        
         Args:
-            message: The email to send
-
+            message: The message to send
+            
         Returns:
-            True if the email was successfully sent
+            True if the email was sent successfully
         """
-        mail_config = self.settings.mail_config
-
         if not self._validate_config():
-            self.logger.error("Invalid or incomplete SMTP configuration")
+            self.logger.error("Invalid mail configuration, unable to send email")
             return False
-
-        if not message.sender:
-            self.logger.error("No sender address defined for this email")
-            return False
-
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = message.subject
-        msg["From"] = message.sender
-        msg["To"] = message.receiver
-
+        
+        mail_config = self.settings.mail_config
+        
+        mime_message = MIMEMultipart("alternative")
+        mime_message["From"] = message.sender
+        mime_message["To"] = message.receiver
+        mime_message["Subject"] = message.subject
+        
         if message.cc:
-            msg["Cc"] = ", ".join(message.cc)
+            mime_message["Cc"] = ", ".join(message.cc)
         if message.bcc:
-            msg["Bcc"] = ", ".join(message.bcc)
-
-        msg.attach(MIMEText(message.body, "plain"))
+            mime_message["Bcc"] = ", ".join(message.bcc)
+        
+        if message.body:
+            mime_message.attach(MIMEText(message.body, "plain"))
         if message.html_body:
-            msg.attach(MIMEText(message.html_body, "html"))
-
+            mime_message.attach(MIMEText(message.html_body, "html"))
+        
         for attachment in message.attachments:
-            filepath = attachment["filepath"]
-            filename = attachment["filename"]
-
             try:
-                with open(filepath, "rb") as file:
-                    part = MIMEApplication(file.read(), Name=filename)
-                    part["Content-Disposition"] = f'attachment; filename="{filename}"'
-                    msg.attach(part)
+                with open(attachment["filepath"], "rb") as file:
+                    part = MIMEApplication(file.read())
+                    part.add_header(
+                        "Content-Disposition",
+                        f"attachment; filename={attachment['filename']}",
+                    )
+                    mime_message.attach(part)
             except Exception as e:
-                self.logger.error(f"Error adding attachment {filepath}: {str(e)}")
-
+                self.logger.error(f"Error adding attachment {attachment['filepath']}: {str(e)}")
+        
+        all_recipients = [message.receiver]
+        if message.cc:
+            all_recipients.extend(message.cc)
+        if message.bcc:
+            all_recipients.extend(message.bcc)
+        
         try:
-            all_receivers = [message.receiver]
-            all_receivers.extend(message.cc)
-            all_receivers.extend(message.bcc)
-
-            await aiosmtplib.send(
-                message=msg,
+            smtp_client = aiosmtplib.SMTP(
                 hostname=mail_config["host"],
                 port=mail_config["port"],
-                username=mail_config["username"],
-                password=mail_config["password"],
-                use_tls=mail_config["use_tls"],
-                validate_certs=self.settings.app_env == "prod",
-                recipient_addresses=all_receivers,
-                sender=msg["From"],
+                use_tls=mail_config.get("use_tls", False),
+                start_tls=mail_config.get("use_tls", False) and not mail_config.get("use_ssl", False),
             )
+            
+            await smtp_client.connect()
+            
+            if mail_config.get("username") and mail_config.get("password"):
+                await smtp_client.login(mail_config["username"], mail_config["password"])
+            
+            await smtp_client.send_message(mime_message)
+            await smtp_client.quit()
+            
 
-            self.logger.info(f"Email sent: {message.subject} to {message.receiver}")
             return True
-
+            
         except Exception as e:
-            self.logger.error(f"Failed to send email: {str(e)}")
+            self.logger.error(f"Error sending email: {str(e)}")
             return False

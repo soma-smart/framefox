@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="framefox",
-    version="1.0.19",
+    version="1.0.24",
     packages=find_packages(),
     include_package_data=True,
     long_description=open("README.md").read(),
@@ -34,6 +34,7 @@ setup(
         "httpx==0.28.1",
         "cryptography==44.0.2",
         "aiosmtplib==4.0.0",
+        "pika==1.3.2",
     ],
     classifiers=[
         "Development Status :: 4 - Beta",

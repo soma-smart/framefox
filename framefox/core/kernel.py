@@ -6,6 +6,10 @@ from fastapi.staticfiles import StaticFiles
 
 from framefox.core.config.settings import Settings
 from framefox.core.debug.exception.debug_exception import DebugException
+
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
+
 from framefox.core.debug.handler.debug_handler import DebugHandler
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.events.event_dispatcher import dispatcher
@@ -16,14 +20,7 @@ from framefox.core.routing.router import Router
 from framefox.core.security.token_storage import TokenStorage
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
 from framefox.core.security.user.user_provider import UserProvider
-
-"""
-Framefox Framework developed by SOMA
-Github: https://github.com/soma-smart/framefox 
-----------------------------
-Author: BOUMAZA Rayen
-Github: https://github.com/RayenBou
-"""
+from framefox.core.bundle.bundle_manager import BundleManager
 
 
 class Kernel:
@@ -34,28 +31,32 @@ class Kernel:
 
     _instance: ClassVar[Optional["Kernel"]] = None
 
-    def __new__(cls) -> "Kernel":
+    def __new__(cls, *args, **kwargs) -> "Kernel":
         """Ensures that only one instance of the Kernel exists."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self) -> None:
+    def __init__(self, container=None, bundle_manager=None) -> None:
         """Initializes the main components of the framework if not already done."""
         if hasattr(self, "_initialized") and self._initialized:
             return
 
-        self._container = ServiceContainer()
+        self._container = container 
+        self._bundle_manager = bundle_manager 
+        
+        if not bundle_manager:
+            self._bundle_manager.discover_bundles()
+            
         self._settings = self._container.get(Settings)
         self._logger = self._container.get(Logger).get_logger()
         self._init_security_services()
         self._app = self._create_fastapi_app()
         self._configure_app()
-        # if self._settings.debug_mode:
-        #     self._container.print_container_stats()
 
         self._initialized = True
+
 
     def _init_security_services(self) -> None:
         """Initialise les services liés à la sécurité et l'authentification."""
@@ -85,7 +86,9 @@ class Kernel:
         self._setup_middlewares()
         self._setup_routing()
         self._setup_static_files()
+        self._bundle_manager.boot_bundles(self._container)
         dispatcher.load_listeners()
+
 
     def _setup_middlewares(self) -> None:
         """Configures the application middlewares."""
