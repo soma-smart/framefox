@@ -1,9 +1,13 @@
 import signal
 import subprocess
 import sys
-import time
+import threading
+import asyncio
+import os
 
+from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.commands.server.worker_command import WorkerCommand
 
 
 class ServerStartCommand(AbstractCommand):
@@ -11,63 +15,92 @@ class ServerStartCommand(AbstractCommand):
         super().__init__("server:start")
         self.process = None
         self.running = True
+        self.worker_thread = None
+        self.worker_stop_event = None
 
     def execute(self, port: int = 8000, *args, **kwargs):
         """
+        Démarre le serveur de développement avec Uvicorn
         Start the uvicorn server.
         """
+        with_workers = False
+
+        # Traiter les arguments supplémentaires
+        for arg in args:
+            if arg == "--with-workers":
+                with_workers = True
+
         self.printer.print_msg(
             f"Starting the server on port {port}",
             theme="success",
             linebefore=True,
         )
 
-        self._setup_signal_handlers()
+        if with_workers:
+            self._setup_workers()
+
+        # Utiliser directement subprocess.run() pour une sortie immédiate
+        # et capturer correctement les erreurs à l'écran
+        try:
+            uvicorn_cmd = ["uvicorn", "main:app",
+                           "--reload", "--port", str(port)]
+
+            # Démarrer le serveur sans redirection de sortie
+            # pour assurer que tous les messages s'affichent correctement
+            process = subprocess.run(uvicorn_cmd)
+
+            return process.returncode
+        except KeyboardInterrupt:
+            self.printer.print_msg("\nStopping the server...", theme="warning")
+            if self.worker_stop_event:
+                self.worker_stop_event.set()
+            return 0
+
+    def _setup_workers(self):
+        """Configure le thread worker en arrière-plan si demandé"""
+        self.printer.print_msg(
+            "Starting worker process in background...",
+            theme="info",
+            linebefore=True,
+        )
 
         try:
-            self.process = subprocess.Popen(
-                ["uvicorn", "main:app", "--reload", "--port", str(port)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                universal_newlines=True,
+            self.worker_stop_event = threading.Event()
+            self.worker_thread = threading.Thread(
+                target=self._run_worker_thread,
+                daemon=True
+            )
+            self.worker_thread.start()
+        except Exception as e:
+            self.printer.print_msg(
+                f"Failed to start worker: {str(e)}",
+                theme="error"
             )
 
-            while self.running and self.process.poll() is None:
-                line = self.process.stdout.readline().rstrip()
-                if line:
-                    print(line)
-                time.sleep(0.1)
+    def _run_worker_thread(self):
+        """Exécute les workers dans un thread séparé"""
+        try:
+            from framefox.core.task.worker_manager import WorkerManager
+            worker_manager = ServiceContainer().get(WorkerManager)
 
-            if self.process.poll() is None:
-                self._graceful_shutdown()
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-            return 0
-        except KeyboardInterrupt:
-            self._graceful_shutdown()
-            return 0
-
-    def _setup_signal_handlers(self):
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
-
-    def _signal_handler(self, sig, frame):
-        self.printer.print_msg("\nStopping the server...", theme="warning")
-        self.running = False
-
-    def _graceful_shutdown(self):
-        if self.process and self.process.poll() is None:
-            self.process.send_signal(signal.SIGINT)
-
-            try:
-                self.process.wait(timeout=5)
-                self.printer.print_msg("Server stopped successfully", theme="success")
-            except subprocess.TimeoutExpired:
-                self.printer.print_msg(
-                    "Timeout exceeded, forcing server shutdown", theme="warning"
-                )
-                self.process.terminate()
+            async def run_worker():
+                worker_manager.running = True
                 try:
-                    self.process.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    self.process.kill()
-                    self.printer.print_msg("Server forcibly terminated", theme="error")
+                    await worker_manager._process_loop()
+                except Exception as e:
+                    print(f"Worker process error: {e}")
+
+            async def monitor_stop_event():
+                while not self.worker_stop_event.is_set():
+                    await asyncio.sleep(1.0)
+                worker_manager.running = False
+                loop.stop()
+
+            loop.create_task(run_worker())
+            loop.create_task(monitor_stop_event())
+            loop.run_forever()
+        except Exception as e:
+            print(f"Worker thread error: {e}")

@@ -62,7 +62,7 @@ class UserProvider:
 
         payload = self.token_storage.get_payload()
         if not payload:
-            self.logger.warning("No valid authentication token")
+            # self.logger.warning("No valid authentication token")
             return None
 
         user_id = payload.get("sub")

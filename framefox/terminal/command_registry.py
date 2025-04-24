@@ -6,6 +6,7 @@ from abc import ABC
 from pathlib import Path
 from typing import Dict, List
 
+from framefox.core.di.service_container import ServiceContainer
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -97,7 +98,14 @@ class CommandRegistry:
                 "src.commands",
                 excluded_commands=["InitCommand"] if project_exists else [],
             )
-
+        try:
+            from framefox.core.bundle.bundle_manager import BundleManager
+            service_container = ServiceContainer()
+            bundle_manager = service_container.get(BundleManager)
+            if bundle_manager:
+                bundle_manager.register_bundle_commands(self)
+        except ImportError:
+            pass
         self.initialized = True
 
     def _discover_in_path(
