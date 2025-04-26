@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
 
 from framefox.core.di.service_container import ServiceContainer
-from framefox.terminal.command_registry import CommandRegistry
 
 """
 Framefox Framework developed by SOMA
@@ -31,10 +30,6 @@ class AbstractBundle(ABC):
 
     def register_services(self, container: ServiceContainer) -> None:
         """Registers the bundle's services in the container"""
-        pass
-
-    def register_commands(self, registry: CommandRegistry) -> None:
-        """Registers the bundle's commands in the registry"""
         pass
         
     def get_config_schema(self) -> Dict[str, Any]:

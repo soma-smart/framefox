@@ -1,6 +1,5 @@
 from framefox.core.bundle.bundle_manager import BundleManager
 from framefox.core.di.service_container import ServiceContainer
-from framefox.terminal.command_registry import CommandRegistry
 
 """
 Framefox Framework developed by SOMA
@@ -38,11 +37,6 @@ class Application:
         from framefox.core.kernel import Kernel
         kernel = Kernel(self._container, self._bundle_manager)
         return kernel
-
-    def boot_cli(self):
-        registry = CommandRegistry()
-        self._bundle_manager.register_bundle_commands(registry)
-        return registry
 
     @property
     def container(self):
