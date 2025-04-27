@@ -56,6 +56,7 @@ class TestFirewallHandler:
             "token_manager": Mock(),
             "csrf_manager": Mock(),
             "access_manager": Mock(),
+            "session": Mock(),
         }
 
     @pytest.fixture
