@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from framefox.core.kernel import Kernel
+from framefox.core.config.settings import Settings
 
 """
 Framefox Framework developed by SOMA
@@ -18,7 +19,12 @@ class TestKernel:
     def mock_container(self):
         with patch("framefox.core.di.service_container.ServiceContainer") as mock:
             container = Mock()
-            container.get.return_value = Mock()
+            def mock_get(arg):
+                if arg.__class__ == "Settings":
+                    return Mock(spec=Settings)
+                return Mock()
+
+            container.get.side_effect = mock_get
             mock.return_value = container
             yield mock
 
