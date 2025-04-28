@@ -1,7 +1,7 @@
 typer==0.15.1
 fastapi==0.115.7
 uvicorn==0.34.0
-starlette==0.45.3
+starlette==0.46.2
 sqlmodel==0.0.22
 python-dotenv==1.0.1
 pyYAML==6.0.2
