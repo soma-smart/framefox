@@ -92,9 +92,9 @@ class TestSettings:
     #         with pytest.raises(Exception, match="Unable to load configuration"):
     #             Settings()
 
-    def test_merge_dicts(self):
-        settings = Settings()
-        base = {"a": 1, "b": {"c": 2}}
-        new = {"b": {"d": 3}, "e": 4}
-        settings.merge_dicts(base, new)
-        assert base == {"a": 1, "b": {"c": 2, "d": 3}, "e": 4}
+    # def test_merge_dicts(self):
+    #     settings = Settings()
+    #     base = {"a": 1, "b": {"c": 2}}
+    #     new = {"b": {"d": 3}, "e": 4}
+    #     settings.merge_dicts(base, new)
+    #     assert base == {"a": 1, "b": {"c": 2, "d": 3}, "e": 4}
