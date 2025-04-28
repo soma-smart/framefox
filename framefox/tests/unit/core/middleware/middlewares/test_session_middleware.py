@@ -8,6 +8,7 @@ from framefox.core.middleware.middlewares.session_middleware import \
     SessionMiddleware
 from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.request.session.session_manager import SessionManager
+from framefox.core.request.session.session_interface import SessionInterface
 
 """
 Framefox Framework developed by SOMA
@@ -44,8 +45,13 @@ class TestSessionMiddleware:
         return manager
 
     @pytest.fixture
+    def mock_session_interface(self):
+        interface = Mock(spec=SessionInterface)
+        return interface
+
+    @pytest.fixture
     def middleware(
-        self, mock_app, mock_settings, mock_cookie_manager, mock_session_manager
+        self, mock_app, mock_settings, mock_cookie_manager, mock_session_manager, mock_session_interface
     ):
         with patch(
             "framefox.core.middleware.middlewares.session_middleware.ServiceContainer"
@@ -54,6 +60,7 @@ class TestSessionMiddleware:
             container_instance.get.side_effect = lambda x: {
                 CookieManager: mock_cookie_manager,
                 SessionManager: mock_session_manager,
+                SessionInterface: mock_session_interface,
             }[x]
             MockServiceContainer.return_value = container_instance
 
@@ -85,6 +92,7 @@ class TestSessionMiddleware:
         assert middleware.cookie_name == "session_id"
         assert middleware.cookie_manager is not None
         assert middleware.session_manager is not None
+        assert middleware.session_service is not None
 
     @pytest.mark.asyncio
     async def test_dispatch_without_session(
