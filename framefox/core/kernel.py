@@ -20,7 +20,7 @@ from framefox.core.routing.router import Router
 from framefox.core.security.token_storage import TokenStorage
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
 from framefox.core.security.user.user_provider import UserProvider
-from framefox.core.bundle.bundle_manager import BundleManager
+from framefox.application import Application
 
 
 class Kernel:
@@ -43,11 +43,15 @@ class Kernel:
         if hasattr(self, "_initialized") and self._initialized:
             return
 
-        self._container = container 
+        if container is None:
+            container = Application().container
+        self._container = container
+
+        if bundle_manager is None:
+            bundle_manager = Application().bundle_manager
         self._bundle_manager = bundle_manager 
-        
-        if not bundle_manager:
-            self._bundle_manager.discover_bundles()
+
+        self._bundle_manager.discover_bundles()
             
         self._settings = self._container.get(Settings)
         self._logger = self._container.get(Logger).get_logger()
