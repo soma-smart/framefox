@@ -77,14 +77,14 @@ class TestTemplateRenderer:
 
     def test_url_for_success(self, template_renderer, mock_router):
         """Test successful URL generation"""
-        url = template_renderer._url_for("test-route", param="value")
+        url = template_renderer.url_for("test-route", param="value")
         assert url == "/test-route"
         mock_router.url_path_for.assert_called_once_with("test-route", param="value")
 
     def test_url_for_error(self, template_renderer, mock_router):
         """Test error handling in url_for"""
         mock_router.url_path_for.side_effect = Exception("Route not found")
-        url = template_renderer._url_for("invalid-route")
+        url = template_renderer.url_for("invalid-route")
         assert url == "#"
 
     def test_render_template(self, template_renderer):
