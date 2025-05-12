@@ -64,7 +64,7 @@ class InitCommand(AbstractCommand):
     def create_empty_project():
         # Create src directories
         project_path = "src"
-        os.makedirs(os.path.join(project_path, "controllers"))
+        os.makedirs(os.path.join(project_path, "routes"))
         os.makedirs(os.path.join(project_path, "tests"))
         os.makedirs(os.path.join(project_path, "entity"))
         os.makedirs(os.path.join(project_path, "repository"))
@@ -196,6 +196,19 @@ class InitCommand(AbstractCommand):
             name="requirements.txt",
             data={},
             format="txt",
+        )
+        # Routes
+        FileCreator().create_file(
+            template="init_files/router.jinja2",
+            path="./src/routes",
+            name="__init__",
+            data={},
+        )
+        FileCreator().create_file(
+            template="init_files/default.jinja2",
+            path="./src/routes",
+            name="default",
+            data={},
         )
 
     def check_requirements(self):

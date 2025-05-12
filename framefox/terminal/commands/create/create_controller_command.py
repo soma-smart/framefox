@@ -17,7 +17,7 @@ Github: https://github.com/Vasulvius
 class CreateControllerCommand(AbstractCommand):
     def __init__(self):
         super().__init__("controller")
-        self.controller_path = r"src/controllers"
+        self.controller_path = r"src/routes"
         self.view_path = r"templates"
         self.controller_template = r"controller_template.jinja2"
         self.view_template = r"view_template.jinja2"
@@ -79,10 +79,16 @@ class CreateControllerCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
+
+        # Append to routes/__init__.py
+        with open(os.path.join(self.controller_path, "__init__.py"), "a") as f:
+            f.write(f"\nfrom . import {name}\n")
+            f.write(f"router.include_router({name}.router)\n")
+
         controller_path = FileCreator().create_file(
             template=self.controller_template,
             path=self.controller_path,
-            name=f"{name}_controller",
+            name=f"{name}",
             data=data_controller,
         )
         os.makedirs(os.path.join(self.view_path, name))

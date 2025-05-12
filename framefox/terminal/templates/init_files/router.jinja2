@@ -1,0 +1,6 @@
+from . import default
+from fastapi import APIRouter
+
+
+router = APIRouter()
+router.include_router(default.router)

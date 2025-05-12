@@ -103,15 +103,15 @@ class Kernel:
         """Configures the application routing."""
         router = Router(self._app)
         self._container.set_instance(Router, router)
-        router.register_controllers()
+        # router.register_controllers()
 
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
         static_path = Path(__file__).parent / "templates" / "static"
         self._app.mount("/static", StaticFiles(directory=static_path), name="static")
-        self._app.mount(
-            "/", StaticFiles(directory=Path("public")), name="public_assets"
-        )
+        # self._app.mount(
+        #     "/", StaticFiles(directory=Path("public")), name="public_assets"
+        # )
 
     @property
     def app(self) -> FastAPI:
