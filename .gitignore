@@ -16,3 +16,5 @@ publish_lib.sh
 .mypy_cache/
 .pytest_cache/
 .coverage
+
+app/
