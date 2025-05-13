@@ -12,7 +12,6 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
-
 class RequestStack:
     """
     A stack to manage request context.
