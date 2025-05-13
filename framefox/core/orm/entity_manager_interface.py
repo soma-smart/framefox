@@ -6,7 +6,6 @@ from sqlmodel import Session
 from framefox.core.orm.entity_manager import EntityManager
 from framefox.core.request.request_stack import RequestStack
 
-
 class EntityManagerInterface:
     """
     Interface that delegates calls to the EntityManager specific to the execution context.
