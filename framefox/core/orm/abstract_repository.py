@@ -16,7 +16,6 @@ Github: https://github.com/Vasulvius
 
 T = TypeVar("T", bound=SQLModel)
 
-
 class AbstractRepository(ABC):
     """
     AbstractRepository provides the following methods:

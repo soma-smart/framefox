@@ -19,7 +19,6 @@ class AbstractController:
         Child controllers can override this method
         to inject their own dependencies.
         """
-
         self._container = ServiceContainer()
         self.template_renderer = self._container.get_by_tag(
             "core.templates.template_renderer"
