@@ -233,14 +233,13 @@ class RelationManager:
         target_class: str,
         config: RelationConfig,
     ) -> Tuple[str, Optional[str]]:
-        # Ne pas appliquer cascade_delete directement, il doit dépendre du type de relation
+
         nullable_option = ", nullable=True" if config.optional else ""
 
         intermediate_class = ClassNameManager.snake_to_pascal(
             f"{source_entity}_{target_entity}"
         )
 
-        # Appliquer la pluralisation si nécessaire
         if config.type == "ManyToMany":
             if not property_name.endswith("s"):
                 property_name = self._pluralize(property_name)
@@ -259,32 +258,31 @@ class RelationManager:
                 if config.inverse_property
                 else self._pluralize(source_entity)
             )
-        else:  # OneToOne
+        else:  
             inverse_prop = (
                 config.inverse_property if config.inverse_property else source_entity
             )
 
-        # Appliquer la cascade delete au bon endroit selon le type de relation
+
         if config.cascade_delete:
             if config.type == "OneToMany":
-                # Cascade du côté "one" (source) vers les "many" (target)
+
                 source_cascade = (
                     ', sa_relationship_kwargs={"cascade": "all, delete-orphan"}'
                 )
                 target_cascade = ""
             elif config.type == "ManyToOne":
-                # Cascade du côté "one" (target) vers les "many" (source)
                 source_cascade = ""
                 target_cascade = (
                     ', sa_relationship_kwargs={"cascade": "all, delete-orphan"}'
                 )
             elif config.type == "OneToOne":
-                # Cascade dans les deux sens possible, mais généralement du côté propriétaire
+
                 source_cascade = (
                     ', sa_relationship_kwargs={"cascade": "all, delete-orphan"}'
                 )
                 target_cascade = ""
-            else:  # ManyToMany
+            else: 
                 source_cascade = ""
                 target_cascade = ""
         else:

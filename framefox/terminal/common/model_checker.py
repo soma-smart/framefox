@@ -267,35 +267,25 @@ class ModelChecker:
 
             from framefox.terminal.common.printer import Printer
 
-            # Temporairement ajouter le répertoire du projet au path
+
             original_path = sys.path.copy()
             project_root = os.getcwd()
             sys.path.insert(0, project_root)
 
             try:
-                # Importer l'entité
+
                 entity_module = importlib.import_module(f"src.entity.{entity_name}")
                 entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
                 entity_class = getattr(entity_module, entity_class_name)
 
-                # Utiliser notre nouvel inspecteur spécialisé
                 from framefox.terminal.common.sql_model_inspector import \
                     SQLModelInspector
 
                 properties = SQLModelInspector.get_entity_properties(entity_class)
-
-                # Debug des propriétés détectées
-                printer = Printer()
-                for prop in properties:
-                    printer.print_msg(
-                        f"Property: {prop['name']}, Type: {prop['type']}, Is Relation: {prop['is_relation']}, Target: {prop['target_entity']}",
-                        theme="debug",
-                    )
-
                 return properties
 
             finally:
-                # Restaurer le path original
+
                 sys.path = original_path
 
         except Exception as e:

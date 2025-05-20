@@ -1,8 +1,6 @@
 import inspect
-
 from rich.console import Console
 from rich.table import Table
-
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.application import Application
@@ -15,30 +13,36 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
-
 class DebugServiceCommand(AbstractCommand):
+    """
+    A command class for debugging and displaying service information in the Framefox Framework.
+    
+    This command provides detailed information about all registered services in the application,
+    including their instantiation status, module location, and associated tags. Services are
+    grouped by their module namespace for better organization.
+    
+    Attributes:
+        container: The application's service container instance managing all services.
+    """
+
     def __init__(self):
         super().__init__("service")
-        # Utiliser le conteneur de l'Application au lieu d'en créer un nouveau
         self.container = Application().container
-
 
     def execute(self):
         """
-        Display the list of registered services
+        Displays a formatted list of all registered services grouped by their modules.
+        Shows service status, instance IDs, and associated tags.
         """
         console = Console()
         print("")
 
         grouped_services = {}
 
-        # Itérer sur les instances disponibles plutôt que sur 'services'
         for service_class, instance in self.container._instances.items():
-            # Vérifier si on a une définition pour cette classe
             if service_class not in self.container._definitions:
                 continue
 
-            # Récupérer la définition (pour les tags, etc.)
             definition = self.container._definitions[service_class]
 
             if service_class.__module__ in [
@@ -48,7 +52,6 @@ class DebugServiceCommand(AbstractCommand):
             ]:
                 continue
 
-            # Les tags sont maintenant stockés dans la définition du service
             tags = definition.tags or []
 
             group = (
@@ -63,10 +66,9 @@ class DebugServiceCommand(AbstractCommand):
             tags_str = ", ".join(sorted(tags)) if tags else "No tags"
             grouped_services[group].append((tags_str, service_class, instance))
 
-        # Afficher aussi les services définis mais non instanciés
         for service_class, definition in self.container._definitions.items():
             if service_class in self.container._instances:
-                continue  # Déjà traité
+                continue
 
             if service_class.__module__ in [
                 "Built-in",
@@ -87,7 +89,6 @@ class DebugServiceCommand(AbstractCommand):
                 grouped_services[group] = []
 
             tags_str = ", ".join(sorted(tags)) if tags else "No tags"
-            # L'instance est None car le service n'est pas encore instancié
             grouped_services[group].append((tags_str, service_class, None))
 
         total_services = sum(len(services) for services in grouped_services.values())
@@ -100,10 +101,8 @@ class DebugServiceCommand(AbstractCommand):
         print("")
 
         for group, services in sorted(grouped_services.items()):
-
             console.print(
-                f"Services in group: [bold cyan]{
-                    group}[/bold cyan]"
+                f"Services in group: [bold cyan]{group}[/bold cyan]"
             )
 
             table = Table(show_header=True, header_style="bold orange1")
@@ -116,7 +115,6 @@ class DebugServiceCommand(AbstractCommand):
             sorted_services = sorted(services, key=lambda x: x[1].__name__)
 
             for tags_str, service_class, instance in sorted_services:
-                # Déterminer le statut du service
                 status = "Instantiated" if instance else "Not Instantiated"
                 if (
                     service_class in self.container._definitions

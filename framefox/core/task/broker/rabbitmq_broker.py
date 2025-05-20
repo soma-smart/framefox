@@ -7,21 +7,20 @@ from framefox.core.task.broker.broker_interface import BrokerInterface
 from framefox.core.task.entity.task import Task, TaskStatus
 from framefox.core.task.transport.rabbitmq_transport import RabbitMQTransport
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
 
 class RabbitMQBroker(BrokerInterface):
     """RabbitMQ implementation of the broker interface for task queue management.
     This class provides methods to interact with RabbitMQ for task queue operations including
     enqueueing, dequeueing, completing and failing tasks. It uses an entity manager for 
     persistence and a RabbitMQ transport for message broker operations.
-    Attributes:
-        entity_manager (EntityManagerInterface): Manager for persisting task entities
-        transport (RabbitMQTransport): RabbitMQ transport layer for message operations
-        logger (Logger): Logger instance for broker operations
-    Example:
-        ```python
-        broker = RabbitMQBroker(entity_manager, rabbitmq_transport)
-        task = broker.enqueue("email_task", {"to": "user@example.com"})
-        ```
     """
 
     def __init__(

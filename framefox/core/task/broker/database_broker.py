@@ -14,11 +14,6 @@ class DatabaseBroker(BrokerInterface):
     
     This broker implements task queue functionality using a database backend.
     It handles task enqueueing, dequeuing, scheduling, retrying, and cleanup operations.
-
-    Attributes:
-        entity_manager (EntityManagerInterface): The entity manager for database operations
-        logger (Logger): Logger instance for broker operations
-
     """
 
     def __init__(self, entity_manager: EntityManagerInterface):

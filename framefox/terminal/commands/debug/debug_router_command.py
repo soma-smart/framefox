@@ -7,16 +7,17 @@ from rich.table import Table
 from framefox.application import Application
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
-"""
-Framefox Framework developed by SOMA
-Github: https://github.com/soma-smart/framefox
-----------------------------
-Author: BOUMAZA Rayen
-Github: https://github.com/RayenBou
-"""
-
 
 class DebugRouterCommand(AbstractCommand):
+    """
+    A command to display and debug router information in the Framefox Framework.
+    This class provides functionality to list all registered routes with their paths,
+    names, and HTTP methods.
+
+    Attributes:
+        app: The FastAPI application instance containing the routes.
+    """
+
     def __init__(self):
         super().__init__("router")
 
@@ -29,9 +30,6 @@ class DebugRouterCommand(AbstractCommand):
         self.app = kernel.app
 
     def execute(self):
-        """
-        Display the list of routes
-        """
         console = Console()
         print("")
         table = Table(show_header=True, header_style="bold orange1")
@@ -39,7 +37,6 @@ class DebugRouterCommand(AbstractCommand):
         table.add_column("Route name", style="white")
         table.add_column("HTTP Methods", style="white")
 
-        # Liste des noms de routes à exclure
         routes_to_exclude = [
             "public_assets",
             "default_route",
@@ -47,7 +44,7 @@ class DebugRouterCommand(AbstractCommand):
             "swagger_ui_redirect",
             "openapi",
             "redoc_html",
-            "static"  # Conservons aussi l'exclusion existante
+            "static" 
         ]
 
         unique_routes = {}
@@ -55,7 +52,6 @@ class DebugRouterCommand(AbstractCommand):
             route_name = getattr(route, "name", "")
             route_key = f"{route.path}:{route_name}"
             
-            # Vérifier si la route doit être exclue
             if route_name not in routes_to_exclude and route_key not in unique_routes:
                 unique_routes[route_key] = route
 
