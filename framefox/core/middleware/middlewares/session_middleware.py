@@ -2,7 +2,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from framefox.core.di.service_container import ServiceContainer
@@ -29,24 +29,40 @@ class SessionMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.settings = settings
 
-        self.cookie_name = settings.session_cookie_name
+        self.cookie_name = settings.session_name
         container = ServiceContainer()
         self.cookie_manager = container.get(CookieManager)
         self.session_manager = container.get(SessionManager)
-        self.logger = logging.getLogger("REQUEST")
+        self.logger = logging.getLogger("SESSION")
         self.session_service = container.get(SessionInterface)
 
     async def dispatch(self, request: Request, call_next):
-        session_id = request.cookies.get(self.cookie_name)
+        """
+        Processes the session for the current request
+        Uses an inactivity-based expiration system rather than a fixed duration
+        """
+        signed_session_id = request.cookies.get(self.cookie_name)
+        session_id = None
         session = None
 
-        if session_id:
-            session = self.session_manager.get_session(session_id)
+        if signed_session_id:
 
-        request.state.session_id = session_id if session else None
+            session_id = self.session_manager.verify_and_extract_session_id(signed_session_id)
+            if session_id:
+                session = self.session_manager.get_session(session_id)
+                if not session:
+                    session_id = None
+            else:
+                self.logger.warning("Invalid session signature detected, will create new session if needed")
+
+
+        request.state.session_id = session_id
         request.state.session_data = session["data"] if session else {}
 
+
         RequestStack.set_request(request)
+
+
         from framefox.core.di.service_container import ServiceContainer
         from framefox.core.request.session.session import Session
 
@@ -63,32 +79,36 @@ class SessionMiddleware(BaseHTTPMiddleware):
             container = ServiceContainer()
             container.set_instance(SessionInterface, session_instance)
 
+
         response = await call_next(request)
 
         if request.state.session_data:
-            needs_cookie = False
-            if not session_id or not self.session_manager.get_session(session_id):
+            if not session_id:
+
                 session_id = str(uuid.uuid4())
                 request.state.session_id = session_id
                 self.session_manager.create_session(
                     session_id, request.state.session_data, self.settings.cookie_max_age
                 )
-                needs_cookie = True
             else:
+
                 self.session_manager.update_session(
                     session_id, request.state.session_data, self.settings.cookie_max_age
                 )
-            if needs_cookie:
-                expiration = datetime.now(timezone.utc) + timedelta(
-                    seconds=self.settings.cookie_max_age
-                )
-                self.cookie_manager.set_cookie(
-                    response=response,
-                    key=self.cookie_name,
-                    value=session_id,
-                    max_age=self.settings.cookie_max_age,
-                    expires=expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
-                )
+
+            expiration = datetime.now(timezone.utc) + timedelta(
+                seconds=self.settings.cookie_max_age
+            )
+            
+            signed_session_id = self.session_manager.sign_session_id(session_id)
+            
+            self.cookie_manager.set_cookie(
+                response=response,
+                key=self.cookie_name,
+                value=signed_session_id,
+                max_age=self.settings.cookie_max_age,
+                expires=expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
+            )
 
         self.session_manager.cleanup_expired_sessions()
         RequestStack.set_request(None)

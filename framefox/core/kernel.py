@@ -1,17 +1,14 @@
 from pathlib import Path
 from typing import ClassVar, Optional
-
+import logging
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from framefox.core.config.settings import Settings
 from framefox.core.debug.exception.debug_exception import DebugException
 
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException
 
 from framefox.core.debug.handler.debug_handler import DebugHandler
-from framefox.core.di.service_container import ServiceContainer
 from framefox.core.events.event_dispatcher import dispatcher
 from framefox.core.logging.logger import Logger
 from framefox.core.middleware.middleware_manager import MiddlewareManager
@@ -20,8 +17,14 @@ from framefox.core.routing.router import Router
 from framefox.core.security.token_storage import TokenStorage
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
 from framefox.core.security.user.user_provider import UserProvider
-from framefox.core.bundle.bundle_manager import BundleManager
-
+from framefox.core.security.handlers.security_context_handler import SecurityContextHandler
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 class Kernel:
     """
@@ -50,7 +53,7 @@ class Kernel:
             self._bundle_manager.discover_bundles()
             
         self._settings = self._container.get(Settings)
-        self._logger = self._container.get(Logger).get_logger()
+        self._logger = logging.getLogger("APP")
         self._init_security_services()
         self._app = self._create_fastapi_app()
         self._configure_app()
@@ -65,8 +68,8 @@ class Kernel:
         token_storage = TokenStorage(session)
         self._container.set_instance(TokenStorage, token_storage)
         entity_user_provider = self._container.get(EntityUserProvider)
-        user_provider = UserProvider(token_storage, session, entity_user_provider)
-        self._container.set_instance(UserProvider, user_provider)
+        self._container.set_instance(UserProvider, UserProvider(token_storage, session, entity_user_provider))
+        self._container.set_instance(SecurityContextHandler, SecurityContextHandler())
         self._container.set_instance(EntityManagerInterface, EntityManagerInterface())
         self._logger.debug("Security services initialized")
 
@@ -99,12 +102,21 @@ class Kernel:
         """Configures the application routing."""
         router = Router(self._app)
         self._container.set_instance(Router, router)
+    
+        if self._settings.app_env == "dev":    
+            router._register_profiler_routes()
         router.register_controllers()
+
 
     def _setup_static_files(self) -> None:
         """Configures the static files handler."""
+
         static_path = Path(__file__).parent / "templates" / "static"
         self._app.mount("/static", StaticFiles(directory=static_path), name="static")
+
+        profiler_path = static_path / "profiler"
+        profiler_path.mkdir(parents=True, exist_ok=True)
+
         self._app.mount(
             "/", StaticFiles(directory=Path("public")), name="public_assets"
         )

@@ -1,5 +1,3 @@
-from typing import Annotated
-
 from framefox.core.config.settings import Settings
 from framefox.core.middleware.middlewares.custom_cors_middleware import \
     CustomCORSMiddleware
@@ -11,7 +9,9 @@ from framefox.core.middleware.middlewares.request_middleware import \
     RequestMiddleware
 from framefox.core.middleware.middlewares.session_middleware import \
     SessionMiddleware
-
+from framefox.core.middleware.middlewares.csrf_middleware import \
+    CsrfMiddleware
+from framefox.core.middleware.middlewares.profiler_middleware import ProfilerMiddleware
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -39,11 +39,12 @@ class MiddlewareManager:
         self.settings = settings
 
     def setup_middlewares(self):
+        self.app.add_middleware(ProfilerMiddleware)
 
         # self.app.add_middleware(HTTPSRedirectMiddleware)
         self.app.add_middleware(RequestMiddleware)
         self.app.add_middleware(EntityManagerMiddleware)
-
+        self.app.add_middleware(CsrfMiddleware)
         self.app.add_middleware(FirewallMiddleware, settings=self.settings)
         self.app.add_middleware(SessionMiddleware, settings=self.settings)
         self.app.add_middleware(CustomCORSMiddleware, settings=self.settings)
