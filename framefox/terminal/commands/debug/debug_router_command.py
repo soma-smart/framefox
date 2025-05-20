@@ -4,7 +4,7 @@ import sys
 from rich.console import Console
 from rich.table import Table
 
-from framefox.core.kernel import Kernel
+from framefox.application import Application
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
 """
@@ -24,7 +24,8 @@ class DebugRouterCommand(AbstractCommand):
         if current_dir not in sys.path:
             sys.path.insert(0, current_dir)
 
-        kernel = Kernel()
+        application = Application()
+        kernel = application.boot_web()
         self.app = kernel.app
 
     def execute(self):
@@ -38,10 +39,24 @@ class DebugRouterCommand(AbstractCommand):
         table.add_column("Route name", style="white")
         table.add_column("HTTP Methods", style="white")
 
+        # Liste des noms de routes à exclure
+        routes_to_exclude = [
+            "public_assets",
+            "default_route",
+            "swagger_ui_html",
+            "swagger_ui_redirect",
+            "openapi",
+            "redoc_html",
+            "static"  # Conservons aussi l'exclusion existante
+        ]
+
         unique_routes = {}
         for route in self.app.routes:
-            route_key = f"{route.path}:{getattr(route, 'name', '')}"
-            if route_key not in unique_routes and route_key != "/static:static":
+            route_name = getattr(route, "name", "")
+            route_key = f"{route.path}:{route_name}"
+            
+            # Vérifier si la route doit être exclue
+            if route_name not in routes_to_exclude and route_key not in unique_routes:
                 unique_routes[route_key] = route
 
         sorted_routes = sorted(unique_routes.values(), key=lambda x: x.path)
