@@ -26,7 +26,7 @@ class TestSessionMiddleware:
     @pytest.fixture
     def mock_settings(self):
         settings = Mock()
-        settings.session_cookie_name = "session_id"
+        settings.session_name = "session_id"
         settings.cookie_max_age = 3600
         return settings
 
