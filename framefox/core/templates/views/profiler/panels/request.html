@@ -1,0 +1,109 @@
+<div class="profiler-panel">
+  <h2>Request Details</h2>
+
+  <div class="panel-section">
+    <h3>General Information</h3>
+    <table class="panel-table">
+      <tr>
+        <th>Method</th>
+        <td>{{ data.method }}</td>
+      </tr>
+      <tr>
+        <th>Path</th>
+        <td>{{ data.path }}</td>
+      </tr>
+      <tr>
+        <th>Status Code</th>
+        <td>{{ data.status_code }}</td>
+      </tr>
+      <tr>
+        <th>Client</th>
+        <td>{{ data.client }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="panel-section">
+    <h3>Parameters</h3>
+    <h4>Path Parameters</h4>
+    {% if data.path_params %}
+    <table class="panel-table">
+      {% for key, value in data.path_params.items() %}
+      <tr>
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No path parameters</p>
+    {% endif %}
+
+    <h4>Query Parameters</h4>
+    {% if data.query_params %}
+    <table class="panel-table">
+      {% for key, value in data.query_params.items() %}
+      <tr>
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No query parameters</p>
+    {% endif %}
+  </div>
+
+  <div class="panel-section">
+    <h3>Request Headers</h3>
+    <table class="panel-table">
+      {% for key, value in data.headers.items() %}
+      <tr>
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="panel-section">
+    <h3>Response Headers</h3>
+    <table class="panel-table">
+      {% for key, value in data.response_headers.items() %}
+      <tr>
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<style>
+  .profiler-panel {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .panel-section {
+    margin-bottom: 30px;
+  }
+
+  .panel-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .panel-table th,
+  .panel-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .panel-table th {
+    width: 30%;
+    background-color: #f8f8f8;
+  }
+</style>
