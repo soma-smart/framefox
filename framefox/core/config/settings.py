@@ -246,42 +246,58 @@ class Settings:
         return self.config.get("security", {}).get("providers", {})
 
     # ------------------------------ session ------------------------------
+    @property
+    def profiler_enabled(self):
+        """Returns whether the profiler is enabled from configuration."""
+        if self.app_env != "dev":
+            return False 
+        enabled_str = self.config.get("application", {}).get("profiler", {}).get("enabled", "true")
+
+        return bool(enabled_str)
+    @property
+    def session_name(self):
+        """Returns the session  name from the configuration."""
+        return self.config.get("application", {}).get("session", {}).get("name", "session_id")
 
     @property
-    def cookie_secret_key(self):
-        """Returns the session secret key from the configuration, default"""
-        return self.config.get("cookie", {}).get("secret_key", "default_secret")
-
+    def session_file_path(self):
+        """Returns the session file path from the configuration."""
+        return self.config.get("application", {}).get("session", {}).get("file_path", "var/session/sessions.db")
+        
     @property
-    def cookie_type(self):
-        """Returns the session type from the configuration, default is 'filesystem'."""
-        return self.config.get("cookie", {}).get("type", "filesystem")
+    def session_secret_key(self):
+        """Returns the session secret key from the configuration."""
+        secret_key = self.config.get("application", {}).get("session", {}).get("secret_key", None)
+        if not secret_key or secret_key == "default_secret":
+            self.logger.warning("Using default session secret key. This is insecure for production environments.")
+        return secret_key or "default_secret"
+
+    # ------------------------------ cookie ------------------------------
 
     @property
     def cookie_max_age(self):
-        """Returns the session max age from the configuration, default is 3600 seconds."""
-        return self.config.get("cookie", {}).get("max_age", 3600)
+        """Returns the cookie max age in seconds from the configuration, default is 3600 seconds."""
+        return self.config.get("application", {}).get("cookie", {}).get("max_age", 3600)
 
     @property
     def cookie_same_site(self):
-        """Returns the session same site policy from the configuration, default is 'lax'."""
-        return self.config.get("cookie", {}).get("same_site", "lax")
+        """Returns the cookie same site policy from the configuration, default is 'lax'."""
+        return self.config.get("application", {}).get("cookie", {}).get("same_site", "lax")
 
     @property
     def cookie_secure(self):
-        """Returns True if sessions are HTTPS only, otherwise False."""
-        return self.config.get("cookie", {}).get("secure", True)
+        """Returns True if cookies should only be sent over HTTPS, otherwise False."""
+        return self.config.get("application", {}).get("cookie", {}).get("secure", True)
 
     @property
     def cookie_http_only(self):
-        """Returns True if sessions are HTTP only, otherwise False."""
-        return self.config.get("cookie", {}).get("http_only", True)
+        """Returns True if cookies should be HTTP only (not accessible via JavaScript), otherwise False."""
+        return self.config.get("application", {}).get("cookie", {}).get("http_only", True)
 
     @property
     def cookie_path(self):
-        """Returns the session cookie path from the configuration, default is '/'."""
-        return self.config.get("cookie", {}).get("path", "/")
-
+        """Returns the cookie path from the configuration, default is '/'."""
+        return self.config.get("application", {}).get("cookie", {}).get("path", "/")
     # ------------------------------ application ------------------------------
     @property
     def openapi_url(self):
@@ -345,7 +361,7 @@ class Settings:
         """Returns the type of broker to use (database, redis, rabbitmq)"""
         return self.config.get("tasks", {}).get("type", "database")
 
-    # Ajouter cette propriété à la classe Settings après task_broker_type
+
 
     @property
     def task_transport_url(self) -> str:

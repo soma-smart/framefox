@@ -47,6 +47,7 @@ class AbstractController:
     def render(self, template_path, context=None):
         """Renders a template with the provided context"""
         template_renderer = self._get_container().get_by_name("TemplateRenderer")
+        self._last_rendered_template = template_path
         if context is None:
             context = {}
 

@@ -42,9 +42,25 @@ class TemplateRenderer:
         self.env.globals["asset"] = self.asset
         self.env.globals["dump"] = self._dump_function
         self.env.globals["request"] = self.get_current_request
+        self.env.globals["csrf_token"] = self.get_csrf_token
 
         self._register_filters(self.env)
-
+    def get_csrf_token(self) -> str:
+        """Retourne un token CSRF régénéré à chaque requête pour plus de sécurité"""
+        try:
+            session = self.container.get_by_name("Session")
+            csrf_manager = self.container.get_by_name("CsrfTokenManager")
+            
+            # Toujours générer un nouveau token
+            csrf_token = csrf_manager.generate_token()
+            session.set("csrf_token", csrf_token)
+            session.save()
+            
+            return csrf_token
+        except Exception as e:
+            import logging
+            logging.getLogger("CSRF").error(f"Error generating CSRF token: {e}")
+            return ""
     def url_for(self, name: str, **params) -> str:
         """Generates a URL from the route name"""
         try:
