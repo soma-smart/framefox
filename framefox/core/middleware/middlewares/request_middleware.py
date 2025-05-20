@@ -36,15 +36,20 @@ class RequestMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
         self.logger = logging.getLogger("REQUEST")
+        self.static_extensions = [
+        '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', 
+        '.ico', '.woff', '.woff2', '.ttf', '.eot'
+        ]
+    
 
     @DispatchEvent(
         event_before="kernel.request_received", event_after="kernel.finish_request"
     )
     async def dispatch(self, request: Request, call_next):
         RequestStack.set_request(request)
-        self.logger.info(
-            f"Incoming request: {
-                request.method} {request.url.path}"
-        )
+        path = request.url.path
+        if not any(path.endswith(ext) for ext in self.static_extensions):
+            self.logger.info(f"Incoming request: {request.method} {path}")
+    
         response = await call_next(request)
         return response

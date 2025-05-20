@@ -16,17 +16,25 @@ Github: https://github.com/RayenBou
 class AccessManager:
     def __init__(self, settings: Settings):
         self.settings = settings
-
-        self.logger = logging.getLogger("FIREWALL")
+        self.logger = logging.getLogger("FIREWALL")    
+        self.static_extensions = [
+            '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', 
+            '.ico', '.woff', '.woff2', '.ttf', '.eot'
+        ]
 
     def get_required_roles(self, path: str) -> List[str]:
         """
         Retrieves the required roles for a specific path from the settings.
         """
-        self.logger.debug(f"Evaluating required roles for path: {path}")
+        is_static_resource = any(path.endswith(ext) for ext in self.static_extensions)
+        if not is_static_resource:
+            self.logger.debug(f"Evaluating required roles for path: {path}")
+            
         if not self.settings.access_control:
-            self.logger.debug("No access control rules defined.")
+            if not is_static_resource:
+                self.logger.debug("No access control rules defined.")
             return []
+            
         for rule in self.settings.access_control:
             pattern = rule.get("path")
             roles = rule.get("roles", [])
@@ -34,10 +42,10 @@ class AccessManager:
                 roles = [roles]
 
             if re.match(pattern, path):
-                self.logger.debug(
-                    f"Path {path} matches pattern {
-                        pattern} with roles {roles}"
-                )
+                if not is_static_resource:
+                    self.logger.debug(
+                        f"Path {path} matches pattern {pattern} with roles {roles}"
+                    )
                 return roles
         return []
 
