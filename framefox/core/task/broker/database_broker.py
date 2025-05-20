@@ -10,7 +10,16 @@ from framefox.core.task.entity.task import Task, TaskStatus
 
 
 class DatabaseBroker(BrokerInterface):
-    """Broker utilisant la base de données pour la gestion des tâches asynchrones."""
+    """Database-based broker for asynchronous task management.
+    
+    This broker implements task queue functionality using a database backend.
+    It handles task enqueueing, dequeuing, scheduling, retrying, and cleanup operations.
+
+    Attributes:
+        entity_manager (EntityManagerInterface): The entity manager for database operations
+        logger (Logger): Logger instance for broker operations
+
+    """
 
     def __init__(self, entity_manager: EntityManagerInterface):
         self.entity_manager = entity_manager
@@ -25,7 +34,6 @@ class DatabaseBroker(BrokerInterface):
         scheduled_for: Optional[datetime] = None,
         max_retries: int = 3,
     ) -> Task:
-        """Ajoute une tâche à la file d'attente."""
         task = Task(
             name=name,
             queue=queue,
@@ -41,10 +49,8 @@ class DatabaseBroker(BrokerInterface):
         return task
 
     def dequeue(self, queue: str = "default", batch_size: int = 1) -> List[Task]:
-        """Récupère des tâches depuis la file d'attente pour traitement."""
         now = datetime.now()
 
-        # Créer une requête pour trouver les tâches en attente
         statement = (
             select(Task)
             .where(
@@ -60,7 +66,6 @@ class DatabaseBroker(BrokerInterface):
 
         tasks = self.entity_manager.exec_statement(statement)
 
-        # Marquer les tâches comme étant en cours d'exécution
         if tasks:
             for task in tasks:
                 task.status = TaskStatus.RUNNING
@@ -72,7 +77,6 @@ class DatabaseBroker(BrokerInterface):
         return tasks
 
     def complete_task(self, task: Task) -> None:
-        """Marque une tâche comme terminée avec succès et la supprime."""
         self.logger.info(
             f"Task {task.id} ({task.name}) successfully completed - deleting"
         )
@@ -80,7 +84,6 @@ class DatabaseBroker(BrokerInterface):
         self.entity_manager.commit()
 
     def fail_task(self, task: Task, error: str) -> None:
-        """Marque une tâche comme échouée ou planifie une nouvelle tentative."""
         if task.retry_count < task.max_retries:
             task.status = TaskStatus.RETRYING
             task.retry_count += 1
@@ -99,13 +102,11 @@ class DatabaseBroker(BrokerInterface):
         self.entity_manager.commit()
 
     def get_task(self, task_id: str) -> Optional[Task]:
-        """Récupère une tâche par son identifiant."""
         return self.entity_manager.find(Task, task_id)
 
     def get_tasks_by_status(
         self, status: TaskStatus, queue: str = None, limit: int = 100
     ) -> List[Task]:
-        """Récupère des tâches par statut."""
         statement = select(Task).where(Task.status == status)
 
         if queue:
@@ -116,7 +117,6 @@ class DatabaseBroker(BrokerInterface):
         return self.entity_manager.exec_statement(statement)
 
     def purge_failed_tasks(self, older_than_days: int = 30) -> int:
-        """Nettoie les tâches échouées plus anciennes que le nombre de jours spécifié."""
         cutoff_date = datetime.now() - timedelta(days=older_than_days)
 
         statement = select(Task).where(

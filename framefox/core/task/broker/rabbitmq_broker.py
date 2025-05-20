@@ -9,7 +9,20 @@ from framefox.core.task.transport.rabbitmq_transport import RabbitMQTransport
 
 
 class RabbitMQBroker(BrokerInterface):
-    """Broker utilisant RabbitMQ pour la communication des tâches."""
+    """RabbitMQ implementation of the broker interface for task queue management.
+    This class provides methods to interact with RabbitMQ for task queue operations including
+    enqueueing, dequeueing, completing and failing tasks. It uses an entity manager for 
+    persistence and a RabbitMQ transport for message broker operations.
+    Attributes:
+        entity_manager (EntityManagerInterface): Manager for persisting task entities
+        transport (RabbitMQTransport): RabbitMQ transport layer for message operations
+        logger (Logger): Logger instance for broker operations
+    Example:
+        ```python
+        broker = RabbitMQBroker(entity_manager, rabbitmq_transport)
+        task = broker.enqueue("email_task", {"to": "user@example.com"})
+        ```
+    """
 
     def __init__(
         self, entity_manager: EntityManagerInterface, transport: RabbitMQTransport
@@ -27,8 +40,6 @@ class RabbitMQBroker(BrokerInterface):
         scheduled_for: Optional[datetime] = None,
         max_retries: int = 3,
     ) -> Task:
-        """Ajoute une tâche à la file d'attente RabbitMQ."""
-        # 1. Créer la tâche en base de données (pour la traçabilité)
         task = Task(
             name=name,
             queue=queue,
@@ -41,7 +52,6 @@ class RabbitMQBroker(BrokerInterface):
         self.entity_manager.persist(task)
         self.entity_manager.commit()
 
-        # 2. Publier dans RabbitMQ - c'est ce qui manque dans votre implémentation actuelle
         self.transport.publish(task)
 
         self.logger.info(
@@ -50,18 +60,15 @@ class RabbitMQBroker(BrokerInterface):
         return task
 
     def dequeue(self, queue: str = "default", batch_size: int = 1) -> List[Task]:
-        """Récupère des tâches depuis RabbitMQ pour traitement."""
         return self.transport.consume(queue, batch_size)
 
     def complete_task(self, task: Task) -> None:
-        """Marque une tâche comme terminée et la confirme dans RabbitMQ."""
         self.transport.acknowledge(task)
         self.entity_manager.delete(task)
         self.entity_manager.commit()
         self.logger.info(f"Task {task.id} ({task.name}) successfully completed")
 
     def fail_task(self, task: Task, error: str) -> None:
-        """Marque une tâche comme échouée et la rejette dans RabbitMQ."""
         if task.retry_count < task.max_retries:
             task.status = TaskStatus.RETRYING
             task.retry_count += 1
@@ -70,7 +77,6 @@ class RabbitMQBroker(BrokerInterface):
             self.entity_manager.persist(task)
             self.entity_manager.commit()
 
-            # Requeue dans RabbitMQ
             self.transport.reject(task, requeue=True)
             self.logger.warning(
                 f"Task {task.id} ({task.name}) failed, retrying {task.retry_count}/{task.max_retries}"
@@ -82,20 +88,17 @@ class RabbitMQBroker(BrokerInterface):
             self.entity_manager.persist(task)
             self.entity_manager.commit()
 
-            # Rejeter définitivement
             self.transport.reject(task, requeue=False)
             self.logger.error(
                 f"Task {task.id} ({task.name}) permanently failed: {error}"
             )
 
-    # Autres méthodes de l'interface...
     def get_task(self, task_id: str) -> Optional[Task]:
         return self.entity_manager.find(Task, task_id)
 
     def get_tasks_by_status(
         self, status: TaskStatus, queue: str = None, limit: int = 100
     ) -> List[Task]:
-        # Cette méthode ne change pas, car elle utilise la BD pour les tâches historiques
         from sqlmodel import select
 
         statement = select(Task).where(Task.status == status)
@@ -105,7 +108,6 @@ class RabbitMQBroker(BrokerInterface):
         return self.entity_manager.exec_statement(statement)
 
     def purge_failed_tasks(self, older_than_days: int = 30) -> int:
-        # Cette méthode ne change pas
         cutoff_date = datetime.now() - timedelta(days=older_than_days)
         from sqlmodel import and_, select
 
