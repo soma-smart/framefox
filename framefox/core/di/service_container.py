@@ -355,7 +355,7 @@ class ServiceContainer:
                             if not any(
                                 debug_module in str(e) for debug_module in debug_modules
                             ):
-                                print(f"Error importing module {module_name}: {e}")
+                                pass
                         except ImportError as e:
                             print(f"Import error for module {module_name}: {e}")
 
