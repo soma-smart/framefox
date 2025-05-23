@@ -4,18 +4,17 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type, get_type_hints, Set
+from typing import Any, Dict, List, Optional, Set, Type, get_type_hints
 
-from .service_definition import ServiceDefinition
-from .service_registry import ServiceRegistry
-from .service_factory_manager import ServiceFactoryManager
-from .exceptions import (
+from framefox.core.di.exceptions import (
     CircularDependencyError,
-    ServiceNotFoundError,
     ServiceInstantiationError,
-    InvalidServiceDefinitionError,
+    ServiceNotFoundError,
 )
-from .service_config import ServiceConfig
+from framefox.core.di.service_config import ServiceConfig
+from framefox.core.di.service_definition import ServiceDefinition
+from framefox.core.di.service_factory_manager import ServiceFactoryManager
+from framefox.core.di.service_registry import ServiceRegistry
 
 """
 Framefox Framework developed by SOMA
@@ -29,7 +28,7 @@ Github: https://github.com/RayenBou
 class ServiceContainer:
     """
     Advanced dependency injection container for the Framefox framework.
-    
+
     Features:
     - Automatic service discovery and registration
     - Dependency injection with type hints
@@ -39,7 +38,7 @@ class ServiceContainer:
     - Performance optimizations with caching
     - Thread safety considerations
     """
-    
+
     _instance: Optional["ServiceContainer"] = None
 
     def __new__(cls):
@@ -54,17 +53,17 @@ class ServiceContainer:
 
         self._logger = logging.getLogger("SERVICE_CONTAINER")
         self._ensure_python_path()
-        
+
         # Core components
         self._registry = ServiceRegistry()
         self._factory_manager = ServiceFactoryManager()
         self._config = ServiceConfig()
-        
+
         # Instance storage and tracking
         self._instances: Dict[Type[Any], Any] = {}
         self._resolution_cache: Dict[Type[Any], Any] = {}
         self._circular_detection: Set[Type[Any]] = set()
-        
+
         # Initialization state
         self._instance_counter = 1
         self._initialized = True
@@ -94,8 +93,19 @@ class ServiceContainer:
     def _create_module_aliases(self) -> None:
         """Create module aliases for easier imports (framefox.X -> framefox.core.X)."""
         core_modules = [
-            "controller", "routing", "logging", "di", "events", "config",
-            "debug", "request", "orm", "templates", "security", "middleware", "kernel"
+            "controller",
+            "routing",
+            "logging",
+            "di",
+            "events",
+            "config",
+            "debug",
+            "request",
+            "orm",
+            "templates",
+            "security",
+            "middleware",
+            "kernel",
         ]
 
         for module_name in core_modules:
@@ -120,18 +130,12 @@ class ServiceContainer:
         for service_path in essential_services:
             try:
                 service_cls = self._import_service_class(service_path)
-                definition = ServiceDefinition(
-                    service_cls,
-                    public=True,
-                    synthetic=True,
-                    tags=["essential"]
-                )
+                definition = ServiceDefinition(service_cls, public=True, synthetic=True, tags=["essential"])
                 self._registry.register_definition(definition)
-                
+
                 # Immediately instantiate essential services
                 self.get(service_cls)
-                
-         
+
             except Exception as e:
                 self._logger.warning(f"Could not register essential service {service_path}: {e}")
 
@@ -140,7 +144,7 @@ class ServiceContainer:
         parts = service_path.split(".")
         module_path = ".".join(parts[:-1])
         class_name = parts[-1]
-        
+
         module = importlib.import_module(module_path)
         return getattr(module, class_name)
 
@@ -148,44 +152,60 @@ class ServiceContainer:
         """Discover and register all services from core and src directories."""
         # Find source paths
         src_paths = self._find_source_paths()
-        
+
         # Core framework path
         core_path = Path(__file__).resolve().parent.parent
-        
+
         # Configuration for exclusions - AMÉLIORÉE
         excluded_directories = list(self._config.excluded_dirs) + [
-            "entity", "entities", "Entity",
-            "migration", "migrations", "Migrations",
-            "test", "tests", "Test", "Tests",
-            "__pycache__", ".pytest_cache", ".mypy_cache",
-            "node_modules", "venv", "env", ".env",
-            "templates", "static", "assets",
-            "docs", "documentation"
+            "entity",
+            "entities",
+            "Entity",
+            "migration",
+            "migrations",
+            "Migrations",
+            "test",
+            "tests",
+            "Test",
+            "Tests",
+            "__pycache__",
+            ".pytest_cache",
+            ".mypy_cache",
+            "node_modules",
+            "venv",
+            "env",
+            ".env",
+            "templates",
+            "static",
+            "assets",
+            "docs",
+            "documentation",
         ]
-        
+
         excluded_modules = list(self._config.excluded_modules) + [
-            "src.entity", "src.entities", "framefox.core.entity",
-            "src.migration", "src.migrations",
-            "src.test", "src.tests",
-            "framefox.tests", "framefox.test"
+            "src.entity",
+            "src.entities",
+            "framefox.core.entity",
+            "src.migration",
+            "src.migrations",
+            "src.test",
+            "src.tests",
+            "framefox.tests",
+            "framefox.test",
         ]
 
         # Scan core framework
-        self._scan_for_service_definitions(
-            core_path, "framefox.core", excluded_directories, excluded_modules
-        )
+        self._scan_for_service_definitions(core_path, "framefox.core", excluded_directories, excluded_modules)
 
         # Scan user source code
         for src_path in src_paths:
             if src_path.exists():
-                self._scan_for_service_definitions(
-                    src_path, "src", excluded_directories, excluded_modules
-                )
+                self._scan_for_service_definitions(src_path, "src", excluded_directories, excluded_modules)
 
     def _find_source_paths(self) -> List[Path]:
         """Find potential source paths for service discovery."""
         src_paths = []
-        
+
         # Development path
         project_root = Path(__file__).resolve().parent.parent.parent.parent
         dev_src_path = project_root / "src"
@@ -196,7 +216,7 @@ class ServiceContainer:
         cwd_src_path = Path.cwd() / "src"
         if cwd_src_path.exists() and cwd_src_path not in src_paths:
             src_paths.append(cwd_src_path)
-        
+
         # Search parent directories
         parent = Path.cwd().parent
         for _ in range(3):
@@ -227,40 +247,39 @@ class ServiceContainer:
                     continue
 
                 try:
-                    module_name = self._build_module_name(
-                        root_path / file, base_path, base_package
-                    )
-                    
+                    module_name = self._build_module_name(root_path / file, base_path, base_package)
+
                     if self._should_exclude_module(module_name, excluded_modules):
                         continue
 
                     self._process_module(module_name)
-                    
+
                 except Exception as e:
                     self._logger.debug(f"Error processing file {root_path / file}: {e}")
 
     def _should_exclude_directory(self, path: Path, excluded_dirs: List[str]) -> bool:
         """Check if a directory should be excluded from scanning."""
-        return any(
-            excluded_dir.lower() in part.lower()
-            for part in path.parts
-            for excluded_dir in excluded_dirs
-        )
+        return any(excluded_dir.lower() in part.lower() for part in path.parts for excluded_dir in excluded_dirs)
 
     def _should_process_file(self, filename: str) -> bool:
         """Check if a file should be processed for service discovery."""
         # Fichiers Python valides
         if not filename.endswith(".py"):
             return False
-        
+
         # Fichiers à ignorer
         ignored_files = [
-            "__init__.py", "service_container.py",
-            "conftest.py", "test_*.py", "*_test.py",
-            "migrations.py", "migration.py",
-            "settings.py", "config.py",  # Souvent des fichiers de config simples
+            "__init__.py",
+            "service_container.py",
+            "conftest.py",
+            "test_*.py",
+            "*_test.py",
+            "migrations.py",
+            "migration.py",
+            "settings.py",
+            "config.py",  # Souvent des fichiers de config simples
         ]
-        
+
         for pattern in ignored_files:
             if pattern.startswith("*"):
                 if filename.endswith(pattern[1:]):
@@ -270,18 +289,13 @@ class ServiceContainer:
                     return False
             elif filename == pattern:
                 return False
-        
+
         return True
 
     def _build_module_name(self, file_path: Path, base_path: Path, base_package: str) -> str:
         """Build module name from file path."""
-        rel_path = (
-            file_path.relative_to(base_path)
-            .with_suffix("")
-            .as_posix()
-            .replace("/", ".")
-        )
-        
+        rel_path = file_path.relative_to(base_path).with_suffix("").as_posix().replace("/", ".")
+
         if rel_path:
             return f"{base_package}.{rel_path}"
         else:
@@ -289,29 +303,24 @@ class ServiceContainer:
 
     def _should_exclude_module(self, module_name: str, excluded_modules: List[str]) -> bool:
         """Check if a module should be excluded."""
-        return any(
-            module_name.startswith(excluded)
-            for excluded in excluded_modules
-        )
+        return any(module_name.startswith(excluded) for excluded in excluded_modules)
 
     def _process_module(self, module_name: str) -> None:
         """Process a module and register service definitions."""
         try:
             module = importlib.import_module(module_name)
-            
+
             for attr_name in dir(module):
                 try:
                     attr = getattr(module, attr_name)
-                    
+
                     if inspect.isclass(attr) and self._can_be_service(attr):
                         self._create_and_register_definition(attr)
-                        
+
                 except Exception as e:
                     if "access" not in str(e).lower():
-                        self._logger.debug(
-                            f"Error inspecting attribute {attr_name} in {module_name}: {e}"
-                        )
-                        
+                        self._logger.debug(f"Error inspecting attribute {attr_name} in {module_name}: {e}")
+
         except (ModuleNotFoundError, ImportError) as e:
             # Silently ignore common debug modules
             debug_modules = ["icecream", "devtools", "pytest", "IPython"]
@@ -323,7 +332,7 @@ class ServiceContainer:
         is_public = self._config.is_public(service_class)
         autowire = self._config.autowire_enabled
         tags = self._config.get_service_tags(service_class)
-        
+
         # Add default tag based on the module
         default_tag = self._get_default_tag(service_class)
         if default_tag and default_tag not in tags:
@@ -335,7 +344,7 @@ class ServiceContainer:
             tags=tags,
             autowire=autowire,
         )
-        
+
         self._registry.register_definition(definition)
 
     def _can_be_service(self, cls: Type) -> bool:
@@ -348,52 +357,96 @@ class ServiceContainer:
             return False
 
         # === NOUVEAUX FILTRES STRICTS ===
-        
+
         # Ignore les modules built-in de Python
         builtin_modules = [
-            "builtins", "typing", "abc", "datetime", "pathlib", "logging", 
-            "_contextvars", "collections", "functools", "itertools", "operator",
-            "re", "json", "urllib", "http", "ssl", "socket", "threading",
-            "multiprocessing", "asyncio", "concurrent", "queue", "time"
+            "builtins",
+            "typing",
+            "abc",
+            "datetime",
+            "pathlib",
+            "logging",
+            "_contextvars",
+            "collections",
+            "functools",
+            "itertools",
+            "operator",
+            "re",
+            "json",
+            "urllib",
+            "http",
+            "ssl",
+            "socket",
+            "threading",
+            "multiprocessing",
+            "asyncio",
+            "concurrent",
+            "queue",
+            "time",
         ]
-        
+
         # Ignore les librairies externes communes
         external_libraries = [
-            "fastapi", "starlette", "pydantic", "sqlalchemy", "sqlmodel",
-            "alembic", "jinja2", "email", "passlib", "bcrypt", "cryptography",
-            "requests", "urllib3", "certifi", "charset_normalizer", "idna",
-            "bs4", "lxml", "markupsafe", "click", "rich", "typer",
-            "uvicorn", "gunicorn", "pytest", "coverage", "mypy"
+            "fastapi",
+            "starlette",
+            "pydantic",
+            "sqlalchemy",
+            "sqlmodel",
+            "alembic",
+            "jinja2",
+            "email",
+            "passlib",
+            "bcrypt",
+            "cryptography",
+            "requests",
+            "urllib3",
+            "certifi",
+            "charset_normalizer",
+            "idna",
+            "bs4",
+            "lxml",
+            "markupsafe",
+            "click",
+            "rich",
+            "typer",
+            "uvicorn",
+            "gunicorn",
+            "pytest",
+            "coverage",
+            "mypy",
         ]
-        
+
         module_name = cls.__module__
-        
+
         # Filtrer les modules built-in
-        if any(module_name == builtin or module_name.startswith(f"{builtin}.") 
-            for builtin in builtin_modules):
+        if any(module_name == builtin or module_name.startswith(f"{builtin}.") for builtin in builtin_modules):
             return False
-        
+
         # Filtrer les librairies externes
-        if any(module_name == lib or module_name.startswith(f"{lib}.") 
-            for lib in external_libraries):
+        if any(module_name == lib or module_name.startswith(f"{lib}.") for lib in external_libraries):
             return False
-        
+
         # === FILTRES EXISTANTS AMÉLIORÉS ===
-        
+
         # Ignore SQLModel/Pydantic classes (plus strict)
-        if (hasattr(cls, "__pydantic_self__") or hasattr(cls, "__pydantic_model__") or
-            hasattr(cls, "__pydantic_core_schema__") or hasattr(cls, "model_config")):
+        if (
+            hasattr(cls, "__pydantic_self__")
+            or hasattr(cls, "__pydantic_model__")
+            or hasattr(cls, "__pydantic_core_schema__")
+            or hasattr(cls, "model_config")
+        ):
             return False
 
         # Ignore les interfaces (classes abstraites sans implémentation)
-        if (cls.__name__.startswith("I") and hasattr(cls, "__abstractmethods__") and
-            len(cls.__abstractmethods__) > 0):
+        if cls.__name__.startswith("I") and hasattr(cls, "__abstractmethods__") and len(cls.__abstractmethods__) > 0:
             return False
-        
+
         # Ignore les classes abstraites pures (toutes les méthodes sont abstraites)
-        if (hasattr(cls, "__abstractmethods__") and 
-            len(cls.__abstractmethods__) > 0 and
-            len([m for m in dir(cls) if not m.startswith('_') and callable(getattr(cls, m))]) == len(cls.__abstractmethods__)):
+        if (
+            hasattr(cls, "__abstractmethods__")
+            and len(cls.__abstractmethods__) > 0
+            and len([m for m in dir(cls) if not m.startswith("_") and callable(getattr(cls, m))]) == len(cls.__abstractmethods__)
+        ):
             return False
 
         # Ignore private classes (starting with _)
@@ -405,36 +458,39 @@ class ServiceContainer:
             return False
 
         # === NOUVEAUX FILTRES SPÉCIFIQUES ===
-        
+
         # Ignore les classes de type "Enum"
         try:
             import enum
+
             if issubclass(cls, enum.Enum):
                 return False
         except (ImportError, TypeError):
             pass
-        
+
         # Ignore les dataclasses simples (sans logique métier)
         if hasattr(cls, "__dataclass_fields__") and not hasattr(cls, "__post_init__"):
             # Vérifier si c'est une dataclass simple sans méthodes custom
-            custom_methods = [name for name in dir(cls) 
-                            if not name.startswith('_') and 
-                            callable(getattr(cls, name)) and
-                            name not in ['__dataclass_fields__', '__dataclass_params__']]
+            custom_methods = [
+                name
+                for name in dir(cls)
+                if not name.startswith("_")
+                and callable(getattr(cls, name))
+                and name not in ["__dataclass_fields__", "__dataclass_params__"]
+            ]
             if len(custom_methods) == 0:
                 return False
-        
+
         # Ignore les classes de configuration simple (celles qui n'ont que des attributs)
-        if not any(callable(getattr(cls, attr)) and not attr.startswith('_') 
-                for attr in dir(cls)):
+        if not any(callable(getattr(cls, attr)) and not attr.startswith("_") for attr in dir(cls)):
             return False
-        
+
         # === VÉRIFICATIONS SPÉCIFIQUES AU FRAMEWORK ===
-        
+
         # Ne garder que les classes du framework ou de l'application utilisateur
         if not (module_name.startswith("framefox.") or module_name.startswith("src.")):
             return False
-        
+
         # Check configured exclusions
         if self._config.is_excluded_class(cls.__name__):
             return False
@@ -463,13 +519,13 @@ class ServiceContainer:
     def get(self, service_class: Type[Any]) -> Any:
         """
         Retrieve or create an instance of the requested service.
-        
+
         Args:
             service_class: The service class to retrieve
-            
+
         Returns:
             The service instance
-            
+
         Raises:
             ServiceNotFoundError: If the service cannot be found
             CircularDependencyError: If a circular dependency is detected
@@ -513,7 +569,7 @@ class ServiceContainer:
         if definition.abstract:
             raise ServiceInstantiationError(
                 service_class,
-                Exception(f"Cannot instantiate abstract class {service_class.__name__}")
+                Exception(f"Cannot instantiate abstract class {service_class.__name__}"),
             )
 
         # Mark as being resolved
@@ -521,23 +577,27 @@ class ServiceContainer:
 
         try:
             instance = self._create_service_instance(definition)
-            
+
             if instance is not None:
                 self._instances[service_class] = instance
                 self._resolution_cache[service_class] = instance
-                
+
                 # Apply method calls
                 self._apply_method_calls(instance, definition)
-                
+
                 return instance
             else:
-                raise ServiceInstantiationError(
-                    service_class,
-                    Exception("Failed to create instance")
-                )
-                
+                raise ServiceInstantiationError(service_class, Exception("Failed to create instance"))
+
         except Exception as e:
-            if isinstance(e, (CircularDependencyError, ServiceNotFoundError, ServiceInstantiationError)):
+            if isinstance(
+                e,
+                (
+                    CircularDependencyError,
+                    ServiceNotFoundError,
+                    ServiceInstantiationError,
+                ),
+            ):
                 raise
             raise ServiceInstantiationError(service_class, e)
         finally:
@@ -547,10 +607,7 @@ class ServiceContainer:
     def _create_dynamic_definition(self, service_class: Type[Any]) -> Optional[ServiceDefinition]:
         """Create a service definition dynamically if the class qualifies."""
         if self._can_be_service(service_class):
-            definition = ServiceDefinition(
-                service_class,
-                tags=[self._get_default_tag(service_class)]
-            )
+            definition = ServiceDefinition(service_class, tags=[self._get_default_tag(service_class)])
             self._registry.register_definition(definition)
             return definition
         return None
@@ -612,9 +669,7 @@ class ServiceContainer:
                     else:
                         # No type annotation and no default value
                         dependencies.append(None)
-                        self._logger.warning(
-                            f"Parameter {name} of {service_class.__name__} has no type hint and no default value"
-                        )
+                        self._logger.warning(f"Parameter {name} of {service_class.__name__} has no type hint and no default value")
 
             except Exception as e:
                 self._logger.error(f"Error getting type hints for {service_class.__name__}: {e}")
@@ -631,31 +686,27 @@ class ServiceContainer:
                 method = getattr(instance, method_name)
                 method(*args)
             except Exception as e:
-                self._logger.error(
-                    f"Error calling {method_name} on {definition.service_class.__name__}: {e}"
-                )
+                self._logger.error(f"Error calling {method_name} on {definition.service_class.__name__}: {e}")
 
     def get_by_name(self, class_name: str) -> Optional[Any]:
         """Retrieve a service by its class name."""
         definition = self._registry.get_definition_by_name(class_name)
         if definition:
             return self.get(definition.service_class)
-        
+
         self._logger.warning(f"Service with name '{class_name}' not found")
         return None
 
     def get_by_tag(self, tag: str) -> Optional[Any]:
         """Return the first service associated with a tag."""
         definitions = self._registry.get_definitions_by_tag(tag)
-        
+
         if not definitions:
             return None
 
         if len(definitions) > 1:
             service_names = [def_.service_class.__name__ for def_ in definitions]
-            self._logger.warning(
-                f"Multiple services found for tag '{tag}': {', '.join(service_names)}. Returning first."
-            )
+            self._logger.warning(f"Multiple services found for tag '{tag}': {', '.join(service_names)}. Returning first.")
 
         return self.get(definitions[0].service_class)
 
@@ -677,7 +728,6 @@ class ServiceContainer:
         self._instances[service_class] = instance
         self._resolution_cache[service_class] = instance
 
-
     def register_factory(self, factory) -> None:
         """Register a service factory."""
         self._factory_manager.register_factory(factory)
@@ -690,7 +740,7 @@ class ServiceContainer:
     def get_stats(self) -> Dict[str, Any]:
         """Get container statistics."""
         registry_stats = self._registry.get_stats()
-        
+
         return {
             "container_instance": self._instance_counter,
             "instantiated_services": len(self._instances),
@@ -702,10 +752,10 @@ class ServiceContainer:
     def print_container_stats(self) -> None:
         """Print detailed container statistics."""
         stats = self.get_stats()
-        
-        print("\n" + "="*50)
+
+        print("\n" + "=" * 50)
         print("SERVICE CONTAINER STATISTICS")
-        print("="*50)
+        print("=" * 50)
         print(f"Container instance: #{stats['container_instance']}")
         print(f"Total service definitions: {stats['total_definitions']}")
         print(f"Instantiated services: {stats['instantiated_services']}")
@@ -717,11 +767,7 @@ class ServiceContainer:
 
         print("\nRegistered services:")
         for service_class, definition in self._registry.get_all_definitions().items():
-            status = (
-                "instantiated"
-                if service_class in self._instances
-                else "not instantiated"
-            )
+            status = "instantiated" if service_class in self._instances else "not instantiated"
             visibility = "public" if definition.public else "private"
             print(f"- {service_class.__name__} ({visibility}, {status})")
 
@@ -731,5 +777,5 @@ class ServiceContainer:
 
             if definition.tags:
                 print(f"  tags: {', '.join(definition.tags)}")
-        
-        print("="*50)
+
+        print("=" * 50)

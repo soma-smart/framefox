@@ -28,7 +28,7 @@
 
 #     def on_auth_success(self, token: str):
 #         return Response(status_code=302, headers={"Location": "/dashboard"})
-    
+
 #     def on_auth_failure(self, request: Request):
 #         return Response(status_code=400, body="Authentication failed")
 

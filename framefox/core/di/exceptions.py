@@ -9,12 +9,13 @@ Github: https://github.com/RayenBou
 
 class ServiceContainerError(Exception):
     """Base exception for service container errors."""
+
     pass
 
 
 class CircularDependencyError(ServiceContainerError):
     """Raised when a circular dependency is detected."""
-    
+
     def __init__(self, service_class, dependency_chain):
         self.service_class = service_class
         self.dependency_chain = dependency_chain
@@ -24,7 +25,7 @@ class CircularDependencyError(ServiceContainerError):
 
 class ServiceNotFoundError(ServiceContainerError):
     """Raised when a requested service cannot be found."""
-    
+
     def __init__(self, service_class):
         self.service_class = service_class
         super().__init__(f"Service '{service_class.__name__ if hasattr(service_class, '__name__') else service_class}' not found")
@@ -32,7 +33,7 @@ class ServiceNotFoundError(ServiceContainerError):
 
 class ServiceInstantiationError(ServiceContainerError):
     """Raised when a service cannot be instantiated."""
-    
+
     def __init__(self, service_class, original_error):
         self.service_class = service_class
         self.original_error = original_error
@@ -41,4 +42,5 @@ class ServiceInstantiationError(ServiceContainerError):
 
 class InvalidServiceDefinitionError(ServiceContainerError):
     """Raised when a service definition is invalid."""
+
     pass

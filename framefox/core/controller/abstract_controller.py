@@ -21,9 +21,7 @@ class AbstractController:
         """
 
         self._container = ServiceContainer()
-        self.template_renderer = self._container.get_by_tag(
-            "core.templates.template_renderer"
-        )
+        self.template_renderer = self._container.get_by_tag("core.templates.template_renderer")
 
     def redirect(self, location: str, code: int = 302):
         """Redirects to a specific URL."""
@@ -52,17 +50,13 @@ class AbstractController:
             context = {}
 
         if not template_renderer:
-            return HTMLResponse(
-                f"Template renderer not available. Template: {template_path}"
-            )
+            return HTMLResponse(f"Template renderer not available. Template: {template_path}")
 
         try:
             content = template_renderer.render(template_path, context)
             return HTMLResponse(content=content)
         except Exception as e:
-            return HTMLResponse(
-                content=f"Error rendering template: {str(e)}", status_code=500
-            )
+            return HTMLResponse(content=f"Error rendering template: {str(e)}", status_code=500)
 
     def json(self, data: dict, status: int = 200):
         """Returns a JSON response."""

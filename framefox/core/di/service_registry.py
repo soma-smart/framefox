@@ -1,8 +1,8 @@
 import logging
-from typing import Any, Dict, List, Optional, Type, Set
+from typing import Any, Dict, List, Optional, Set, Type
 
-from .service_definition import ServiceDefinition
-from .exceptions import ServiceNotFoundError, InvalidServiceDefinitionError
+from framefox.core.di.exceptions import InvalidServiceDefinitionError
+from framefox.core.di.service_definition import ServiceDefinition
 
 """
 Framefox Framework developed by SOMA
@@ -21,16 +21,16 @@ class ServiceRegistry:
 
     def __init__(self):
         self._logger = logging.getLogger("SERVICE_REGISTRY")
-        
+
         # Core storage
         self._definitions: Dict[Type[Any], ServiceDefinition] = {}
         self._aliases: Dict[str, Type[Any]] = {}
         self._tags: Dict[str, Set[Type[Any]]] = {}
-        
+
         # Cache for performance
         self._name_cache: Dict[str, Type[Any]] = {}
         self._tag_cache: Dict[str, List[Type[Any]]] = {}
-        
+
         # Tracking
         self._frozen = False
 
@@ -38,35 +38,33 @@ class ServiceRegistry:
         """Register a service definition."""
         if self._frozen:
             raise RuntimeError("Registry is frozen")
-        
+
         if not isinstance(definition, ServiceDefinition):
             raise InvalidServiceDefinitionError("Expected ServiceDefinition instance")
-        
+
         service_class = definition.service_class
-        
+
         # Store definition
         self._definitions[service_class] = definition.freeze()
-        
+
         # Register aliases
         self._register_aliases(service_class)
-        
+
         # Register tags
         for tag in definition.tags:
             if tag not in self._tags:
                 self._tags[tag] = set()
             self._tags[tag].add(service_class)
-        
+
         # Clear caches
         self._clear_caches()
-        
-
 
     def _register_aliases(self, service_class: Type[Any]) -> None:
         """Register aliases for a service class."""
         # Full module path alias
         full_name = f"{service_class.__module__}.{service_class.__name__}"
         self._aliases[full_name] = service_class
-        
+
         # Simple class name alias
         self._aliases[service_class.__name__] = service_class
 
@@ -80,19 +78,19 @@ class ServiceRegistry:
         if name in self._name_cache:
             service_class = self._name_cache[name]
             return self._definitions.get(service_class)
-        
+
         # Look in aliases
         if name in self._aliases:
             service_class = self._aliases[name]
             self._name_cache[name] = service_class
             return self._definitions.get(service_class)
-        
+
         # Search by class name
         for service_class in self._definitions:
             if service_class.__name__ == name:
                 self._name_cache[name] = service_class
                 return self._definitions[service_class]
-        
+
         return None
 
     def get_definitions_by_tag(self, tag: str) -> List[ServiceDefinition]:
@@ -100,11 +98,11 @@ class ServiceRegistry:
         # Check cache first
         if tag in self._tag_cache:
             return [self._definitions[cls] for cls in self._tag_cache[tag] if cls in self._definitions]
-        
+
         # Build and cache result
         service_classes = list(self._tags.get(tag, set()))
         self._tag_cache[tag] = service_classes
-        
+
         return [self._definitions[cls] for cls in service_classes if cls in self._definitions]
 
     def has_definition(self, service_class: Type[Any]) -> bool:
@@ -126,7 +124,6 @@ class ServiceRegistry:
     def freeze(self) -> None:
         """Freeze the registry to prevent further modifications."""
         self._frozen = True
-
 
     def _clear_caches(self) -> None:
         """Clear internal caches."""

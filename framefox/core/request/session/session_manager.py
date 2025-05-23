@@ -1,10 +1,9 @@
+import base64
+import hashlib
+import hmac
 import json
 import logging
 import os
-import hmac
-import base64
-import hashlib
-
 import sqlite3
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -46,9 +45,7 @@ class SessionManager:
             """
             )
 
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_expires_at ON sessions(expires_at)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_expires_at ON sessions(expires_at)")
 
             conn.commit()
             conn.close()
@@ -151,7 +148,6 @@ class SessionManager:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-
             expires_at = datetime.now(timezone.utc).timestamp() + max_age
             serialized_data = json.dumps(data)
 
@@ -199,44 +195,38 @@ class SessionManager:
             conn.close()
         except sqlite3.Error as e:
             self.logger.error(f"Error cleaning up expired sessions: {e}")
+
     def sign_session_id(self, session_id: str) -> str:
         """
         Signs the session ID with HMAC-SHA256 to prevent tampering
         """
         if not session_id:
             return ""
-            
-        secret_key = self.settings.session_secret_key.encode('utf-8')
- 
-        signature = hmac.new(
-            secret_key,
-            session_id.encode('utf-8'),
-            digestmod=hashlib.sha256
-        ).digest()
-        
 
-        encoded_sig = base64.urlsafe_b64encode(signature).decode('utf-8').rstrip('=')
+        secret_key = self.settings.session_secret_key.encode("utf-8")
+
+        signature = hmac.new(secret_key, session_id.encode("utf-8"), digestmod=hashlib.sha256).digest()
+
+        encoded_sig = base64.urlsafe_b64encode(signature).decode("utf-8").rstrip("=")
 
         return f"{session_id}.{encoded_sig}"
-    
+
     def verify_and_extract_session_id(self, signed_id: str) -> Optional[str]:
         """
         Verifies the signature of a signed ID and extracts the original ID
         Returns None if the ID is invalid or improperly signed
         """
-  
-        if not signed_id or '.' not in signed_id:
+
+        if not signed_id or "." not in signed_id:
             return None
-        
-   
-        raw_id, received_sig = signed_id.split('.', 1)
-        
+
+        raw_id, received_sig = signed_id.split(".", 1)
 
         expected_signed_id = self.sign_session_id(raw_id)
-        expected_id, expected_sig = expected_signed_id.split('.', 1)
-        
+        expected_id, expected_sig = expected_signed_id.split(".", 1)
+
         if hmac.compare_digest(received_sig, expected_sig):
             return raw_id
-        
+
         self.logger.warning(f"Invalid session signature detected")
         return None

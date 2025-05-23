@@ -1,13 +1,12 @@
+import asyncio
+import socket
 import subprocess
 import threading
-import asyncio
-import webbrowser
-import socket
 import time
+import webbrowser
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
-from framefox.terminal.commands.server.worker_command import WorkerCommand
 
 
 class ServerStartCommand(AbstractCommand):
@@ -24,11 +23,11 @@ class ServerStartCommand(AbstractCommand):
         """
 
         original_port = port
-        
+
         while self._is_port_in_use(port) and port < original_port + 10:
             self.printer.print_msg(f"Port {port} already in use, trying {port+1}...", theme="warning")
             port += 1
-    
+
         with_workers = False
         for arg in args:
             if arg == "--with-workers":
@@ -38,33 +37,28 @@ class ServerStartCommand(AbstractCommand):
             f"Starting the server on port {port}",
             theme="success",
             linebefore=True,
-        )     
+        )
         if with_workers:
             self._setup_workers()
-        browser_thread = threading.Thread(
-            target=self._open_browser,
-            args=(port,),
-            daemon=True
-        )
+        browser_thread = threading.Thread(target=self._open_browser, args=(port,), daemon=True)
         browser_thread.start()
-        
+
         try:
-            uvicorn_cmd = ["uvicorn", "main:app",
-                        "--reload", "--port", str(port)]
+            uvicorn_cmd = ["uvicorn", "main:app", "--reload", "--port", str(port)]
 
             process = subprocess.run(uvicorn_cmd)
             return process.returncode
-            
+
         except KeyboardInterrupt:
             self.printer.print_msg("\nStopping the server...", theme="warning")
             if self.worker_stop_event:
                 self.worker_stop_event.set()
             return 0
-        
+
     def _is_port_in_use(self, port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            return s.connect_ex(('localhost', port)) == 0
-        
+            return s.connect_ex(("localhost", port)) == 0
+
     def _open_browser(self, port):
         """Opens the browser after a short delay to allow the server to start"""
         time.sleep(2)
@@ -80,21 +74,16 @@ class ServerStartCommand(AbstractCommand):
         )
         try:
             self.worker_stop_event = threading.Event()
-            self.worker_thread = threading.Thread(
-                target=self._run_worker_thread,
-                daemon=True
-            )
+            self.worker_thread = threading.Thread(target=self._run_worker_thread, daemon=True)
             self.worker_thread.start()
         except Exception as e:
-            self.printer.print_msg(
-                f"Failed to start worker: {str(e)}",
-                theme="error"
-            )
+            self.printer.print_msg(f"Failed to start worker: {str(e)}", theme="error")
 
     def _run_worker_thread(self):
         """Executes the workers in a separate thread"""
         try:
             from framefox.core.task.worker_manager import WorkerManager
+
             worker_manager = ServiceContainer().get(WorkerManager)
 
             loop = asyncio.new_event_loop()

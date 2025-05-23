@@ -184,12 +184,8 @@ class Settings:
             if "url" in db_config and db_config["url"]:
                 return DatabaseUrlParser.parse_url(db_config["url"])
 
-            has_required_details = all(
-                key in db_config for key in ["driver", "host", "database"]
-            ) or (
-                "driver" in db_config
-                and db_config["driver"] == "sqlite"
-                and "database" in db_config
+            has_required_details = all(key in db_config for key in ["driver", "host", "database"]) or (
+                "driver" in db_config and db_config["driver"] == "sqlite" and "database" in db_config
             )
 
             if has_required_details:
@@ -256,7 +252,7 @@ class Settings:
     def session_file_path(self):
         """Returns the session file path from the configuration."""
         return self.config.get("application", {}).get("session", {}).get("file_path", "var/session/sessions.db")
-        
+
     @property
     def session_secret_key(self):
         """Returns the session secret key from the configuration."""
@@ -291,6 +287,7 @@ class Settings:
     def cookie_path(self):
         """Returns the cookie path from the configuration, default is '/'."""
         return self.config.get("application", {}).get("cookie", {}).get("path", "/")
+
     # ------------------------------ application ------------------------------
     @property
     def openapi_url(self):
@@ -309,11 +306,7 @@ class Settings:
     @property
     def controller_dir(self):
         """Returns the controllers directory from the configuration."""
-        return (
-            self.config.get("application", {})
-            .get("controllers")
-            .get("dir", "controllers")
-        )
+        return self.config.get("application", {}).get("controllers").get("dir", "controllers")
 
     @property
     def cors_config(self):
@@ -340,34 +333,31 @@ class Settings:
         """Returns the session file path from the configuration."""
         return self.config.get("application", {}).get("session").get("file_path", None)
 
-
-# ------------------------------ debug ------------------------------
+    # ------------------------------ debug ------------------------------
 
     @property
     def profiler_enabled(self) -> bool:
         """Returns whether the profiler is enabled"""
         if self.app_env != "dev":
             return False
-            
+
         return self.config.get("debug", {}).get("profiler_enabled", True)
 
     @property
     def profiler_max_files_per_day(self) -> int:
         """Maximum number of profile files per day"""
         return int(self.config.get("debug", {}).get("profiler_max_files", 1000))
-        
+
     @property
     def profiler_retention_days(self) -> int:
         """Number of days to keep profile files"""
         return int(self.config.get("debug", {}).get("profiler_retention_days", 7))
-        
+
     @property
     def profiler_sampling_rate(self) -> float:
         """Percentage of requests to profile (0.0 to 1.0)"""
         rate = float(self.config.get("debug", {}).get("profiler_sampling_rate", 1.0))
-        return max(0.0, min(1.0, rate))  
-
-
+        return max(0.0, min(1.0, rate))
 
     # ------------------------------ mail ------------------------------
 
@@ -383,14 +373,10 @@ class Settings:
         """Returns the type of broker to use (database, redis, rabbitmq)"""
         return self.config.get("tasks", {}).get("type", "database")
 
-
-
     @property
     def task_transport_url(self) -> str:
         """Returns the transport URL for RabbitMQ"""
-        return self.config.get("tasks", {}).get(
-            "task_transport_url", "amqp://guest:guest@localhost:5672/%2F"
-        )
+        return self.config.get("tasks", {}).get("task_transport_url", "amqp://guest:guest@localhost:5672/%2F")
 
     @property
     def task_worker_concurrency(self) -> int:
@@ -405,11 +391,7 @@ class Settings:
     @property
     def task_default_queues(self) -> list:
         """Default queues"""
-        return (
-            self.config.get("tasks", {})
-            .get("worker", {})
-            .get("default_queues", ["default"])
-        )
+        return self.config.get("tasks", {}).get("worker", {}).get("default_queues", ["default"])
 
     @property
     def task_cleanup_interval(self) -> int:

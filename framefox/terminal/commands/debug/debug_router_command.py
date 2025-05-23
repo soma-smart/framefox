@@ -44,14 +44,14 @@ class DebugRouterCommand(AbstractCommand):
             "swagger_ui_redirect",
             "openapi",
             "redoc_html",
-            "static" 
+            "static",
         ]
 
         unique_routes = {}
         for route in self.app.routes:
             route_name = getattr(route, "name", "")
             route_key = f"{route.path}:{route_name}"
-            
+
             if route_name not in routes_to_exclude and route_key not in unique_routes:
                 unique_routes[route_key] = route
 

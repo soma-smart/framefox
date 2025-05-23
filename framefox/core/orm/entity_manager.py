@@ -85,17 +85,13 @@ class EntityManager:
                 except Exception as merge_error:
                     self.logger.warning(f"Entity merge failed: {str(merge_error)}")
                     primary_keys = entity.get_primary_keys()
-                    pk_value = (
-                        getattr(entity, primary_keys[0]) if primary_keys else None
-                    )
+                    pk_value = getattr(entity, primary_keys[0]) if primary_keys else None
 
                     if pk_value:
                         fresh_entity = self.session.get(type(entity), pk_value)
                         if fresh_entity:
                             for attr, value in vars(entity).items():
-                                if not attr.startswith("_") and hasattr(
-                                    fresh_entity, attr
-                                ):
+                                if not attr.startswith("_") and hasattr(fresh_entity, attr):
                                     setattr(fresh_entity, attr, value)
                             entity = fresh_entity
                             self.session.add(entity)

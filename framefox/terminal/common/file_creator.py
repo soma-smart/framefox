@@ -9,13 +9,9 @@ import framefox.terminal
 class FileCreator:
     def __init__(self):
         # self.template_path = r"framefox/framefox/terminal/templates"
-        self.template_path = pkg_resources.files(framefox.terminal).joinpath(
-            "templates"
-        )
+        self.template_path = pkg_resources.files(framefox.terminal).joinpath("templates")
 
-    def create_file(
-        self, template: str, path: str, name: str, data: str, format: str = "py"
-    ):
+    def create_file(self, template: str, path: str, name: str, data: str, format: str = "py"):
         """
         Create a file using a template.
 

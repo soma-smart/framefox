@@ -1,8 +1,8 @@
 import inspect
 import re
-from typing import Any, Dict, List, Type, get_args, get_origin
+from typing import Any, Dict, List, Type
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import SQLModel
 
 
 class SQLModelInspector:
@@ -87,17 +87,13 @@ class SQLModelInspector:
 
                     # 2. Chercher dans le code source pour la classe référencée
                     if not target_entity or target_entity == "None":
-                        rel_match = re.search(
-                            rf"{name}\s*:\s*(.*?)\s*=\s*Relationship", class_source
-                        )
+                        rel_match = re.search(rf"{name}\s*:\s*(.*?)\s*=\s*Relationship", class_source)
                         if rel_match:
                             type_annotation = rel_match.group(1).strip()
 
                             # Pour les listes, extraire le type générique entre crochets
                             if "list[" in type_annotation.lower():
-                                list_match = re.search(
-                                    r"list\[(.*?)\]", type_annotation, re.IGNORECASE
-                                )
+                                list_match = re.search(r"list\[(.*?)\]", type_annotation, re.IGNORECASE)
                                 if list_match:
                                     inner_type = list_match.group(1).strip()
 
@@ -107,11 +103,7 @@ class SQLModelInspector:
                                         # Prendre le premier type non-None
                                         for part in parts:
                                             part = part.strip()
-                                            if (
-                                                part != "None"
-                                                and part != "'None'"
-                                                and part != '"None"'
-                                            ):
+                                            if part != "None" and part != "'None'" and part != '"None"':
                                                 inner_type = part
                                                 break
 
@@ -125,11 +117,7 @@ class SQLModelInspector:
                                 # Prendre le premier type non-None
                                 for part in parts:
                                     part = part.strip()
-                                    if (
-                                        part != "None"
-                                        and part != "'None'"
-                                        and part != '"None"'
-                                    ):
+                                    if part != "None" and part != "'None'" and part != '"None"':
                                         target_entity = part.split(".")[-1]
                                         break
 
@@ -140,9 +128,7 @@ class SQLModelInspector:
                     # 3. Si toujours pas de cible valide, essayer avec les génériques de liste
                     if not target_entity or target_entity == "None":
                         if is_many:
-                            list_match = re.search(
-                                r"list\[(.*?)\]", type_str, re.IGNORECASE
-                            )
+                            list_match = re.search(r"list\[(.*?)\]", type_str, re.IGNORECASE)
                             if list_match:
                                 entity_type = list_match.group(1).strip("'\" ")
                                 if entity_type and entity_type != "None":
@@ -151,9 +137,7 @@ class SQLModelInspector:
                     # 4. En dernier recours, déduire du nom de la relation
                     if not target_entity or target_entity == "None":
                         # Convertir le nom de propriété en PascalCase pour obtenir le nom de la classe probable
-                        target_entity = "".join(
-                            word.capitalize() for word in name.split("_")
-                        )
+                        target_entity = "".join(word.capitalize() for word in name.split("_"))
 
                     # Enlever les quotes et nettoyer
                     if target_entity:

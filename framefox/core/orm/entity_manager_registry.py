@@ -1,6 +1,8 @@
 from typing import Dict
+
 from sqlalchemy.engine import Engine
 from sqlmodel import create_engine
+
 from framefox.core.config.settings import Settings
 from framefox.core.request.request_stack import RequestStack
 
@@ -28,7 +30,6 @@ class EntityManagerRegistry:
         if connection_name not in self._engines:
             db_url = self._get_database_url_string(connection_name)
             db_config = self.settings.config.get("database", {})
-
 
             self._engines[connection_name] = create_engine(
                 db_url,

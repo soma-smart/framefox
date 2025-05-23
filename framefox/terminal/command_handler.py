@@ -47,9 +47,7 @@ class CommandHandler:
         self.load_commands_for_an_app(app_dict["create"], create_commands_dir, "create")
 
         database_commands_dir = pkg_resources.files(framefox.terminal.commands.database)
-        self.load_commands_for_an_app(
-            app_dict["database"], database_commands_dir, "database"
-        )
+        self.load_commands_for_an_app(app_dict["database"], database_commands_dir, "database")
 
         debug_commands_dir = pkg_resources.files(framefox.terminal.commands.debug)
         self.load_commands_for_an_app(app_dict["debug"], debug_commands_dir, "debug")
@@ -60,9 +58,7 @@ class CommandHandler:
         mock_commands_dir = pkg_resources.files(framefox.terminal.commands.mock)
         self.load_commands_for_an_app(app_dict["mock"], mock_commands_dir, "mock")
 
-    def load_commands_for_an_app(
-        self, app: typer.Typer, commands_dir, dir=None, parent_dir=None
-    ):
+    def load_commands_for_an_app(self, app: typer.Typer, commands_dir, dir=None, parent_dir=None):
         """
         Load commands for a specific app.
         """
@@ -72,20 +68,12 @@ class CommandHandler:
         ]
         for filename in self.custom_sort(os.listdir(commands_dir)):
             if filename.endswith("_command.py") and filename not in to_ignore:
-                if not self.project_init and (
-                    filename == "init_command.py" or filename == "check_command.py"
-                ):
+                if not self.project_init and (filename == "init_command.py" or filename == "check_command.py"):
                     self.load_unique_command(app, filename, dir, parent_dir)
-                elif (
-                    self.project_init
-                    and filename != "init_command.py"
-                    and filename != "check_command.py"
-                ):
+                elif self.project_init and filename != "init_command.py" and filename != "check_command.py":
                     self.load_unique_command(app, filename, dir, parent_dir)
 
-    def load_unique_command(
-        self, app: typer.Typer, filename: str, dir: str = None, parent_dir: str = None
-    ):
+    def load_unique_command(self, app: typer.Typer, filename: str, dir: str = None, parent_dir: str = None):
         module_name = filename[:-3]
         if dir:
             if parent_dir:

@@ -64,9 +64,7 @@ class Router:
         async def custom_404_handler(request: Request, exc: HTTPException):
             if exc.status_code == 404:
                 template_renderer = self.container.get(TemplateRenderer)
-                html_content = template_renderer.render(
-                    "404.html", {"request": request, "error": "Page non trouvée"}
-                )
+                html_content = template_renderer.render("404.html", {"request": request, "error": "Page non trouvée"})
                 return HTMLResponse(content=html_content, status_code=404)
             raise exc
 
@@ -82,11 +80,7 @@ class Router:
                     module = importlib.import_module(module_name)
                     for attr_name in dir(module):
                         attr = getattr(module, attr_name)
-                        if (
-                            inspect.isclass(attr)
-                            and attr.__module__ == module.__name__
-                            and not attr.__name__.startswith("_")
-                        ):
+                        if inspect.isclass(attr) and attr.__module__ == module.__name__ and not attr.__name__.startswith("_"):
                             controller_instance = self.container.get(attr)
                             if controller_instance:
                                 router = APIRouter()
@@ -96,28 +90,21 @@ class Router:
                 except Exception as e:
                     print(f"Error loading controller {module_name}: {e}")
 
-        if (
-            not any(route.path == "/" for route in self.app.routes)
-            and self.settings.app_env == "dev"
-        ):
+        if not any(route.path == "/" for route in self.app.routes) and self.settings.app_env == "dev":
 
             async def default_route():
                 template_renderer = self.container.get(TemplateRenderer)
                 html_content = template_renderer.render("default.html", {})
                 return HTMLResponse(content=html_content, status_code=404)
 
-            self.app.add_api_route(
-                "/", default_route, name="default_route", methods=["GET"]
-            )
+            self.app.add_api_route("/", default_route, name="default_route", methods=["GET"])
 
     @staticmethod
     def _register_routes(controller_instance):
         """
         Iterates through all the methods of the controller and registers those decorated with @Route.
         """
-        for name, method in inspect.getmembers(
-            controller_instance, predicate=inspect.ismethod
-        ):
+        for name, method in inspect.getmembers(controller_instance, predicate=inspect.ismethod):
             if hasattr(method, "route_info"):
                 route = method.route_info
                 Router._routes[route["name"]] = route["path"]
@@ -127,6 +114,7 @@ class Router:
                     name=route["name"],
                     methods=route["methods"],
                 )
+
     def _register_profiler_routes(self):
         """Enregistre les routes du profiler en mode développement"""
         try:

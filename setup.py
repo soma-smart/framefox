@@ -1,8 +1,10 @@
 from setuptools import find_packages, setup
 
+
 def parse_requirements(filename):
     with open(filename, "r") as file:
         return file.read().splitlines()
+
 
 setup(
     name="framefox",
@@ -13,11 +15,10 @@ setup(
     long_description_content_type="text/markdown",
     author="Boumaza Rayen",
     author_email="boumaza.rayen@outlook.fr",
-
     install_requires=[
         "sqlmodel==0.0.22",
         "typer==0.15.1",
-        "fastapi==0.115.7", 
+        "fastapi==0.115.7",
         "uvicorn==0.34.0",
         "starlette==0.45.3",
         "python-multipart==0.0.20",
@@ -41,9 +42,7 @@ setup(
         "aiosmtplib>=4.0.0",
         "pika>=1.3.2",
     ],
-
     install_requires=parse_requirements("requirements.txt"),
-
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

@@ -1,9 +1,9 @@
-import os
 from datetime import datetime
 
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import \
-    AbstractDatabaseCommand
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
 
 
 class CreateMigrationCommand(AbstractDatabaseCommand):
@@ -28,9 +28,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             migration_message = f"{timestamp}_migration"
 
-            created_file = self.alembic_manager.create_migration(
-                migration_message, autogenerate=True
-            )
+            created_file = self.alembic_manager.create_migration(migration_message, autogenerate=True)
 
             if not created_file:
                 self.printer.print_msg("No migration generated.", theme="warning")

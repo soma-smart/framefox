@@ -1,6 +1,4 @@
-import json
 import os
-from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
 import pytest
@@ -123,7 +121,6 @@ class TestSessionManager:
     #     assert "active" in remaining_sessions
     #     assert "expired1" not in remaining_sessions
     #     assert "expired2" not in remaining_sessions
-
 
     # def test_session_file_creation(self, session_manager, tmp_path):
     #     """Test session file creation"""

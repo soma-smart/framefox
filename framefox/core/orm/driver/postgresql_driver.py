@@ -80,9 +80,7 @@ class PostgreSQLDriver(DatabaseDriver):
         try:
             with self.connect() as connection:
                 with connection.cursor() as cursor:
-                    cursor.execute(
-                        "SELECT 1 FROM pg_database WHERE datname = %s", (name,)
-                    )
+                    cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (name,))
                     return cursor.fetchone() is not None
         except Exception as e:
             print(f"Error checking database existence: {str(e)}")

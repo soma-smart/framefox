@@ -1,6 +1,5 @@
 from typing import Optional
 
-import pytest
 from pydantic import BaseModel
 from sqlmodel import Field
 

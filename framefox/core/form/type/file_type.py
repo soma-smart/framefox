@@ -49,9 +49,7 @@ class FileType(AbstractFormType):
         print(f">>> DEBUG: File size: {file_size} bytes")
 
         if file_size > self.options.get("max_file_size"):
-            raise ValueError(
-                f"The file is too large. Maximum: {self.options.get('max_file_size') / 1024 / 1024}MB"
-            )
+            raise ValueError(f"The file is too large. Maximum: {self.options.get('max_file_size') / 1024 / 1024}MB")
 
         original_filename = upload_file.filename
         extension = os.path.splitext(original_filename)[1].lower()
@@ -60,9 +58,7 @@ class FileType(AbstractFormType):
         print(f">>> DEBUG: Detected extension: {extension}")
 
         if allowed_extensions and extension not in allowed_extensions:
-            raise ValueError(
-                f"File type not allowed. Allowed extensions: {', '.join(allowed_extensions)}"
-            )
+            raise ValueError(f"File type not allowed. Allowed extensions: {', '.join(allowed_extensions)}")
 
         from framefox.core.di.service_container import ServiceContainer
 

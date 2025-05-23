@@ -22,7 +22,7 @@ class AuthenticatorInterface(ABC):
     @abstractmethod
     def on_auth_success(self, token: str):
         pass
-    
+
     @abstractmethod
     def on_auth_failure(self, request: Request):
         pass

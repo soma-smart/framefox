@@ -76,8 +76,7 @@ class Session(SessionInterface):
 
         if destroy and old_id:
             from framefox.core.di.service_container import ServiceContainer
-            from framefox.core.request.session.session_manager import \
-                SessionManager
+            from framefox.core.request.session.session_manager import SessionManager
 
             container = ServiceContainer()
             session_manager = container.get(SessionManager)
@@ -114,14 +113,11 @@ class Session(SessionInterface):
         if session_id and hasattr(request.state, "session_data"):
             from framefox.core.config.settings import Settings
             from framefox.core.di.service_container import ServiceContainer
-            from framefox.core.request.session.session_manager import \
-                SessionManager
+            from framefox.core.request.session.session_manager import SessionManager
 
             container = ServiceContainer()
             session_manager = container.get(SessionManager)
             settings = container.get(Settings)
 
             if session_manager:
-                session_manager.update_session(
-                    session_id, request.state.session_data, settings.cookie_max_age
-                )
+                session_manager.update_session(session_id, request.state.session_data, settings.cookie_max_age)

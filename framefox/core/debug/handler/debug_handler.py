@@ -14,7 +14,5 @@ Github: https://github.com/RayenBou
 
 class DebugHandler:
     @staticmethod
-    async def debug_exception_handler(
-        request: Request, exc: DebugException
-    ) -> HTMLResponse:
+    async def debug_exception_handler(request: Request, exc: DebugException) -> HTMLResponse:
         return HTMLResponse(content=exc.content, status_code=200)

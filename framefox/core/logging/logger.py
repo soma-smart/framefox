@@ -1,10 +1,11 @@
 import logging
 import logging.config
 import os
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
+
 
 class Logger:
     def __init__(self):
@@ -12,55 +13,58 @@ class Logger:
         self.logger = logging.getLogger("Application")
 
     def configure_logging(self):
-        # Création de la structure des répertoires de logs
+
         log_dir = Path("./var/log").resolve()
-        
-        # Structure de dossiers organisée par environnement et par date
+
         env = os.environ.get("APP_ENV", "dev")
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        
-        # Création des dossiers nécessaires
+        # date_str = datetime.now().strftime("%Y-%m-%d")
+
         app_log_dir = log_dir / env
         app_log_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Fichiers de log avec rotation
+
         app_log_file = os.path.join(app_log_dir, f"app.log")
         sql_log_file = os.path.join(app_log_dir, f"sql.log")
         request_log_file = os.path.join(app_log_dir, f"request.log")
-        
-        # Niveau de log selon l'environnement
+
         LOG_LEVEL = "DEBUG" if env == "dev" else "INFO"
-        
-        # Configuration des formatteurs
+
         color_formatter_app = {
             "()": "colorlog.ColoredFormatter",
             "format": "%(white)s[%(reset)s%(green)sApplication%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(yellow)s%(name)s%(reset)s  %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
             "log_colors": {
-                "DEBUG": "cyan", "INFO": "green", "WARNING": "yellow", "ERROR": "red", "CRITICAL": "bold_red",
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red",
             },
         }
-        
+
         color_formatter_server = {
             "()": "colorlog.ColoredFormatter",
             "format": "%(white)s[%(reset)s%(green)sServer%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
             "log_colors": {
-                "DEBUG": "cyan", "INFO": "green", "WARNING": "yellow", "ERROR": "red", "CRITICAL": "bold_red",
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red",
             },
         }
-        
+
         file_formatter = {
             "format": "[%(levelname)s][%(asctime)s][%(name)s] %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         }
-        
+
         file_sqlmodel_formatter = {
             "()": SQLModelFormatter,
             "format": "[%(levelname)s][%(asctime)s][%(name)s] %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         }
-        
+
         # Configuration complète
         logging_config = {
             "version": 1,
@@ -91,7 +95,7 @@ class Logger:
                     "filename": app_log_file,
                     "when": "midnight",
                     "interval": 1,
-                    "backupCount": 30, 
+                    "backupCount": 30,
                     "encoding": "utf8",
                 },
                 # SQL log file
@@ -100,7 +104,7 @@ class Logger:
                     "formatter": "file_sqlmodel",
                     "level": "WARNING",
                     "filename": sql_log_file,
-                    "maxBytes": 10 * 1024 * 1024,  
+                    "maxBytes": 10 * 1024 * 1024,
                     "backupCount": 5,
                     "encoding": "utf8",
                 },
@@ -110,7 +114,7 @@ class Logger:
                     "formatter": "file",
                     "level": "INFO",
                     "filename": request_log_file,
-                    "maxBytes": 20 * 1024 * 1024, 
+                    "maxBytes": 20 * 1024 * 1024,
                     "backupCount": 10,
                     "encoding": "utf8",
                 },
@@ -135,7 +139,7 @@ class Logger:
                 # Server loggers
                 "uvicorn.access": {
                     "handlers": ["console_server", "request_file"],
-                    "level": "WARNING", 
+                    "level": "WARNING",
                     "propagate": False,
                 },
                 "uvicorn.error": {
@@ -143,7 +147,6 @@ class Logger:
                     "level": LOG_LEVEL,
                     "propagate": False,
                 },
-      
                 # SQL loggers
                 "sqlalchemy.engine.Engine": {
                     "handlers": ["sql_file"],
@@ -168,17 +171,17 @@ class Logger:
                 },
             },
         }
-        
+
         # Appliquer la configuration
         logging.config.dictConfig(logging_config)
 
     def get_logger(self, name=None):
         """
         Obtient un logger avec le nom spécifié ou le logger application par défaut
-        
+
         Args:
             name: Nom du logger (optionnel)
-        
+
         Returns:
             Logger configuré pour le canal spécifié
         """

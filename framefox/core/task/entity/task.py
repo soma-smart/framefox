@@ -18,9 +18,7 @@ class TaskStatus(str, Enum):
 
 
 class Task(AbstractEntity, table=True):
-    id: Optional[str] = Field(
-        default_factory=lambda: str(uuid.uuid4()), primary_key=True
-    )
+    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     name: str
     queue: str = "default"
     payload: str = ""  # JSON serialized data

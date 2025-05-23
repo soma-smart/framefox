@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, List
 
 from framefox.core.di.service_container import ServiceContainer
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -74,9 +75,7 @@ class CommandRegistry:
 
         if not project_exists:
             try:
-                module = importlib.import_module(
-                    "framefox.terminal.commands.init_command"
-                )
+                module = importlib.import_module("framefox.terminal.commands.init_command")
                 command_class = getattr(module, "InitCommand")
                 self.add_command(command_class)
                 self.initialized = True
@@ -100,6 +99,7 @@ class CommandRegistry:
             )
         try:
             from framefox.core.bundle.bundle_manager import BundleManager
+
             service_container = ServiceContainer()
             bundle_manager = service_container.get(BundleManager)
             if bundle_manager:
@@ -108,9 +108,7 @@ class CommandRegistry:
             pass
         self.initialized = True
 
-    def _discover_in_path(
-        self, path: Path, package_prefix: str, excluded_commands=None
-    ):
+    def _discover_in_path(self, path: Path, package_prefix: str, excluded_commands=None):
         """
         Discover commands in a specific path
 
@@ -127,15 +125,11 @@ class CommandRegistry:
         for item in path.iterdir():
             if item.is_dir() and not item.name.startswith("__"):
                 namespace = item.name
-                self._discover_in_package(
-                    f"{package_prefix}.{namespace}", namespace, excluded_commands
-                )
+                self._discover_in_package(f"{package_prefix}.{namespace}", namespace, excluded_commands)
 
         self._discover_in_package(package_prefix, "main", excluded_commands)
 
-    def _discover_in_package(
-        self, package_name: str, namespace: str, excluded_commands=None
-    ):
+    def _discover_in_package(self, package_name: str, namespace: str, excluded_commands=None):
         """Discover commands in a Python package"""
         excluded_commands = excluded_commands or []
 
@@ -145,19 +139,13 @@ class CommandRegistry:
             print(f"Package {package_name} not found")
             return
 
-        for _, name, is_pkg in pkgutil.iter_modules(
-            package.__path__, package.__name__ + "."
-        ):
+        for _, name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
             if not is_pkg and name.endswith("_command"):
                 try:
                     module = importlib.import_module(name)
                     for item_name in dir(module):
 
-                        if (
-                            item_name.endswith("Command")
-                            and not item_name.startswith("Abstract")
-                            and item_name not in excluded_commands
-                        ):
+                        if item_name.endswith("Command") and not item_name.startswith("Abstract") and item_name not in excluded_commands:
                             command_class = getattr(module, item_name)
                             if inspect.isclass(command_class):
 

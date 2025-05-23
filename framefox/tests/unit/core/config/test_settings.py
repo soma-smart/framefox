@@ -30,9 +30,9 @@ class TestSettings:
 
     @pytest.fixture
     def settings_with_mocked_config(self, mock_yaml_config):
-        with patch("os.path.exists") as mock_exists, patch(
-            "builtins.open", mock_open(read_data=mock_yaml_config)
-        ), patch("os.listdir") as mock_listdir, patch("os.getenv") as mock_getenv:
+        with patch("os.path.exists") as mock_exists, patch("builtins.open", mock_open(read_data=mock_yaml_config)), patch(
+            "os.listdir"
+        ) as mock_listdir, patch("os.getenv") as mock_getenv:
 
             mock_exists.return_value = True
             mock_listdir.return_value = ["config.yml"]

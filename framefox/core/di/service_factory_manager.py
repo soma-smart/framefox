@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List, Type, Protocol
+from typing import Any, List, Protocol, Type
 
 """
 Framefox Framework developed by SOMA
@@ -12,11 +12,11 @@ Github: https://github.com/RayenBou
 
 class ServiceFactory(Protocol):
     """Protocol for service factories."""
-    
+
     def supports(self, service_class: Type[Any]) -> bool:
         """Check if this factory can create the given service."""
         ...
-    
+
     def create(self, service_class: Type[Any], container: "ServiceContainer") -> Any:
         """Create an instance of the service."""
         ...
@@ -33,9 +33,9 @@ class ServiceFactoryManager:
 
     def register_factory(self, factory: ServiceFactory) -> None:
         """Register a service factory."""
-        if not hasattr(factory, 'supports') or not hasattr(factory, 'create'):
+        if not hasattr(factory, "supports") or not hasattr(factory, "create"):
             raise ValueError("Factory must implement 'supports' and 'create' methods")
-        
+
         self._factories.append(factory)
         self._logger.debug(f"Registered service factory: {factory.__class__.__name__}")
 
@@ -47,11 +47,9 @@ class ServiceFactoryManager:
                     self._logger.debug(f"Using factory {factory.__class__.__name__} for {service_class.__name__}")
                     return factory.create(service_class, container)
             except Exception as e:
-                self._logger.warning(
-                    f"Factory {factory.__class__.__name__} failed for {service_class.__name__}: {e}"
-                )
+                self._logger.warning(f"Factory {factory.__class__.__name__} failed for {service_class.__name__}: {e}")
                 continue
-        
+
         return None
 
     def has_factory_for(self, service_class: Type[Any]) -> bool:

@@ -55,13 +55,10 @@ class SessionMiddleware(BaseHTTPMiddleware):
             else:
                 self.logger.warning("Invalid session signature detected, will create new session if needed")
 
-
         request.state.session_id = session_id
         request.state.session_data = session["data"] if session else {}
 
-
         RequestStack.set_request(request)
-
 
         from framefox.core.di.service_container import ServiceContainer
         from framefox.core.request.session.session import Session
@@ -79,7 +76,6 @@ class SessionMiddleware(BaseHTTPMiddleware):
             container = ServiceContainer()
             container.set_instance(SessionInterface, session_instance)
 
-
         response = await call_next(request)
 
         if request.state.session_data:
@@ -87,21 +83,15 @@ class SessionMiddleware(BaseHTTPMiddleware):
 
                 session_id = str(uuid.uuid4())
                 request.state.session_id = session_id
-                self.session_manager.create_session(
-                    session_id, request.state.session_data, self.settings.cookie_max_age
-                )
+                self.session_manager.create_session(session_id, request.state.session_data, self.settings.cookie_max_age)
             else:
 
-                self.session_manager.update_session(
-                    session_id, request.state.session_data, self.settings.cookie_max_age
-                )
+                self.session_manager.update_session(session_id, request.state.session_data, self.settings.cookie_max_age)
 
-            expiration = datetime.now(timezone.utc) + timedelta(
-                seconds=self.settings.cookie_max_age
-            )
-            
+            expiration = datetime.now(timezone.utc) + timedelta(seconds=self.settings.cookie_max_age)
+
             signed_session_id = self.session_manager.sign_session_id(session_id)
-            
+
             self.cookie_manager.set_cookie(
                 response=response,
                 key=self.cookie_name,

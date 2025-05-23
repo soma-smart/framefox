@@ -4,11 +4,14 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from framefox.core.request.session.session import Session
+
 # from src.entity.user import User
-from framefox.core.security.authenticator.abstract_authenticator import \
-    AbstractAuthenticator
-from framefox.core.security.authenticator.authenticator_interface import \
-    AuthenticatorInterface
+from framefox.core.security.authenticator.abstract_authenticator import (
+    AbstractAuthenticator,
+)
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.passport.user_badge import UserBadge
 

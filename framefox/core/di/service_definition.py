@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Callable, List, Type, Optional
+from typing import Any, Callable, List, Optional, Type
 
 """
 Framefox Framework developed by SOMA
@@ -93,11 +93,11 @@ class ServiceDefinition:
         """Create a new definition with an additional tag."""
         if self._frozen:
             raise RuntimeError("Cannot modify frozen service definition")
-        
+
         new_tags = self._tags.copy()
         if tag not in new_tags:
             new_tags.append(tag)
-        
+
         return ServiceDefinition(
             self._service_class,
             self._public,
@@ -114,7 +114,7 @@ class ServiceDefinition:
         """Create a new definition with a factory."""
         if self._frozen:
             raise RuntimeError("Cannot modify frozen service definition")
-        
+
         return ServiceDefinition(
             self._service_class,
             self._public,
@@ -131,7 +131,7 @@ class ServiceDefinition:
         """Create a new definition with explicit arguments."""
         if self._frozen:
             raise RuntimeError("Cannot modify frozen service definition")
-        
+
         return ServiceDefinition(
             self._service_class,
             self._public,
@@ -148,10 +148,10 @@ class ServiceDefinition:
         """Create a new definition with an additional method call."""
         if self._frozen:
             raise RuntimeError("Cannot modify frozen service definition")
-        
+
         new_calls = self._method_calls.copy()
         new_calls.append((method, arguments or []))
-        
+
         return ServiceDefinition(
             self._service_class,
             self._public,

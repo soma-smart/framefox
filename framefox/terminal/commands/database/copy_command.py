@@ -136,9 +136,7 @@ class CopyCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".py"):
                     filepath = os.path.join(root, file)
-                    classes = CopyCommand.find_sqlmodel_classes_in_file(
-                        filepath, base_model
-                    )
+                    classes = CopyCommand.find_sqlmodel_classes_in_file(filepath, base_model)
 
                     if classes:
                         sqlmodel_classes_found[filepath] = classes
@@ -161,9 +159,7 @@ class CopyCommand(AbstractCommand):
         Raises:
             None
         """
-        sqlmodel_classes = CopyCommand.find_sqlmodel_classes_in_directory(
-            directory, base_model
-        )
+        sqlmodel_classes = CopyCommand.find_sqlmodel_classes_in_directory(directory, base_model)
 
         if sqlmodel_classes:
             engine = create_engine(database_url, echo=True)
@@ -205,9 +201,7 @@ class CopyCommand(AbstractCommand):
                 )
                 connection.autocommit = True
                 cursor = connection.cursor()
-                cursor.execute(
-                    f"SELECT 1 FROM pg_database WHERE datname = '{database}'"
-                )
+                cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database}'")
                 exists = cursor.fetchone() is not None
 
                 cursor.close()
