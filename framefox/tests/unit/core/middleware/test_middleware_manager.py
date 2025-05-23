@@ -5,6 +5,8 @@ from fastapi import FastAPI
 
 from framefox.core.config.settings import Settings
 from framefox.core.middleware.middleware_manager import MiddlewareManager
+from framefox.core.middleware.middlewares.entity_manager_middleware import \
+    EntityManagerMiddleware
 from framefox.core.middleware.middlewares.custom_cors_middleware import \
     CustomCORSMiddleware
 from framefox.core.middleware.middlewares.firewall_middleware import \
@@ -13,7 +15,7 @@ from framefox.core.middleware.middlewares.request_middleware import \
     RequestMiddleware
 from framefox.core.middleware.middlewares.session_middleware import \
     SessionMiddleware
-
+EntityManagerMiddleware
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -50,6 +52,7 @@ class TestMiddlewareManager:
         # Verify that add_middleware was called for each middleware
         expected_calls = [
             ((RequestMiddleware,), {}),
+            ((EntityManagerMiddleware,), {}),
             ((FirewallMiddleware,), {"settings": middleware_manager.settings}),
             ((SessionMiddleware,), {"settings": middleware_manager.settings}),
             ((CustomCORSMiddleware,), {"settings": middleware_manager.settings}),
@@ -73,14 +76,16 @@ class TestMiddlewareManager:
 
         # Verify the order of middlewares
         assert calls[0][0][0] == RequestMiddleware
-        assert calls[1][0][0] == FirewallMiddleware
-        assert calls[2][0][0] == SessionMiddleware
-        assert calls[3][0][0] == CustomCORSMiddleware
+        assert calls[1][0][0] == EntityManagerMiddleware
+        assert calls[2][0][0] == FirewallMiddleware
+        assert calls[3][0][0] == SessionMiddleware
+        assert calls[4][0][0] == CustomCORSMiddleware
 
     @pytest.mark.parametrize(
         "middleware_class",
         [
             RequestMiddleware,
+            EntityManagerMiddleware,
             FirewallMiddleware,
             SessionMiddleware,
             CustomCORSMiddleware,

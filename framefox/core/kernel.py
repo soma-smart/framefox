@@ -18,13 +18,9 @@ from framefox.core.security.token_storage import TokenStorage
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
 from framefox.core.security.user.user_provider import UserProvider
 from framefox.core.security.handlers.security_context_handler import SecurityContextHandler
-"""
-Framefox Framework developed by SOMA
-Github: https://github.com/soma-smart/framefox
-----------------------------
-Author: BOUMAZA Rayen
-Github: https://github.com/RayenBou
-"""
+from framefox.application import Application
+
+
 
 class Kernel:
     """
@@ -46,11 +42,15 @@ class Kernel:
         if hasattr(self, "_initialized") and self._initialized:
             return
 
-        self._container = container 
+        if container is None:
+            container = Application().container
+        self._container = container
+
+        if bundle_manager is None:
+            bundle_manager = Application().bundle_manager
         self._bundle_manager = bundle_manager 
-        
-        if not bundle_manager:
-            self._bundle_manager.discover_bundles()
+
+        self._bundle_manager.discover_bundles()
             
         self._settings = self._container.get(Settings)
         self._logger = logging.getLogger("APP")
