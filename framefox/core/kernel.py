@@ -18,47 +18,50 @@ from framefox.core.security.token_storage import TokenStorage
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
 from framefox.core.security.user.user_provider import UserProvider
 from framefox.core.security.handlers.security_context_handler import SecurityContextHandler
-from framefox.application import Application
 
 
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 class Kernel:
-    """
-    Core kernel of the Framefox framework.
-    Implements the Singleton pattern and manages the application lifecycle.
-    """
-
     _instance: ClassVar[Optional["Kernel"]] = None
 
-    def __new__(cls, *args, **kwargs) -> "Kernel":
-        """Ensures that only one instance of the Kernel exists."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-
     def __init__(self, container=None, bundle_manager=None) -> None:
-        """Initializes the main components of the framework if not already done."""
         if hasattr(self, "_initialized") and self._initialized:
             return
-
-        if container is None:
-            container = Application().container
-        self._container = container
-
-        if bundle_manager is None:
-            bundle_manager = Application().bundle_manager
-        self._bundle_manager = bundle_manager 
-
-        self._bundle_manager.discover_bundles()
+        self._container = container or self._create_default_container()
+        self._bundle_manager = bundle_manager or self._create_default_bundle_manager()
+        
+        try:
+            self._settings = Settings()
+            self._logger = logging.getLogger("KERNEL")
+            self._init_security_services()
+            self._app = self._create_fastapi_app()
+            self._configure_app()
+            self._initialized = True
             
-        self._settings = self._container.get(Settings)
-        self._logger = logging.getLogger("APP")
-        self._init_security_services()
-        self._app = self._create_fastapi_app()
-        self._configure_app()
+        except Exception as e:
+            self._logger.error(f"Failed to initialize Kernel: {e}")
+            raise RuntimeError(f"Kernel initialization failed: {e}") from e
 
-        self._initialized = True
+    def _create_default_container(self):
+        """Crée un container par défaut"""
+        from framefox.core.di.service_container import ServiceContainer
+        return ServiceContainer()
+
+    def _create_default_bundle_manager(self):
+        """Crée un bundle manager par défaut"""
+        from framefox.core.bundle.bundle_manager import BundleManager
+        manager = BundleManager()
+        manager.discover_bundles()
+        return manager
+
 
 
     def _init_security_services(self) -> None:
@@ -71,7 +74,10 @@ class Kernel:
         self._container.set_instance(UserProvider, UserProvider(token_storage, session, entity_user_provider))
         self._container.set_instance(SecurityContextHandler, SecurityContextHandler())
         self._container.set_instance(EntityManagerInterface, EntityManagerInterface())
-        self._logger.debug("Security services initialized")
+        self._logger.debug("Security services initialized.")
+        if not self.settings.firewalls:
+            self._logger.debug("No firewalls configured.")
+
 
     def _create_fastapi_app(self) -> FastAPI:
         """Creates and configures the FastAPI instance."""
