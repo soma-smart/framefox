@@ -24,7 +24,7 @@ class CacheWarmupCommand(AbstractCommand):
         super().__init__("warmup")
         self.kernel = Kernel()
         self.container = ServiceContainer()
-        self.settings = self.container.get(Settings)
+        self.settings = Settings()
         self.template_renderer = self.container.get(TemplateRenderer)
 
     def execute(self):

@@ -28,7 +28,7 @@ class WorkerCommand(AbstractCommand):
         sql_logger = logging.getLogger("SQLMODEL")
         sql_logger.addFilter(WorkerPollingFilter())
         WorkerServiceProvider.register()
-        self.settings = self.service_container.get(Settings)
+        self.settings = Settings()
 
     def execute(self) -> None:
         """Start the worker process to consume tasks from the queue."""

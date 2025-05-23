@@ -24,8 +24,9 @@ class TaskManager:
 
     def __init__(self, broker: BrokerInterface):
         self.broker = broker
+        self.container = ServiceContainer()
         self.logger = logging.getLogger("TASK_MANAGER")
-        settings = ServiceContainer().get(Settings)
+        settings = Settings()
         self.defaults = settings.task_defaults
 
     def queue_task(
@@ -54,11 +55,11 @@ class TaskManager:
             ID of the created task
         """
         if self.broker is None:
-            container = ServiceContainer()
-            self.broker = container.get(BrokerInterface)
+     
+            self.broker = self.container.get(BrokerInterface)
             if self.broker is None:
                 WorkerServiceProvider.register()
-                self.broker = container.get(BrokerInterface)
+                self.broker = self.container.get(BrokerInterface)
             if self.broker is None:
                 raise RuntimeError("Unable to initialize the task broker")
 

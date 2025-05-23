@@ -246,14 +246,7 @@ class Settings:
         return self.config.get("security", {}).get("providers", {})
 
     # ------------------------------ session ------------------------------
-    @property
-    def profiler_enabled(self):
-        """Returns whether the profiler is enabled from configuration."""
-        if self.app_env != "dev":
-            return False 
-        enabled_str = self.config.get("application", {}).get("profiler", {}).get("enabled", "true")
 
-        return bool(enabled_str)
     @property
     def session_name(self):
         """Returns the session  name from the configuration."""
@@ -346,6 +339,35 @@ class Settings:
     def session_file_path(self):
         """Returns the session file path from the configuration."""
         return self.config.get("application", {}).get("session").get("file_path", None)
+
+
+# ------------------------------ debug ------------------------------
+
+    @property
+    def profiler_enabled(self) -> bool:
+        """Returns whether the profiler is enabled"""
+        if self.app_env != "dev":
+            return False
+            
+        return self.config.get("debug", {}).get("profiler_enabled", True)
+
+    @property
+    def profiler_max_files_per_day(self) -> int:
+        """Maximum number of profile files per day"""
+        return int(self.config.get("debug", {}).get("profiler_max_files", 1000))
+        
+    @property
+    def profiler_retention_days(self) -> int:
+        """Number of days to keep profile files"""
+        return int(self.config.get("debug", {}).get("profiler_retention_days", 7))
+        
+    @property
+    def profiler_sampling_rate(self) -> float:
+        """Percentage of requests to profile (0.0 to 1.0)"""
+        rate = float(self.config.get("debug", {}).get("profiler_sampling_rate", 1.0))
+        return max(0.0, min(1.0, rate))  
+
+
 
     # ------------------------------ mail ------------------------------
 
