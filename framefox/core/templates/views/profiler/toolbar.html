@@ -84,7 +84,7 @@
     <span
       class="profiler-value {{ 'error' if duration > 1000 else 'warning' if duration > 500 else 'success' }}"
     >
-      {{ duration }} ms
+      {{ duration | time }}
     </span>
   </div>
 

@@ -1,13 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/static/profiler/js/log-panel.js"></script>
     <title>Framefox Profiler - {{ token }}</title>
     <style>
+      /* Styles de base */
       body {
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
         background-color: #f5f5f5;
+        color: #333;
       }
 
       header {
@@ -20,13 +25,39 @@
         top: 0;
         z-index: 1000;
       }
+      .home-button {
+        margin-left: auto;
+        background-color: #f4bf5f;
+        color: #333;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
 
+      .home-button:hover {
+        background-color: #ffa726;
+      }
+
+      .home-icon {
+        font-size: 16px;
+        margin-right: 5px;
+      }
       .logo {
         background-color: #f4bf5f;
         color: #333;
         padding: 5px 10px;
         font-weight: bold;
         margin-right: 20px;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo img {
+        height: 24px;
+        margin-right: 5px;
       }
 
       .container {
@@ -35,19 +66,24 @@
         padding: 0 20px;
       }
 
+      /* Styles des onglets */
       .tabs {
         display: flex;
+        flex-wrap: wrap;
         background-color: #fff;
-        border-radius: 5px;
+        border-radius: 5px 5px 0 0;
         overflow: hidden;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
       }
 
       .tab {
         padding: 15px 20px;
         cursor: pointer;
         border-right: 1px solid #eee;
+        position: relative;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.2s;
       }
 
       .tab:hover {
@@ -59,11 +95,67 @@
         border-bottom: 3px solid #f4bf5f;
       }
 
-      .panel {
+      /* Style pour les badges d'erreur */
+      .tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        font-size: 12px;
+        border-radius: 9px;
+        margin-left: 6px;
+        font-weight: bold;
+      }
+
+      .tab-badge.error {
+        background-color: #e74c3c;
+        color: white;
+      }
+
+      /* Style pour l'onglet d'erreur */
+      .tab.error {
+        color: #e74c3c;
+      }
+
+      /* Conteneur de contenu */
+      .panel-container {
         background-color: #fff;
         padding: 20px;
-        border-radius: 5px;
+        border-radius: 0 0 5px 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        min-height: 400px;
+      }
+
+      #panel-content {
+        position: relative;
+      }
+
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 0;
+        color: #666;
+        font-style: italic;
+      }
+
+      .loading::after {
+        content: "";
+        width: 20px;
+        height: 20px;
+        margin-left: 10px;
+        border: 2px solid #f4bf5f;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       .token-info {
@@ -71,28 +163,63 @@
         font-size: 14px;
         color: #aaa;
       }
+
+      /* Message d'erreur */
+      .error-message {
+        background-color: #fdf2f2;
+        color: #e74c3c;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+        border-left: 4px solid #e74c3c;
+      }
     </style>
   </head>
   <body>
     <header>
-      <span class="logo">FRAMEFOX PROFILER</span>
+      <div class="logo">
+        <img src="/static/images/orange_fox.png" alt="Framefox" />
+        PROFILER
+      </div>
       <h1>Profile Details</h1>
       <span class="token-info">{{ token }}</span>
+
+      <!-- Ajout du bouton Home -->
+      <a href="/_profiler" class="home-button">
+        <span class="home-icon">⌂</span> Profile List
+      </a>
     </header>
 
     <div class="container">
       <div class="tabs">
-        <div class="tab active" onclick="showPanel('request')">Request</div>
+        <div class="tab" onclick="showPanel('request')">Request</div>
         <div class="tab" onclick="showPanel('time')">Performance</div>
         <div class="tab" onclick="showPanel('memory')">Memory</div>
         {% if profile.database %}
         <div class="tab" onclick="showPanel('database')">Database</div>
         {% endif %}
         <div class="tab" onclick="showPanel('route')">Route</div>
+
+        {% if profile.exception %}
+        <div
+          class="tab {% if profile.exception.has_exception %}error{% endif %}"
+          onclick="showPanel('exception')"
+        >
+          Exception {% if profile.exception.has_exception %}
+          <span class="tab-badge error">!</span>
+          {% endif %}
+        </div>
+        {% endif %} {% if profile.log %}
+        <div class="tab" onclick="showPanel('log')">
+          Logs {% if profile.log.error_count and profile.log.error_count > 0 %}
+          <span class="tab-badge error">{{ profile.log.error_count }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
       </div>
 
-      <div id="panel-content" class="panel">
-        <p>Loading...</p>
+      <div class="panel-container">
+        <div id="panel-content" class="loading">Loading panel content...</div>
       </div>
     </div>
 
@@ -102,16 +229,24 @@
       });
 
       function showPanel(panelName) {
+        // Mettre à jour l'onglet actif
         document.querySelectorAll(".tab").forEach((tab) => {
           tab.classList.remove("active");
         });
-        document
-          .querySelector(`.tab[onclick="showPanel('${panelName}')"]`)
-          .classList.add("active");
 
+        const targetTab = document.querySelector(
+          `.tab[onclick="showPanel('${panelName}')"]`
+        );
+        if (targetTab) {
+          targetTab.classList.add("active");
+        }
+
+        // Afficher l'état de chargement
         const panelContent = document.getElementById("panel-content");
-        panelContent.innerHTML = "<p>Loading...</p>";
+        panelContent.innerHTML = "";
+        panelContent.className = "loading";
 
+        // Charger le contenu du panel
         fetch(`/_profiler/{{ token }}/${panelName}`)
           .then((response) => {
             if (!response.ok) {
@@ -120,10 +255,26 @@
             return response.text();
           })
           .then((html) => {
+            panelContent.className = "";
             panelContent.innerHTML = html;
+
+            // Déclencher un événement personnalisé pour initialiser les scripts du panel
+            const event = new CustomEvent("panel-loaded", {
+              detail: {
+                panelName: panelName,
+              },
+            });
+            document.dispatchEvent(event);
           })
           .catch((error) => {
-            panelContent.innerHTML = `<p>Loading error: ${error.message}</p>`;
+            panelContent.className = "";
+            panelContent.innerHTML = `
+          <div class="error-message">
+            <h3>Error Loading Panel</h3>
+            <p>${error.message}</p>
+            <p>URL: /_profiler/{{ token }}/${panelName}</p>
+          </div>
+        `;
           });
       }
     </script>

@@ -44,14 +44,32 @@ class TemplateRenderer:
         self.env.globals["request"] = self.get_current_request
         self.env.globals["csrf_token"] = self.get_csrf_token
 
+
         self._register_filters(self.env)
+
+    def _register_filters(self, env):
+        """Registers custom filters for Jinja2"""
+        env.filters["relation_display"] = self._relation_display_filter
+        env.filters["date"] = self._date_filter
+        env.filters["format_date"] = self._format_date_filter
+        env.filters["filesizeformat"] = self._filesize_format_filter
+        env.filters["json_encode"] = self._json_encode_filter
+
+        env.filters["split"] = self._split_filter
+        env.filters["last"] = self._last_filter
+        env.filters["lower"] = self._lower_filter
+        env.filters["format_number"] = self._format_number_filter
+        env.filters["min"] = self._min_filter
+        env.filters["max"] = self._max_filter
+        env.filters["time"] = self._time_filter
+        env.filters["slice"] = self._slice_filter
     def get_csrf_token(self) -> str:
-        """Retourne un token CSRF régénéré à chaque requête pour plus de sécurité"""
+        """Returns a regenerated CSRF token on each request for enhanced security"""
         try:
             session = self.container.get_by_name("Session")
             csrf_manager = self.container.get_by_name("CsrfTokenManager")
             
-            # Toujours générer un nouveau token
+          
             csrf_token = csrf_manager.generate_token()
             session.set("csrf_token", csrf_token)
             session.save()
@@ -85,7 +103,6 @@ class TemplateRenderer:
         return flash_bag.get_for_template()
 
     def render(self, template_name: str, context: dict = {}) -> str:
-        # Assurez-vous que le contexte contient toujours l'objet request
         if "request" not in context:
             request = self.get_current_request()
             if request:
@@ -94,32 +111,42 @@ class TemplateRenderer:
         template = self.env.get_template(template_name)
         return template.render(**context)
 
-    def _register_filters(self, env):
-        """Registers custom filters for Jinja2"""
-        env.filters["relation_display"] = self._relation_display_filter
-        env.filters["date"] = self._date_filter
-        env.filters["format_date"] = self._format_date_filter
-        env.filters["filesizeformat"] = self._filesize_format_filter
-        env.filters["json_encode"] = self._json_encode_filter
 
-        env.filters["split"] = self._split_filter
-        env.filters["last"] = self._last_filter
-        env.filters["lower"] = self._lower_filter
-        env.filters["format_number"] = self._format_number_filter
-        env.filters["min"] = self._min_filter
-        env.filters["max"] = self._max_filter
+    def _max_filter(self, value, max_value=None):
+        """
+        Returns the maximum value
 
-    def _max_filter(self, value, max_value):
-        """Retourne la valeur maximale entre deux nombres"""
+        If max_value is provided: Compares value and max_value
+        If value is a list/tuple: Returns the max value of the list
+        """
         try:
-            return max(float(value), float(max_value))
+            if max_value is None:
+       
+                if isinstance(value, (list, tuple)) and value:
+                    return max(value)
+                return value
+            else:
+           
+                return max(float(value), float(max_value))
         except (ValueError, TypeError):
             return value
 
-    def _min_filter(self, value, max_value):
-        """Retourne la valeur minimale entre deux nombres"""
+    def _min_filter(self, value, min_value=None):
+        """
+        Returns the minimum value
+
+        If min_value is provided: Compares value and min_value
+        If value is a list/tuple: Returns the min value of the list
+        """
         try:
-            return min(float(value), float(max_value))
+            if min_value is None:
+  
+                if isinstance(value, (list, tuple)) and value:
+                    return min(value)
+                return value
+            else:
+          
+                return min(float(value), float(min_value))
         except (ValueError, TypeError):
             return value
 
@@ -189,10 +216,17 @@ class TemplateRenderer:
         if value is None:
             return ""
 
+    
+        if isinstance(value, (int, float)):
+            try:
+                from datetime import datetime
+                value = datetime.fromtimestamp(value)
+            except (ValueError, TypeError, OverflowError):
+                return str(value)
+
         if isinstance(value, str):
             try:
                 from datetime import datetime
-
                 value = datetime.fromisoformat(value.replace("Z", "+00:00"))
             except (ValueError, TypeError):
                 return value
@@ -290,3 +324,54 @@ class TemplateRenderer:
                 formatted = thousand_separator.join(formatted.split(","))
 
         return formatted
+    def _time_filter(self, value, include_ms=True):
+        """
+        Formats a time in milliseconds into a readable string (h:m:s.ms)
+        
+        Args:
+            value: Duration in milliseconds
+            include_ms: Include milliseconds in the result
+        
+        Returns:
+            Formatted string according to the duration magnitude
+        """
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            return str(value) + " ms"
+        seconds, milliseconds = divmod(value, 1000)
+        minutes, seconds = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        if hours > 0:
+            if include_ms:
+                return f"{int(hours)}h {int(minutes)}min {int(seconds)}s {int(milliseconds)}ms"
+            return f"{int(hours)}h {int(minutes)}min {int(seconds)}s"
+        elif minutes > 0:
+            if include_ms:
+                return f"{int(minutes)}min {int(seconds)}s {int(milliseconds)}ms"
+            return f"{int(minutes)}min {int(seconds)}s"
+        elif seconds > 0:
+            if include_ms:
+                return f"{int(seconds)}s {int(milliseconds)}ms"
+            return f"{int(seconds)}s"
+        else:
+            return f"{int(milliseconds)} ms"
+
+    def _slice_filter(self, value, start, length=None):
+        """
+        Returns a substring based on the start index and length
+        
+        Args:
+            value: The string to slice
+            start: The start index (inclusive)
+            length: The desired length (or until the end if not specified)
+            
+        Returns:
+            The extracted substring
+        """
+        try:
+            if length:
+                return str(value)[start:start+length]
+            return str(value)[start:]
+        except (ValueError, TypeError):
+            return value
