@@ -224,20 +224,17 @@ class SessionManager:
         Verifies the signature of a signed ID and extracts the original ID
         Returns None if the ID is invalid or improperly signed
         """
+  
         if not signed_id or '.' not in signed_id:
             return None
-            
-        try:
-            raw_id, received_sig = signed_id.split('.', 1)
-        except ValueError:
-            self.logger.warning(f"Malformed session ID detected: {signed_id}")
-            return None
-            
- 
+        
+   
+        raw_id, received_sig = signed_id.split('.', 1)
+        
+
         expected_signed_id = self.sign_session_id(raw_id)
         expected_id, expected_sig = expected_signed_id.split('.', 1)
         
- 
         if hmac.compare_digest(received_sig, expected_sig):
             return raw_id
         

@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import HTTPException, Request
 
 from framefox.core.config.settings import Settings
-from framefox.core.di.service_container import ServiceContainer
+
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.token_manager import TokenManager
 from framefox.core.security.user.entity_user_provider import EntityUserProvider
@@ -24,8 +24,8 @@ class AbstractAuthenticator:
         self,
     ):
         self.logger = logging.getLogger("AUTHENTICATOR")
-        service_container = ServiceContainer()
-        self.settings = service_container.get(Settings)
+  
+        self.settings = Settings()
         self.token_manager = TokenManager()
         self.entity_user_provider = EntityUserProvider()
 

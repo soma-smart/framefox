@@ -3,6 +3,8 @@ import re
 from typing import List
 
 from framefox.core.config.settings import Settings
+from framefox.core.request.static_resource_detector import StaticResourceDetector
+
 
 """
 Framefox Framework developed by SOMA
@@ -17,16 +19,13 @@ class AccessManager:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.logger = logging.getLogger("FIREWALL")    
-        self.static_extensions = [
-            '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', 
-            '.ico', '.woff', '.woff2', '.ttf', '.eot'
-        ]
+
 
     def get_required_roles(self, path: str) -> List[str]:
         """
         Retrieves the required roles for a specific path from the settings.
         """
-        is_static_resource = any(path.endswith(ext) for ext in self.static_extensions)
+        is_static_resource = StaticResourceDetector.is_static_resource(path)
         if not is_static_resource:
             self.logger.debug(f"Evaluating required roles for path: {path}")
             

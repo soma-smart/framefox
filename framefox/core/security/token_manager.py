@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import jwt
 
 from framefox.core.config.settings import Settings
-from framefox.core.di.service_container import ServiceContainer
+
 
 """
 Framefox Framework developed by SOMA
@@ -18,7 +18,7 @@ Github: https://github.com/RayenBou
 class TokenManager:
 
     def __init__(self):
-        self.settings = ServiceContainer().get(Settings)
+        self.settings = Settings()
         self.logger = logging.getLogger("TOKENMANAGER")
         self.algorithm = "HS256"
 

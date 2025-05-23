@@ -1,5 +1,7 @@
 import time
 import logging
+import traceback
+import sys
 from typing import Callable
 from fastapi import Request, Response
 from fastapi.responses import StreamingResponse
@@ -9,14 +11,14 @@ from framefox.core.config.settings import Settings
 from framefox.core.debug.profiler.profiler import Profiler
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.templates.template_renderer import TemplateRenderer
+from framefox.core.request.static_resource_detector import StaticResourceDetector
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
----------------------------- 
+----------------------------
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
-
 class ProfilerMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
@@ -26,17 +28,33 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             self.profiler.enable()
         self.logger = logging.getLogger("PROFILER")
         self.logger.setLevel(logging.DEBUG)      
-        self.ignore_extensions = [
-            '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', 
-            '.ico', '.woff', '.woff2', '.ttf', '.eot'
-        ]       
+
+           
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         path = request.url.path
-        if any(path.endswith(ext) for ext in self.ignore_extensions):
+        if StaticResourceDetector.is_static_resource(path):
             return await call_next(request)
             
         start_time = time.time()
-        response = await call_next(request)
+        request.state.request_start_time = start_time
+
+        try:
+            response = await call_next(request)
+        except Exception as e:
+
+            exception_collector = self.profiler.get_collector("exception")
+            if exception_collector:
+                stack_trace = traceback.format_exc()
+                exception_collector.collect_exception(e, stack_trace)
+                
+  
+            request.state.exception = {
+                "class": e.__class__.__name__,
+                "message": str(e),
+                "trace": traceback.format_exc()
+            }
+            
+            raise e
         
         try:
             content_type = response.headers.get("content-type", "")
@@ -49,14 +67,13 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                 return response
                 
             token = self.profiler.collect(request, response)
-
             
             if not token:
                 return response
                 
             is_streaming = (isinstance(response, StreamingResponse) or 
-                            type(response).__name__.endswith('StreamingResponse') or
-                            hasattr(response, 'body_iterator'))
+                           type(response).__name__.endswith('StreamingResponse') or
+                           hasattr(response, 'body_iterator'))
     
             if is_streaming:
                 return await self._handle_streaming_response(response, token, start_time, request)
@@ -76,8 +93,6 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             return response
                 
         except Exception as e:
-            import traceback
-            import sys
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback_details = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
             self.logger.error(f"Unhandled exception in profiler: {str(e)}\n{traceback_details}")
@@ -128,7 +143,6 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             return new_response
             
         except Exception as e:
-            import traceback
             self.logger.error(f"Fatal exception in _handle_streaming_response: {str(e)}\n{traceback.format_exc()}")
             return response
             
@@ -158,5 +172,5 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                 return template_renderer.render("profiler/toolbar.html", context)
         except Exception as e:
             self.logger.error(f"Error rendering profiler template: {str(e)}")
-            return self._generate_inline_toolbar(token, duration_ms, memory, route, status_code)
+
 

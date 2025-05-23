@@ -2,7 +2,7 @@ import importlib
 import logging
 from typing import Dict, Optional, Type
 from fastapi import Request
-from fastapi.responses import (JSONResponse, RedirectResponse, Response)
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.request.cookie_manager import CookieManager
@@ -40,10 +40,7 @@ class FirewallHandler:
         self.session = session
         self.access_manager = access_manager
         self.security_context_handler = security_context_handler
-        self.static_extensions = [
-            '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', 
-            '.ico', '.woff', '.woff2', '.ttf', '.eot'
-        ]
+
 
         self.authenticators = self.load_authenticators()
 
@@ -141,15 +138,6 @@ class FirewallHandler:
                         self.logger.error("CSRF validation failed.")
                         if hasattr(request.state, "session_id"):
                             self.security_context_handler.set_authentication_error("A security error occurred. Please try again.")
-                            try:
-                                form_data = await request.form()
-                                if "email" in form_data:
-                                    self.security_context_handler.set_last_username(
-                                        form_data.get("email", "")
-                                    )
-                            except Exception:
-                                pass
-
                         return RedirectResponse(url=login_path, status_code=303)
                         
                     return await self.handle_post_request(request, authenticator, firewall_config, firewall_name)
@@ -165,15 +153,7 @@ class FirewallHandler:
     ) -> Optional[Response]:
         self.logger.debug(f"Handling a POST request for {type(authenticator).__name__}.")
 
-        try:
-            form_data = await request.form()
-            if "email" in form_data and hasattr(request.state, "session_id"):
-                self.security_context_handler.set_last_username(
-                    str(request.state.session_id),
-                    form_data.get("email", "")
-                )
-        except Exception as e:
-            self.logger.debug(f"Error capturing username: {str(e)}")
+
   
         passport = await authenticator.authenticate_request(request, firewall_name)
         if passport:

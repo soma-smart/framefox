@@ -1,11 +1,7 @@
-import logging
 from typing import Dict
-
 from sqlalchemy.engine import Engine
 from sqlmodel import create_engine
-
 from framefox.core.config.settings import Settings
-from framefox.core.di.service_container import ServiceContainer
 from framefox.core.request.request_stack import RequestStack
 
 
@@ -24,17 +20,16 @@ class EntityManagerRegistry:
     def __init__(self):
         if hasattr(self, "_initialized") and self._initialized:
             return
-        self.settings = ServiceContainer().get(Settings)
-        self.logger = logging.getLogger(__name__)
+        self.settings = Settings()
         self._initialized = True
 
     def get_engine(self, connection_name: str = "default") -> Engine:
-        """Récupère ou crée un moteur de base de données configuré"""
+        """Retrieves or creates a configured database engine"""
         if connection_name not in self._engines:
             db_url = self._get_database_url_string(connection_name)
             db_config = self.settings.config.get("database", {})
 
-            # Get pool settings from configuration with fallbacks
+
             self._engines[connection_name] = create_engine(
                 db_url,
                 echo=self.settings.database_echo,

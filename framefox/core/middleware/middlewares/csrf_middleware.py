@@ -2,7 +2,7 @@ import logging
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.config.settings import Settings
+from framefox.core.request.static_resource_detector import StaticResourceDetector
 
 class CsrfMiddleware(BaseHTTPMiddleware):
     """
@@ -57,8 +57,7 @@ class CsrfMiddleware(BaseHTTPMiddleware):
             return False
 
         path = request.url.path
-        static_extensions = ['.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot']
-        if any(path.endswith(ext) for ext in static_extensions):
+        if StaticResourceDetector.is_static_resource(path):
             return False
             
         return True

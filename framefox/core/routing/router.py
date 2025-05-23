@@ -130,18 +130,10 @@ class Router:
     def _register_profiler_routes(self):
         """Enregistre les routes du profiler en mode développement"""
         try:
-            from framefox.core.debug.profiler.profiler_controller import ProfilerController
-            profiler_controller = self.container.get(ProfilerController)
-            
-            if not profiler_controller:
-              
-                profiler_controller = ProfilerController()
-            
+            profiler_controller = self.container.get_by_name("ProfilerController")
             router = APIRouter(prefix="")
             setattr(profiler_controller, "router", router)
-      
             self._register_routes(profiler_controller)
-
             self.app.include_router(router)
 
         except Exception as e:

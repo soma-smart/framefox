@@ -16,7 +16,7 @@ class WorkerServiceProvider:
     @staticmethod
     def register():
         container = ServiceContainer()
-        settings = container.get(Settings)
+        settings = Settings()
 
         entity_manager = (
             EntityManagerRegistry.get_instance().get_entity_manager_for_worker()

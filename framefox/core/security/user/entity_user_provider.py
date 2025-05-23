@@ -3,7 +3,7 @@ import logging
 from typing import Any, Optional, Tuple
 
 from framefox.core.config.settings import Settings
-from framefox.core.di.service_container import ServiceContainer
+
 
 """
 Framefox Framework developed by SOMA
@@ -19,8 +19,8 @@ class EntityUserProvider:
     def __init__(
         self,
     ):
-        service_container = ServiceContainer()
-        self.settings = service_container.get(Settings)
+
+        self.settings = Settings()
         self.logger = logging.getLogger("ENTITY_USER_PROVIDER")
 
     def get_repository_and_property(
