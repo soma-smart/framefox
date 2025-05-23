@@ -1,0 +1,25 @@
+{
+  "name": "framefox",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.34.3",
+    "@wooorm/starry-night": "^3.7.0",
+    "astro": "^5.6.1",
+    "detect-language": "^2.1.0",
+    "hast-util-to-html": "^9.0.5",
+    "prismjs": "^1.30.0",
+    "sharp": "^0.32.5",
+    "shiki": "^3.4.2"
+  },
+  "devDependencies": {
+    "@types/prismjs": "^1.26.5"
+  }
+}

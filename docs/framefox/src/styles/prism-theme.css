@@ -1,0 +1,112 @@
+/**
+* Thème personnalisé FrameFox pour Prism.js
+* Reproduction exacte du style de l'index.html original
+*/
+
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #e6e6e6; /* Couleur exacte de l'original */
+  background: transparent; /* Pas de fond ici, géré par le conteneur */
+  text-shadow: none;
+  font-family: "Courier New", monospace; /* Police exacte */
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.5; /* Exactement comme l'original */
+  tab-size: 4;
+  hyphens: none;
+  font-size: 15px; /* Taille exacte de l'original */
+}
+
+/* Suppression des styles par défaut de Prism */
+pre[class*="language-"] {
+  padding: 0; /* Pas de padding ici, géré par le conteneur parent */
+  margin: 0;
+  overflow: visible;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+}
+
+/* Coloration syntaxique exacte de l'original */
+.token.keyword {
+  color: #ff79c6; /* Rose exacte pour les mots-clés */
+}
+
+.token.string,
+.token.attr-value {
+  color: #f1fa8c; /* Jaune exact pour les chaînes */
+}
+
+.token.function,
+.token.class-name {
+  color: #8be9fd; /* Cyan exact pour les fonctions */
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6272a4; /* Couleur exacte des commentaires */
+}
+
+.token.punctuation,
+.token.operator {
+  color: #e6e6e6; /* Couleur de base du texte */
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted,
+.token.boolean,
+.token.number {
+  color: #ff79c6; /* Rose comme les keywords */
+}
+
+.token.selector,
+.token.attr-name,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #f1fa8c; /* Jaune comme les chaînes */
+}
+
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #e6e6e6;
+}
+
+.token.atrule {
+  color: #f1fa8c;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #ffb86c; /* Orange */
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+/* S'assurer que le fond est transparent */
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+  background: transparent !important;
+}
