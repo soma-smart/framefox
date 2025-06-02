@@ -19,7 +19,7 @@ setup(
         "sqlmodel==0.0.22",
         "typer==0.15.1",
         "fastapi==0.115.7",
-        "uvicorn==0.34.0",
+        "uvicorn==0.34.3",
         "starlette==0.45.3",
         "python-multipart==0.0.20",
         "httpx==0.28.1",
