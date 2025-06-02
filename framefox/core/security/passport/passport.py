@@ -2,8 +2,7 @@ import logging
 from typing import Dict, List, Optional
 
 from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
-from framefox.core.security.passport.password_credentials import \
-    PasswordCredentials
+from framefox.core.security.passport.password_credentials import PasswordCredentials
 from framefox.core.security.passport.user_badge import UserBadge
 from framefox.core.security.password.password_hasher import PasswordHasher
 
@@ -73,9 +72,7 @@ class Passport:
 
         if self.password_credentials:
             password_hasher = PasswordHasher()
-            authenticated = password_hasher.verify(
-                self.password_credentials.raw_password, self.user.password
-            )
+            authenticated = password_hasher.verify(self.password_credentials.raw_password, self.user.password)
             if not authenticated:
                 self.logger.warning("Password verification failed.")
                 return False

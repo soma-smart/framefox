@@ -1,5 +1,4 @@
 import os
-from typing import List, Set
 
 """
 Framefox Framework developed by SOMA
@@ -36,9 +35,7 @@ class ImportManager:
             with open(file_path, "w") as f:
                 f.writelines(content)
 
-            self.printer.print_msg(
-                f"Import added to {file_path}: {import_line}", theme="success"
-            )
+            self.printer.print_msg(f"Import added to {file_path}: {import_line}", theme="success")
             return True
         return False
 

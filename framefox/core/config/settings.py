@@ -184,12 +184,8 @@ class Settings:
             if "url" in db_config and db_config["url"]:
                 return DatabaseUrlParser.parse_url(db_config["url"])
 
-            has_required_details = all(
-                key in db_config for key in ["driver", "host", "database"]
-            ) or (
-                "driver" in db_config
-                and db_config["driver"] == "sqlite"
-                and "database" in db_config
+            has_required_details = all(key in db_config for key in ["driver", "host", "database"]) or (
+                "driver" in db_config and db_config["driver"] == "sqlite" and "database" in db_config
             )
 
             if has_required_details:
@@ -248,39 +244,49 @@ class Settings:
     # ------------------------------ session ------------------------------
 
     @property
-    def cookie_secret_key(self):
-        """Returns the session secret key from the configuration, default"""
-        return self.config.get("cookie", {}).get("secret_key", "default_secret")
+    def session_name(self):
+        """Returns the session  name from the configuration."""
+        return self.config.get("application", {}).get("session", {}).get("name", "session_id")
 
     @property
-    def cookie_type(self):
-        """Returns the session type from the configuration, default is 'filesystem'."""
-        return self.config.get("cookie", {}).get("type", "filesystem")
+    def session_file_path(self):
+        """Returns the session file path from the configuration."""
+        return self.config.get("application", {}).get("session", {}).get("file_path", "var/session/sessions.db")
+
+    @property
+    def session_secret_key(self):
+        """Returns the session secret key from the configuration."""
+        secret_key = self.config.get("application", {}).get("session", {}).get("secret_key", None)
+        if not secret_key or secret_key == "default_secret":
+            self.logger.warning("Using default session secret key. This is insecure for production environments.")
+        return secret_key or "default_secret"
+
+    # ------------------------------ cookie ------------------------------
 
     @property
     def cookie_max_age(self):
-        """Returns the session max age from the configuration, default is 3600 seconds."""
-        return self.config.get("cookie", {}).get("max_age", 3600)
+        """Returns the cookie max age in seconds from the configuration, default is 3600 seconds."""
+        return self.config.get("application", {}).get("cookie", {}).get("max_age", 3600)
 
     @property
     def cookie_same_site(self):
-        """Returns the session same site policy from the configuration, default is 'lax'."""
-        return self.config.get("cookie", {}).get("same_site", "lax")
+        """Returns the cookie same site policy from the configuration, default is 'lax'."""
+        return self.config.get("application", {}).get("cookie", {}).get("same_site", "lax")
 
     @property
     def cookie_secure(self):
-        """Returns True if sessions are HTTPS only, otherwise False."""
-        return self.config.get("cookie", {}).get("secure", True)
+        """Returns True if cookies should only be sent over HTTPS, otherwise False."""
+        return self.config.get("application", {}).get("cookie", {}).get("secure", True)
 
     @property
     def cookie_http_only(self):
-        """Returns True if sessions are HTTP only, otherwise False."""
-        return self.config.get("cookie", {}).get("http_only", True)
+        """Returns True if cookies should be HTTP only (not accessible via JavaScript), otherwise False."""
+        return self.config.get("application", {}).get("cookie", {}).get("http_only", True)
 
     @property
     def cookie_path(self):
-        """Returns the session cookie path from the configuration, default is '/'."""
-        return self.config.get("cookie", {}).get("path", "/")
+        """Returns the cookie path from the configuration, default is '/'."""
+        return self.config.get("application", {}).get("cookie", {}).get("path", "/")
 
     # ------------------------------ application ------------------------------
     @property
@@ -300,11 +306,7 @@ class Settings:
     @property
     def controller_dir(self):
         """Returns the controllers directory from the configuration."""
-        return (
-            self.config.get("application", {})
-            .get("controllers")
-            .get("dir", "controllers")
-        )
+        return self.config.get("application", {}).get("controllers").get("dir", "controllers")
 
     @property
     def cors_config(self):
@@ -331,6 +333,32 @@ class Settings:
         """Returns the session file path from the configuration."""
         return self.config.get("application", {}).get("session").get("file_path", None)
 
+    # ------------------------------ debug ------------------------------
+
+    @property
+    def profiler_enabled(self) -> bool:
+        """Returns whether the profiler is enabled"""
+        if self.app_env != "dev":
+            return False
+
+        return self.config.get("debug", {}).get("profiler_enabled", True)
+
+    @property
+    def profiler_max_files_per_day(self) -> int:
+        """Maximum number of profile files per day"""
+        return int(self.config.get("debug", {}).get("profiler_max_files", 1000))
+
+    @property
+    def profiler_retention_days(self) -> int:
+        """Number of days to keep profile files"""
+        return int(self.config.get("debug", {}).get("profiler_retention_days", 7))
+
+    @property
+    def profiler_sampling_rate(self) -> float:
+        """Percentage of requests to profile (0.0 to 1.0)"""
+        rate = float(self.config.get("debug", {}).get("profiler_sampling_rate", 1.0))
+        return max(0.0, min(1.0, rate))
+
     # ------------------------------ mail ------------------------------
 
     @property
@@ -345,14 +373,10 @@ class Settings:
         """Returns the type of broker to use (database, redis, rabbitmq)"""
         return self.config.get("tasks", {}).get("type", "database")
 
-    # Ajouter cette propriété à la classe Settings après task_broker_type
-
     @property
     def task_transport_url(self) -> str:
         """Returns the transport URL for RabbitMQ"""
-        return self.config.get("tasks", {}).get(
-            "task_transport_url", "amqp://guest:guest@localhost:5672/%2F"
-        )
+        return self.config.get("tasks", {}).get("task_transport_url", "amqp://guest:guest@localhost:5672/%2F")
 
     @property
     def task_worker_concurrency(self) -> int:
@@ -367,11 +391,7 @@ class Settings:
     @property
     def task_default_queues(self) -> list:
         """Default queues"""
-        return (
-            self.config.get("tasks", {})
-            .get("worker", {})
-            .get("default_queues", ["default"])
-        )
+        return self.config.get("tasks", {}).get("worker", {}).get("default_queues", ["default"])
 
     @property
     def task_cleanup_interval(self) -> int:

@@ -10,11 +10,13 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
+
 class Application:
     """
     Central entry point for all interactions with the application,
     whether via web or CLI.
     """
+
     _instance = None
 
     def __new__(cls):
@@ -36,6 +38,7 @@ class Application:
 
     def boot_web(self):
         from framefox.core.kernel import Kernel
+
         kernel = Kernel(self._container, self._bundle_manager)
         return kernel
 

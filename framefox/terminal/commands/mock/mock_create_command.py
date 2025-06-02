@@ -53,9 +53,7 @@ class MockCreateCommand(AbstractCommand):
         if not name:
             name = InputManager().wait_input("Entity name (snake_case)")
         if not name or not ClassNameManager.is_snake_case(name):
-            self.printer.print_msg(
-                "Invalid name. Must be in snake_case.", theme="error"
-            )
+            self.printer.print_msg("Invalid name. Must be in snake_case.", theme="error")
             return None
         return name
 
@@ -67,9 +65,7 @@ class MockCreateCommand(AbstractCommand):
         entity_class = ClassNameManager.snake_to_pascal(entity_name)
         mock_class = f"{entity_class}Mock"
 
-        properties_list = self.model_checker.get_entity_properties(
-            entity_name, verbose=True
-        )
+        properties_list = self.model_checker.get_entity_properties(entity_name, verbose=True)
 
         properties_list = [prop for prop in properties_list if prop["name"] != "id"]
 

@@ -1,6 +1,7 @@
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import \
-    AbstractDatabaseCommand
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
 
 """
 Framefox Framework developed by SOMA
@@ -34,9 +35,7 @@ class UpgradeCommand(AbstractDatabaseCommand):
 
             if success:
                 if migrations_applied:
-                    self.printer.print_msg(
-                        "Migrations appliquées avec succès.", theme="success"
-                    )
+                    self.printer.print_msg("Migrations appliquées avec succès.", theme="success")
                 else:
                     self.printer.print_msg(
                         "La base de données est déjà à jour, aucune migration à appliquer.",
@@ -48,9 +47,7 @@ class UpgradeCommand(AbstractDatabaseCommand):
                     linebefore=True,
                 )
             else:
-                self.printer.print_msg(
-                    "L'application des migrations a échoué.", theme="error"
-                )
+                self.printer.print_msg("L'application des migrations a échoué.", theme="error")
 
         except Exception as e:
             self.printer.print_msg(

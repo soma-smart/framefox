@@ -1,18 +1,10 @@
 import logging
 import logging.config
 import os
+from datetime import datetime
 from pathlib import Path
 
-from framefox.core.logging.formatter.sqlmodel_formatter import \
-    SQLModelFormatter
-
-"""
-Framefox Framework developed by SOMA
-Github: https://github.com/soma-smart/framefox
-----------------------------
-Author: BOUMAZA Rayen
-Github: https://github.com/RayenBou
-"""
+from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
 
 
 class Logger:
@@ -23,10 +15,18 @@ class Logger:
     def configure_logging(self):
 
         log_dir = Path("./var/log").resolve()
-        os.makedirs(log_dir, exist_ok=True)
-        log_file = os.path.join(log_dir, "app.log")
 
-        LOG_LEVEL = "DEBUG"
+        env = os.environ.get("APP_ENV", "dev")
+        # date_str = datetime.now().strftime("%Y-%m-%d")
+
+        app_log_dir = log_dir / env
+        app_log_dir.mkdir(parents=True, exist_ok=True)
+
+        app_log_file = os.path.join(app_log_dir, f"app.log")
+        sql_log_file = os.path.join(app_log_dir, f"sql.log")
+        request_log_file = os.path.join(app_log_dir, f"request.log")
+
+        LOG_LEVEL = "DEBUG" if env == "dev" else "INFO"
 
         color_formatter_app = {
             "()": "colorlog.ColoredFormatter",
@@ -39,7 +39,6 @@ class Logger:
                 "ERROR": "red",
                 "CRITICAL": "bold_red",
             },
-            "style": "%",
         }
 
         color_formatter_server = {
@@ -53,19 +52,20 @@ class Logger:
                 "ERROR": "red",
                 "CRITICAL": "bold_red",
             },
-            "style": "%",
         }
 
         file_formatter = {
-            "format": "[Application] %(asctime)s | %(levelname)s | %(name)s  %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        }
-        file_sqlmodel_formatter = {
-            "()": SQLModelFormatter,
-            "format": "[Application] %(asctime)s | %(levelname)s | %(name)s  %(message)s",
+            "format": "[%(levelname)s][%(asctime)s][%(name)s] %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         }
 
+        file_sqlmodel_formatter = {
+            "()": SQLModelFormatter,
+            "format": "[%(levelname)s][%(asctime)s][%(name)s] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        }
+
+        # Configuration complète
         logging_config = {
             "version": 1,
             "disable_existing_loggers": False,
@@ -76,6 +76,7 @@ class Logger:
                 "file_sqlmodel": file_sqlmodel_formatter,
             },
             "handlers": {
+                # Console handlers
                 "console_app": {
                     "class": "logging.StreamHandler",
                     "formatter": "colored_app",
@@ -86,81 +87,104 @@ class Logger:
                     "formatter": "colored_server",
                     "level": LOG_LEVEL,
                 },
-                "file": {
-                    "class": "logging.handlers.RotatingFileHandler",
+                # App log file with rotation
+                "app_file": {
+                    "class": "logging.handlers.TimedRotatingFileHandler",
                     "formatter": "file",
                     "level": LOG_LEVEL,
-                    "filename": log_file,
-                    "maxBytes": 5 * 1024 * 1024,
-                    "backupCount": 3,
+                    "filename": app_log_file,
+                    "when": "midnight",
+                    "interval": 1,
+                    "backupCount": 30,
                     "encoding": "utf8",
                 },
-                "file_sqlmodel": {
+                # SQL log file
+                "sql_file": {
                     "class": "logging.handlers.RotatingFileHandler",
                     "formatter": "file_sqlmodel",
-                    "level": LOG_LEVEL,
-                    "filename": log_file,
-                    "maxBytes": 5 * 1024 * 1024,
-                    "backupCount": 3,
+                    "level": "WARNING",
+                    "filename": sql_log_file,
+                    "maxBytes": 10 * 1024 * 1024,
+                    "backupCount": 5,
+                    "encoding": "utf8",
+                },
+                # Request log file
+                "request_file": {
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "formatter": "file",
+                    "level": "INFO",
+                    "filename": request_log_file,
+                    "maxBytes": 20 * 1024 * 1024,
+                    "backupCount": 10,
                     "encoding": "utf8",
                 },
             },
             "root": {
-                "handlers": ["console_app", "file"],
+                "handlers": ["console_app", "app_file"],
                 "level": LOG_LEVEL,
             },
             "loggers": {
+                # Application main logger
                 "Application": {
-                    "handlers": ["console_app", "file"],
+                    "handlers": ["console_app", "app_file"],
                     "level": LOG_LEVEL,
                     "propagate": False,
                 },
-                # Loggers de Uvicorn
-                "uvicorn": {
-                    "handlers": ["console_server", "file"],
+                # Profiler logger
+                "PROFILER": {
+                    "handlers": ["console_app", "app_file"],
                     "level": LOG_LEVEL,
+                    "propagate": False,
+                },
+                # Server loggers
+                "uvicorn.access": {
+                    "handlers": ["console_server", "request_file"],
+                    "level": "WARNING",
                     "propagate": False,
                 },
                 "uvicorn.error": {
-                    "handlers": ["console_server", "file"],
+                    "handlers": ["console_server", "app_file"],
                     "level": LOG_LEVEL,
                     "propagate": False,
                 },
-                "uvicorn.access": {
-                    "handlers": ["console_server", "file"],
-                    "level": LOG_LEVEL,
-                    "propagate": False,
-                },
+                # SQL loggers
                 "sqlalchemy.engine.Engine": {
-                    "handlers": ["file_sqlmodel"],
+                    "handlers": ["sql_file"],
                     "level": "WARNING",
-                    "propagate": True,
+                    "propagate": False,
                 },
                 "sqlmodel": {
-                    "handlers": ["file_sqlmodel"],
+                    "handlers": ["sql_file"],
                     "level": "WARNING",
                     "propagate": False,
                 },
+                # Third party loggers
                 "python_multipart": {
-                    "handlers": ["file"],
+                    "handlers": ["app_file"],
                     "level": "WARNING",
                     "propagate": False,
                 },
                 "passlib": {
-                    "handlers": ["file"],
-                    "level": "WARNING",
-                    "propagate": False,
-                },
-                "passlib.registry": {
-                    "handlers": ["file"],
+                    "handlers": ["app_file"],
                     "level": "WARNING",
                     "propagate": False,
                 },
             },
         }
+
+        # Appliquer la configuration
         logging.config.dictConfig(logging_config)
 
     def get_logger(self, name=None):
+        """
+        Obtient un logger avec le nom spécifié ou le logger application par défaut
+
+        Args:
+            name: Nom du logger (optionnel)
+
+        Returns:
+            Logger configuré pour le canal spécifié
+        """
         if name:
             return logging.getLogger(name)
         else:

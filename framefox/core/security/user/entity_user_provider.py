@@ -3,7 +3,6 @@ import logging
 from typing import Any, Optional, Tuple
 
 from framefox.core.config.settings import Settings
-from framefox.core.di.service_container import ServiceContainer
 
 """
 Framefox Framework developed by SOMA
@@ -19,13 +18,11 @@ class EntityUserProvider:
     def __init__(
         self,
     ):
-        service_container = ServiceContainer()
-        self.settings = service_container.get(Settings)
+
+        self.settings = Settings()
         self.logger = logging.getLogger("ENTITY_USER_PROVIDER")
 
-    def get_repository_and_property(
-        self, firewall_name: str
-    ) -> Optional[Tuple[Any, str]]:
+    def get_repository_and_property(self, firewall_name: str) -> Optional[Tuple[Any, str]]:
         """
         Retrieves the repository and property name for a given firewall.
 
@@ -53,9 +50,7 @@ class EntityUserProvider:
 
         try:
             module_path, class_name = entity_class_path.rsplit(".", 1)
-            repository_module_path = (
-                module_path.replace(".entity.", ".repository.") + "_repository"
-            )
+            repository_module_path = module_path.replace(".entity.", ".repository.") + "_repository"
             repository_class_name = f"{class_name}Repository"
             module = importlib.import_module(repository_module_path)
             repository_class = getattr(module, repository_class_name)

@@ -1,0 +1,116 @@
+<div class="profiler-panel">
+  <h2>SQL Queries</h2>
+
+  <div class="panel-section">
+    <div class="db-summary">
+      <div class="db-metric">
+        <span class="metric-label">Queries</span>
+        <span class="metric-value">{{ data.query_count }}</span>
+      </div>
+      <div class="db-metric">
+        <span class="metric-label">Total Time</span>
+        <span class="metric-value"
+          >{{ data.total_duration|default(0) }} ms</span
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <h3>Query List</h3>
+    {% if data.queries and data.queries|length > 0 %} {% for query in
+    data.queries %}
+    <div class="query-item">
+      <div class="query-header">
+        <span class="query-time">{{ "%.2f"|format(query.duration) }} ms</span>
+        <span class="query-number">#{{ loop.index }}</span>
+      </div>
+      <div class="query-sql">{{ query.query }}</div>
+      {% if query.parameters %}
+      <div class="query-params">
+        <strong>Parameters:</strong>
+        <pre>{{ query.parameters }}</pre>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %} {% else %}
+    <p>No SQL queries were executed.</p>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .profiler-panel {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .panel-section {
+    margin-bottom: 30px;
+  }
+
+  .db-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .db-metric {
+    background-color: #f8f8f8;
+    padding: 15px;
+    border-radius: 5px;
+    min-width: 150px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .metric-label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+
+  .metric-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .query-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+    border-left: 4px solid #f4bf5f;
+  }
+
+  .query-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    color: #666;
+  }
+
+  .query-sql {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 3px;
+    overflow-x: auto;
+    font-family: "Courier New", monospace;
+  }
+
+  .query-params {
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  .query-params pre {
+    background-color: #fff;
+    padding: 8px;
+    border-radius: 3px;
+    margin: 5px 0 0;
+    overflow-x: auto;
+  }
+</style>

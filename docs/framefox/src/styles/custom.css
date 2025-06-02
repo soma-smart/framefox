@@ -1,0 +1,244 @@
+/* 
+ * Styles personnalisés pour la documentation Framefox
+ * Ce fichier contient les personnalisations spécifiques pour s'assurer que
+ * la documentation Starlight corresponde au style original de Framefox
+ */
+
+/* Variables de couleurs personnalisées de Framefox */
+:root {
+  /* Couleurs de marque */
+  --fox-orange: #f4bf5f;
+  --fox-orange-light: #ffd68a;
+  --fox-gray: #333333;
+  --fox-dark: #121212;
+  --fox-darker: #0a0a0a;
+
+  /* Couleurs de fond et de texte */
+  --sl-color-bg: var(--fox-dark);
+  --sl-color-bg-nav: var(--fox-darker);
+  --sl-color-text: #e6e6e6;
+  --sl-color-text-accent: var(--fox-orange);
+
+  /* Couleurs d'accentuation et liens */
+  --sl-color-accent: var(--fox-orange);
+  --sl-color-accent-high: var(--fox-orange-light);
+
+  /* Entête et composants */
+  --sl-color-text-invert: var(--fox-darker);
+  --sl-color-bg-sidebar: rgba(10, 10, 10, 0.95);
+
+  /* Couleurs pour les blocs de code */
+  --code-bg: rgba(0, 0, 0, 0.5);
+  --darker-bg: #121212;
+
+  /* Autres personnalisations */
+  --sl-font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+    Arial, sans-serif;
+  --sl-font-mono: "Courier New", monospace;
+  --sl-content-width: 65rem;
+  --sl-sidebar-width: 18rem;
+}
+
+/* Styles du corps de la documentation */
+body {
+  font-family: var(--sl-font);
+  background-color: var(--fox-dark);
+  color: var(--sl-color-text);
+}
+
+/* Styles des titres */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--sl-font);
+  color: var(--sl-color-text);
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--fox-orange);
+}
+
+/* Styles des liens */
+a {
+  color: var(--fox-orange);
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: var(--fox-orange-light);
+  text-decoration: underline;
+}
+
+/* Personnalisation de la barre latérale */
+.sidebar {
+  background-color: var(--sl-color-bg-sidebar);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar a {
+  color: var(--sl-color-text);
+}
+
+.sidebar a.active {
+  color: var(--fox-orange);
+  font-weight: 600;
+}
+
+/* Styles pour les boutons et actions */
+.action {
+  background-color: var(--fox-orange);
+  color: var(--fox-darker);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.action:hover {
+  background-color: var(--fox-orange-light);
+  transform: translateY(-2px);
+}
+
+.action.minimal {
+  background-color: transparent;
+  color: var(--fox-orange);
+  border: 1px solid var(--fox-orange);
+}
+
+.action.minimal:hover {
+  background-color: rgba(244, 191, 95, 0.1);
+}
+
+/* Styles pour les infoboxes et notes */
+.content :is(.tip, .caution, .danger) {
+  border-inline-start: 4px solid var(--fox-orange);
+  background-color: rgba(244, 191, 95, 0.1);
+}
+
+.content .tip {
+  --accent-color: var(--fox-orange);
+}
+
+.content .caution {
+  --accent-color: #e3b341;
+  border-inline-start-color: #e3b341;
+  background-color: rgba(227, 179, 65, 0.1);
+}
+
+.content .danger {
+  --accent-color: #ff5757;
+  border-inline-start-color: #ff5757;
+  background-color: rgba(255, 87, 87, 0.1);
+}
+
+/* Styles pour les tableaux */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+th {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: var(--fox-orange);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Personnalisation de la page d'accueil */
+.hero {
+  margin-bottom: 3rem;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, #e6e6e6, var(--fox-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Styles pour les cards */
+.card {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(244, 191, 95, 0.3);
+}
+
+.card h3 {
+  color: var(--fox-orange);
+}
+
+/* Images et médias */
+img {
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation du logo */
+.site-title img {
+  transition: transform 0.3s ease;
+}
+
+.site-title:hover img {
+  transform: rotate(10deg);
+}
+
+/* Style pour l'en-tête de navigation */
+.site-header {
+  background-color: var(--fox-darker);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Style pour les textes de pagination */
+.pagination a {
+  color: var(--sl-color-text);
+  transition: all 0.3s ease;
+}
+
+.pagination a:hover {
+  color: var(--fox-orange);
+  transform: translateX(3px);
+}
+
+/* Style du footer */
+.site-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}

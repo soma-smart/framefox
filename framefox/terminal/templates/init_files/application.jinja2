@@ -6,7 +6,8 @@ application:
 
   controllers:
     dir: "src/controllers/"
-
+  profiler:
+    enabled: true # Set to false in production
   cors:
     allow_origins:
       - "http://localhost"
@@ -20,11 +21,10 @@ application:
   session:
     name: "session_id"
     file_path: var/session/sessions.db
+    secret_key: "${SESSION_SECRET_KEY}"
 
   cookie:
-    secret_key: "${COOKIE_SECRET_KEY}"
-    type: "filesystem"
-    max_age: 10
+    max_age: 3600 # 1 hour
     secure: true
     http_only: true
     same_site: "strict" # "strict", "lax", "none"

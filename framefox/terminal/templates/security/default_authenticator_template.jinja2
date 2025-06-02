@@ -29,3 +29,8 @@ class {{ authenticator_name }}Authenticator(AbstractAuthenticator, Authenticator
         Handles the logic after a successful authentication.
         """
         return RedirectResponse(url="/", status_code=303)
+    def on_auth_failure(self, request: Request, reason: str) -> RedirectResponse:
+        """
+        Handles the logic after a failed authentication.
+        """
+        return RedirectResponse(url="/login", status_code=303)

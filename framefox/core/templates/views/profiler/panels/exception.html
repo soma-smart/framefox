@@ -1,0 +1,62 @@
+<div class="profiler-panel">
+  <h2>Exception Details</h2>
+
+  {% if data.has_exception %}
+  <div class="exception-summary">
+    <div class="exception-message">
+      {{ data.exception.class }}: {{ data.exception.message }}
+    </div>
+    <div class="exception-metadata">
+      <span>In {{ data.exception.file }} line {{ data.exception.line }}</span>
+    </div>
+  </div>
+
+  <div class="stack-trace">
+    <h3>Stack Trace</h3>
+    <pre>{{ data.exception.trace }}</pre>
+  </div>
+  {% else %}
+  <p class="no-exception">No exception was thrown during this request.</p>
+  {% endif %}
+</div>
+
+<style>
+  .exception-summary {
+    background-color: #f9f9f9;
+    border-left: 4px solid #e74c3c;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+
+  .exception-message {
+    font-size: 18px;
+    color: #e74c3c;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .exception-metadata {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .stack-trace {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+  }
+
+  .stack-trace pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  .no-exception {
+    color: #27ae60;
+    font-weight: bold;
+  }
+</style>

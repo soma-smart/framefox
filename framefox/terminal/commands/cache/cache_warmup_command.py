@@ -24,7 +24,7 @@ class CacheWarmupCommand(AbstractCommand):
         super().__init__("warmup")
         self.kernel = Kernel()
         self.container = ServiceContainer()
-        self.settings = self.container.get(Settings)
+        self.settings = Settings()
         self.template_renderer = self.container.get(TemplateRenderer)
 
     def execute(self):
@@ -52,16 +52,12 @@ class CacheWarmupCommand(AbstractCommand):
         route_start = time.time()
         route_count = self._warmup_routes()
         route_time = time.time() - route_start
-        table.add_row(
-            "Routes", f"[green]{route_count} loaded[/green]", f"{route_time:.2f}s"
-        )
+        table.add_row("Routes", f"[green]{route_count} loaded[/green]", f"{route_time:.2f}s")
 
         service_start = time.time()
         service_count = self._warmup_services()
         service_time = time.time() - service_start
-        table.add_row(
-            "Services", f"[green]{service_count} loaded[/green]", f"{service_time:.2f}s"
-        )
+        table.add_row("Services", f"[green]{service_count} loaded[/green]", f"{service_time:.2f}s")
 
         total_time = time.time() - start_time
 

@@ -42,4 +42,8 @@ class CsrfTokenManager:
         csrf_token_cookie = request.cookies.get("csrf_token")
         form = await request.form()
         csrf_token_form = form.get("csrf_token")
-        return secrets.compare_digest(csrf_token_cookie, csrf_token_form)
+
+        if csrf_token_cookie is None or csrf_token_form is None:
+            return False
+
+        return secrets.compare_digest(str(csrf_token_cookie), str(csrf_token_form))

@@ -1,0 +1,265 @@
+---
+import '../styles/prism-theme.css';
+
+interface Props {
+  code: string;
+  lang?: string;
+  filename?: string;
+  showLineNumbers?: boolean;
+}
+
+const { code, lang, filename, showLineNumbers = false } = Astro.props;
+
+// Nettoyer le code
+const cleanedCode = code.trim();
+
+// Détecter automatiquement le langage
+let detectedLang = lang;
+if (!detectedLang) {
+  if (cleanedCode.includes('<?php') || cleanedCode.includes('<?=')) {
+    detectedLang = 'php';
+  } else if (cleanedCode.includes('import React') || cleanedCode.includes('export default')) {
+    detectedLang = 'javascript';
+  } else if (cleanedCode.includes('interface ') || cleanedCode.includes(': string')) {
+    detectedLang = 'typescript';
+  } else if (cleanedCode.includes('<template>') && cleanedCode.includes('</template>')) {
+    detectedLang = 'vue';
+  } else if (cleanedCode.includes('class ') && cleanedCode.includes('def ') || 
+            cleanedCode.includes('self') || cleanedCode.includes('from framefox')) {
+    detectedLang = 'python';
+  } else if (cleanedCode.includes('<html') || cleanedCode.includes('<!DOCTYPE')) {
+    detectedLang = 'html';
+  } else if (cleanedCode.includes('@keyframes') || cleanedCode.includes('.class {')) {
+    detectedLang = 'css';
+  } else {
+    detectedLang = 'text';
+  }
+}
+
+// Pour affichage
+const displayLang = detectedLang || 'text';
+
+// Pour les classes CSS de PrismJS
+const prismLang = detectedLang || 'plaintext';
+---
+
+<div class="code-block">
+  {filename && <div class="code-filename"><span>{filename}</span></div>}
+
+  <div class="code-header">
+    <div class="code-language">{displayLang}</div>
+    <div class="code-actions">
+      <button class="copy-button" title="Copier le code">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <pre class={`language-${prismLang} ${showLineNumbers ? 'line-numbers' : ''}`}><code class={`language-${prismLang}`}>{cleanedCode}</code></pre>
+</div>
+
+
+
+<style>
+  .code-block {
+    margin: 1.5rem 0;
+    border-radius: 10px; /* Exactement comme l'original */
+    overflow: hidden;
+    background-color: var(--code-bg, rgba(0, 0, 0, 0.5)); /* Couleur exacte */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: "Courier New", monospace;
+    position: relative;
+    padding: 25px; /* Padding exact comme l'original */
+    line-height: 1.5;
+    overflow-x: auto;
+  }
+  
+  .code-filename {
+    padding: 0.5rem 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: "Poppins", sans-serif;
+    margin: -25px -25px 25px -25px; /* Compensation du padding parent */
+  }
+  
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin: -25px -25px 25px -25px; /* Compensation du padding parent */
+  }
+  
+  .code-language {
+    font-size: 0.85rem;
+    color: var(--fox-orange, #f4bf5f);
+    font-weight: 600;
+    font-family: "Poppins", sans-serif;
+    text-transform: uppercase;
+  }
+  
+  .code-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .copy-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s;
+    padding: 0.25rem;
+  }
+  
+  .copy-button:hover {
+    color: var(--fox-orange, #f4bf5f);
+  }
+  
+  .copy-button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Style exact du pre comme dans l'original */
+  pre {
+    margin: 0;
+    padding: 0; /* Pas de padding supplémentaire */
+    overflow-x: auto;
+    line-height: 1.5;
+    font-size: 15px; /* Taille exacte de l'original */
+    color: #e6e6e6; /* Couleur exacte */
+    background: transparent;
+  }
+  
+  code {
+    font-family: "Courier New", monospace; /* Police exacte */
+    text-shadow: none;
+    background: transparent;
+    color: inherit;
+  }
+
+  /* Tag de code exactement comme l'original */
+  .code-tag {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: var(--fox-orange, #f4bf5f);
+    color: var(--darker-bg, #121212);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 3px 12px;
+    border-radius: 20px;
+    z-index: 10;
+}
+    border-radius: 20px;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  /* Animation pour le bouton de copie */
+  .copy-success {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background-color: var(--fox-orange, #f4bf5f);
+    color: #121212;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  .copy-success.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+
+
+<script is:inline>
+  if (!window.Prism) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css';
+    document.head.appendChild(link);
+    
+    const script1 = document.createElement('script');
+    script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js';
+    document.head.appendChild(script1);
+    
+    script1.onload = function() {
+      const script2 = document.createElement('script');
+      script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js';
+      document.head.appendChild(script2);
+    };
+  }
+</script>
+
+<script>
+  // Fonctionnalité de copie de code
+  document.addEventListener('astro:page-load', () => {
+    // S'assurer que Prism mette à jour toute la coloration syntaxique
+    if (window.Prism) {
+      window.Prism.highlightAll();
+    }
+    
+    // Fonctionnalité de copie de code
+    const copyButtons = document.querySelectorAll('.copy-button');
+    
+    copyButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const codeBlock = button.closest('.code-block');
+        
+        if (!codeBlock) {
+          console.error("Bloc de code parent non trouvé");
+          return;
+        }
+        
+        const codeElement = codeBlock.querySelector('pre code');
+        
+        if (!codeElement) {
+          console.error("Élément de code non trouvé");
+          return;
+        }
+        
+        let successMessage = codeBlock.querySelector('.copy-success');
+        if (!successMessage) {
+          successMessage = document.createElement('div');
+          successMessage.className = 'copy-success';
+          successMessage.textContent = 'Copié!';
+          codeBlock.appendChild(successMessage);
+        }
+        
+        const codeToCopy = codeElement.textContent || '';
+        
+        navigator.clipboard.writeText(codeToCopy).then(() => {
+          successMessage.classList.add('active');
+          
+          const originalInnerHTML = button.innerHTML;
+          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>';
+          
+          setTimeout(() => {
+            button.innerHTML = originalInnerHTML;
+            successMessage.classList.remove('active');
+          }, 2000);
+        }).catch(err => {
+          console.error('Erreur lors de la copie:', err);
+        });
+      });
+    });
+  });
+</script>

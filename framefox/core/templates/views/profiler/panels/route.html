@@ -1,0 +1,106 @@
+<div class="profiler-panel">
+  <h2>Route Information</h2>
+
+  <div class="panel-section">
+    <table class="panel-table">
+      <tr>
+        <th>Path</th>
+        <td>{{ data.route }}</td>
+      </tr>
+      <tr>
+        <th>Allowed HTTP Methods</th>
+        <td>
+          {% if data.allowed_methods %} {% for method in data.allowed_methods %}
+          <span class="http-method" data-method="{{ method }}"
+            >{{ method }}</span
+          >
+          {% endfor %} {% else %}
+          <em>Unknown</em>
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Route Name</th>
+        <td>{{ data.route_name }}</td>
+      </tr>
+      <tr>
+        <th>Controller</th>
+        <td>{{ data.controller_name }}</td>
+      </tr>
+      <tr>
+        <th>Controller Function</th>
+        <td>{{ data.method_name }}</td>
+      </tr>
+      <tr>
+        <th>Rendered Template</th>
+        <td>
+          {% if data.template %}
+          <code>{{ data.template }}</code>
+          {% else %}
+          <em>No template (API route or direct response)</em>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<style>
+  .profiler-panel {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .panel-section {
+    margin-bottom: 30px;
+  }
+
+  .panel-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .panel-table th,
+  .panel-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .panel-table th {
+    width: 30%;
+    background-color: #f8f8f8;
+  }
+  .http-method {
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 3px;
+    background-color: #6c757d;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+
+  .http-method[data-method="GET"] {
+    background-color: #28a745;
+  }
+
+  .http-method[data-method="POST"] {
+    background-color: #007bff;
+  }
+
+  .http-method[data-method="PUT"] {
+    background-color: #fd7e14;
+  }
+
+  .http-method[data-method="DELETE"] {
+    background-color: #dc3545;
+  }
+
+  .http-method[data-method="PATCH"] {
+    background-color: #6f42c1;
+  }
+</style>

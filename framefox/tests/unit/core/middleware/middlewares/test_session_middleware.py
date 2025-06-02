@@ -1,14 +1,12 @@
-from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi import Request, Response
 
-from framefox.core.middleware.middlewares.session_middleware import \
-    SessionMiddleware
+from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
 from framefox.core.request.cookie_manager import CookieManager
-from framefox.core.request.session.session_manager import SessionManager
 from framefox.core.request.session.session_interface import SessionInterface
+from framefox.core.request.session.session_manager import SessionManager
 
 """
 Framefox Framework developed by SOMA
@@ -27,7 +25,7 @@ class TestSessionMiddleware:
     @pytest.fixture
     def mock_settings(self):
         settings = Mock()
-        settings.session_cookie_name = "session_id"
+        settings.session_name = "session_id"
         settings.cookie_max_age = 3600
         return settings
 
@@ -51,11 +49,14 @@ class TestSessionMiddleware:
 
     @pytest.fixture
     def middleware(
-        self, mock_app, mock_settings, mock_cookie_manager, mock_session_manager, mock_session_interface
+        self,
+        mock_app,
+        mock_settings,
+        mock_cookie_manager,
+        mock_session_manager,
+        mock_session_interface,
     ):
-        with patch(
-            "framefox.core.middleware.middlewares.session_middleware.ServiceContainer"
-        ) as MockServiceContainer:
+        with patch("framefox.core.middleware.middlewares.session_middleware.ServiceContainer") as MockServiceContainer:
             container_instance = Mock()
             container_instance.get.side_effect = lambda x: {
                 CookieManager: mock_cookie_manager,
@@ -64,9 +65,7 @@ class TestSessionMiddleware:
             }[x]
             MockServiceContainer.return_value = container_instance
 
-            with patch(
-                "starlette.middleware.base.BaseHTTPMiddleware.__init__"
-            ) as mock_init:
+            with patch("starlette.middleware.base.BaseHTTPMiddleware.__init__") as mock_init:
                 mock_init.return_value = None
                 middleware = SessionMiddleware(mock_app, mock_settings)
                 middleware.app = mock_app
@@ -95,9 +94,7 @@ class TestSessionMiddleware:
         assert middleware.session_service is not None
 
     @pytest.mark.asyncio
-    async def test_dispatch_without_session(
-        self, middleware, mock_request, mock_response
-    ):
+    async def test_dispatch_without_session(self, middleware, mock_request, mock_response):
         """Test dispatch without an existing session"""
         mock_call_next = AsyncMock(return_value=mock_response)
 

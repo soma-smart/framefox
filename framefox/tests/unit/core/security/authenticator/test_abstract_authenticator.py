@@ -5,8 +5,9 @@ from fastapi import HTTPException, Request
 
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.security.authenticator.abstract_authenticator import \
-    AbstractAuthenticator
+from framefox.core.security.authenticator.abstract_authenticator import (
+    AbstractAuthenticator,
+)
 from framefox.core.security.passport.passport import Passport
 
 """
@@ -62,9 +63,7 @@ class TestAbstractAuthenticator:
             return ConcreteAuthenticator()
 
     @pytest.mark.asyncio
-    async def test_successful_authentication(
-        self, authenticator, mock_request, mock_passport
-    ):
+    async def test_successful_authentication(self, authenticator, mock_request, mock_passport):
         """Test successful authentication process"""
         # Setup
         firewall_name = "main"
@@ -72,9 +71,7 @@ class TestAbstractAuthenticator:
         provider_info = ("UserRepository", "email")
 
         # Mock entity user provider
-        authenticator.entity_user_provider.get_repository_and_property = Mock(
-            return_value=provider_info
-        )
+        authenticator.entity_user_provider.get_repository_and_property = Mock(return_value=provider_info)
 
         # Execute
         result = await authenticator.authenticate_request(mock_request, firewall_name)
@@ -101,15 +98,11 @@ class TestAbstractAuthenticator:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_authentication_with_http_exception(
-        self, authenticator, mock_request
-    ):
+    async def test_authentication_with_http_exception(self, authenticator, mock_request):
         """Test authentication when HTTP exception occurs"""
         # Setup
         firewall_name = "main"
-        authenticator.authenticate = AsyncMock(
-            side_effect=HTTPException(status_code=401, detail="Unauthorized")
-        )
+        authenticator.authenticate = AsyncMock(side_effect=HTTPException(status_code=401, detail="Unauthorized"))
 
         # Execute
         result = await authenticator.authenticate_request(mock_request, firewall_name)
@@ -118,16 +111,12 @@ class TestAbstractAuthenticator:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_authentication_with_no_provider_info(
-        self, authenticator, mock_request, mock_passport
-    ):
+    async def test_authentication_with_no_provider_info(self, authenticator, mock_request, mock_passport):
         """Test authentication when no provider info is available"""
         # Setup
         firewall_name = "main"
         authenticator.test_passport = mock_passport
-        authenticator.entity_user_provider.get_repository_and_property = Mock(
-            return_value=None
-        )
+        authenticator.entity_user_provider.get_repository_and_property = Mock(return_value=None)
 
         # Execute
         result = await authenticator.authenticate_request(mock_request, firewall_name)

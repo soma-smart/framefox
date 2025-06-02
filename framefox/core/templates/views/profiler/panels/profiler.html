@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Framefox Profiler - {{ token }}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+      header {
+        background-color: #222;
+        color: #fff;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .logo {
+        background-color: #f4bf5f;
+        color: #333;
+        padding: 5px 10px;
+        font-weight: bold;
+        margin-right: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      .tabs {
+        display: flex;
+        background-color: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab {
+        padding: 15px 20px;
+        cursor: pointer;
+        border-right: 1px solid #eee;
+      }
+
+      .tab:hover {
+        background-color: #f8f8f8;
+      }
+
+      .tab.active {
+        background-color: #f0f0f0;
+        border-bottom: 3px solid #f4bf5f;
+      }
+
+      .panel {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .token-info {
+        margin-left: 20px;
+        font-size: 14px;
+        color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="logo">FRAMEFOX PROFILER</span>
+      <h1>Profile Details</h1>
+      <span class="token-info">{{ token }}</span>
+    </header>
+
+    <div class="container">
+      <div class="tabs">
+        <div class="tab active" onclick="showPanel('request')">Request</div>
+        <div class="tab" onclick="showPanel('time')">Performance</div>
+        <div class="tab" onclick="showPanel('memory')">Memory</div>
+        {% if profile.database %}
+        <div class="tab" onclick="showPanel('database')">Database</div>
+        {% endif %}
+        <div class="tab" onclick="showPanel('route')">Route</div>
+      </div>
+
+      <div id="panel-content" class="panel">
+        <p>Loading...</p>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        showPanel("request");
+      });
+
+      function showPanel(panelName) {
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+        document
+          .querySelector(`.tab[onclick="showPanel('${panelName}')"]`)
+          .classList.add("active");
+
+        const panelContent = document.getElementById("panel-content");
+        panelContent.innerHTML = "<p>Loading...</p>";
+
+        fetch(`/_profiler/{{ token }}/${panelName}`)
+          .then((response) => response.text())
+          .then((html) => {
+            panelContent.innerHTML = html;
+          })
+          .catch((error) => {
+            panelContent.innerHTML = `<p>Loading error: ${error.message}</p>`;
+          });
+      }
+    </script>
+  </body>
+</html>

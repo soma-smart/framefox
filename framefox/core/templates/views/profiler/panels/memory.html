@@ -1,0 +1,59 @@
+<div class="profiler-panel">
+  <h2>Memory Usage</h2>
+
+  <div class="panel-section">
+    <div class="memory-info">
+      <div class="memory-metric">
+        <span class="metric-label">Used Memory</span>
+        <span class="metric-value"
+          >{{ "%.2f"|format(data.memory_usage) }} MB</span
+        >
+      </div>
+      <div class="memory-metric">
+        <span class="metric-label">Memory Peak</span>
+        <span class="metric-value"
+          >{{ "%.2f"|format(data.peak_memory) }} MB</span
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .profiler-panel {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .panel-section {
+    margin-bottom: 30px;
+  }
+
+  .memory-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .memory-metric {
+    background-color: #f8f8f8;
+    padding: 15px;
+    border-radius: 5px;
+    min-width: 150px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .metric-label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+
+  .metric-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+  }
+</style>

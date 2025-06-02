@@ -71,18 +71,14 @@ class RabbitMQTransport(TransportInterface):
                 return True
             except Exception as e:
                 current_time = time.time()
-                if (
-                    current_time - self._last_connection_error_time
-                ) > self._min_error_log_interval:
+                if (current_time - self._last_connection_error_time) > self._min_error_log_interval:
                     self.logger.error(f"Failed to ensure connection: {str(e)}")
                     self._last_connection_error_time = current_time
                 return self._reconnect_with_backoff()
 
     def _setup_exchange_and_queue(self, queue: str):
         try:
-            self.channel.exchange_declare(
-                exchange="tasks", exchange_type="direct", durable=True
-            )
+            self.channel.exchange_declare(exchange="tasks", exchange_type="direct", durable=True)
 
             self.channel.queue_declare(
                 queue=queue,
@@ -95,9 +91,7 @@ class RabbitMQTransport(TransportInterface):
 
             self.channel.queue_bind(exchange="tasks", queue=queue, routing_key=queue)
 
-            self.channel.exchange_declare(
-                exchange="tasks.dead", exchange_type="direct", durable=True
-            )
+            self.channel.exchange_declare(exchange="tasks.dead", exchange_type="direct", durable=True)
 
             self.channel.queue_declare(queue=f"{queue}.dead", durable=True)
 
@@ -127,9 +121,7 @@ class RabbitMQTransport(TransportInterface):
         backoff_seconds = min(30, 2 ** (self._reconnect_attempts - 1))
 
         if self._reconnect_attempts == 1:
-            self.logger.info(
-                f"RabbitMQ connection lost, trying to reconnect in {backoff_seconds}s..."
-            )
+            self.logger.info(f"RabbitMQ connection lost, trying to reconnect in {backoff_seconds}s...")
 
         time.sleep(backoff_seconds)
 
@@ -160,15 +152,7 @@ class RabbitMQTransport(TransportInterface):
             properties = pika.BasicProperties(
                 delivery_mode=2,
                 priority=task.priority,
-                headers={
-                    "x-delay": (
-                        int(
-                            (task.scheduled_for - datetime.now()).total_seconds() * 1000
-                        )
-                        if task.scheduled_for
-                        else None
-                    )
-                },
+                headers={"x-delay": (int((task.scheduled_for - datetime.now()).total_seconds() * 1000) if task.scheduled_for else None)},
                 content_type="application/json",
             )
 
@@ -179,9 +163,7 @@ class RabbitMQTransport(TransportInterface):
                 properties=properties,
             )
 
-            self.logger.info(
-                f"Task {task.id} ({task.name}) published to queue '{task.queue}'"
-            )
+            self.logger.info(f"Task {task.id} ({task.name}) published to queue '{task.queue}'")
 
         except Exception as e:
             self.logger.error(f"Failed to publish task {task.id}: {e}")
@@ -199,9 +181,7 @@ class RabbitMQTransport(TransportInterface):
             self._setup_exchange_and_queue(queue)
 
             for _ in range(batch_size):
-                method_frame, properties, body = self.channel.basic_get(
-                    queue=queue, auto_ack=False
-                )
+                method_frame, properties, body = self.channel.basic_get(queue=queue, auto_ack=False)
 
                 if method_frame is None:
                     break
@@ -256,9 +236,7 @@ class RabbitMQTransport(TransportInterface):
 
         try:
             if hasattr(task, "_delivery_tag"):
-                self.channel.basic_reject(
-                    delivery_tag=task._delivery_tag, requeue=requeue
-                )
+                self.channel.basic_reject(delivery_tag=task._delivery_tag, requeue=requeue)
                 self.logger.info(f"Task {task.id} rejected (requeue={requeue})")
         except Exception as e:
             self.logger.error(f"Failed to reject task {task.id}: {e}")
@@ -275,9 +253,7 @@ class RabbitMQTransport(TransportInterface):
         try:
             for queue in queues:
                 self._setup_exchange_and_queue(queue)
-            self.logger.info(
-                f"RabbitMQ transport setup complete for queues: {', '.join(queues)}"
-            )
+            self.logger.info(f"RabbitMQ transport setup complete for queues: {', '.join(queues)}")
         except Exception as e:
             self.logger.error(f"Failed to setup RabbitMQ transport: {e}")
 

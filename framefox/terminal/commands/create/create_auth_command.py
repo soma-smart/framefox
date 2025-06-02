@@ -22,9 +22,7 @@ class CreateAuthCommand(AbstractCommand):
         super().__init__("auth")
         self.default_template_name = r"security/default_authenticator_template.jinja2"
         self.custom_template_name = r"security/custom_authenticator_template.jinja2"
-        self.login_controller_template_name = (
-            r"security/login_controller_template.jinja2"
-        )
+        self.login_controller_template_name = r"security/login_controller_template.jinja2"
         self.login_view_template_name = r"security/login_view_template.jinja2"
         self.authenticator_path = r"src/security"
         self.controller_path = r"src/controllers"
@@ -54,9 +52,7 @@ class CreateAuthCommand(AbstractCommand):
                 return
 
         authenticator_import_path = self._create_login_files(auth_type, auth_name)
-        self._configure_security(
-            provider_name, authenticator_import_path, auth_type, auth_name
-        )
+        self._configure_security(provider_name, authenticator_import_path, auth_type, auth_name)
 
     def _ask_authenticator_type(self) -> str:
         self.printer.print_msg(
@@ -77,9 +73,7 @@ class CreateAuthCommand(AbstractCommand):
                 newline=True,
             )
 
-            user_choice = InputManager().wait_input(
-                "Authenticator type", choices=["1", "2"], default="1"
-            )
+            user_choice = InputManager().wait_input("Authenticator type", choices=["1", "2"], default="1")
 
             return "custom" if user_choice == "2" else "default"
 
@@ -93,9 +87,7 @@ class CreateAuthCommand(AbstractCommand):
                 theme="bold_normal",
                 linebefore=True,
             )
-            user_name = InputManager().wait_input(
-                "Authenticator name(snake_case)", default=default_name
-            )
+            user_name = InputManager().wait_input("Authenticator name(snake_case)", default=default_name)
             name = user_name.strip() if user_name.strip() else default_name
 
             if not ClassNameManager.is_snake_case(name):
@@ -228,9 +220,7 @@ class CreateAuthCommand(AbstractCommand):
             )
             return False
 
-        if not ModelChecker().check_entity_properties(
-            provider_name, ["password", "email"]
-        ):
+        if not ModelChecker().check_entity_properties(provider_name, ["password", "email"]):
             self.printer.print_msg(
                 "Provider entity must have 'password' and 'email' properties.",
                 theme="error",
@@ -251,9 +241,7 @@ class CreateAuthCommand(AbstractCommand):
         if auth_type == "default":
             provider_class = ClassNameManager.snake_to_pascal(provider_name)
             SecurityConfigurator().add_provider(provider_name, provider_class)
-            SecurityConfigurator().add_firewall(
-                provider_name, authenticator_import_path
-            )
+            SecurityConfigurator().add_firewall(provider_name, authenticator_import_path)
         else:
             provider_key = None
             if provider_name:

@@ -3,10 +3,8 @@ import logging
 
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.logging.filter.worker_polling_filter import \
-    WorkerPollingFilter
-from framefox.core.logging.worker_logger_configurator import \
-    WorkerLoggerConfigurator
+from framefox.core.logging.filter.worker_polling_filter import WorkerPollingFilter
+from framefox.core.logging.worker_logger_configurator import WorkerLoggerConfigurator
 from framefox.core.task.worker_manager import WorkerManager
 from framefox.core.task.worker_service_provider import WorkerServiceProvider
 from framefox.terminal.commands.abstract_command import AbstractCommand
@@ -28,7 +26,7 @@ class WorkerCommand(AbstractCommand):
         sql_logger = logging.getLogger("SQLMODEL")
         sql_logger.addFilter(WorkerPollingFilter())
         WorkerServiceProvider.register()
-        self.settings = self.service_container.get(Settings)
+        self.settings = Settings()
 
     def execute(self) -> None:
         """Start the worker process to consume tasks from the queue."""
@@ -37,12 +35,8 @@ class WorkerCommand(AbstractCommand):
         concurrency = self.settings.task_worker_concurrency
         interval = self.settings.task_polling_interval
 
-        self.printer.print_msg(
-            f"Starting workers (queues: {', '.join(queues)})", "info"
-        )
-        self.printer.print_msg(
-            f"Concurrency: {concurrency}, interval: {interval}s", "info"
-        )
+        self.printer.print_msg(f"Starting workers (queues: {', '.join(queues)})", "info")
+        self.printer.print_msg(f"Concurrency: {concurrency}, interval: {interval}s", "info")
 
         worker_manager = self.service_container.get(WorkerManager)
         worker_manager.set_queues(queues)

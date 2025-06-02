@@ -80,10 +80,7 @@ class ServiceConfig:
 
     def is_excluded_module(self, module_name: str) -> bool:
         """Checks if a module should be excluded"""
-        return any(
-            module_name == excluded or module_name.startswith(f"{excluded}.")
-            for excluded in self.excluded_modules
-        )
+        return any(module_name == excluded or module_name.startswith(f"{excluded}.") for excluded in self.excluded_modules)
 
     def is_excluded_class(self, class_name: str) -> bool:
         """Checks if a class should be excluded based on its name"""
@@ -108,11 +105,7 @@ class ServiceConfig:
 
     def is_public(self, service_class) -> bool:
         """Determines if a service should be public"""
-        service_name = (
-            f"{service_class.__module__}.{service_class.__name__}".lower().replace(
-                ".", "\\"
-            )
-        )
+        service_name = f"{service_class.__module__}.{service_class.__name__}".lower().replace(".", "\\")
         for pattern, config in self.config.get("services", {}).items():
             if pattern != "_defaults" and not pattern.endswith("\\"):
                 if pattern.lower() == service_name:
@@ -122,11 +115,7 @@ class ServiceConfig:
 
     def get_service_tags(self, service_class) -> List[str]:
         """Returns the tags configured for a specific service"""
-        service_name = (
-            f"{service_class.__module__}.{service_class.__name__}".lower().replace(
-                ".", "\\"
-            )
-        )
+        service_name = f"{service_class.__module__}.{service_class.__name__}".lower().replace(".", "\\")
         tags = []
         if self.autoconfigure_enabled:
             for base in service_class.__mro__:

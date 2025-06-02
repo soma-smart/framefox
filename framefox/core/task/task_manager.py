@@ -24,8 +24,9 @@ class TaskManager:
 
     def __init__(self, broker: BrokerInterface):
         self.broker = broker
+        self.container = ServiceContainer()
         self.logger = logging.getLogger("TASK_MANAGER")
-        settings = ServiceContainer().get(Settings)
+        settings = Settings()
         self.defaults = settings.task_defaults
 
     def queue_task(
@@ -54,19 +55,17 @@ class TaskManager:
             ID of the created task
         """
         if self.broker is None:
-            container = ServiceContainer()
-            self.broker = container.get(BrokerInterface)
+
+            self.broker = self.container.get(BrokerInterface)
             if self.broker is None:
                 WorkerServiceProvider.register()
-                self.broker = container.get(BrokerInterface)
+                self.broker = self.container.get(BrokerInterface)
             if self.broker is None:
                 raise RuntimeError("Unable to initialize the task broker")
 
         queue = queue if queue is not None else self.defaults.get("queue")
         priority = priority if priority is not None else self.defaults.get("priority")
-        max_retries = (
-            max_retries if max_retries is not None else self.defaults.get("max_retries")
-        )
+        max_retries = max_retries if max_retries is not None else self.defaults.get("max_retries")
         scheduled_for = self._calculate_schedule_time(delay, schedule_at)
         task_name = self._get_task_name(task)
         payload = {"kwargs": kwargs}
@@ -96,9 +95,7 @@ class TaskManager:
 
         raise ValueError(f"The task type {type(task)} is not supported")
 
-    def _calculate_schedule_time(
-        self, delay: Optional[Union[int, timedelta]], schedule_at: Optional[datetime]
-    ) -> Optional[datetime]:
+    def _calculate_schedule_time(self, delay: Optional[Union[int, timedelta]], schedule_at: Optional[datetime]) -> Optional[datetime]:
         """Calculates the scheduled execution date"""
         if schedule_at:
             return schedule_at

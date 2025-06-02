@@ -29,5 +29,4 @@ class FirewallMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if self.settings.firewalls:
             return await self.handler.handle_request(request, call_next)
-        self.logger.debug("No firewalls configured.")
         return await call_next(request)

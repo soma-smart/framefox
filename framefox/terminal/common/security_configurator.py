@@ -15,10 +15,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "providers" not in config["security"]
-            or config["security"]["providers"] is None
-        ):
+        if "providers" not in config["security"] or config["security"]["providers"] is None:
             config["security"]["providers"] = {}
 
         provider_key = f"app_{provider_name}_provider"
@@ -30,10 +27,7 @@ class SecurityConfigurator:
         }
 
         if provider_key in config["security"]["providers"]:
-            print(
-                f"Provider '{
-                  provider_key}' already exists in the configuration."
-            )
+            print(f"Provider '{provider_key}' already exists in the configuration.")
         else:
             config["security"]["providers"][provider_key] = new_provider
             with open(self.yaml_path, "w") as file:
@@ -47,10 +41,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
+        if "firewalls" not in config["security"] or config["security"]["firewalls"] is None:
             config["security"]["firewalls"] = {}
 
         firewall_key = "main"
@@ -84,10 +75,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
+        if "firewalls" not in config["security"] or config["security"]["firewalls"] is None:
             config["security"]["firewalls"] = {}
 
         if firewall_name in config["security"]["firewalls"]:

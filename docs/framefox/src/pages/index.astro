@@ -1,0 +1,1139 @@
+---
+import { ClientRouter } from "astro:transitions";
+import CodeBlock from "../components/CodeBlock.astro";
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Framefox - Swift, smart, and a bit foxy!</title>
+    <link rel="icon" href="/docs/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <ClientRouter />
+
+    <style>
+      :root {
+        --fox-orange: #f4bf5f;
+        --fox-dark-orange: #e8a93c;
+        --dark-bg: #181818;
+        --darker-bg: #121212;
+        --light-text: #ffffff;
+        --code-bg: rgba(0, 0, 0, 0.5);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: var(--dark-bg);
+        color: var(--light-text);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header & Navigation */
+      header {
+        background-color: rgba(18, 18, 18, 0.95);
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+      }
+
+      .logo-container {
+        display: flex;
+        align-items: center;
+      }
+
+      .logo {
+        height: 40px;
+        margin-right: 15px;
+      }
+
+      .logo-text {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--fox-orange);
+      }
+
+      .logo-text span {
+        font-style: italic;
+      }
+
+      nav ul {
+        display: flex;
+        list-style: none;
+      }
+
+      nav ul li {
+        margin-left: 30px;
+      }
+
+      nav ul li a {
+        color: var(--light-text);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 16px;
+        transition: color 0.3s;
+      }
+
+      nav ul li a:hover {
+        color: var(--fox-orange);
+      }
+
+      .button {
+        background-color: var(--fox-orange);
+        color: var(--darker-bg);
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 2px solid var(--fox-orange);
+      }
+
+      .button:hover {
+        background-color: transparent;
+        color: var(--fox-orange);
+      }
+
+      /* Hero Section */
+      .hero {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(
+          135deg,
+          var(--darker-bg) 0%,
+          var(--dark-bg) 100%
+        );
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(244, 191, 95, 0.1) 0%,
+          rgba(0, 0, 0, 0) 70%
+        );
+        top: -50%;
+        left: -50%;
+        animation: pulse 15s infinite alternate;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(0.8);
+          opacity: 0.3;
+        }
+        100% {
+          transform: scale(1.2);
+          opacity: 0.1;
+        }
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero h1 {
+        font-size: 72px;
+        font-weight: 800;
+        margin-bottom: 20px;
+        line-height: 1.1;
+      }
+
+      .hero-title-highlight {
+        color: var(--fox-orange);
+        font-style: italic;
+      }
+
+      .hero p {
+        font-size: 24px;
+        margin-bottom: 40px;
+        max-width: 600px;
+        opacity: 0.9;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 20px;
+      }
+
+      .button-secondary {
+        background-color: transparent;
+        border: 2px solid var(--fox-orange);
+        color: var(--fox-orange);
+      }
+
+      .button-secondary:hover {
+        background-color: var(--fox-orange);
+        color: var(--darker-bg);
+      }
+
+      .floating-fox {
+        position: absolute;
+        right: 5%;
+        bottom: 10%;
+        width: 400px;
+        height: 400px;
+        transform: rotate(10deg);
+        animation: float 6s ease-in-out infinite alternate;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0) rotate(5deg);
+        }
+        100% {
+          transform: translateY(-30px) rotate(10deg);
+        }
+      }
+
+      /* Features Section */
+      .section {
+        padding: 120px 0;
+      }
+
+      .section-title {
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .section-subtitle {
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 60px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        opacity: 0.7;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+      }
+
+      .feature-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 30px;
+        border-radius: 15px;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(244, 191, 95, 0.1);
+      }
+
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+        background-color: rgba(244, 191, 95, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-bottom: 20px;
+      }
+
+      .feature-icon i {
+        color: var(--fox-orange);
+        font-size: 24px;
+      }
+
+      .feature-card h3 {
+        font-size: 22px;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      /* Code Showcase */
+      .code-section {
+        background-color: var(--darker-bg);
+        position: relative;
+      }
+
+      .code-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: center;
+      }
+
+      .code-example {
+        background-color: var(--code-bg);
+        border-radius: 10px;
+        padding: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-family: "Courier New", monospace;
+        line-height: 1.5;
+        overflow-x: auto;
+        position: relative;
+        margin-top: 15px; /* Ajoute de l'espace en haut pour le badge */
+      }
+
+      .code-example pre {
+        color: #e6e6e6;
+        font-size: 15px;
+      }
+
+      .code-tag {
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        background-color: var(--fox-orange);
+        color: var(--darker-bg);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 3px 12px;
+        border-radius: 20px;
+        z-index: 10; /* Assure que le badge est au-dessus des autres éléments */
+      }
+
+      .keyword {
+        color: #ff79c6;
+      }
+
+      .string {
+        color: #f1fa8c;
+      }
+
+      .function {
+        color: #8be9fd;
+      }
+
+      .comment {
+        color: #6272a4;
+      }
+
+      .code-explanation {
+        padding-left: 20px;
+      }
+
+      .code-explanation h3 {
+        font-size: 32px;
+        margin-bottom: 20px;
+        font-weight: 700;
+      }
+
+      .code-explanation p {
+        font-size: 16px;
+        margin-bottom: 20px;
+        opacity: 0.9;
+      }
+
+      .code-explanation ul {
+        padding-left: 20px;
+        margin-bottom: 20px;
+      }
+
+      .code-explanation li {
+        margin-bottom: 10px;
+      }
+
+      /* Profiler Showcase */
+      .profiler-showcase {
+        margin-top: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .profiler-image {
+        width: 90%;
+        border-radius: 10px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .browser-mockup {
+        position: relative;
+        margin-bottom: 30px;
+        width: 90%;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+      }
+
+      .browser-header {
+        background: #4a4a4a;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      .browser-buttons {
+        display: flex;
+        gap: 6px;
+        margin-right: 15px;
+      }
+
+      .browser-button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .browser-button.red {
+        background-color: #ff5f56;
+      }
+
+      .browser-button.yellow {
+        background-color: #ffbd2e;
+      }
+
+      .browser-button.green {
+        background-color: #27c93f;
+      }
+
+      .browser-address {
+        background: #2d2d2d;
+        color: #ddd;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        flex-grow: 1;
+        font-family: "Courier New", monospace;
+      }
+
+      /* Testimonials */
+      .testimonials {
+        text-align: center;
+      }
+
+      .testimonial-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 50px;
+      }
+
+      .testimonial-card {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+        padding: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .quote {
+        font-size: 18px;
+        font-style: italic;
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .quote::before,
+      .quote::after {
+        content: '"';
+        font-size: 30px;
+        color: var(--fox-orange);
+        opacity: 0.5;
+      }
+
+      .author {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .author-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+        background-color: rgba(244, 191, 95, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .author-avatar i {
+        color: var(--fox-orange);
+      }
+
+      /* CTA Section */
+      .cta {
+        background: linear-gradient(
+          45deg,
+          rgba(244, 191, 95, 0.15),
+          rgba(244, 191, 95, 0.05)
+        );
+        text-align: center;
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta::before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="%23f4bf5f" opacity="0.2"/></svg>');
+        top: 0;
+        left: 0;
+        opacity: 0.5;
+      }
+
+      .cta h2 {
+        font-size: 48px;
+        margin-bottom: 20px;
+      }
+
+      .cta p {
+        font-size: 18px;
+        max-width: 600px;
+        margin: 0 auto 40px;
+        opacity: 0.9;
+      }
+
+      /* Footer */
+      footer {
+        background-color: var(--darker-bg);
+        padding: 60px 0 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+      }
+
+      .footer-logo {
+        margin-bottom: 20px;
+      }
+
+      .footer-info {
+        max-width: 400px;
+      }
+
+      .footer-links h4 {
+        color: var(--fox-orange);
+        margin-bottom: 20px;
+        font-size: 18px;
+      }
+
+      .footer-links ul {
+        list-style: none;
+      }
+
+      .footer-links li {
+        margin-bottom: 10px;
+      }
+
+      .footer-links a {
+        color: var(--light-text);
+        text-decoration: none;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+      }
+
+      .footer-links a:hover {
+        opacity: 1;
+        color: var(--fox-orange);
+      }
+
+      .social-icons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .social-icon {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+      }
+
+      .social-icon:hover {
+        background-color: var(--fox-orange);
+        transform: translateY(-5px);
+      }
+
+      .social-icon i {
+        color: var(--light-text);
+        font-size: 18px;
+      }
+
+      .copyright {
+        text-align: center;
+        padding-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 14px;
+        opacity: 0.7;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 992px) {
+        .hero h1 {
+          font-size: 56px;
+        }
+
+        .floating-fox {
+          width: 300px;
+          height: 300px;
+          right: 0;
+        }
+
+        .code-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .nav-container {
+          flex-direction: column;
+        }
+
+        nav ul {
+          margin-top: 20px;
+        }
+
+        nav ul li {
+          margin: 0 10px;
+        }
+
+        .hero h1 {
+          font-size: 42px;
+        }
+
+        .hero p {
+          font-size: 18px;
+        }
+
+        .floating-fox {
+          display: none;
+        }
+
+        .section {
+          padding: 80px 0;
+        }
+
+        .footer-content {
+          flex-direction: column;
+          gap: 40px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .buttons {
+          flex-direction: column;
+          width: 100%;
+        }
+
+        .button {
+          width: 100%;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container nav-container">
+        <div class="logo-container">
+          <!-- <img
+            src="/docs/orange_fox.png"
+            alt="Framefox Logo"
+            class="logo"
+          /> -->
+          <div class="logo-text">FRAMEF<span>✖</span></div>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#features">Fonctionnalités</a></li>
+            <li><a href="#code">Code</a></li>
+            <li><a href="#profiler">Profiler</a></li>
+            <li>
+              <a href="/docs/installation" class="button">Documentation</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="container hero-content">
+        <h1>
+          Le framework Python <span class="hero-title-highlight">rapide</span>,
+          <span class="hero-title-highlight">intelligent</span>, et un peu
+          <span class="hero-title-highlight">rusé</span> !
+        </h1>
+        <p>
+          Développez des applications web puissantes avec un framework moderne,
+          élégant et performant. Framefox vous donne les outils dont vous avez
+          besoin pour créer rapidement.
+        </p>
+        <div class="buttons">
+          <a
+            href="https://github.com/soma-smart/dev-framefox"
+            target="_blank"
+            class="button">Commencer</a
+          >
+          <a href="#features" class="button button-secondary">Découvrir</a>
+        </div>
+      </div>
+      <!-- <img
+        src="/docs/orange_fox.png"
+        alt="Framefox Mascot"
+        class="floating-fox"
+      /> -->
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <h2 class="section-title">
+          Fonctionnalités
+          <span style="color: var(--fox-orange)">Exceptionnelles</span>
+        </h2>
+        <p class="section-subtitle">
+          Framefox combine élégance, performance et simplicité pour vous offrir
+          une expérience de développement inégalée.
+        </p>
+
+        <div class="features">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <h3>Profiler Avancé</h3>
+            <p>
+              Analysez les performances de vos applications avec notre profiler
+              intégré. Temps d'exécution, requêtes SQL, consommation mémoire,
+              tout est accessible en un clic.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-route"></i>
+            </div>
+            <h3>Routage Intelligent</h3>
+            <p>
+              Définissez vos routes avec des décorateurs simples et intuitifs.
+              Framefox s'occupe du reste pour vous offrir un routage performant
+              et flexible.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Sécurité Intégrée</h3>
+            <p>
+              Protection CSRF, authentification, pare-feu et plus encore. Votre
+              application est sécurisée dès le départ sans configuration
+              complexe.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <h3>Architecture MVC</h3>
+            <p>
+              Une structure claire et organisée pour vos projets avec le modèle
+              MVC. Développez plus rapidement et maintenez votre code plus
+              facilement.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-database"></i>
+            </div>
+            <h3>ORM Puissant</h3>
+            <p>
+              Manipulez vos données avec un ORM intuitif et performant. Créez,
+              lisez, mettez à jour et supprimez des données sans écrire de SQL.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-magic"></i>
+            </div>
+            <h3>CLI Intuitive</h3>
+            <p>
+              Générez du code, créez des contrôleurs, des entités et plus encore
+              avec notre interface en ligne de commande simple et puissante.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section code-section" id="code">
+      <div class="container">
+        <h2 class="section-title">
+          Code <span style="color: var(--fox-orange)">Élégant</span>
+        </h2>
+        <p class="section-subtitle">
+          Un framework conçu pour les développeurs qui apprécient la clarté et
+          la simplicité.
+        </p>
+
+        <div class="code-grid">
+          <div class="code-example">
+            <span class="code-tag">Controller</span>
+            <CodeBlock
+              code={`from framefox.core.routing.decorator.route import Route
+from framefox.core.controller.abstract_controller import AbstractController
+
+
+class HomeController(AbstractController):
+    
+    # Simple route definition with decorator
+    @Route("/home", "home.index", methods=["GET"])
+    async def index(self):
+        return self.render("home/index.html", {
+            "controller_name": "HomeController"
+        })
+    
+    # Route with parameter
+    @Route("/product/{id}", "product.show")
+    async def show_product(self, id):
+        product = await self.repository("Product").find(id)
+        return self.render("product/show.html", {
+            "product": product
+        })`}
+              lang="python"
+            />
+          </div>
+
+          <div class="code-explanation">
+            <h3>Contrôleurs Simples et Puissants</h3>
+            <p>
+              Dans Framefox, vous pouvez créer des routes et des contrôleurs
+              avec une syntaxe claire et expressive. Notre framework priorise la
+              lisibilité et l'expressivité.
+            </p>
+            <ul>
+              <li>Routes définies par décorateurs</li>
+              <li>Support des paramètres dans l'URL</li>
+              <li>Rendu de templates intuitif</li>
+              <li>Accès facile aux repositories</li>
+            </ul>
+            <a href="/docs" class="button">Explorer la Documentation</a>
+          </div>
+
+          <div class="code-explanation">
+            <h3>Entities et ORM Intégrés</h3>
+            <p>
+              Définissez vos modèles de données et laissez Framefox gérer votre
+              base de données. Notre ORM s'occupe des relations, migrations et
+              requêtes pour vous.
+            </p>
+            <ul>
+              <li>Définition d'entités avec annotations</li>
+              <li>Relations one-to-many, many-to-many</li>
+              <li>Migrations automatiques</li>
+              <li>Repository pattern pour les requêtes</li>
+            </ul>
+            <a
+              href="https://github.com/soma-smart/dev-framefox"
+              class="button button-secondary">Voir sur GitHub</a
+            >
+          </div>
+
+          <div class="code-example">
+            <span class="code-tag">Entity</span>
+            <CodeBlock
+              code={`from framefox.core.orm.entity import Entity
+from framefox.core.orm.field import Column, Relation
+
+# Define your data model
+class Product(Entity):
+    # Table name is automatically derived
+    
+    name = Column("string", length=100)
+    price = Column("float", nullable=False)
+    description = Column("text", nullable=True)
+    
+    # Define relationships
+    category = Relation(
+        "Category", 
+        related_name="products",
+        cascade=True
+    )
+    
+    def __str__(self):
+        return self.name`}
+              lang="python"
+            />
+          </div>
+        </div>
+        <div class="profiler-showcase" id="profiler">
+          <h2 class="section-title">
+            Un <span style="color: var(--fox-orange)">Profiler</span> Intégré Puissant
+          </h2>
+          <p class="section-subtitle">
+            Déboguer et analyser vos applications n'a jamais été aussi simple.
+            Notre profiler intégré vous fournit des informations détaillées sur
+            les performances de votre application.
+          </p>
+
+          <div class="browser-mockup">
+            <div class="browser-header">
+              <div class="browser-buttons">
+                <div class="browser-button red"></div>
+                <div class="browser-button yellow"></div>
+                <div class="browser-button green"></div>
+              </div>
+              <div class="browser-address">http://localhost:8000/_profiler</div>
+            </div>
+            <!-- <img
+              src="/docs/profiler-screenshot.png"
+              alt="Framefox Profiler"
+              class="profiler-image"
+            /> -->
+          </div>
+
+          <div class="buttons" style="margin-top: 30px">
+            <a href="#features" class="button">Découvrir les fonctionnalités</a>
+            <a
+              href="https://github.com/soma-smart/dev-framefox"
+              class="button button-secondary">Voir le code source</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section testimonials">
+      <div class="container">
+        <h2 class="section-title">
+          Ils <span style="color: var(--fox-orange)">adorent</span> Framefox
+        </h2>
+        <p class="section-subtitle">
+          Découvrez ce que les développeurs disent de notre framework.
+        </p>
+
+        <div class="testimonial-cards">
+          <div class="testimonial-card">
+            <p class="quote">
+              Framefox a révolutionné ma façon de développer des applications
+              web avec Python. Le profiler est une fonctionnalité indispensable!
+            </p>
+            <div class="author">
+              <div class="author-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <span>Jules Martin, Lead Developer</span>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <p class="quote">
+              J'apprécie particulièrement la clarté du code et la facilité
+              d'utilisation. La documentation est excellente et la communauté
+              très réactive.
+            </p>
+            <div class="author">
+              <div class="author-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <span>Sarah Dubois, Full-Stack Developer</span>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <p class="quote">
+              Le temps de développement a été drastiquement réduit grâce à la
+              CLI et aux fonctionnalités avancées de Framefox. Simplement
+              brillant!
+            </p>
+            <div class="author">
+              <div class="author-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <span>Thomas Legrand, CTO</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container">
+        <h2>
+          Prêt à commencer avec
+          <span style="color: var(--fox-orange)">Framefox</span> ?
+        </h2>
+        <p>
+          Rejoignez des milliers de développeurs qui utilisent déjà Framefox
+          pour créer des applications web modernes et performantes.
+        </p>
+        <div class="buttons" style="justify-content: center">
+          <a href="https://github.com/soma-smart/dev-framefox" class="button"
+            >Commencer maintenant</a
+          >
+          <a href="/docs" class="button button-secondary"
+            >Lire la documentation</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-info">
+            <div class="logo-container footer-logo">
+              <!-- <img
+                src="/docs/orange_fox.png"
+                alt="Framefox Logo"
+                class="logo"
+              /> -->
+              <div class="logo-text">FRAMEF<span>✖</span></div>
+            </div>
+            <p>
+              Un framework Python moderne et performant pour le développement
+              web, créé par SOMA. Swift, smart, and a bit foxy!
+            </p>
+            <div class="social-icons">
+              <a
+                href="https://github.com/soma-smart/dev-framefox"
+                class="social-icon"
+                target="_blank"
+              >
+                <i class="fab fa-github"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a href="#" class="social-icon">
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="footer-links">
+            <h4>Documentation</h4>
+            <ul>
+              <li><a href="/docs">Guide de démarrage</a></li>
+              <li><a href="/docs/reference">API Reference</a></li>
+              <li><a href="/docs/guides">Tutoriels</a></li>
+              <li><a href="/docs/controllers">Exemples</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-links">
+            <h4>Communauté</h4>
+            <ul>
+              <li>
+                <a href="https://github.com/soma-smart/dev-framefox">GitHub</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/soma-smart/dev-framefox/blob/main/CONTRIBUTING.md"
+                  >Contribuer</a
+                >
+              </li>
+              <li>
+                <a href="https://github.com/soma-smart/dev-framefox/issues"
+                  >Signaler un bug</a
+                >
+              </li>
+              <li><a href="#">Discord</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-links">
+            <h4>Plus</h4>
+            <ul>
+              <li><a href="#">Roadmap</a></li>
+              <li><a href="#">Changelog</a></li>
+              <li><a href="#">À propos</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="copyright">
+          &copy; {new Date().getFullYear()} Framefox. Développé avec 💛 par
+          <a
+            href="https://github.com/RayenBou"
+            style="color: var(--fox-orange); text-decoration: none"
+            >BOUMAZA Rayen</a
+          >
+          et l'équipe SOMA.
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (this: HTMLAnchorElement, e) {
+          e.preventDefault();
+
+          const href = this.getAttribute("href");
+          if (href) {
+            const targetElement = document.querySelector(href);
+            if (targetElement) {
+              targetElement.scrollIntoView({
+                behavior: "smooth",
+              });
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

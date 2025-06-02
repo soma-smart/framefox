@@ -30,7 +30,7 @@ class TestLogger:
 
     def test_log_directory_creation(self):
         with patch("os.makedirs") as mock_makedirs:
-            logger = Logger()
+
             expected_path = Path("./var/log").resolve()
             mock_makedirs.assert_called_once_with(expected_path, exist_ok=True)
 
@@ -84,9 +84,7 @@ class TestLogger:
             ("sqlalchemy.engine.Engine", ["file_sqlmodel"]),
         ],
     )
-    def test_logger_specific_configurations(
-        self, logger_instance, logger_name, expected_handlers
-    ):
+    def test_logger_specific_configurations(self, logger_instance, logger_name, expected_handlers):
         logger, mock_dict_config = logger_instance
         config = mock_dict_config.call_args[0][0]
 
