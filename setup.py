@@ -23,7 +23,7 @@ setup(
         "starlette==0.45.3",
         "python-multipart==0.0.20",
         "httpx==0.28.1",
-        "ruamel.yaml==0.18.10",
+        "ruamel.yaml==0.18.12",
         "python-dotenv>=1.0.1",
         "pyYAML>=6.0.2",
         "colorlog>=6.9.0",
