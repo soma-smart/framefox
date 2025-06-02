@@ -20,7 +20,7 @@ setup(
         "typer==0.15.1",
         "fastapi==0.115.7",
         "uvicorn==0.34.0",
-        "starlette==0.45.3",
+        "starlette==0.47.0",
         "python-multipart==0.0.20",
         "httpx==0.28.1",
         "ruamel.yaml==0.18.10",
