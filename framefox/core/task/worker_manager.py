@@ -38,7 +38,9 @@ class WorkerManager:
         self.last_cleanup_time = 0
 
     @classmethod
-    def register_task_handler(cls, task_name: str, handler_func: Callable, is_coroutine: bool = None) -> None:
+    def register_task_handler(
+        cls, task_name: str, handler_func: Callable, is_coroutine: bool = None
+    ) -> None:
         if is_coroutine is None:
             is_coroutine = asyncio.iscoroutinefunction(handler_func)
         cls._task_handlers[task_name] = (handler_func, is_coroutine)
@@ -55,7 +57,9 @@ class WorkerManager:
     def set_cleanup_config(self, interval_hours: int = 1, retain_days: int = 7) -> None:
         self.cleanup_interval = interval_hours * 3600
         self.retain_tasks_days = retain_days
-        self.logger.info(f"Automatic cleanup configured: every {interval_hours}h, retain {retain_days} days")
+        self.logger.info(
+            f"Automatic cleanup configured: every {interval_hours}h, retain {retain_days} days"
+        )
 
     async def start(self) -> None:
         self.running = True
@@ -119,7 +123,9 @@ class WorkerManager:
             payload = task.get_payload()
             args = payload.get("args", [])
             kwargs = payload.get("kwargs", {})
-            self.logger.info(f"Executing task {task.id} ({task.name}), coroutine: {is_coroutine}")
+            self.logger.info(
+                f"Executing task {task.id} ({task.name}), coroutine: {is_coroutine}"
+            )
             result = None
             try:
                 if is_coroutine:
@@ -137,14 +143,18 @@ class WorkerManager:
                 )
             except Exception as e:
                 error_msg = f"{str(e)}\n{traceback.format_exc()}"
-                self.logger.error(f"Error while executing task {task.id} ({task.name}): {error_msg}")
+                self.logger.error(
+                    f"Error while executing task {task.id} ({task.name}): {error_msg}"
+                )
                 self.broker.fail_task(task, error_msg)
                 dispatcher.dispatch(
                     "worker.task.execution_error",
                     {"task": task, "error": e, "traceback": traceback.format_exc()},
                 )
         except Exception as outer_e:
-            self.logger.error(f"External error while processing task {task.id}: {outer_e}")
+            self.logger.error(
+                f"External error while processing task {task.id}: {outer_e}"
+            )
             self.broker.fail_task(task, str(outer_e))
 
     def _get_task_handler(self, task_name: str) -> Optional[Tuple[Callable, bool]]:
@@ -185,7 +195,9 @@ class WorkerManager:
                 instance = container.get(class_obj)
                 if instance and hasattr(instance, handler.__name__):
                     bound_method = getattr(instance, handler.__name__)
-                    self.logger.debug(f"Method {handler.__name__} bound to an instance of {class_name}")
+                    self.logger.debug(
+                        f"Method {handler.__name__} bound to an instance of {class_name}"
+                    )
                     return bound_method
         except Exception as e:
             self.logger.error(f"Error while binding handler {task_name}: {e}")
@@ -210,7 +222,9 @@ class WorkerManager:
             try:
                 tasks = []
                 for queue in self.queues:
-                    queue_tasks = await asyncio.to_thread(self.broker.dequeue, queue, self.concurrent_tasks)
+                    queue_tasks = await asyncio.to_thread(
+                        self.broker.dequeue, queue, self.concurrent_tasks
+                    )
                     tasks.extend([self._execute_task(task) for task in queue_tasks])
 
                 if tasks:

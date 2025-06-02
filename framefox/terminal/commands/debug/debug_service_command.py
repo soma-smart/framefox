@@ -68,12 +68,16 @@ class DebugServiceCommand(AbstractCommand):
 
         stats_text = Text()
         stats_text.append("Service Container Statistics\n", style="bold cyan")
-        stats_text.append(f"• Total definitions: {stats['total_definitions']}\n", style="white")
+        stats_text.append(
+            f"• Total definitions: {stats['total_definitions']}\n", style="white"
+        )
         stats_text.append(
             f"• Instantiated services: {stats['instantiated_services']}\n",
             style="green",
         )
-        stats_text.append(f"• Cached resolutions: {stats['cached_resolutions']}\n", style="yellow")
+        stats_text.append(
+            f"• Cached resolutions: {stats['cached_resolutions']}\n", style="yellow"
+        )
         stats_text.append(f"• Total aliases: {stats['total_aliases']}\n", style="blue")
         stats_text.append(f"• Total tags: {stats['total_tags']}\n", style="magenta")
         stats_text.append(
@@ -117,7 +121,9 @@ class DebugServiceCommand(AbstractCommand):
             instance = self.container._instances.get(service_class)
 
             # Préparer les tags
-            tags_str = ", ".join(sorted(definition.tags)) if definition.tags else "No tags"
+            tags_str = (
+                ", ".join(sorted(definition.tags)) if definition.tags else "No tags"
+            )
 
             grouped_services[group].append(
                 {
@@ -159,9 +165,13 @@ class DebugServiceCommand(AbstractCommand):
 
         return "other"
 
-    def _display_service_group(self, console: Console, group: str, services: list) -> None:
+    def _display_service_group(
+        self, console: Console, group: str, services: list
+    ) -> None:
         """Affiche un groupe de services."""
-        console.print(f"Services in group: [bold cyan]{group}[/bold cyan] ({len(services)} services)")
+        console.print(
+            f"Services in group: [bold cyan]{group}[/bold cyan] ({len(services)} services)"
+        )
 
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Service", style="bold orange3", no_wrap=True)
@@ -228,7 +238,9 @@ class DebugServiceCommand(AbstractCommand):
         }
         return status_styles.get(status, "white")
 
-    def _display_detailed_service_info(self, console: Console, service_class, definition, instance) -> None:
+    def _display_detailed_service_info(
+        self, console: Console, service_class, definition, instance
+    ) -> None:
         """Affiche des informations détaillées sur un service (optionnel)."""
         details = Text()
         details.append(f"Service: {service_class.__name__}\n", style="bold cyan")
@@ -246,7 +258,9 @@ class DebugServiceCommand(AbstractCommand):
             details.append(f"Arguments: {definition.arguments}\n", style="purple")
 
         if definition.method_calls:
-            details.append(f"Method calls: {definition.method_calls}\n", style="dark_orange")
+            details.append(
+                f"Method calls: {definition.method_calls}\n", style="dark_orange"
+            )
 
         if instance:
             details.append(f"Instance ID: {id(instance)}\n", style="cyan")

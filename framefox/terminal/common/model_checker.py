@@ -25,7 +25,9 @@ class ModelChecker:
         """
         if not ClassNameManager.is_snake_case(entity_name):
             if verbose:
-                Printer().print_msg("Invalid name. Must be in snake_case.", theme="error")
+                Printer().print_msg(
+                    "Invalid name. Must be in snake_case.", theme="error"
+                )
             return False
         entity_file_name = entity_name + ".py"
         entity_path = os.path.join(self.entity_path, entity_file_name)
@@ -52,7 +54,9 @@ class ModelChecker:
         """
         if not ClassNameManager.is_snake_case(entity_name):
             if verbose:
-                Printer().print_msg("Invalid name. Must be in snake_case.", theme="error")
+                Printer().print_msg(
+                    "Invalid name. Must be in snake_case.", theme="error"
+                )
             return False
         repository_file_name = entity_name + "_repository.py"
         repository_path = os.path.join(self.repositories_path, repository_file_name)
@@ -79,7 +83,9 @@ class ModelChecker:
         """
         if not ClassNameManager.is_snake_case(entity_name):
             if verbose:
-                Printer().print_msg("Invalid name. Must be in snake_case.", theme="error")
+                Printer().print_msg(
+                    "Invalid name. Must be in snake_case.", theme="error"
+                )
             return False
         entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
         entity_file_name = entity_name + ".py"
@@ -118,9 +124,13 @@ class ModelChecker:
         """
         if not ClassNameManager.is_snake_case(repository_name):
             if verbose:
-                Printer().print_msg("Invalid name. Must be in snake_case.", theme="error")
+                Printer().print_msg(
+                    "Invalid name. Must be in snake_case.", theme="error"
+                )
             return False
-        repository_class_name = ClassNameManager.snake_to_pascal(repository_name) + "Repository"
+        repository_class_name = (
+            ClassNameManager.snake_to_pascal(repository_name) + "Repository"
+        )
         repository_file_name = repository_name + "_repository.py"
         repository_path = os.path.join(self.repositories_path, repository_file_name)
         if not os.path.exists(repository_path):
@@ -162,7 +172,9 @@ class ModelChecker:
             and self.check_repository_class(entity_name, verbose)
         )
 
-    def check_entity_property(self, entity_name: str, property_name: str, verbose: bool = False):
+    def check_entity_property(
+        self, entity_name: str, property_name: str, verbose: bool = False
+    ):
         """
         Check if a given property exists for an entity.
 
@@ -181,7 +193,9 @@ class ModelChecker:
         """
         if not ClassNameManager.is_snake_case(entity_name):
             if verbose:
-                Printer().print_msg("Invalid name. Must be in snake_case.", theme="error")
+                Printer().print_msg(
+                    "Invalid name. Must be in snake_case.", theme="error"
+                )
             return False
         entity_file_name = entity_name + ".py"
         entity_path = os.path.join(self.entity_path, entity_file_name)
@@ -206,7 +220,9 @@ class ModelChecker:
             )
         return False
 
-    def check_entity_properties(self, entity_name: str, properties_name: list, verbose: bool = False):
+    def check_entity_properties(
+        self, entity_name: str, properties_name: list, verbose: bool = False
+    ):
         """
         Check if multiple properties exist for a specific entity.
 
@@ -228,7 +244,9 @@ class ModelChecker:
                 return False
         return True
 
-    def check_association_table(self, entity_name: str, target_entity: str, verbose: bool = False) -> bool:
+    def check_association_table(
+        self, entity_name: str, target_entity: str, verbose: bool = False
+    ) -> bool:
         association_table = f"{entity_name}_{target_entity}_association"
         table_path = os.path.join("src/entity", f"{association_table}.py")
         if not os.path.exists(table_path):

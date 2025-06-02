@@ -20,7 +20,9 @@ class CircularDependencyError(ServiceContainerError):
         self.service_class = service_class
         self.dependency_chain = dependency_chain
         chain_str = " -> ".join(cls.__name__ for cls in dependency_chain)
-        super().__init__(f"Circular dependency detected: {chain_str} -> {service_class.__name__}")
+        super().__init__(
+            f"Circular dependency detected: {chain_str} -> {service_class.__name__}"
+        )
 
 
 class ServiceNotFoundError(ServiceContainerError):
@@ -28,7 +30,9 @@ class ServiceNotFoundError(ServiceContainerError):
 
     def __init__(self, service_class):
         self.service_class = service_class
-        super().__init__(f"Service '{service_class.__name__ if hasattr(service_class, '__name__') else service_class}' not found")
+        super().__init__(
+            f"Service '{service_class.__name__ if hasattr(service_class, '__name__') else service_class}' not found"
+        )
 
 
 class ServiceInstantiationError(ServiceContainerError):
@@ -37,7 +41,9 @@ class ServiceInstantiationError(ServiceContainerError):
     def __init__(self, service_class, original_error):
         self.service_class = service_class
         self.original_error = original_error
-        super().__init__(f"Failed to instantiate service '{service_class.__name__}': {original_error}")
+        super().__init__(
+            f"Failed to instantiate service '{service_class.__name__}': {original_error}"
+        )
 
 
 class InvalidServiceDefinitionError(ServiceContainerError):

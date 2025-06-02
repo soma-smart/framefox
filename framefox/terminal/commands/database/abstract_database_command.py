@@ -25,7 +25,9 @@ class AbstractDatabaseCommand(AbstractCommand, ABC):
 
     def _create_connection_manager(self) -> ConnectionManager:
         parser = DatabaseUrlParser()
-        scheme, user, password, host, port, database = parser.parse(self.settings.database_url)
+        scheme, user, password, host, port, database = parser.parse(
+            self.settings.database_url
+        )
 
         config = DatabaseConfig(
             driver=scheme.split("+")[0],

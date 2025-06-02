@@ -35,4 +35,6 @@ class DowngradeCommand(AbstractDatabaseCommand):
                 self.printer.print_msg("Failed to revert migrations.", theme="error")
 
         except Exception as e:
-            self.printer.print_msg(f"Error while reverting migrations: {str(e)}", theme="error")
+            self.printer.print_msg(
+                f"Error while reverting migrations: {str(e)}", theme="error"
+            )

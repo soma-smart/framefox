@@ -91,10 +91,14 @@ class TestMiddlewareManager:
             CustomCORSMiddleware,
         ],
     )
-    def test_individual_middleware_addition(self, middleware_manager, mock_app, middleware_class):
+    def test_individual_middleware_addition(
+        self, middleware_manager, mock_app, middleware_class
+    ):
         """Test the addition of each middleware individually"""
         middleware_manager.setup_middlewares()
 
         # Verify that each middleware was added
-        middleware_calls = [call[0][0] for call in mock_app.add_middleware.call_args_list]
+        middleware_calls = [
+            call[0][0] for call in mock_app.add_middleware.call_args_list
+        ]
         assert middleware_class in middleware_calls

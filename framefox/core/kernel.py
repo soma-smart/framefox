@@ -71,7 +71,9 @@ class Kernel:
         token_storage = TokenStorage(session)
         self._container.set_instance(TokenStorage, token_storage)
         entity_user_provider = self._container.get(EntityUserProvider)
-        self._container.set_instance(UserProvider, UserProvider(token_storage, session, entity_user_provider))
+        self._container.set_instance(
+            UserProvider, UserProvider(token_storage, session, entity_user_provider)
+        )
         self._container.set_instance(SecurityContextHandler, SecurityContextHandler())
         self._container.set_instance(EntityManagerInterface, EntityManagerInterface())
         self._logger.debug("Security services initialized.")
@@ -81,14 +83,16 @@ class Kernel:
     def _create_fastapi_app(self) -> FastAPI:
         """Creates and configures the FastAPI instance."""
         return FastAPI(
-            debug=self._settings.debug_mode,
+            debug=self._settings.is_debug,
             openapi_url=self._settings.openapi_url,
             redoc_url=self._settings.redoc_url,
         )
 
     def _configure_app(self) -> None:
         """Configures all application components."""
-        self._app.add_exception_handler(DebugException, DebugHandler.debug_exception_handler)
+        self._app.add_exception_handler(
+            DebugException, DebugHandler.debug_exception_handler
+        )
         self._setup_middlewares()
         self._setup_routing()
         self._setup_static_files()
@@ -118,7 +122,9 @@ class Kernel:
         profiler_path = static_path / "profiler"
         profiler_path.mkdir(parents=True, exist_ok=True)
 
-        self._app.mount("/", StaticFiles(directory=Path("public")), name="public_assets")
+        self._app.mount(
+            "/", StaticFiles(directory=Path("public")), name="public_assets"
+        )
 
     @property
     def app(self) -> FastAPI:

@@ -121,7 +121,9 @@ class PropertyManager:
         indentation = "    "
 
         for i, line in enumerate(content):
-            if line.strip().startswith(f"class {ClassNameManager.snake_to_pascal(entity_name)}(") or line.strip().startswith(
+            if line.strip().startswith(
+                f"class {ClassNameManager.snake_to_pascal(entity_name)}("
+            ) or line.strip().startswith(
                 f"class {ClassNameManager.snake_to_pascal(entity_name)}:"
             ):
                 class_found = True
@@ -157,7 +159,9 @@ class PropertyManager:
     def request_property(self, entity_name: str) -> Optional[PropertyDetails]:
         name = self._request_property_name()
         if not name:
-            self.printer.print_msg("No property entered. Closing terminal.", theme="success")
+            self.printer.print_msg(
+                "No property entered. Closing terminal.", theme="success"
+            )
             exit(0)
 
         if self._property_exists(entity_name, name):
@@ -181,14 +185,30 @@ class PropertyManager:
         return self.input_manager.wait_input("Property name").strip()
 
     def _request_property_type(self) -> str:
-        return self.input_manager.wait_input("Property type [?]", choices=self.property_types, default="str").strip().lower() or "str"
+        return (
+            self.input_manager.wait_input(
+                "Property type [?]", choices=self.property_types, default="str"
+            )
+            .strip()
+            .lower()
+            or "str"
+        )
 
     def _manage_property_constraint(self, property_type: str) -> Optional[Tuple]:
         if property_type == "str":
-            max_length = self.input_manager.wait_input("Maximum length", default=256).strip()
+            max_length = self.input_manager.wait_input(
+                "Maximum length", default=256
+            ).strip()
             if max_length.isdigit():
                 return ("max_length=" + max_length,)
         return None
 
     def _request_optional(self) -> bool:
-        return self.input_manager.wait_input("Optional [?]", choices=["yes", "no"], default="no").strip().lower() == "yes"
+        return (
+            self.input_manager.wait_input(
+                "Optional [?]", choices=["yes", "no"], default="no"
+            )
+            .strip()
+            .lower()
+            == "yes"
+        )

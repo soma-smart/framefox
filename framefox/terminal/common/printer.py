@@ -42,7 +42,9 @@ class Printer:
         if newline:
             self.console.print()
 
-    def print_full_text(self, text: str, newline: bool = False, linebefore: bool = False):
+    def print_full_text(
+        self, text: str, newline: bool = False, linebefore: bool = False
+    ):
         """
         Prints the given text with optional styling and a newline.
 

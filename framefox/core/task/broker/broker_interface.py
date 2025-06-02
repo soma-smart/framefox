@@ -52,7 +52,9 @@ class BrokerInterface(ABC):
         pass
 
     @abstractmethod
-    def get_tasks_by_status(self, status: TaskStatus, queue: str = None, limit: int = 100) -> List[Task]:
+    def get_tasks_by_status(
+        self, status: TaskStatus, queue: str = None, limit: int = 100
+    ) -> List[Task]:
         """Retrieves tasks by status."""
         pass
 

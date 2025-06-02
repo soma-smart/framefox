@@ -1,9 +1,12 @@
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 
+from fastapi.exceptions import HTTPException
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2.exceptions import TemplateNotFound
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.form.extension.form_extension import FormExtension
@@ -21,12 +24,19 @@ Github: https://github.com/RayenBou
 class TemplateRenderer:
     def __init__(self):
         self.container = ServiceContainer()
+        self.logging = logging.getLogger("TEMPLATE_RENDERER")
         self.settings = self.container.get_by_name("Settings")
         self.user_template_dir = self.settings.template_dir
         self.framework_template_dir = Path(__file__).parent / "views"
-        self.public_path = self.settings.public_path if hasattr(self.settings, "public_path") else "public"
+        self.public_path = (
+            self.settings.public_path
+            if hasattr(self.settings, "public_path")
+            else "public"
+        )
         self.env = Environment(
-            loader=FileSystemLoader([self.user_template_dir, str(self.framework_template_dir)]),
+            loader=FileSystemLoader(
+                [self.user_template_dir, str(self.framework_template_dir)]
+            ),
             undefined=StrictUndefined,
         )
         form_extension = FormExtension(self.env)
@@ -98,13 +108,28 @@ class TemplateRenderer:
         return flash_bag.get_for_template()
 
     def render(self, template_name: str, context: dict = {}) -> str:
+        """
+        Renders a template with error handling based on environment
+        """
         if "request" not in context:
             request = self.get_current_request()
             if request:
                 context["request"] = request
-
-        template = self.env.get_template(template_name)
-        return template.render(**context)
+        try:
+            template = self.env.get_template(template_name)
+            return template.render(**context)
+        except Exception as e:
+            self.logging.error(f"Template rendering error: {str(e)}")
+            if self.settings.is_debug:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"An error occurred while rendering the template: {template_name}. Error: {str(e)}",
+                )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Internal Server Error: Please try again later.",
+                )
 
     def _max_filter(self, value, max_value=None):
         """
@@ -278,7 +303,9 @@ class TemplateRenderer:
 
         return pprint.pformat(obj, depth=3)
 
-    def _format_number_filter(self, value, decimal_places=2, decimal_separator=",", thousand_separator=" "):
+    def _format_number_filter(
+        self, value, decimal_places=2, decimal_separator=",", thousand_separator=" "
+    ):
         """
         Formats a number with thousand separators and decimals.
 
@@ -308,7 +335,11 @@ class TemplateRenderer:
         if thousand_separator != "," or decimal_separator != ".":
             parts = formatted.split(".")
             if len(parts) == 2:
-                formatted = thousand_separator.join(parts[0].split(",")) + decimal_separator + parts[1]
+                formatted = (
+                    thousand_separator.join(parts[0].split(","))
+                    + decimal_separator
+                    + parts[1]
+                )
             else:
                 formatted = thousand_separator.join(formatted.split(","))
 

@@ -1,13 +1,14 @@
+from fastapi import Request
 from framefox.core.controller.abstract_controller import AbstractController
 from framefox.core.routing.decorator.route import Route
 from src.repository.{{ repository_file_name }} import {{ repository_class_name }}
 from src.entity.{{ entity_file_name }} import {{ entity_class_name }}
-from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
 from src.form.{{ entity_name }}_type import {{ entity_class_name }}Type
-from fastapi import Request
+
 
 class {{ controller_class_name }}(AbstractController):
-    def __init__(self, entityManager: EntityManager):
+    def __init__(self, entityManager: EntityManagerInterface):
         self.entity_manager = entityManager
         self.repository = {{ repository_class_name }}()
 
@@ -35,7 +36,7 @@ class {{ controller_class_name }}(AbstractController):
 
     @Route("/{{ entity_name }}/{id}", "{{ entity_file_name }}.read", methods=["GET"])
     async def read(self, id: int):
-        item = self.repository.find({"id": id})
+        item = self.repository.find(id)
         if not item:
             self.flash("error", "{{ entity_class_name }} not found!")
             return self.redirect(self.generate_url("{{ entity_file_name }}.read_all"))
@@ -43,7 +44,7 @@ class {{ controller_class_name }}(AbstractController):
 
     @Route("/{{ entity_name }}/{id}/update", "{{ entity_file_name }}.update", methods=["GET", "POST"])
     async def update(self, request: Request, id: int):
-        entity_instance = self.repository.find({"id": id})
+        entity_instance = self.repository.find(id)
         form = self.create_form({{ entity_class_name }}Type, entity_instance)
         
         await form.handle_request(request)
@@ -62,7 +63,7 @@ class {{ controller_class_name }}(AbstractController):
     @Route("/{{ entity_name }}/delete/{id}", "{{ entity_file_name }}.delete", methods=["POST"])
     async def delete(self, id: int):
         try:
-            entity_instance = self.repository.find({"id": id})
+            entity_instance = self.repository.find(id)
             if not entity_instance:
                 self.flash("error", "{{ entity_class_name }} not found!")
                 return self.redirect(self.generate_url("{{ entity_file_name }}.read_all"))

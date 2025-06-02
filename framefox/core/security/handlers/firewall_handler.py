@@ -61,12 +61,16 @@ class FirewallHandler:
                 try:
                     module_path, class_name = authenticator_path.rsplit(".", 1)
                     module = importlib.import_module(module_path)
-                    AuthenticatorClass: Type[AuthenticatorInterface] = getattr(module, class_name)
+                    AuthenticatorClass: Type[AuthenticatorInterface] = getattr(
+                        module, class_name
+                    )
 
                     authenticator_instance = AuthenticatorClass()
                     authenticators[firewall_name] = authenticator_instance
                 except (ImportError, AttributeError) as e:
-                    self.logger.error(f"Error loading authenticator '{authenticator_path}' for firewall '{firewall_name}': {e}")
+                    self.logger.error(
+                        f"Error loading authenticator '{authenticator_path}' for firewall '{firewall_name}': {e}"
+                    )
         return authenticators
 
     async def handle_request(self, request: Request, call_next):
@@ -81,8 +85,12 @@ class FirewallHandler:
                 auth_routes.append(firewall["logout_path"])
 
         for firewall_name, firewall in self.settings.firewalls.items():
-            if "logout_path" in firewall and request.url.path.startswith(firewall["logout_path"]):
-                return await self.handle_logout(request, firewall, firewall_name, call_next)
+            if "logout_path" in firewall and request.url.path.startswith(
+                firewall["logout_path"]
+            ):
+                return await self.handle_logout(
+                    request, firewall, firewall_name, call_next
+                )
 
         is_auth_route = any(request.url.path.startswith(route) for route in auth_routes)
         if is_auth_route:
@@ -96,8 +104,12 @@ class FirewallHandler:
 
         return auth_result
 
-    async def handle_authentication(self, request: Request, call_next) -> Optional[Response]:
-        self.logger.debug(f"Authentication check: path={request.url.path}, params={request.query_params}")
+    async def handle_authentication(
+        self, request: Request, call_next
+    ) -> Optional[Response]:
+        self.logger.debug(
+            f"Authentication check: path={request.url.path}, params={request.query_params}"
+        )
 
         for firewall_name, authenticator in self.authenticators.items():
             firewall_config = self.settings.get_firewall_config(firewall_name)
@@ -106,9 +118,13 @@ class FirewallHandler:
             oauth_config = firewall_config.get("oauth", {})
 
             if logout_path and request.url.path.startswith(logout_path):
-                return await self.handle_logout(request, firewall_config, firewall_name, call_next)
+                return await self.handle_logout(
+                    request, firewall_config, firewall_name, call_next
+                )
 
-            is_oauth_authenticator = getattr(authenticator, "is_oauth_authenticator", False)
+            is_oauth_authenticator = getattr(
+                authenticator, "is_oauth_authenticator", False
+            )
 
             if is_oauth_authenticator and oauth_config:
                 init_path = oauth_config.get("init_path", login_path)
@@ -138,10 +154,14 @@ class FirewallHandler:
                     if not await self.csrf_manager.validate_token(request):
                         self.logger.error("CSRF validation failed.")
                         if hasattr(request.state, "session_id"):
-                            self.security_context_handler.set_authentication_error("A security error occurred. Please try again.")
+                            self.security_context_handler.set_authentication_error(
+                                "A security error occurred. Please try again."
+                            )
                         return RedirectResponse(url=login_path, status_code=303)
 
-                    return await self.handle_post_request(request, authenticator, firewall_config, firewall_name)
+                    return await self.handle_post_request(
+                        request, authenticator, firewall_config, firewall_name
+                    )
 
         return await call_next(request)
 
@@ -152,14 +172,22 @@ class FirewallHandler:
         firewall_config: Dict,
         firewall_name: str,
     ) -> Optional[Response]:
-        self.logger.debug(f"Handling a POST request for {type(authenticator).__name__}.")
+        self.logger.debug(
+            f"Handling a POST request for {type(authenticator).__name__}."
+        )
 
         passport = await authenticator.authenticate_request(request, firewall_name)
         if passport:
             token = self.token_manager.create_token(
                 user=passport.user,
                 firewallname=firewall_name,
-                roles=(passport.user.roles if passport.user and hasattr(passport.user, "roles") and passport.user.roles else []),
+                roles=(
+                    passport.user.roles
+                    if passport.user
+                    and hasattr(passport.user, "roles")
+                    and passport.user.roles
+                    else []
+                ),
             )
             token_storage = ServiceContainer().get_by_name("TokenStorage")
             token_storage.set_token(token)
@@ -174,7 +202,9 @@ class FirewallHandler:
             return response
         else:
             error_message = "Invalid credentials. Please try again."
-            detailed_error = getattr(request.state, "auth_error", "Unknown authentication error")
+            detailed_error = getattr(
+                request.state, "auth_error", "Unknown authentication error"
+            )
             self.logger.warning(f"Authentication failed: {detailed_error}")
 
             if hasattr(request.state, "session_id"):
@@ -208,7 +238,9 @@ class FirewallHandler:
         else:
             return JSONResponse(content={"error": "Access denied"}, status_code=403)
 
-    async def handle_logout(self, request: Request, firewall_config: Dict, firewall_name: str, call_next) -> Response:
+    async def handle_logout(
+        self, request: Request, firewall_config: Dict, firewall_name: str, call_next
+    ) -> Response:
         token_storage = ServiceContainer().get_by_name("TokenStorage")
         token_storage.clear_token()
 
@@ -224,7 +256,9 @@ class FirewallHandler:
         else:
             accept_header = request.headers.get("accept", "")
             if "application/json" in accept_header:
-                response = JSONResponse(content={"message": "Successfully logged out"}, status_code=200)
+                response = JSONResponse(
+                    content={"message": "Successfully logged out"}, status_code=200
+                )
             else:
                 response = RedirectResponse(url="/login", status_code=302)
 

@@ -82,7 +82,9 @@ class TestCookieManager:
         """Test deleting a cookie"""
         cookie_manager.delete_cookie(mock_response, "test_key")
 
-        mock_response.delete_cookie.assert_called_once_with(key="test_key", path=cookie_manager.settings.cookie_path)
+        mock_response.delete_cookie.assert_called_once_with(
+            key="test_key", path=cookie_manager.settings.cookie_path
+        )
 
     def test_set_cookie_with_empty_values(self, cookie_manager, mock_response):
         """Test setting a cookie with empty values"""

@@ -5,13 +5,18 @@ from logging import NullHandler
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
-Author: Boumaza Rayen
+Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
 
 class WorkerLoggerConfigurator:
-    """Configure les loggers pour le contexte des workers"""
+    """
+    Configures loggers for worker context.
+
+    This class sets logging levels and handlers for various loggers used in the worker environment,
+    including SQL-related loggers, RabbitMQ transport, and internal application loggers.
+    """
 
     @staticmethod
     def configure():

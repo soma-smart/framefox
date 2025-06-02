@@ -35,7 +35,9 @@ class UpgradeCommand(AbstractDatabaseCommand):
 
             if success:
                 if migrations_applied:
-                    self.printer.print_msg("Migrations appliquées avec succès.", theme="success")
+                    self.printer.print_msg(
+                        "Migrations appliquées avec succès.", theme="success"
+                    )
                 else:
                     self.printer.print_msg(
                         "La base de données est déjà à jour, aucune migration à appliquer.",
@@ -47,7 +49,9 @@ class UpgradeCommand(AbstractDatabaseCommand):
                     linebefore=True,
                 )
             else:
-                self.printer.print_msg("L'application des migrations a échoué.", theme="error")
+                self.printer.print_msg(
+                    "L'application des migrations a échoué.", theme="error"
+                )
 
         except Exception as e:
             self.printer.print_msg(

@@ -1,40 +1,107 @@
 <div class="profiler-panel">
-  <h2>SQL Queries</h2>
+  <h2>Database Information</h2>
 
+  <!-- Informations de configuration de la base -->
   <div class="panel-section">
+    <h3>Database Configuration</h3>
+    {% if data.database_info and not data.database_info.get('error') %}
+    <table class="panel-table config-table">
+      <tr>
+        <th>Driver</th>
+        <td>{{ data.database_info.get('driver', 'Unknown') }}</td>
+      </tr>
+      <tr>
+        <th>Host</th>
+        <td>{{ data.database_info.get('host', 'Unknown') }}</td>
+      </tr>
+      {% if data.database_info.get('port') and data.database_info.get('port') !=
+      "N/A" %}
+      <tr>
+        <th>Port</th>
+        <td>{{ data.database_info.get('port') }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>Database</th>
+        <td>{{ data.database_info.get('database', 'Unknown') }}</td>
+      </tr>
+      {% if data.database_info.get('username') %}
+      <tr>
+        <th>Username</th>
+        <td>{{ data.database_info.get('username') }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>SQL Echo</th>
+        <td>
+          <span
+            class="badge {{ 'enabled' if data.database_info.get('echo') else 'disabled' }}"
+          >
+            {{ 'Enabled' if data.database_info.get('echo') else 'Disabled' }}
+          </span>
+        </td>
+      </tr>
+    </table>
+    {% elif data.database_info and data.database_info.get('error') %}
+    <div class="warning">
+      <strong>Configuration Error:</strong> {{ data.database_info.get('error')
+      }}
+    </div>
+    {% else %}
+    <p class="warning">Database configuration not available</p>
+    {% endif %}
+  </div>
+
+  <!-- Statistiques des requêtes -->
+  <div class="panel-section">
+    <h3>Query Statistics</h3>
     <div class="db-summary">
       <div class="db-metric">
-        <span class="metric-label">Queries</span>
-        <span class="metric-value">{{ data.query_count }}</span>
+        <span class="metric-label">Total Queries</span>
+        <span class="metric-value">{{ data.query_count or 0 }}</span>
       </div>
       <div class="db-metric">
         <span class="metric-label">Total Time</span>
         <span class="metric-value"
-          >{{ data.total_duration|default(0) }} ms</span
+          >{{ "%.2f"|format(data.total_duration or 0) }} ms</span
+        >
+      </div>
+      <div class="db-metric">
+        <span class="metric-label">Average Time</span>
+        <span class="metric-value"
+          >{{ "%.2f"|format(data.average_duration or 0) }} ms</span
         >
       </div>
     </div>
   </div>
 
+  <!-- Liste des requêtes -->
   <div class="panel-section">
     <h3>Query List</h3>
     {% if data.queries and data.queries|length > 0 %} {% for query in
     data.queries %}
     <div class="query-item">
       <div class="query-header">
-        <span class="query-time">{{ "%.2f"|format(query.duration) }} ms</span>
+        <span class="query-time"
+          >{{ "%.2f"|format(query.get('duration', 0)) }} ms</span
+        >
         <span class="query-number">#{{ loop.index }}</span>
+        <span class="query-timestamp"
+          >{{ query.get('formatted_time', 'Unknown') }}</span
+        >
       </div>
-      <div class="query-sql">{{ query.query }}</div>
-      {% if query.parameters %}
+      <div class="query-sql">{{ query.get('query', 'No query') }}</div>
+      {% if query.get('parameters') %}
       <div class="query-params">
         <strong>Parameters:</strong>
-        <pre>{{ query.parameters }}</pre>
+        <pre>{{ query.get('parameters') }}</pre>
       </div>
       {% endif %}
     </div>
     {% endfor %} {% else %}
-    <p>No SQL queries were executed.</p>
+    <div class="no-queries">
+      <p>No SQL queries were executed during this request.</p>
+    </div>
     {% endif %}
   </div>
 </div>
@@ -50,6 +117,62 @@
     margin-bottom: 30px;
   }
 
+  .panel-section h3 {
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  /* Configuration table */
+  .config-table {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .config-table th {
+    background-color: #f0f0f0;
+    width: 30%;
+    font-weight: bold;
+  }
+
+  .panel-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .panel-table th,
+  .panel-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .badge.enabled {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .badge.disabled {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  /* Statistics summary */
   .db-summary {
     display: flex;
     flex-wrap: wrap;
@@ -63,6 +186,7 @@
     border-radius: 5px;
     min-width: 150px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #f4bf5f;
   }
 
   .metric-label {
@@ -76,34 +200,62 @@
     display: block;
     font-size: 18px;
     font-weight: bold;
+    color: #333;
   }
 
+  /* Query items */
   .query-item {
     margin-bottom: 15px;
-    padding: 10px;
+    padding: 15px;
     border-radius: 5px;
     background-color: #f8f8f8;
     border-left: 4px solid #f4bf5f;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .query-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 5px;
+    align-items: center;
+    margin-bottom: 10px;
     color: #666;
+    font-size: 14px;
+  }
+
+  .query-time {
+    font-weight: bold;
+    color: #f4bf5f;
+  }
+
+  .query-number {
+    background-color: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  .query-timestamp {
+    font-family: monospace;
+    color: #6c757d;
   }
 
   .query-sql {
-    padding: 10px;
+    padding: 12px;
     background-color: #fff;
     border-radius: 3px;
     overflow-x: auto;
     font-family: "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    border: 1px solid #e9ecef;
+    white-space: pre-wrap;
+    word-break: break-all;
   }
 
   .query-params {
-    margin-top: 8px;
+    margin-top: 10px;
     font-size: 12px;
+    color: #6c757d;
   }
 
   .query-params pre {
@@ -112,5 +264,30 @@
     border-radius: 3px;
     margin: 5px 0 0;
     overflow-x: auto;
+    border: 1px solid #e9ecef;
+  }
+
+  /* Warning and no-queries styles */
+  .warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0;
+  }
+
+  .no-queries {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 2px dashed #dee2e6;
+  }
+
+  .no-queries p {
+    margin: 0;
+    font-style: italic;
   }
 </style>

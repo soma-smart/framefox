@@ -20,7 +20,9 @@ class CreateCrudCommand(AbstractCommand):
     def __init__(self):
         super().__init__("crud")
         self.api_controller_template = r"api_crud_controller_template.jinja2"
-        self.templated_controller_template = r"templated_crud_controller_template.jinja2"
+        self.templated_controller_template = (
+            r"templated_crud_controller_template.jinja2"
+        )
         self.controllers_path = r"src/controllers"
         self.input_choices = ["api", "templated"]
         self.templates_path = r"templates"
@@ -102,7 +104,9 @@ class CreateCrudCommand(AbstractCommand):
             newline=True,
         )
 
-        user_choice = InputManager().wait_input("CRUD controller type", choices=["1", "2"], default="1")
+        user_choice = InputManager().wait_input(
+            "CRUD controller type", choices=["1", "2"], default="1"
+        )
 
         user_input = "templated" if user_choice == "2" else "api"
         entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
@@ -117,7 +121,9 @@ class CreateCrudCommand(AbstractCommand):
         }
 
         file_creator = FileCreator()
-        if file_creator.check_if_exists(self.controllers_path, f"{entity_name}_controller"):
+        if file_creator.check_if_exists(
+            self.controllers_path, f"{entity_name}_controller"
+        ):
             self.printer.print_msg(
                 f"Controller {entity_name} already exists!",
                 theme="error",
@@ -180,6 +186,8 @@ class CreateCrudCommand(AbstractCommand):
             format="py",
         )
 
-        self.printer.print_msg(f"✓ Form type created successfully: {file_path}", theme="success")
+        self.printer.print_msg(
+            f"✓ Form type created successfully: {file_path}", theme="success"
+        )
 
         return file_path

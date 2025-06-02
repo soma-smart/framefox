@@ -44,7 +44,9 @@ class StatusCommand(AbstractDatabaseCommand):
 
             if db_exists:
                 try:
-                    engine = create_engine(self.alembic_manager.get_database_url_string())
+                    engine = create_engine(
+                        self.alembic_manager.get_database_url_string()
+                    )
                     with engine.connect() as connection:
                         connection_ok = True
                 except Exception as e:
@@ -53,7 +55,11 @@ class StatusCommand(AbstractDatabaseCommand):
             db_table.add_row(
                 "Connection",
                 "[green]Established[/green]" if connection_ok else "[red]Failed[/red]",
-                (error_message if error_message else ("OK" if connection_ok else "Not connected")),
+                (
+                    error_message
+                    if error_message
+                    else ("OK" if connection_ok else "Not connected")
+                ),
             )
 
             if db_exists and connection_ok:
@@ -61,7 +67,9 @@ class StatusCommand(AbstractDatabaseCommand):
                 host = self.connection_manager.config.host
                 port = self.connection_manager.config.port
 
-                db_table.add_row("Type", f"[cyan]{driver_name.upper()}[/cyan]", f"{host}:{port}")
+                db_table.add_row(
+                    "Type", f"[cyan]{driver_name.upper()}[/cyan]", f"{host}:{port}"
+                )
 
             console.print(db_table)
             console.print("")
@@ -105,7 +113,13 @@ class StatusCommand(AbstractDatabaseCommand):
                             if rev.revision == current_rev
                             else (
                                 "PENDING"
-                                if rev.revision in [r.revision for r in script.iterate_revisions(current_rev, "head")]
+                                if rev.revision
+                                in [
+                                    r.revision
+                                    for r in script.iterate_revisions(
+                                        current_rev, "head"
+                                    )
+                                ]
                                 else "APPLIED"
                             )
                         )
@@ -125,9 +139,13 @@ class StatusCommand(AbstractDatabaseCommand):
                         self.printer.print_msg("No migrations applied", theme="warning")
                     else:
                         pending = list(script.iterate_revisions(current_rev, "head"))
-                        self.printer.print_msg(f"{len(pending)} pending migration(s)", theme="warning")
+                        self.printer.print_msg(
+                            f"{len(pending)} pending migration(s)", theme="warning"
+                        )
                 else:
-                    self.printer.print_msg("The database is up to date", theme="success")
+                    self.printer.print_msg(
+                        "The database is up to date", theme="success"
+                    )
 
                 self.alembic_manager.cleanup_temp_files()
 

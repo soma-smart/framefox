@@ -5,12 +5,82 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Framefox - Swift, smart, and a bit foxy !
 		</title>
-		<link rel="stylesheet" href="static/css/default.css">
 		<link rel="icon" href="/static/images/orange_fox.png" type="image/x-icon">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-		<style></style>
+<style>
+		body {
+			margin: 0;
+			padding: 0;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			background-color: rgb(24, 24, 24);
+			position: relative;
+			}
+			.slogan {
+			margin-top: 20px;
+			font-family: "Poppins", sans-serif;
+			font-size: 24px;
+			color: white;
+			text-align: center;
+			}
+			/* Effet d'ombrage pour le texte */
+			.logo-text {
+			fill: #ffd700;
+			filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.22));
+			}
+			.buttons {
+			display: flex;
+			flex-direction: row;
+			width: 30%;
+			justify-content: space-between;
+			margin-top: 100px;
+			}
+
+			.button {
+			display: flex;
+			align-items: center;
+			background-color: rgba(255, 255, 255, 0.03);
+			color: white;
+			padding: 10px 15px;
+			border-radius: 5px;
+			text-decoration: none;
+			font-family: "Poppins", sans-serif;
+			font-size: 16px;
+			transition: background-color 0.3s;
+			}
+			.button:hover {
+			background-color: rgba(255, 255, 255, 0.2);
+			}
+			.button img {
+			width: 24px;
+			height: 24px;
+			margin-right: 8px;
+			}
+			.info-box {
+			background-color: rgba(201, 201, 201, 0.04);
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			padding: 20px;
+			border-radius: 10px;
+			font-family: "Courier New", Courier, monospace;
+			color: #ffd700;
+
+			text-align: center;
+			max-width: 70%;
+			margin-top: 30px;
+			}
+			.info-box code {
+			background-color: rgba(0, 0, 0, 0.5);
+			padding: 6px 8px;
+			border-radius: 4px;
+			font-family: "Courier New", Courier, monospace;
+			}
+
+</style>
 	</head>
 	<body>
 		<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="300" viewbox="0 0 1200 300">

@@ -39,15 +39,21 @@ class ServiceFactoryManager:
         self._factories.append(factory)
         self._logger.debug(f"Registered service factory: {factory.__class__.__name__}")
 
-    def create_service(self, service_class: Type[Any], container: "ServiceContainer") -> Any:
+    def create_service(
+        self, service_class: Type[Any], container: "ServiceContainer"
+    ) -> Any:
         """Try to create a service using registered factories."""
         for factory in self._factories:
             try:
                 if factory.supports(service_class):
-                    self._logger.debug(f"Using factory {factory.__class__.__name__} for {service_class.__name__}")
+                    self._logger.debug(
+                        f"Using factory {factory.__class__.__name__} for {service_class.__name__}"
+                    )
                     return factory.create(service_class, container)
             except Exception as e:
-                self._logger.warning(f"Factory {factory.__class__.__name__} failed for {service_class.__name__}: {e}")
+                self._logger.warning(
+                    f"Factory {factory.__class__.__name__} failed for {service_class.__name__}: {e}"
+                )
                 continue
 
         return None

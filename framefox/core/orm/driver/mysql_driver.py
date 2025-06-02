@@ -36,7 +36,9 @@ class MySQLDriver(DatabaseDriver):
     def create_database(self, name: str) -> bool:
         with self.connect() as connection:
             with connection.cursor() as cursor:
-                cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{name}` CHARACTER SET {self.config.charset}")
+                cursor.execute(
+                    f"CREATE DATABASE IF NOT EXISTS `{name}` CHARACTER SET {self.config.charset}"
+                )
             connection.commit()
         return True
 

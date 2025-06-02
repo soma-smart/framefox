@@ -120,4 +120,6 @@ class Session(SessionInterface):
             settings = container.get(Settings)
 
             if session_manager:
-                session_manager.update_session(session_id, request.state.session_data, settings.cookie_max_age)
+                session_manager.update_session(
+                    session_id, request.state.session_data, settings.cookie_max_age
+                )

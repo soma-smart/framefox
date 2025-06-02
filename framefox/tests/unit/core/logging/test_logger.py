@@ -84,7 +84,9 @@ class TestLogger:
             ("sqlalchemy.engine.Engine", ["file_sqlmodel"]),
         ],
     )
-    def test_logger_specific_configurations(self, logger_instance, logger_name, expected_handlers):
+    def test_logger_specific_configurations(
+        self, logger_instance, logger_name, expected_handlers
+    ):
         logger, mock_dict_config = logger_instance
         config = mock_dict_config.call_args[0][0]
 

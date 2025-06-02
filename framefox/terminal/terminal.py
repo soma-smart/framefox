@@ -150,7 +150,9 @@ class Terminal:
                 # Only suggest the most similar command if it has a reasonable distance
                 if command_similarities and command_similarities[0][0] < 5:
                     best_match = command_similarities[0][1]
-                    self.rich_console.print(f"Did you mean [bold yellow]{best_match}[/] ?", style="yellow")
+                    self.rich_console.print(
+                        f"Did you mean [bold yellow]{best_match}[/] ?", style="yellow"
+                    )
 
                 return 1
 
@@ -182,7 +184,9 @@ class Terminal:
     def _print_header(self):
         """Print the application header"""
         print("")
-        self.rich_console.print("🦊 Framefox - Swift, smart, and a bit foxy", style="bold orange1")
+        self.rich_console.print(
+            "🦊 Framefox - Swift, smart, and a bit foxy", style="bold orange1"
+        )
         print("")
 
     def _create_standard_console(self, help=True):
@@ -193,9 +197,13 @@ class Terminal:
             style="bold orange1",
         )
         print("")
-        self.rich_console.print("Usage: framefox [namespace:command] [OPTIONS]", style="bold white")
+        self.rich_console.print(
+            "Usage: framefox [namespace:command] [OPTIONS]", style="bold white"
+        )
         if help:
-            self.rich_console.print("Try 'framefox list' for available commands", style="bold white")
+            self.rich_console.print(
+                "Try 'framefox list' for available commands", style="bold white"
+            )
         print("")
         return self.rich_console
 
@@ -276,7 +284,9 @@ class Terminal:
         options_table = Table(show_header=True, header_style="bold orange1")
         options_table.add_column("Options", style="bold orange3", no_wrap=True)
         options_table.add_column("Description", style="white")
-        options_table.add_row("--all", "Display all available commands in detailed view")
+        options_table.add_row(
+            "--all", "Display all available commands in detailed view"
+        )
         options_table.add_row("namespace:command", "Execute a specific command")
         options_table.add_row("list", "Show detailed list of all commands")
 
@@ -336,7 +346,9 @@ class Terminal:
 
         # Final instructions
         self.rich_console.print("")
-        self.rich_console.print(f"Run 'framefox {namespace}:COMMAND --help' for specific command details")
+        self.rich_console.print(
+            f"Run 'framefox {namespace}:COMMAND --help' for specific command details"
+        )
 
     def levenshtein_distance(self, s1, s2):
         """

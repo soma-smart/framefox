@@ -39,26 +39,24 @@ class FileType(AbstractFormType):
         if not upload_file:
             return None
 
-        print(f">>> DEBUG: Processing file {upload_file.filename}")
-
         await upload_file.seek(0)
         content = await upload_file.read()
         file_size = len(content)
         await upload_file.seek(0)
 
-        print(f">>> DEBUG: File size: {file_size} bytes")
-
         if file_size > self.options.get("max_file_size"):
-            raise ValueError(f"The file is too large. Maximum: {self.options.get('max_file_size') / 1024 / 1024}MB")
+            raise ValueError(
+                f"The file is too large. Maximum: {self.options.get('max_file_size') / 1024 / 1024}MB"
+            )
 
         original_filename = upload_file.filename
         extension = os.path.splitext(original_filename)[1].lower()
         allowed_extensions = self.options.get("allowed_extensions")
 
-        print(f">>> DEBUG: Detected extension: {extension}")
-
         if allowed_extensions and extension not in allowed_extensions:
-            raise ValueError(f"File type not allowed. Allowed extensions: {', '.join(allowed_extensions)}")
+            raise ValueError(
+                f"File type not allowed. Allowed extensions: {', '.join(allowed_extensions)}"
+            )
 
         from framefox.core.di.service_container import ServiceContainer
 
@@ -66,11 +64,10 @@ class FileType(AbstractFormType):
 
         try:
             file_manager = container.get(FileManager)
-            print(f">>> DEBUG: FileManager retrieved from container")
+
         except Exception as e:
-            print(f">>> ERROR: Unable to retrieve FileManager: {str(e)}")
+
             file_manager = FileManager()
-            print(f">>> DEBUG: FileManager created directly")
 
         storage_path = self.options.get("storage_path")
 
@@ -83,10 +80,10 @@ class FileType(AbstractFormType):
                 rename=self.options.get("rename", True),
                 allowed_extensions=allowed_extensions,
             )
-            print(f">>> DEBUG: File saved at: {file_path}")
+
             return file_path
         except Exception as e:
-            print(f">>> ERROR FileManager.save: {str(e)}")
+
             raise e
 
     def transform_to_model(self, value: Any) -> Any:
