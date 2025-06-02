@@ -52,7 +52,9 @@ class TestPassport:
     def passport(self, mock_user_badge, mock_csrf_token_badge, provider_info):
         """Fixture for Passport instance"""
         password_credentials = PasswordCredentials("test_password")
-        return Passport(mock_user_badge, password_credentials, mock_csrf_token_badge, provider_info)
+        return Passport(
+            mock_user_badge, password_credentials, mock_csrf_token_badge, provider_info
+        )
 
     @pytest.mark.asyncio
     async def test_authenticate_user_with_direct_user(self, passport, mock_user):
@@ -110,10 +112,14 @@ class TestPassport:
         assert not passport.roles
 
     @pytest.mark.asyncio
-    async def test_authenticate_user_without_provider_info(self, mock_user_badge, mock_csrf_token_badge):
+    async def test_authenticate_user_without_provider_info(
+        self, mock_user_badge, mock_csrf_token_badge
+    ):
         """Test authentication without provider info"""
         # Setup
-        passport = Passport(mock_user_badge, PasswordCredentials("test_password"), mock_csrf_token_badge)
+        passport = Passport(
+            mock_user_badge, PasswordCredentials("test_password"), mock_csrf_token_badge
+        )
 
         # Execute
         result = await passport.authenticate_user()
@@ -126,7 +132,9 @@ class TestPassport:
     async def test_authenticate_user_without_user_badge(self, mock_csrf_token_badge):
         """Test authentication without user badge"""
         # Setup
-        passport = Passport(None, PasswordCredentials("test_password"), mock_csrf_token_badge)
+        passport = Passport(
+            None, PasswordCredentials("test_password"), mock_csrf_token_badge
+        )
 
         # Execute
         result = await passport.authenticate_user()

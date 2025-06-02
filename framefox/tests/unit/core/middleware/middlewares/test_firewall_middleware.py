@@ -51,7 +51,9 @@ class TestFirewallMiddleware:
 
     @pytest.fixture
     def middleware(self, mock_app, mock_settings, mock_handler):
-        with patch("framefox.core.middleware.middlewares.firewall_middleware.ServiceContainer") as MockServiceContainer:
+        with patch(
+            "framefox.core.middleware.middlewares.firewall_middleware.ServiceContainer"
+        ) as MockServiceContainer:
             # Create a mock instance of ServiceContainer
             container_instance = Mock()
             container_instance.get.return_value = mock_handler
@@ -60,7 +62,9 @@ class TestFirewallMiddleware:
             MockServiceContainer.return_value = container_instance
 
             # Patch BaseHTTPMiddleware.__init__
-            with patch("starlette.middleware.base.BaseHTTPMiddleware.__init__") as mock_init:
+            with patch(
+                "starlette.middleware.base.BaseHTTPMiddleware.__init__"
+            ) as mock_init:
                 mock_init.return_value = None
 
                 # Create the middleware
@@ -80,7 +84,9 @@ class TestFirewallMiddleware:
         assert isinstance(middleware.handler, AsyncMock)
 
     @pytest.mark.asyncio
-    async def test_dispatch_with_access_control(self, middleware, mock_request, mock_call_next, mock_handler):
+    async def test_dispatch_with_access_control(
+        self, middleware, mock_request, mock_call_next, mock_handler
+    ):
         """Test dispatch avec access_control activé"""
         # Setup
         mock_response = Mock()
@@ -91,7 +97,9 @@ class TestFirewallMiddleware:
 
         # Assert
         assert result == mock_response
-        mock_handler.handle_request.assert_called_once_with(mock_request, mock_call_next)
+        mock_handler.handle_request.assert_called_once_with(
+            mock_request, mock_call_next
+        )
 
     # @pytest.mark.asyncio
     # async def test_dispatch_without_access_control(
@@ -111,21 +119,27 @@ class TestFirewallMiddleware:
     #     mock_call_next.assert_called_once_with(mock_request)
 
     @pytest.mark.asyncio
-    async def test_dispatch_with_event_dispatch(self, middleware, mock_request, mock_call_next):
+    async def test_dispatch_with_event_dispatch(
+        self, middleware, mock_request, mock_call_next
+    ):
         """Test dispatch avec les événements"""
         # Setup
         mock_response = Mock()
         mock_call_next.return_value = mock_response
 
         # Patch l'event dispatcher
-        with patch("framefox.core.events.event_dispatcher.EventDispatcher.dispatch") as mock_dispatch:
+        with patch(
+            "framefox.core.events.event_dispatcher.EventDispatcher.dispatch"
+        ) as mock_dispatch:
             # Execute
             await middleware.dispatch(mock_request, mock_call_next)
 
             # Assert
             # Une fois pour auth.auth_attempt et une fois pour auth.auth_result
             assert mock_dispatch.call_count == 2
-            mock_dispatch.assert_any_call("auth.auth_attempt", {"request": mock_request})
+            mock_dispatch.assert_any_call(
+                "auth.auth_attempt", {"request": mock_request}
+            )
 
     # def test_middleware_logging(self, middleware, caplog):
     #     """Test le logging du middleware"""

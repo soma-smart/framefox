@@ -46,7 +46,11 @@ class FormField:
     def validate(self) -> bool:
         self.errors = []
 
-        if self.options.get("required", False) and not self.value and self.value is not False:
+        if (
+            self.options.get("required", False)
+            and not self.value
+            and self.value is not False
+        ):
             self.errors.append(f"The field {self.name} is required")
             return False
 

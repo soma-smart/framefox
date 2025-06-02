@@ -28,8 +28,12 @@ class TestEntityUserProvider:
         }
 
         settings.providers = {
-            "user_provider": {"entity": {"class": "src.entity.User", "property": "email"}},
-            "api_provider": {"entity": {"class": "src.entity.ApiUser", "property": "api_key"}},
+            "user_provider": {
+                "entity": {"class": "src.entity.User", "property": "email"}
+            },
+            "api_provider": {
+                "entity": {"class": "src.entity.ApiUser", "property": "api_key"}
+            },
             "invalid_provider": {"entity": {"class": "invalid.path.User"}},
         }
         return settings
@@ -87,12 +91,16 @@ class TestEntityUserProvider:
     def test_get_repository_and_property_missing_property(self, user_provider):
         """Test with incomplete provider configuration"""
         mock_settings = user_provider.settings
-        mock_settings.providers["invalid_provider"]["entity"] = {"class": "src.entity.User"}
+        mock_settings.providers["invalid_provider"]["entity"] = {
+            "class": "src.entity.User"
+        }
         result = user_provider.get_repository_and_property("invalid")
         assert result is None
 
     @patch("importlib.import_module")
-    def test_get_repository_and_property_attribute_error(self, mock_import, user_provider):
+    def test_get_repository_and_property_attribute_error(
+        self, mock_import, user_provider
+    ):
         """Test with an attribute error during import"""
         mock_import.side_effect = AttributeError("Module has no attribute")
         result = user_provider.get_repository_and_property("main")

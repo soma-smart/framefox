@@ -25,7 +25,9 @@ class ServerStartCommand(AbstractCommand):
         original_port = port
 
         while self._is_port_in_use(port) and port < original_port + 10:
-            self.printer.print_msg(f"Port {port} already in use, trying {port+1}...", theme="warning")
+            self.printer.print_msg(
+                f"Port {port} already in use, trying {port+1}...", theme="warning"
+            )
             port += 1
 
         with_workers = False
@@ -40,7 +42,9 @@ class ServerStartCommand(AbstractCommand):
         )
         if with_workers:
             self._setup_workers()
-        browser_thread = threading.Thread(target=self._open_browser, args=(port,), daemon=True)
+        browser_thread = threading.Thread(
+            target=self._open_browser, args=(port,), daemon=True
+        )
         browser_thread.start()
 
         try:
@@ -74,7 +78,9 @@ class ServerStartCommand(AbstractCommand):
         )
         try:
             self.worker_stop_event = threading.Event()
-            self.worker_thread = threading.Thread(target=self._run_worker_thread, daemon=True)
+            self.worker_thread = threading.Thread(
+                target=self._run_worker_thread, daemon=True
+            )
             self.worker_thread.start()
         except Exception as e:
             self.printer.print_msg(f"Failed to start worker: {str(e)}", theme="error")

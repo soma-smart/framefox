@@ -42,7 +42,9 @@ class ProfilerController(AbstractController):
     async def profiler_detail(self, token: str):
 
         profile = self.profiler.get_profile(token)
-        return self.render("profiler/details.html", {"token": token, "profile": profile})
+        return self.render(
+            "profiler/details.html", {"token": token, "profile": profile}
+        )
 
     @Route("/_profiler/{token}/{panel}", "profiler.panel", methods=["GET"])
     async def profiler_panel(self, token: str, panel: str):

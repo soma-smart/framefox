@@ -42,7 +42,10 @@ class FormExtension:
 
         has_file_field = False
         for field in form_view.form.fields.values():
-            if hasattr(field.type, "get_block_prefix") and field.type.get_block_prefix() == "file":
+            if (
+                hasattr(field.type, "get_block_prefix")
+                and field.type.get_block_prefix() == "file"
+            ):
                 has_file_field = True
                 break
 
@@ -134,7 +137,9 @@ class FormExtension:
             return ""
 
         errors = field_view.get_errors()
-        error_html = "".join([f'<div class="invalid-feedback">{error}</div>' for error in errors])
+        error_html = "".join(
+            [f'<div class="invalid-feedback">{error}</div>' for error in errors]
+        )
 
         return error_html
 

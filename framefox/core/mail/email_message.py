@@ -30,4 +30,6 @@ class EmailMessage:
 
     def add_attachment(self, filepath: str, filename: Optional[str] = None) -> None:
         """Adds an attachment to the email."""
-        self.attachments.append({"filepath": filepath, "filename": filename or filepath.split("/")[-1]})
+        self.attachments.append(
+            {"filepath": filepath, "filename": filename or filepath.split("/")[-1]}
+        )

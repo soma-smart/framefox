@@ -72,7 +72,9 @@ class Passport:
 
         if self.password_credentials:
             password_hasher = PasswordHasher()
-            authenticated = password_hasher.verify(self.password_credentials.raw_password, self.user.password)
+            authenticated = password_hasher.verify(
+                self.password_credentials.raw_password, self.user.password
+            )
             if not authenticated:
                 self.logger.warning("Password verification failed.")
                 return False

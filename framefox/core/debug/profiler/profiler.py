@@ -1,17 +1,31 @@
 import datetime
 import json
 import logging
-import os
 import random
 import shutil
-import time
-import traceback
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
-import psutil
 from fastapi import Request, Response
+
+from framefox.core.config.settings import Settings
+from framefox.core.debug.profiler.collector.data_collector import DataCollector
+from framefox.core.debug.profiler.collector.exception_data_collector import (
+    ExceptionDataCollector,
+)
+from framefox.core.debug.profiler.collector.log_data_collector import LogDataCollector
+from framefox.core.debug.profiler.collector.memory_data_collector import (
+    MemoryDataCollector,
+)
+from framefox.core.debug.profiler.collector.request_data_collector import (
+    RequestDataCollector,
+)
+from framefox.core.debug.profiler.collector.route_data_collector import (
+    RouteDataCollector,
+)
+from framefox.core.debug.profiler.collector.sql_data_collector import SQLDataCollector
+from framefox.core.debug.profiler.collector.time_data_collector import TimeDataCollector
 
 """
 Framefox Framework developed by SOMA
@@ -22,232 +36,28 @@ Github: https://github.com/RayenBou
 """
 
 
-class DataCollector:
-    def __init__(self, name: str, icon: str):
-        self.name = name
-        self.icon = icon
-        self.data = {}
-
-    def collect(self, request: Request, response: Response) -> None:
-        pass
-
-    def get_data(self) -> Dict[str, Any]:
-        return self.data
-
-
-class LogDataCollector(DataCollector):
-    def __init__(self):
-        super().__init__("log", "fa-list")
-        self.records = []
-        self._setup_handler()
-
-    def _setup_handler(self):
-        class ProfilerLogHandler(logging.Handler):
-            def __init__(self, collector):
-                super().__init__()
-                self.collector = collector
-
-            def emit(self, record):
-                self.collector.add_record(record)
-
-        self.handler = ProfilerLogHandler(self)
-        root_logger = logging.getLogger()
-        root_logger.addHandler(self.handler)
-
-    def add_record(self, record):
-        self.records.append(
-            {
-                "message": record.getMessage(),
-                "level": record.levelname,
-                "channel": record.name,
-                "timestamp": record.created,
-                "context": getattr(record, "context", {}),
-            }
-        )
-
-    def collect(self, request: Request, response: Response) -> None:
-        self.data = {
-            "records": self.records,
-            "count": len(self.records),
-            "error_count": sum(1 for r in self.records if r["level"] in ("ERROR", "CRITICAL")),
-        }
-
-
-class ExceptionDataCollector(DataCollector):
-    def __init__(self):
-        super().__init__("exception", "fa-bug")
-        self.exception = None
-
-    def collect_exception(self, exception: Exception, stack_trace: str = None) -> None:
-        self.exception = {
-            "class": exception.__class__.__name__,
-            "message": str(exception),
-            "code": getattr(exception, "code", 0),
-            "trace": stack_trace or traceback.format_exc(),
-            "file": self._get_exception_file(exception),
-            "line": self._get_exception_line(exception),
-        }
-
-    def _get_exception_file(self, exception):
-        if hasattr(exception, "__traceback__") and exception.__traceback__:
-            return exception.__traceback__.tb_frame.f_code.co_filename
-        return "Unknown"
-
-    def _get_exception_line(self, exception):
-        if hasattr(exception, "__traceback__") and exception.__traceback__:
-            return exception.__traceback__.tb_lineno
-        return 0
-
-    def collect(self, request: Request, response: Response) -> None:
-        if hasattr(request.state, "exception"):
-            self.exception = request.state.exception
-
-        self.data = {
-            "exception": self.exception,
-            "status_code": (response.status_code if hasattr(response, "status_code") else 500),
-            "has_exception": self.exception is not None,
-        }
-
-
-class RequestDataCollector(DataCollector):
-    def __init__(self):
-        super().__init__("request", "fa-globe")
-
-    def collect(self, request: Request, response: Response) -> None:
-        self.data = {
-            "method": request.method,
-            "path": request.url.path,
-            "path_params": dict(request.path_params),
-            "query_params": dict(request.query_params),
-            "headers": dict(request.headers),
-            "client": request.client.host if request.client else "unknown",
-            "status_code": response.status_code,
-            "response_headers": dict(response.headers),
-        }
-
-
-class TimeDataCollector(DataCollector):
-    def __init__(self):
-        super().__init__("time", "fa-clock")
-
-    def collect(self, request: Request, response: Response) -> None:
-        end_time = time.time()
-        start_time = getattr(request.state, "request_start_time", None)
-
-        if start_time is None:
-            request_duration = getattr(request.state, "request_duration", None)
-            if request_duration:
-                start_time = end_time - (request_duration / 1000)
-            else:
-                start_time = end_time - 0.01
-
-        self.data = {
-            "start_time": start_time,
-            "end_time": end_time,
-            "duration": round((end_time - start_time) * 1000, 2),
-        }
-
-
-class MemoryDataCollector(DataCollector):
-    def __init__(self):
-        super().__init__("memory", "fa-memory")
-
-    def collect(self, request: Request, response: Response) -> None:
-        process = psutil.Process(os.getpid())
-        memory_info = process.memory_info()
-        self.data = {
-            "memory_usage": memory_info.rss / (1024 * 1024),
-            "peak_memory": memory_info.vms / (1024 * 1024),
-        }
-
-
-class SQLDataCollector(DataCollector):
-    def __init__(self):
-        super().__init__("database", "fa-database")
-        self.queries = []
-
-    def add_query(self, query: str, parameters: Dict, duration: float) -> None:
-        self.queries.append({"query": query, "parameters": parameters, "duration": duration})
-
-    def collect(self, request: Request, response: Response) -> None:
-        self.data = {
-            "queries": self.queries,
-            "query_count": len(self.queries),
-            "total_duration": sum(q["duration"] for q in self.queries),
-        }
-
-
-class RouteDataCollector(DataCollector):
-    def __init__(self):
-        super().__init__("route", "fa-map-signs")
-
-    def collect(self, request: Request, response: Response) -> None:
-        from framefox.core.routing.router import Router
-
-        endpoint = request.scope.get("endpoint", None)
-        path = request.url.path
-        route_name = "unknown"
-        controller_name = "unknown"
-        method_name = "unknown"
-        allowed_methods = []
-        template = None
-
-        if endpoint:
-            full_name = getattr(endpoint, "__qualname__", str(endpoint))
-            if "." in full_name:
-                parts = full_name.split(".", 1)
-                controller_name = parts[0]
-                method_name = parts[1]
-            else:
-                method_name = full_name
-
-            module_name = getattr(endpoint, "__module__", "")
-            if module_name and controller_name != "unknown":
-                controller_name = f"{module_name}.{controller_name}"
-
-            if hasattr(endpoint, "route_info"):
-                route_info = getattr(endpoint, "route_info")
-                if isinstance(route_info, dict) and "methods" in route_info:
-                    allowed_methods = route_info.get("methods", [])
-
-            for name, route_path in Router._routes.items():
-                route_parts = route_path.split("/")
-                path_parts = path.split("/")
-
-                if len(route_parts) == len(path_parts):
-                    match = True
-                    for i, (route_part, path_part) in enumerate(zip(route_parts, path_parts)):
-                        if route_part and route_part[0] == "{" and route_part[-1] == "}":
-                            continue
-                        if route_part != path_part:
-                            match = False
-                            break
-
-                    if match:
-                        route_name = name
-                        break
-            if hasattr(response, "template_name"):
-                template = response.template_name
-
-            elif hasattr(request.state, "template"):
-                template = request.state.template
-            elif hasattr(endpoint, "__self__"):
-                controller_instance = getattr(endpoint, "__self__")
-                if hasattr(controller_instance, "_last_rendered_template"):
-                    template = controller_instance._last_rendered_template
-
-        self.data = {
-            "route": path,
-            "route_name": route_name,
-            "endpoint": str(endpoint),
-            "controller_name": controller_name,
-            "method_name": method_name,
-            "allowed_methods": allowed_methods,
-            "template": template,
-        }
-
-
 class Profiler:
+    """
+    Singleton class for profiling HTTP requests in the Framefox framework.
+
+    The Profiler manages data collectors, handles storage and retention of profiling data,
+    and provides methods to enable/disable profiling, collect and retrieve profiles, and
+    manage profile storage limits and retention policies.
+
+    Attributes:
+        settings: Application settings loaded from configuration.
+        collectors: Registered data collectors for profiling.
+        profiles_cache: In-memory cache of recent profiles.
+        enabled: Whether profiling is currently enabled.
+        max_profiles_in_memory: Maximum number of profiles to keep in memory.
+        max_profiles_per_day: Maximum number of profiles to store per day.
+        retention_days: Number of days to retain profile data.
+        sampling_rate: Fraction of requests to profile (0.0 - 1.0).
+        exclude_paths: List of URL paths to exclude from profiling.
+        base_storage_dir: Base directory for storing profile data.
+        logger: Logger for profiler events.
+    """
+
     _instance = None
 
     def __new__(cls):
@@ -260,13 +70,16 @@ class Profiler:
         if self.initialized:
             return
 
+        self.settings = Settings()
         self.collectors = {}
         self.profiles_cache = {}
         self.enabled = False
-        self.max_profiles_in_memory = 50
-        self.max_profiles_per_day = 1000
-        self.retention_days = 7
-        self.sampling_rate = 1.0
+
+        self.max_profiles_in_memory = self.settings.profiler_max_memory
+        self.max_profiles_per_day = self.settings.profiler_max_files_per_day
+        self.retention_days = self.settings.profiler_retention_days
+        self.sampling_rate = self.settings.profiler_sampling_rate
+
         self.exclude_paths = [
             "/static",
             "/_profiler",
@@ -303,19 +116,22 @@ class Profiler:
 
         profile_count = len(list(self.storage_dir.glob("*.json")))
         if profile_count >= self.max_profiles_per_day:
-            self.logger.warning(f"Maximum number of profiles reached for today ({profile_count}). Replacing oldest profiles.")
+            self.logger.warning(
+                f"Maximum number of profiles reached for today ({profile_count}/{self.max_profiles_per_day}). Replacing oldest profiles."
+            )
 
     def _cleanup_old_profiles(self) -> None:
         try:
             if not self.base_storage_dir.exists():
                 return
 
-            cutoff_date = datetime.datetime.now() - datetime.timedelta(days=self.retention_days)
+            cutoff_date = datetime.datetime.now() - datetime.timedelta(
+                days=self.retention_days
+            )
             cutoff_str = cutoff_date.strftime("%Y-%m-%d")
 
             for date_dir in self.base_storage_dir.iterdir():
                 if date_dir.is_dir() and date_dir.name < cutoff_str:
-                    self.logger.info(f"Cleaning up old profiles in {date_dir}")
                     shutil.rmtree(date_dir)
         except Exception as e:
             self.logger.error(f"Error cleaning up old profiles: {str(e)}")
@@ -326,6 +142,9 @@ class Profiler:
             keys_to_remove = sorted_keys[: -self.max_profiles_in_memory]
             for key in keys_to_remove:
                 self.profiles_cache.pop(key, None)
+            self.logger.debug(
+                f"Cleaned cache, removed {len(keys_to_remove)} profiles (max: {self.max_profiles_in_memory})"
+            )
 
     def _find_oldest_profile(self) -> Optional[Path]:
         if not self.storage_dir.exists():
@@ -359,6 +178,9 @@ class Profiler:
                 return False
 
         if self.sampling_rate < 1.0 and random.random() > self.sampling_rate:
+            self.logger.debug(
+                f"Request skipped due to sampling rate ({self.sampling_rate})"
+            )
             return False
 
         return True
@@ -386,6 +208,13 @@ class Profiler:
                 profile_data[name] = collector.get_data()
             except Exception as e:
                 self.logger.error(f"Error collecting data from {name}: {str(e)}")
+
+        for name, collector in self.collectors.items():
+            try:
+                if hasattr(collector, "reset"):
+                    collector.reset()
+            except Exception as e:
+                self.logger.error(f"Error resetting collector {name}: {str(e)}")
 
         self.profiles_cache[token] = profile_data
         self._maintain_cache_size()
@@ -454,13 +283,21 @@ class Profiler:
                 try:
                     with open(file_path, "r") as f:
                         profile_data = json.load(f)
+
+                        time_data = profile_data.get("time", {})
+                        request_data = profile_data.get("request", {})
+
                         summary = {
                             "token": file_path.stem,
                             "url": profile_data.get("url", ""),
                             "method": profile_data.get("method", ""),
                             "time": profile_data.get("time", ""),
-                            "status_code": profile_data.get("request", {}).get("status_code", 0),
-                            "duration": profile_data.get("time", {}).get("duration", 0),
+                            "status_code": request_data.get("status_code", 0),
+                            "duration": (
+                                time_data.get("duration", 0)
+                                if isinstance(time_data, dict)
+                                else 0
+                            ),
                         }
                         profiles.append(summary)
                         count += 1
@@ -476,6 +313,9 @@ class Profiler:
             if len(files) >= self.max_profiles_per_day:
                 oldest_file = self._find_oldest_profile()
                 if oldest_file and oldest_file.exists():
+                    self.logger.debug(
+                        f"Removing oldest profile {oldest_file.name} (limit: {self.max_profiles_per_day})"
+                    )
                     oldest_file.unlink()
 
             profile_path = self.storage_dir / f"{token}.json"

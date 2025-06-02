@@ -24,6 +24,12 @@ Github: https://github.com/RayenBou
 
 
 class ProfilerMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware for profiling HTTP requests in a FastAPI application.
+    It collects request, response, SQL, and exception data, and injects a profiler toolbar
+    into HTML responses for debugging and performance monitoring.
+    """
+
     def __init__(self, app):
         super().__init__(app)
         self.profiler = Profiler()
@@ -41,9 +47,22 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
         request.state.request_start_time = start_time
 
+        request_collector = self.profiler.get_collector("request")
+        if request_collector and request.method in ("POST", "PUT", "PATCH"):
+            try:
+                await request_collector.capture_request_body(request)
+            except Exception as e:
+                self.logger.debug(f"Could not capture request body: {e}")
+
+        sql_collector = self.profiler.get_collector("database")
+        if sql_collector:
+            sql_collector.start_request()
+
         try:
             response = await call_next(request)
         except Exception as e:
+            if sql_collector:
+                sql_collector.request_active = False
 
             exception_collector = self.profiler.get_collector("exception")
             if exception_collector:
@@ -62,13 +81,14 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             content_type = response.headers.get("content-type", "")
             is_html = "text/html" in content_type
 
-            if not is_html or not self.profiler.is_enabled():
+            if self.profiler.is_enabled():
+                token = self.profiler.collect(request, response)
+
+            if not is_html:
                 return response
 
             if response.status_code in (301, 302, 303, 307, 308):
                 return response
-
-            token = self.profiler.collect(request, response)
 
             if not token:
                 return response
@@ -80,7 +100,9 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             )
 
             if is_streaming:
-                return await self._handle_streaming_response(response, token, start_time, request)
+                return await self._handle_streaming_response(
+                    response, token, start_time, request
+                )
 
             if hasattr(response, "body"):
                 response_text = response.body.decode("utf-8")
@@ -88,7 +110,9 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                 has_body_tag = "</body>" in response_text
 
                 if has_body_tag:
-                    html = self._generate_profiler_bar(token, time.time() - start_time, request)
+                    html = self._generate_profiler_bar(
+                        token, time.time() - start_time, request
+                    )
 
                     response_text = response_text.replace("</body>", f"{html}</body>")
                     response.body = response_text.encode("utf-8")
@@ -98,8 +122,12 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback_details = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-            self.logger.error(f"Unhandled exception in profiler: {str(e)}\n{traceback_details}")
+            traceback_details = "".join(
+                traceback.format_exception(exc_type, exc_value, exc_traceback)
+            )
+            self.logger.error(
+                f"Unhandled exception in profiler: {str(e)}\n{traceback_details}"
+            )
             return response
 
     async def _handle_streaming_response(
@@ -110,7 +138,9 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
         request: Request,
     ) -> StreamingResponse:
         try:
-            profiler_html = self._generate_profiler_bar(token, time.time() - start_time, request)
+            profiler_html = self._generate_profiler_bar(
+                token, time.time() - start_time, request
+            )
 
             content_chunks = []
 
@@ -125,7 +155,9 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                         content_str = full_content.decode("utf-8")
 
                         if "</body>" in content_str:
-                            modified_content = content_str.replace("</body>", f"{profiler_html}</body>")
+                            modified_content = content_str.replace(
+                                "</body>", f"{profiler_html}</body>"
+                            )
                             yield modified_content.encode("utf-8")
                         else:
                             yield full_content
@@ -153,16 +185,28 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             return new_response
 
         except Exception as e:
-            self.logger.error(f"Fatal exception in _handle_streaming_response: {str(e)}\n{traceback.format_exc()}")
+            self.logger.error(
+                f"Fatal exception in _handle_streaming_response: {str(e)}\n{traceback.format_exc()}"
+            )
             return response
 
-    def _generate_profiler_bar(self, token: str, duration: float, request: Request) -> str:
+    def _generate_profiler_bar(
+        self, token: str, duration: float, request: Request
+    ) -> str:
         profile = self.profiler.get_profile(token)
 
         duration_ms = round(duration * 1000, 2)
-        memory = profile.get("memory", {}).get("memory_usage", 0) if "memory" in profile else 0
+        memory = (
+            profile.get("memory", {}).get("memory_usage", 0)
+            if "memory" in profile
+            else 0
+        )
         route = request.url.path
-        status_code = profile.get("request", {}).get("status_code", 200) if "request" in profile else 200
+        status_code = (
+            profile.get("request", {}).get("status_code", 200)
+            if "request" in profile
+            else 200
+        )
 
         context = {
             "token": token,
@@ -174,7 +218,6 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
         }
 
         try:
-
             container = ServiceContainer()
             template_renderer = container.get(TemplateRenderer)
 
@@ -182,3 +225,5 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                 return template_renderer.render("profiler/toolbar.html", context)
         except Exception as e:
             self.logger.error(f"Error rendering profiler template: {str(e)}")
+
+        return ""

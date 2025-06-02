@@ -41,7 +41,9 @@ class BundleManager:
             try:
                 bundle.register_services(container)
             except Exception as e:
-                self.logger.error(f"Error registering services for bundle {name}: {str(e)}")
+                self.logger.error(
+                    f"Error registering services for bundle {name}: {str(e)}"
+                )
 
     def register_bundle_commands(self, registry: CommandRegistry) -> None:
         """Registers commands for all bundles"""
@@ -49,7 +51,9 @@ class BundleManager:
             try:
                 bundle.register_commands(registry)
             except Exception as e:
-                self.logger.error(f"Error registering commands for bundle {name}: {str(e)}")
+                self.logger.error(
+                    f"Error registering commands for bundle {name}: {str(e)}"
+                )
 
     def boot_bundles(self, container: ServiceContainer) -> None:
         """Boots all bundles after complete initialization"""

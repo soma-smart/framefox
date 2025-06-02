@@ -23,7 +23,11 @@ class AbstractEntity(SQLModel):
         Returns:
             The create model class.
         """
-        fields = {name: (field.annotation, ...) for name, field in cls.__fields__.items() if name != "id"}
+        fields = {
+            name: (field.annotation, ...)
+            for name, field in cls.__fields__.items()
+            if name != "id"
+        }
         create_model_name = f"{cls.__name__}Create"
         create_model_class = create_model(create_model_name, **fields)
         return create_model_class
@@ -50,7 +54,11 @@ class AbstractEntity(SQLModel):
         """
         mapper = inspect(cls)
         primary_keys = [key.name for key in mapper.primary_key]
-        fields = {name: (field.annotation, ...) for name, field in cls.__fields__.items() if name in primary_keys}
+        fields = {
+            name: (field.annotation, ...)
+            for name, field in cls.__fields__.items()
+            if name in primary_keys
+        }
         create_model_name = f"{cls.__name__}Find"
         create_model_class = create_model(create_model_name, **fields)
         return create_model_class

@@ -35,7 +35,9 @@ class AlembicManager:
             self._project_root = Path(os.getcwd())
             self._migrations_dir = self._project_root / "migrations"
             self._versions_dir = self._migrations_dir / "versions"
-            self._templates_dir = self._project_root / "framefox" / "core" / "migration" / "templates"
+            self._templates_dir = (
+                self._project_root / "framefox" / "core" / "migration" / "templates"
+            )
             self._initialized = True
             self._temp_files = []
 
@@ -85,7 +87,9 @@ prepend_sys_path = .
         database = str(db_config.database) if db_config.database else ""
         return f"{dialect}://{username}:{password}@{host}:{port}/{database}"
 
-    def create_migration(self, message: str, autogenerate: bool = True) -> Optional[str]:
+    def create_migration(
+        self, message: str, autogenerate: bool = True
+    ) -> Optional[str]:
         """Creates a new migration and returns the created file"""
         self.setup_directories()
         self.setup_templates()
@@ -109,13 +113,17 @@ prepend_sys_path = .
         try:
             with create_engine(self.get_database_url_string()).connect() as conn:
                 try:
-                    current = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
+                    current = conn.execute(
+                        text("SELECT version_num FROM alembic_version")
+                    ).scalar()
                 except Exception:
                     current = None
             config = self.create_config()
             command.upgrade(config, revision)
             with create_engine(self.get_database_url_string()).connect() as conn:
-                new = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
+                new = conn.execute(
+                    text("SELECT version_num FROM alembic_version")
+                ).scalar()
             self.cleanup_temp_files()
             return (True, current != new)
         except Exception as e:

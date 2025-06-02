@@ -130,14 +130,18 @@ class ServiceContainer:
         for service_path in essential_services:
             try:
                 service_cls = self._import_service_class(service_path)
-                definition = ServiceDefinition(service_cls, public=True, synthetic=True, tags=["essential"])
+                definition = ServiceDefinition(
+                    service_cls, public=True, synthetic=True, tags=["essential"]
+                )
                 self._registry.register_definition(definition)
 
                 # Immediately instantiate essential services
                 self.get(service_cls)
 
             except Exception as e:
-                self._logger.warning(f"Could not register essential service {service_path}: {e}")
+                self._logger.warning(
+                    f"Could not register essential service {service_path}: {e}"
+                )
 
     def _import_service_class(self, service_path: str) -> Type[Any]:
         """Import a service class from its full path."""
@@ -195,12 +199,16 @@ class ServiceContainer:
         ]
 
         # Scan core framework
-        self._scan_for_service_definitions(core_path, "framefox.core", excluded_directories, excluded_modules)
+        self._scan_for_service_definitions(
+            core_path, "framefox.core", excluded_directories, excluded_modules
+        )
 
         # Scan user source code
         for src_path in src_paths:
             if src_path.exists():
-                self._scan_for_service_definitions(src_path, "src", excluded_directories, excluded_modules)
+                self._scan_for_service_definitions(
+                    src_path, "src", excluded_directories, excluded_modules
+                )
 
     def _find_source_paths(self) -> List[Path]:
         """Find potential source paths for service discovery."""
@@ -247,7 +255,9 @@ class ServiceContainer:
                     continue
 
                 try:
-                    module_name = self._build_module_name(root_path / file, base_path, base_package)
+                    module_name = self._build_module_name(
+                        root_path / file, base_path, base_package
+                    )
 
                     if self._should_exclude_module(module_name, excluded_modules):
                         continue
@@ -259,7 +269,11 @@ class ServiceContainer:
 
     def _should_exclude_directory(self, path: Path, excluded_dirs: List[str]) -> bool:
         """Check if a directory should be excluded from scanning."""
-        return any(excluded_dir.lower() in part.lower() for part in path.parts for excluded_dir in excluded_dirs)
+        return any(
+            excluded_dir.lower() in part.lower()
+            for part in path.parts
+            for excluded_dir in excluded_dirs
+        )
 
     def _should_process_file(self, filename: str) -> bool:
         """Check if a file should be processed for service discovery."""
@@ -292,16 +306,25 @@ class ServiceContainer:
 
         return True
 
-    def _build_module_name(self, file_path: Path, base_path: Path, base_package: str) -> str:
+    def _build_module_name(
+        self, file_path: Path, base_path: Path, base_package: str
+    ) -> str:
         """Build module name from file path."""
-        rel_path = file_path.relative_to(base_path).with_suffix("").as_posix().replace("/", ".")
+        rel_path = (
+            file_path.relative_to(base_path)
+            .with_suffix("")
+            .as_posix()
+            .replace("/", ".")
+        )
 
         if rel_path:
             return f"{base_package}.{rel_path}"
         else:
             return base_package
 
-    def _should_exclude_module(self, module_name: str, excluded_modules: List[str]) -> bool:
+    def _should_exclude_module(
+        self, module_name: str, excluded_modules: List[str]
+    ) -> bool:
         """Check if a module should be excluded."""
         return any(module_name.startswith(excluded) for excluded in excluded_modules)
 
@@ -319,7 +342,9 @@ class ServiceContainer:
 
                 except Exception as e:
                     if "access" not in str(e).lower():
-                        self._logger.debug(f"Error inspecting attribute {attr_name} in {module_name}: {e}")
+                        self._logger.debug(
+                            f"Error inspecting attribute {attr_name} in {module_name}: {e}"
+                        )
 
         except (ModuleNotFoundError, ImportError) as e:
             # Silently ignore common debug modules
@@ -419,11 +444,17 @@ class ServiceContainer:
         module_name = cls.__module__
 
         # Filtrer les modules built-in
-        if any(module_name == builtin or module_name.startswith(f"{builtin}.") for builtin in builtin_modules):
+        if any(
+            module_name == builtin or module_name.startswith(f"{builtin}.")
+            for builtin in builtin_modules
+        ):
             return False
 
         # Filtrer les librairies externes
-        if any(module_name == lib or module_name.startswith(f"{lib}.") for lib in external_libraries):
+        if any(
+            module_name == lib or module_name.startswith(f"{lib}.")
+            for lib in external_libraries
+        ):
             return False
 
         # === FILTRES EXISTANTS AMÉLIORÉS ===
@@ -438,14 +469,25 @@ class ServiceContainer:
             return False
 
         # Ignore les interfaces (classes abstraites sans implémentation)
-        if cls.__name__.startswith("I") and hasattr(cls, "__abstractmethods__") and len(cls.__abstractmethods__) > 0:
+        if (
+            cls.__name__.startswith("I")
+            and hasattr(cls, "__abstractmethods__")
+            and len(cls.__abstractmethods__) > 0
+        ):
             return False
 
         # Ignore les classes abstraites pures (toutes les méthodes sont abstraites)
         if (
             hasattr(cls, "__abstractmethods__")
             and len(cls.__abstractmethods__) > 0
-            and len([m for m in dir(cls) if not m.startswith("_") and callable(getattr(cls, m))]) == len(cls.__abstractmethods__)
+            and len(
+                [
+                    m
+                    for m in dir(cls)
+                    if not m.startswith("_") and callable(getattr(cls, m))
+                ]
+            )
+            == len(cls.__abstractmethods__)
         ):
             return False
 
@@ -482,7 +524,10 @@ class ServiceContainer:
                 return False
 
         # Ignore les classes de configuration simple (celles qui n'ont que des attributs)
-        if not any(callable(getattr(cls, attr)) and not attr.startswith("_") for attr in dir(cls)):
+        if not any(
+            callable(getattr(cls, attr)) and not attr.startswith("_")
+            for attr in dir(cls)
+        ):
             return False
 
         # === VÉRIFICATIONS SPÉCIFIQUES AU FRAMEWORK ===
@@ -569,7 +614,9 @@ class ServiceContainer:
         if definition.abstract:
             raise ServiceInstantiationError(
                 service_class,
-                Exception(f"Cannot instantiate abstract class {service_class.__name__}"),
+                Exception(
+                    f"Cannot instantiate abstract class {service_class.__name__}"
+                ),
             )
 
         # Mark as being resolved
@@ -587,7 +634,9 @@ class ServiceContainer:
 
                 return instance
             else:
-                raise ServiceInstantiationError(service_class, Exception("Failed to create instance"))
+                raise ServiceInstantiationError(
+                    service_class, Exception("Failed to create instance")
+                )
 
         except Exception as e:
             if isinstance(
@@ -604,10 +653,14 @@ class ServiceContainer:
             # Clean up circular dependency detection
             self._circular_detection.discard(service_class)
 
-    def _create_dynamic_definition(self, service_class: Type[Any]) -> Optional[ServiceDefinition]:
+    def _create_dynamic_definition(
+        self, service_class: Type[Any]
+    ) -> Optional[ServiceDefinition]:
         """Create a service definition dynamically if the class qualifies."""
         if self._can_be_service(service_class):
-            definition = ServiceDefinition(service_class, tags=[self._get_default_tag(service_class)])
+            definition = ServiceDefinition(
+                service_class, tags=[self._get_default_tag(service_class)]
+            )
             self._registry.register_definition(definition)
             return definition
         return None
@@ -669,13 +722,19 @@ class ServiceContainer:
                     else:
                         # No type annotation and no default value
                         dependencies.append(None)
-                        self._logger.warning(f"Parameter {name} of {service_class.__name__} has no type hint and no default value")
+                        self._logger.warning(
+                            f"Parameter {name} of {service_class.__name__} has no type hint and no default value"
+                        )
 
             except Exception as e:
-                self._logger.error(f"Error getting type hints for {service_class.__name__}: {e}")
+                self._logger.error(
+                    f"Error getting type hints for {service_class.__name__}: {e}"
+                )
 
         except Exception as e:
-            self._logger.error(f"Error analyzing constructor of {service_class.__name__}: {e}")
+            self._logger.error(
+                f"Error analyzing constructor of {service_class.__name__}: {e}"
+            )
 
         return dependencies
 
@@ -686,7 +745,9 @@ class ServiceContainer:
                 method = getattr(instance, method_name)
                 method(*args)
             except Exception as e:
-                self._logger.error(f"Error calling {method_name} on {definition.service_class.__name__}: {e}")
+                self._logger.error(
+                    f"Error calling {method_name} on {definition.service_class.__name__}: {e}"
+                )
 
     def get_by_name(self, class_name: str) -> Optional[Any]:
         """Retrieve a service by its class name."""
@@ -706,7 +767,9 @@ class ServiceContainer:
 
         if len(definitions) > 1:
             service_names = [def_.service_class.__name__ for def_ in definitions]
-            self._logger.warning(f"Multiple services found for tag '{tag}': {', '.join(service_names)}. Returning first.")
+            self._logger.warning(
+                f"Multiple services found for tag '{tag}': {', '.join(service_names)}. Returning first."
+            )
 
         return self.get(definitions[0].service_class)
 
@@ -767,7 +830,11 @@ class ServiceContainer:
 
         print("\nRegistered services:")
         for service_class, definition in self._registry.get_all_definitions().items():
-            status = "instantiated" if service_class in self._instances else "not instantiated"
+            status = (
+                "instantiated"
+                if service_class in self._instances
+                else "not instantiated"
+            )
             visibility = "public" if definition.public else "private"
             print(f"- {service_class.__name__} ({visibility}, {status})")
 

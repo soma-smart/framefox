@@ -138,6 +138,13 @@ class InitCommand(AbstractCommand):
             format="yaml",
         )
         FileCreator().create_file(
+            template="init_files/debug.jinja2",
+            path="./config",
+            name="debug.yaml",
+            data={},
+            format="yaml",
+        )
+        FileCreator().create_file(
             template="init_files/parameter.jinja2",
             path="./config",
             name="parameter.yaml",

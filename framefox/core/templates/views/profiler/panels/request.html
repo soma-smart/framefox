@@ -1,12 +1,18 @@
 <div class="profiler-panel">
-  <h2>Request Details</h2>
+  <h2>Request Information</h2>
 
   <div class="panel-section">
-    <h3>General Information</h3>
+    <h3>Request Details</h3>
     <table class="panel-table">
       <tr>
         <th>Method</th>
-        <td>{{ data.method }}</td>
+        <td>
+          <span class="http-method {{ data.method }}">{{ data.method }}</span>
+        </td>
+      </tr>
+      <tr>
+        <th>URL</th>
+        <td>{{ data.url }}</td>
       </tr>
       <tr>
         <th>Path</th>
@@ -14,33 +20,112 @@
       </tr>
       <tr>
         <th>Status Code</th>
-        <td>{{ data.status_code }}</td>
+        <td>
+          <span
+            class="status-code {{ 'success' if data.status_code < 300 else 'redirect' if data.status_code < 400 else 'error' }}"
+          >
+            {{ data.status_code }}
+          </span>
+        </td>
       </tr>
       <tr>
-        <th>Client</th>
-        <td>{{ data.client }}</td>
+        <th>Content Type</th>
+        <td>{{ data.content_type or 'N/A' }}</td>
       </tr>
+      <tr>
+        <th>User Agent</th>
+        <td>{{ data.user_agent or 'N/A' }}</td>
+      </tr>
+      {% if data.referer %}
+      <tr>
+        <th>Referer</th>
+        <td>{{ data.referer }}</td>
+      </tr>
+      {% endif %}
     </table>
   </div>
 
   <div class="panel-section">
-    <h3>Parameters</h3>
-    <h4>Path Parameters</h4>
-    {% if data.path_params %}
+    <h3>Client Information</h3>
     <table class="panel-table">
-      {% for key, value in data.path_params.items() %}
       <tr>
-        <th>{{ key }}</th>
-        <td>{{ value }}</td>
+        <th>IP Address</th>
+        <td>{{ data.client.host }}</td>
       </tr>
-      {% endfor %}
+      <tr>
+        <th>Port</th>
+        <td>{{ data.client.port }}</td>
+      </tr>
     </table>
-    {% else %}
-    <p>No path parameters</p>
-    {% endif %}
+  </div>
 
-    <h4>Query Parameters</h4>
-    {% if data.query_params %}
+  {% if data.request_data and data.method in ['POST', 'PUT', 'PATCH'] %}
+  <div class="panel-section">
+    <h3>Request Data ({{ data.method }})</h3>
+    <div class="security-notice">
+      <strong>🔒 Security Notice:</strong> Sensitive fields (passwords, tokens,
+      keys, etc.) are automatically filtered and replaced with "***FILTERED***"
+      for security purposes.
+    </div>
+
+    <div class="request-data">
+      {% if data.request_data and data.request_data.get('_error') %}
+      <div class="error-message">{{ data.request_data._error }}</div>
+
+      {% elif data.request_data and data.request_data.get('_form_data') %}
+
+      <div class="form-data">
+        <h4>Parsed Form Data:</h4>
+        <table class="panel-table">
+          {% for key, value in data.request_data._form_data.items() %}
+          <tr>
+            <th>{{ key }}</th>
+            <td>
+              {% if value == "***FILTERED***" %}
+              <span class="filtered-value">{{ value }}</span>
+              {% else %} {{ value }} {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        {% if data.request_data.get('_raw_body_filtered') %}
+        <h4>Raw Body (filtered):</h4>
+        <pre class="raw-body-filtered">
+{{ data.request_data._raw_body_filtered }}</pre
+        >
+        {% endif %}
+      </div>
+
+      {% elif data.request_data and data.request_data.get('_json_data') %}
+
+      <div class="json-data">
+        <h4>JSON Data (sensitive fields filtered):</h4>
+        <pre>{{ data.request_data._json_data | tojson(indent=2) }}</pre>
+      </div>
+
+      {% elif data.request_data and data.request_data.get('_raw_body') %}
+
+      <div class="raw-body">
+        <h4>Raw Body (sensitive data masked):</h4>
+        <pre>{{ data.request_data._raw_body }}</pre>
+      </div>
+
+      {% elif data.request_data and data.request_data.get('_no_data') %}
+      <div class="no-data">
+        <p>{{ data.request_data._no_data }}</p>
+      </div>
+
+      {% else %}
+      <div class="json-data">
+        <pre>{{ data.request_data | tojson(indent=2) }}</pre>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %} {% if data.query_params %}
+  <div class="panel-section">
+    <h3>Query Parameters</h3>
     <table class="panel-table">
       {% for key, value in data.query_params.items() %}
       <tr>
@@ -49,14 +134,12 @@
       </tr>
       {% endfor %}
     </table>
-    {% else %}
-    <p>No query parameters</p>
-    {% endif %}
   </div>
+  {% endif %}
 
   <div class="panel-section">
     <h3>Request Headers</h3>
-    <table class="panel-table">
+    <table class="panel-table headers-table">
       {% for key, value in data.headers.items() %}
       <tr>
         <th>{{ key }}</th>
@@ -66,9 +149,10 @@
     </table>
   </div>
 
+  {% if data.response_headers %}
   <div class="panel-section">
     <h3>Response Headers</h3>
-    <table class="panel-table">
+    <table class="panel-table headers-table">
       {% for key, value in data.response_headers.items() %}
       <tr>
         <th>{{ key }}</th>
@@ -77,9 +161,59 @@
       {% endfor %}
     </table>
   </div>
+  {% endif %}
 </div>
 
 <style>
+  .filtered-value {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .form-data {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+  }
+
+  .form-data h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 14px;
+  }
+
+  .raw-body-filtered {
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 3px;
+    overflow-x: auto;
+    margin: 10px 0 0;
+    border: 1px solid #e9ecef;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    border-left: 4px solid #ffc107;
+  }
+
+  .security-notice {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    border-radius: 3px;
+    border: 1px solid #ffeaa7;
+    margin-bottom: 15px;
+    font-size: 13px;
+  }
+
+  .security-notice strong {
+    color: #b45309;
+  }
   .profiler-panel {
     font-family: Arial, sans-serif;
     padding: 20px;
@@ -90,20 +224,119 @@
     margin-bottom: 30px;
   }
 
+  .panel-section h3 {
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
   .panel-table {
     width: 100%;
     border-collapse: collapse;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    overflow: hidden;
   }
 
   .panel-table th,
   .panel-table td {
-    padding: 8px;
+    padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
 
   .panel-table th {
+    background-color: #f0f0f0;
     width: 30%;
-    background-color: #f8f8f8;
+    font-weight: bold;
+  }
+
+  /* HTTP Method styling */
+  .http-method {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+  }
+
+  .http-method.GET {
+    background-color: #28a745;
+  }
+  .http-method.POST {
+    background-color: #17a2b8;
+  }
+  .http-method.PUT {
+    background-color: #ffc107;
+    color: #333;
+  }
+  .http-method.PATCH {
+    background-color: #fd7e14;
+  }
+  .http-method.DELETE {
+    background-color: #dc3545;
+  }
+
+  /* Status Code styling */
+  .status-code {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+  }
+
+  .status-code.success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  .status-code.redirect {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  .status-code.error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  /* Request Data styling */
+  .request-data {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+  }
+
+  .request-data pre {
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 3px;
+    overflow-x: auto;
+    margin: 5px 0 0;
+    border: 1px solid #e9ecef;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 3px;
+    border: 1px solid #f5c6cb;
+  }
+
+  /* Headers table styling */
+  .headers-table th {
+    font-family: monospace;
+    font-size: 13px;
+  }
+
+  .headers-table td {
+    font-family: monospace;
+    font-size: 13px;
+    word-break: break-all;
   }
 </style>

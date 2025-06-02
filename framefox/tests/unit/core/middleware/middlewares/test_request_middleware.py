@@ -48,7 +48,9 @@ class TestRequestMiddleware:
         assert middleware.logger is not None
 
     @pytest.mark.asyncio
-    async def test_dispatch(self, middleware, mock_request, mock_call_next, mock_response):
+    async def test_dispatch(
+        self, middleware, mock_request, mock_call_next, mock_response
+    ):
         """Test the dispatch method"""
         response = await middleware.dispatch(mock_request, mock_call_next)
 
