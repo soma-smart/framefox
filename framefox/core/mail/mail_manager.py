@@ -1,7 +1,4 @@
-import asyncio
-import logging
-import os
-import re
+import asyncio, logging, os, re
 from datetime import datetime
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -16,7 +13,6 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from framefox.core.config.settings import Settings
 from framefox.core.mail.email_message import EmailMessage
 from framefox.core.mail.mail_url_parser import MailUrlParser
-
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -25,17 +21,14 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
-
 class MailManager:
-    """Service de gestion des emails."""
+    """
+    Email management service for sending emails, supporting templates, attachments, 
+    queuing, and retry logic. Integrates with Jinja2 for templated emails and 
+    supports both immediate and queued delivery using SMTP.
+    """
 
     def __init__(self, settings: Settings):
-        """
-        Initialise le gestionnaire d'emails.
-
-        Args:
-            settings: Configuration de l'application
-        """
         self.settings = settings
         self.logger = logging.getLogger("MAIL")
         self.queue = []
@@ -50,7 +43,7 @@ class MailManager:
             templates_dir = self.settings.config["mail"]["templates_dir"]
 
         else:
-            self.logger.warning("Dossier de templates non trouvé dans config['mail']")
+            self.logger.warning("Templates folder not found in config['mail']")
 
         if not templates_dir:
             templates_dir = self.settings.get_param("mail.templates_dir")
@@ -79,16 +72,10 @@ class MailManager:
 
         if not template_path_found:
             self.logger.warning(
-                f"Aucun dossier de templates trouvé parmi les chemins testés: {possible_paths}"
+                f"No templates folder found in tested paths: {possible_paths}"
             )
 
     def _validate_config(self) -> bool:
-        """
-        Validates the SMTP configuration.
-
-        Returns:
-            True if the configuration is valid
-        """
         mail_config = getattr(self.settings, "mail_config", None)
 
         if not mail_config:
@@ -117,15 +104,6 @@ class MailManager:
         return True
 
     def _html_to_text(self, html_content: str) -> str:
-        """
-        Converts HTML content to plain text.
-
-        Args:
-            html_content: HTML content to convert
-
-        Returns:
-            Plain text version of the HTML content
-        """
         try:
             soup = BeautifulSoup(html_content, "html.parser")
             text = soup.get_text(separator="\n")
@@ -150,23 +128,6 @@ class MailManager:
         attachments: Optional[List[Union[str, Dict[str, str]]]] = None,
         queue: bool = False,
     ) -> bool:
-        """
-        Sends an email without using a template.
-
-        Args:
-            sender: Sender's email address
-            receiver: Recipient's email address
-            subject: Email subject
-            text_content: Email text content
-            html_content: Email HTML content (optional)
-            cc: List of CC recipients (optional)
-            bcc: List of BCC recipients (optional)
-            attachments: List of attachments (optional)
-            queue: Queue the email (optional)
-
-        Returns:
-            True if the email was successfully sent or queued
-        """
         cc = cc or []
         bcc = bcc or []
         attachments = attachments or []
@@ -283,7 +244,6 @@ class MailManager:
         return await self._send_email_now(message)
 
     async def _process_queue(self) -> None:
-        """Processes queued emails."""
         if self.is_processing:
             return
 
@@ -338,15 +298,6 @@ class MailManager:
                 asyncio.create_task(self._process_queue())
 
     async def _send_email_now(self, message: EmailMessage) -> bool:
-        """
-        Sends an email immediately via SMTP.
-
-        Args:
-            message: The message to send
-
-        Returns:
-            True if the email was sent successfully
-        """
         if not self._validate_config():
             self.logger.error("Invalid mail configuration, unable to send email")
             return False

@@ -30,6 +30,12 @@ Github: https://github.com/RayenBou
 
 
 class Kernel:
+    """
+    The Kernel class is the core of the Framefox framework. It initializes and configures
+    the FastAPI application, manages dependency injection, bundles, security services,
+    middleware, routing, and static files. It provides access to the main FastAPI app,
+    configuration settings, and logger.
+    """
     _instance: ClassVar[Optional["Kernel"]] = None
 
     def __init__(self, container=None, bundle_manager=None) -> None:
@@ -51,22 +57,16 @@ class Kernel:
             raise RuntimeError(f"Kernel initialization failed: {e}") from e
 
     def _create_default_container(self):
-        """Crée un container par défaut"""
         from framefox.core.di.service_container import ServiceContainer
-
         return ServiceContainer()
 
     def _create_default_bundle_manager(self):
-        """Crée un bundle manager par défaut"""
         from framefox.core.bundle.bundle_manager import BundleManager
-
         manager = BundleManager()
         manager.discover_bundles()
         return manager
 
     def _init_security_services(self) -> None:
-        """Initialise les services liés à la sécurité et l'authentification."""
-
         session = self._container.get_by_name("Session")
         token_storage = TokenStorage(session)
         self._container.set_instance(TokenStorage, token_storage)
@@ -81,7 +81,6 @@ class Kernel:
             self._logger.debug("No firewalls configured.")
 
     def _create_fastapi_app(self) -> FastAPI:
-        """Creates and configures the FastAPI instance."""
         return FastAPI(
             debug=self._settings.is_debug,
             openapi_url=self._settings.openapi_url,
@@ -89,7 +88,6 @@ class Kernel:
         )
 
     def _configure_app(self) -> None:
-        """Configures all application components."""
         self._app.add_exception_handler(
             DebugException, DebugHandler.debug_exception_handler
         )
@@ -100,12 +98,10 @@ class Kernel:
         dispatcher.load_listeners()
 
     def _setup_middlewares(self) -> None:
-        """Configures the application middlewares."""
         middleware_manager = MiddlewareManager(self._app, self._settings)
         middleware_manager.setup_middlewares()
 
     def _setup_routing(self) -> None:
-        """Configures the application routing."""
         router = Router(self._app)
         self._container.set_instance(Router, router)
 
@@ -114,8 +110,6 @@ class Kernel:
         router.register_controllers()
 
     def _setup_static_files(self) -> None:
-        """Configures the static files handler."""
-
         static_path = Path(__file__).parent / "templates" / "static"
         self._app.mount("/static", StaticFiles(directory=static_path), name="static")
 
