@@ -85,7 +85,7 @@ class ServiceContainer:
             self._register_essential_services()
             self._discover_and_register_services()
             self._registry.freeze()
-            # self._logger.info(f"Container initialized with {len(self._registry)} service definitions")
+         
         except Exception as e:
             self._logger.error(f"Failed to initialize service container: {e}")
             raise
@@ -246,7 +246,6 @@ class ServiceContainer:
         for root, _, files in os.walk(base_path):
             root_path = Path(root)
 
-            # Skip excluded directories
             if self._should_exclude_directory(root_path, excluded_dirs):
                 continue
 
@@ -277,11 +276,10 @@ class ServiceContainer:
 
     def _should_process_file(self, filename: str) -> bool:
         """Check if a file should be processed for service discovery."""
-        # Fichiers Python valides
+     
         if not filename.endswith(".py"):
             return False
 
-        # Fichiers à ignorer
         ignored_files = [
             "__init__.py",
             "service_container.py",
@@ -291,7 +289,7 @@ class ServiceContainer:
             "migrations.py",
             "migration.py",
             "settings.py",
-            "config.py",  # Souvent des fichiers de config simples
+            "config.py", 
         ]
 
         for pattern in ignored_files:
@@ -381,9 +379,9 @@ class ServiceContainer:
         if issubclass(cls, Exception):
             return False
 
-        # === NOUVEAUX FILTRES STRICTS ===
+       
 
-        # Ignore les modules built-in de Python
+        # Ignore built-in modules and libraries
         builtin_modules = [
             "builtins",
             "typing",
@@ -410,7 +408,7 @@ class ServiceContainer:
             "time",
         ]
 
-        # Ignore les librairies externes communes
+        # Ignore all external libraries that are not part of the core framework
         external_libraries = [
             "fastapi",
             "starlette",
@@ -443,23 +441,20 @@ class ServiceContainer:
 
         module_name = cls.__module__
 
-        # Filtrer les modules built-in
+
         if any(
             module_name == builtin or module_name.startswith(f"{builtin}.")
             for builtin in builtin_modules
         ):
             return False
 
-        # Filtrer les librairies externes
         if any(
             module_name == lib or module_name.startswith(f"{lib}.")
             for lib in external_libraries
         ):
             return False
 
-        # === FILTRES EXISTANTS AMÉLIORÉS ===
 
-        # Ignore SQLModel/Pydantic classes (plus strict)
         if (
             hasattr(cls, "__pydantic_self__")
             or hasattr(cls, "__pydantic_model__")
@@ -468,7 +463,7 @@ class ServiceContainer:
         ):
             return False
 
-        # Ignore les interfaces (classes abstraites sans implémentation)
+      
         if (
             cls.__name__.startswith("I")
             and hasattr(cls, "__abstractmethods__")
@@ -476,7 +471,6 @@ class ServiceContainer:
         ):
             return False
 
-        # Ignore les classes abstraites pures (toutes les méthodes sont abstraites)
         if (
             hasattr(cls, "__abstractmethods__")
             and len(cls.__abstractmethods__) > 0
@@ -491,17 +485,15 @@ class ServiceContainer:
         ):
             return False
 
-        # Ignore private classes (starting with _)
+
         if cls.__name__.startswith("_"):
             return False
 
-        # Check if the class is explicitly marked as non-service
+
         if hasattr(cls, "__service__") and not cls.__service__:
             return False
 
-        # === NOUVEAUX FILTRES SPÉCIFIQUES ===
 
-        # Ignore les classes de type "Enum"
         try:
             import enum
 
@@ -510,9 +502,9 @@ class ServiceContainer:
         except (ImportError, TypeError):
             pass
 
-        # Ignore les dataclasses simples (sans logique métier)
+
         if hasattr(cls, "__dataclass_fields__") and not hasattr(cls, "__post_init__"):
-            # Vérifier si c'est une dataclass simple sans méthodes custom
+
             custom_methods = [
                 name
                 for name in dir(cls)
@@ -523,20 +515,17 @@ class ServiceContainer:
             if len(custom_methods) == 0:
                 return False
 
-        # Ignore les classes de configuration simple (celles qui n'ont que des attributs)
         if not any(
             callable(getattr(cls, attr)) and not attr.startswith("_")
             for attr in dir(cls)
         ):
             return False
 
-        # === VÉRIFICATIONS SPÉCIFIQUES AU FRAMEWORK ===
 
-        # Ne garder que les classes du framework ou de l'application utilisateur
         if not (module_name.startswith("framefox.") or module_name.startswith("src.")):
             return False
 
-        # Check configured exclusions
+
         if self._config.is_excluded_class(cls.__name__):
             return False
 
@@ -559,7 +548,6 @@ class ServiceContainer:
 
         return ".".join(parts)
 
-    # === Public API Methods ===
 
     def get(self, service_class: Type[Any]) -> Any:
         """
@@ -811,38 +799,3 @@ class ServiceContainer:
             "registered_factories": len(self._factory_manager.get_factories()),
             **registry_stats,
         }
-
-    def print_container_stats(self) -> None:
-        """Print detailed container statistics."""
-        stats = self.get_stats()
-
-        print("\n" + "=" * 50)
-        print("SERVICE CONTAINER STATISTICS")
-        print("=" * 50)
-        print(f"Container instance: #{stats['container_instance']}")
-        print(f"Total service definitions: {stats['total_definitions']}")
-        print(f"Instantiated services: {stats['instantiated_services']}")
-        print(f"Cached resolutions: {stats['cached_resolutions']}")
-        print(f"Total aliases: {stats['total_aliases']}")
-        print(f"Total tags: {stats['total_tags']}")
-        print(f"Registered factories: {stats['registered_factories']}")
-        print(f"Registry frozen: {stats['frozen']}")
-
-        print("\nRegistered services:")
-        for service_class, definition in self._registry.get_all_definitions().items():
-            status = (
-                "instantiated"
-                if service_class in self._instances
-                else "not instantiated"
-            )
-            visibility = "public" if definition.public else "private"
-            print(f"- {service_class.__name__} ({visibility}, {status})")
-
-            if service_class in self._instances:
-                instance = self._instances[service_class]
-                print(f"  id: {id(instance)}")
-
-            if definition.tags:
-                print(f"  tags: {', '.join(definition.tags)}")
-
-        print("=" * 50)

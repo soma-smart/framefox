@@ -28,7 +28,7 @@ class TokenManager:
             "email": user.email,
             "firewallname": firewallname,
             "roles": roles,
-            "exp": datetime.utcnow() + timedelta(hours=1),
+            "exp": datetime.now() + timedelta(hours=1),
         }
         token = jwt.encode(
             payload, self.settings.session_secret_key, algorithm=self.algorithm

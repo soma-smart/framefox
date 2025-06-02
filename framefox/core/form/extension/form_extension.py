@@ -1,5 +1,4 @@
 from jinja2 import Environment
-
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -7,16 +6,18 @@ Github: https://github.com/soma-smart/framefox
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
-
-
 class FormExtension:
+    """
+    FormExtension integrates form rendering helpers into the Jinja2 environment.
+    It provides methods to render form start, end, rows, labels, widgets, and errors,
+    making form handling in templates more convenient and consistent.
+    """
 
     def __init__(self, env: Environment):
         self.env = env
         self.register_functions()
 
     def register_functions(self):
-
         self.env.globals.update(
             {
                 "form_start": self.form_start,
@@ -29,7 +30,6 @@ class FormExtension:
         )
 
     def form_start(self, form_view, options=None):
-        """Render the start of the form."""
         options = options or {}
         action = options.get("action", "")
         method = options.get("method", "POST")
@@ -57,11 +57,9 @@ class FormExtension:
         return f'<form method="{method}" action="{action}" {attr_str}>'
 
     def form_end(self, form_view, options=None):
-        """Render the end of the form."""
         return "</form>"
 
     def form_row(self, form_view, field_name, options=None):
-        """Render a complete form row (label + widget + errors)."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
@@ -72,7 +70,6 @@ class FormExtension:
         widget = self.form_widget(form_view, field_name)
         errors = self.form_errors(form_view, field_name)
 
-        # Détecter si c'est un choix étendu
         is_expanded_choice = False
         if hasattr(field_view, "type"):
             is_expanded_choice = (
@@ -81,7 +78,6 @@ class FormExtension:
                 and "choices" in field_view.type.options
             )
 
-        # Adapter le HTML selon le type de champ
         if is_expanded_choice:
             return f"""
             <div class="mb-3">
@@ -102,7 +98,6 @@ class FormExtension:
             """
 
     def form_label(self, form_view, field_name, options=None):
-        """Render the label of a field."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
@@ -119,7 +114,6 @@ class FormExtension:
         return f"<label {attr_str}>{label_text}</label>"
 
     def form_widget(self, form_view, field_name, options=None):
-        """Render the widget of a field."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
@@ -129,7 +123,6 @@ class FormExtension:
         return field_view.render(options)
 
     def form_errors(self, form_view, field_name, options=None):
-        """Render the errors of a field."""
         options = options or {}
         field_view = form_view.get_field(field_name)
 
