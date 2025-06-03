@@ -1,0 +1,95 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Requis pour l'authentification OIDC avec PyPI
+      contents: read   # Requis pour checkout du code
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Extract version from release tag
+        id: get_version
+        run: |
+          # Récupère la version depuis le tag (ex: v1.0.0-alpha → 1.0.0-alpha)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version détectée: $VERSION"
+
+      - name: Update version in pyproject.toml
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          echo "🔄 Mise à jour de la version vers: $VERSION"
+          
+          # Remplace la version dans pyproject.toml
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+          
+          # Vérifie que la modification a été effectuée
+          echo "✅ Nouvelle version dans pyproject.toml:"
+          grep "^version = " pyproject.toml
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: |
+          echo "🔨 Construction du package..."
+          python -m build
+
+      - name: Check package
+        run: |
+          echo "🔍 Vérification du package..."
+          python -m twine check dist/*
+          echo "📋 Contenu du package:"
+          ls -la dist/
+
+      - name: Determine publication target
+        id: target
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          if [[ "$VERSION" == *"rc"* ]]; then
+            echo "target=testpypi" >> $GITHUB_OUTPUT
+            echo "🧪 Pre-release détectée ($VERSION) → Publication sur TestPyPI"
+          else
+            echo "target=pypi" >> $GITHUB_OUTPUT
+            echo "🚀 Version stable ($VERSION) → Publication sur PyPI"
+          fi
+
+      - name: Publish to TestPyPI (OIDC)
+        if: steps.target.outputs.target == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Publish to PyPI (OIDC)
+        if: steps.target.outputs.target == 'pypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create success comment
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          TARGET=${{ steps.target.outputs.target }}
+          
+          if [[ "$TARGET" == "pypi" ]]; then
+            echo "✅ Package framefox $VERSION publié avec succès sur PyPI!"
+            echo "🔗 Lien: https://pypi.org/project/framefox/$VERSION/"
+            echo "📦 Installation: pip install framefox==$VERSION"
+          else
+            echo "✅ Package framefox $VERSION publié avec succès sur TestPyPI!"
+            echo "🔗 Lien: https://test.pypi.org/project/framefox/$VERSION/"
+            echo "📦 Installation: pip install --index-url https://test.pypi.org/simple/ framefox==$VERSION"
+          fi
