@@ -23,8 +23,10 @@ jobs:
       - name: Extract version from release tag
         id: get_version
         run: |
-          # Récupère la version depuis le tag (ex: v1.0.0-alpha → 1.0.0-alpha)
-          VERSION=${GITHUB_REF#refs/tags/v}
+          # Récupère la version depuis le tag (ex: refs/tags/v1.0.0-alpha → 1.0.0-alpha)
+          VERSION=${GITHUB_REF#refs/tags/}
+          # Supprime le 'v' initial si présent
+          VERSION=${VERSION#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Version détectée: $VERSION"
 
@@ -39,6 +41,12 @@ jobs:
           # Vérifie que la modification a été effectuée
           echo "✅ Nouvelle version dans pyproject.toml:"
           grep "^version = " pyproject.toml
+          
+          # Validation supplémentaire
+          if ! grep -q "^version = \"$VERSION\"" pyproject.toml; then
+            echo "❌ Erreur: La version n'a pas été mise à jour correctement"
+            exit 1
+          fi
 
       - name: Install build dependencies
         run: |
