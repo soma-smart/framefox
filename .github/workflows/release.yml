@@ -36,7 +36,7 @@ jobs:
           echo "🔄 Mise à jour de la version vers: $VERSION"
           
           # Remplace la version dans pyproject.toml
-          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+          sed -i "s#^version = \".*\"#version = \"$VERSION\"#" pyproject.toml
           
           # Vérifie que la modification a été effectuée
           echo "✅ Nouvelle version dans pyproject.toml:"
