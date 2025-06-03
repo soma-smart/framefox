@@ -23,7 +23,7 @@ jobs:
       - name: Extract version from release tag
         id: get_version
         run: |
-          # Récupère la version depuis le tag (ex: v1.0.33 → 1.0.33)
+          # Récupère la version depuis le tag (ex: v1.0.0-alpha → 1.0.0-alpha)
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Version détectée: $VERSION"
@@ -63,10 +63,10 @@ jobs:
           VERSION=${{ steps.get_version.outputs.version }}
           if [[ "$VERSION" == *"rc"* ]]; then
             echo "target=testpypi" >> $GITHUB_OUTPUT
-            echo "🧪 Pre-release détectée → Publication sur TestPyPI"
+            echo "🧪 Pre-release détectée ($VERSION) → Publication sur TestPyPI"
           else
             echo "target=pypi" >> $GITHUB_OUTPUT
-            echo "🚀 Release stable → Publication sur PyPI"
+            echo "🚀 Version stable ($VERSION) → Publication sur PyPI"
           fi
 
       - name: Publish to TestPyPI (OIDC)
