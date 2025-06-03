@@ -1,5 +1,7 @@
+import contextlib
 import os
 import sys
+from io import StringIO
 from typing import List
 
 import typer
@@ -26,7 +28,9 @@ class Terminal:
     def __init__(self):
         self.registry = CommandRegistry()
         self.display_manager = DisplayManager()
-        self.error_handler = ErrorHandler(self.display_manager.console)
+        self.error_handler = ErrorHandler(
+            self.display_manager.console, self.display_manager
+        )
 
         # Discover commands
         self.registry.discover_commands()
@@ -44,20 +48,55 @@ class Terminal:
         if self._is_init_only_context(args):
             return self._run_init_command()
 
-        # Use Typer for everything else with error handling
+        # ✅ NOUVELLE APPROCHE : Capturer la sortie de Typer
+        return self._run_with_error_handling(args)
+
+    def _run_with_error_handling(self, args: List[str]) -> int:
+        """Run Typer app with custom error handling"""
+
+        # Capturer stderr pour intercepter les messages d'erreur de Typer
+        stderr_capture = StringIO()
+
         try:
-            return self.app(args)
+            # Rediriger temporairement stderr
+            with contextlib.redirect_stderr(stderr_capture):
+                return self.app(args)
+
         except typer.Exit as e:
-            # Typer exit (normal behavior)
+            # Sortie normale de Typer
             return e.exit_code
+
         except SystemExit as e:
-            # Handle unknown commands
-            if e.code == 2 and args:  # Exit code 2 = command not found
+            # Vérifier si c'est une erreur de commande non trouvée
+            captured_error = stderr_capture.getvalue()
+
+            if (
+                e.code == 2
+                and args
+                and self._is_command_not_found_error(captured_error)
+            ):
+                # C'est notre cas : commande non trouvée
                 return self._handle_unknown_command(args)
+
+            # Autres erreurs système - afficher le message capturé si nécessaire
+            if captured_error and not self._is_command_not_found_error(captured_error):
+                self.display_manager.print_error(captured_error.strip())
+
             return e.code
+
         except Exception as e:
             self.display_manager.print_error(f"Unexpected error: {e}")
             return 1
+
+    def _is_command_not_found_error(self, error_output: str) -> bool:
+        """Check if the error is about a command not found"""
+        error_indicators = [
+            "No such command",
+            "Try '",
+            "Usage:",
+            "Error",
+        ]
+        return any(indicator in error_output for indicator in error_indicators)
 
     def _handle_unknown_command(self, args: List[str]) -> int:
         """Handle unknown command and suggest alternatives"""
@@ -99,11 +138,8 @@ class Terminal:
                 ):
                     return 1
 
-        # Fallback: show general help
-        self.display_manager.print_error(f"Unknown command: {' '.join(args)}")
-        self.display_manager.console.print(
-            "Run 'framefox --help' for available commands", style="dim white"
-        )
+        # Fallback: use styled general error
+        self.error_handler.handle_general_error(args)
         return 1
 
     def _is_init_only_context(self, args: List[str]) -> bool:

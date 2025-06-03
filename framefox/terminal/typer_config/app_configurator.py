@@ -28,6 +28,7 @@ class AppConfigurator:
             rich_markup_mode="rich",
             pretty_exceptions_enable=False,
             add_completion=True,
+            pretty_exceptions_show_locals=False,
         )
 
     def configure(self) -> typer.Typer:
