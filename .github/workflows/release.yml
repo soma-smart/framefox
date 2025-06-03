@@ -19,22 +19,43 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
-
       - name: Extract version from release tag
         id: get_version
         run: |
           echo "DEBUG: GITHUB_REF complet = $GITHUB_REF"
           
           # Récupère la version depuis le tag
-          VERSION=$(echo "$GITHUB_REF" | sed 's/refs\/tags\///')
-          # Supprime le 'v' initial si présent
-          VERSION=$(echo "$VERSION" | sed 's/^v//')
+          RAW_VERSION=$(echo "$GITHUB_REF" | sed 's/refs\/tags\///')
+          RAW_VERSION=$(echo "$RAW_VERSION" | sed 's/^v//')
+          
+          # Conversion vers PEP 440
+          case "$RAW_VERSION" in
+            *-alpha-rc*)
+              # 1.0.0-alpha-rc2 → 1.0.0a0rc2
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-alpha-rc([0-9]+)/\1a0rc\2/')
+              ;;
+            *-alpha*)
+              # 1.0.0-alpha → 1.0.0a0
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-alpha/\1a0/')
+              ;;
+            *-*-rc*)
+              # 2.0.0-Fennec-rc1 → 2.0.0rc1
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-.*-rc([0-9]+)/\1rc\2/')
+              ;;
+            *-rc*)
+              # 2.0.0-rc1 → 2.0.0rc1
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-rc([0-9]+)/\1rc\2/')
+              ;;
+            *)
+              # Version normale
+              VERSION="$RAW_VERSION"
+              ;;
+          esac
           
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Version détectée: $VERSION"
-          
-          # Debug supplémentaire
-          echo "DEBUG: Version finale = $VERSION"
+          echo "📦 Tag original: $RAW_VERSION"
+          echo "📦 Version PEP440: $VERSION"
+
 
       - name: Update version in pyproject.toml
         run: |
