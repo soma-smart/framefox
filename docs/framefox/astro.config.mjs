@@ -4,13 +4,13 @@ import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
-  // Les assets et liens Starlight seront préfixés avec /docs
+  // Starlight assets and links will be prefixed with /docs
   base: "/",
   integrations: [
     starlight({
       title: "Framefox Documentation",
       description:
-        "Framework web Python moderne pour développer rapidement des applications robustes",
+        "Modern Python web framework for rapidly developing robust applications",
       //   logo: {
       //     // src: "./src/assets/framefox-logo.svg",
       //     // replacesTitle: true,
@@ -28,46 +28,47 @@ export default defineConfig({
       lastUpdated: true,
       sidebar: [
         {
-          label: "Démarrage",
+          label: "Getting Started",
           items: [
-            { label: "Guide de démarrage rapide", slug: "index" },
-            { label: "Installation", slug: "docs/installation" },
+            { label: "Quick Start Guide", slug: "index" },
+            { label: "Installation", slug: "installation" },
           ],
         },
         {
-          label: "docs principaux",
+          label: "Core Documentation",
           items: [
-            { label: "Contrôleurs", slug: "docs/controllers" },
-            { label: "Système de routing", slug: "docs/routing" },
-            { label: "Templates et vues", slug: "docs/templates" },
-            { label: "Base de données et ORM", slug: "docs/database" },
-            { label: "Formulaires et validation", slug: "docs/forms" },
-            { label: "Authentification et sécurité", slug: "docs/security" },
+            { label: "Controllers", slug: "controllers" },
+            { label: "Routing System", slug: "routing" },
+            { label: "Templates and Views", slug: "templates" },
+            { label: "Database and ORM", slug: "database" },
+            { label: "Forms and Validation", slug: "forms" },
+            { label: "Authentication and Security", slug: "security" },
           ],
         },
         {
-          label: "Fonctionnalités avancées",
+          label: "Advanced Features",
           items: [
-            { label: "Middleware et événements", slug: "docs/middleware" },
+            { label: "Middleware and Events", slug: "middleware" },
             {
-              label: "Services et injection de dépendances",
-              slug: "docs/services",
+              label: "Services and Dependency Injection",
+              slug: "services",
             },
-            { label: "Terminal et commandes", slug: "docs/terminal" },
-            { label: "Tests", slug: "docs/testing" },
-            { label: "Déploiement", slug: "docs/deployment" },
+            { label: "Terminal and Commands", slug: "terminal" },
+            { label: "Web Profiler", slug: "profiler" },
+            { label: "Testing", slug: "testing" },
+            { label: "Deployment", slug: "deployment" },
           ],
         },
         {
-          label: "Référence API",
+          label: "API Reference",
           autogenerate: { directory: "reference" },
         },
         {
-          label: "Exemples",
+          label: "Examples",
           items: [
-            // { label: "Application de blog", slug: "examples/blog" },
-            // { label: "API REST", slug: "examples/api" },
-            // { label: "Authentification complète", slug: "examples/auth" },
+            // { label: "Blog Application", slug: "examples/blog" },
+            // { label: "REST API", slug: "examples/api" },
+            // { label: "Complete Authentication", slug: "examples/auth" },
           ],
         },
       ],
