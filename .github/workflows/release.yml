@@ -30,14 +30,6 @@ jobs:
           
           # Conversion vers PEP 440
           case "$RAW_VERSION" in
-            *-alpha-rc*)
-              # 1.0.0-alpha-rc2 → 1.0.0a0rc2
-              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-alpha-rc([0-9]+)/\1a0rc\2/')
-              ;;
-            *-alpha*)
-              # 1.0.0-alpha → 1.0.0a0
-              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-alpha/\1a0/')
-              ;;
             *-*-rc*)
               # 2.0.0-Fennec-rc1 → 2.0.0rc1
               VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-.*-rc([0-9]+)/\1rc\2/')
