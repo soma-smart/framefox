@@ -4,19 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "framefox"
-version = "1.0.30"
+version = "1.0.32"
 description = "Framework de développement modulaire"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
-    {name = "Boumaza Rayen", email = "boumaza.rayen@outlook.fr"}
+    {name = "BOUMAZA Rayen", email = "boumaza.rayen@outlook.fr"},
+    {name = "LEUROND Raphaël", email = "leurond.raphael@gmail.com"}
 ]
 
 dependencies = [
     "sqlmodel>=0.0.22",
     "typer>=0.15.1",
-    "fastapi>=0.115.7",
+    "fastapi>=0.115.7,<1.0.0",
     "uvicorn>=0.34.0",
     "starlette>=0.45.3",
     "python-multipart>=0.0.20",
@@ -61,6 +62,9 @@ include = ["framefox*"]
 framefox = [
     "core/**/*",
     "terminal/**/*",
+    "terminal/ui/*",
+    "terminal/utils/*",
+    "terminal/typer-config/*",
     "terminal/templates/**/*",
     "terminal/commands/**/*",
     "terminal/common/**/*",
