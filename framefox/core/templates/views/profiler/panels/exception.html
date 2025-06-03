@@ -2,7 +2,11 @@
   <h2>Exception Details</h2>
 
   {% if data.has_exception %}
-  <div class="exception-summary">
+
+  <!-- Vraie exception Python -->
+  {% if data.is_python_exception %}
+  <div class="exception-summary python-exception">
+    <div class="exception-type-badge python">Python Exception</div>
     <div class="exception-message">
       {{ data.exception.class }}: {{ data.exception.message }}
     </div>
@@ -15,8 +19,93 @@
     <h3>Stack Trace</h3>
     <pre>{{ data.exception.trace }}</pre>
   </div>
-  {% else %}
-  <p class="no-exception">No exception was thrown during this request.</p>
+
+  <!-- Erreur HTTP (404, 500, etc.) -->
+  {% elif data.is_http_error %}
+  <div class="exception-summary http-error">
+    <div class="exception-type-badge http">HTTP Error</div>
+    <div class="exception-message">
+      {{ data.exception.class }}: {{ data.exception.message }}
+    </div>
+    <div class="exception-metadata">
+      <span>{{ data.exception.method }} {{ data.exception.path }}</span>
+      {% if data.exception.client_ip %}
+      <span class="client-info">from {{ data.exception.client_ip }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="http-error-details">
+    <h3>Request Details</h3>
+    <table class="error-details-table">
+      <tr>
+        <th>Status Code</th>
+        <td>
+          <span class="status-code-badge status-{{ data.status_code }}"
+            >{{ data.status_code }}</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <th>Method</th>
+        <td>{{ data.exception.method }}</td>
+      </tr>
+      <tr>
+        <th>URL</th>
+        <td>{{ data.exception.url }}</td>
+      </tr>
+      <tr>
+        <th>Path</th>
+        <td>{{ data.exception.path }}</td>
+      </tr>
+      {% if data.exception.user_agent %}
+      <tr>
+        <th>User Agent</th>
+        <td class="user-agent">{{ data.exception.user_agent }}</td>
+      </tr>
+      {% endif %} {% if data.exception.referer %}
+      <tr>
+        <th>Referer</th>
+        <td>{{ data.exception.referer }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>Client IP</th>
+        <td>{{ data.exception.client_ip }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Suggestions selon le type d'erreur -->
+  <div class="error-suggestions">
+    <h3>💡 Possible Solutions</h3>
+    {% if data.status_code == 404 %}
+    <ul>
+      <li>Check if the route is properly defined in your controller</li>
+      <li>Verify the URL pattern matches your route decorator</li>
+      <li>Ensure the controller is registered and discoverable</li>
+      <li>Check for typos in the URL path</li>
+    </ul>
+    {% elif data.status_code == 500 %}
+    <ul>
+      <li>Check application logs for detailed error information</li>
+      <li>Verify database connectivity if applicable</li>
+      <li>Check for missing dependencies or configuration</li>
+      <li>Review recent code changes that might cause issues</li>
+    </ul>
+    {% elif data.status_code == 405 %}
+    <ul>
+      <li>
+        Check if the HTTP method (GET, POST, etc.) is allowed for this route
+      </li>
+      <li>Verify the route decorator includes the correct methods</li>
+      <li>Ensure the form method matches the route configuration</li>
+    </ul>
+    {% endif %}
+  </div>
+
+  {% endif %} {% else %}
+  <p class="no-exception">✅ No exception was thrown during this request.</p>
   {% endif %}
 </div>
 
@@ -26,6 +115,33 @@
     border-left: 4px solid #e74c3c;
     padding: 15px;
     margin-bottom: 20px;
+    position: relative;
+  }
+
+  .exception-summary.http-error {
+    border-left-color: #f39c12;
+    background-color: #fef9e7;
+  }
+
+  .exception-type-badge {
+    position: absolute;
+    top: -8px;
+    right: 15px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .exception-type-badge.python {
+    background-color: #e74c3c;
+    color: white;
+  }
+
+  .exception-type-badge.http {
+    background-color: #f39c12;
+    color: white;
   }
 
   .exception-message {
@@ -35,15 +151,25 @@
     margin-bottom: 10px;
   }
 
+  .http-error .exception-message {
+    color: #d68910;
+  }
+
   .exception-metadata {
     color: #666;
     font-size: 14px;
+  }
+
+  .client-info {
+    margin-left: 10px;
+    font-style: italic;
   }
 
   .stack-trace {
     background-color: #f5f5f5;
     padding: 15px;
     border-radius: 4px;
+    margin-bottom: 20px;
   }
 
   .stack-trace pre {
@@ -55,8 +181,80 @@
     color: #333;
   }
 
+  .http-error-details {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+
+  .error-details-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .error-details-table th,
+  .error-details-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .error-details-table th {
+    background-color: #f1f3f4;
+    font-weight: bold;
+    width: 150px;
+  }
+
+  .status-code-badge {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    color: white;
+  }
+
+  .status-code-badge.status-404 {
+    background-color: #f39c12;
+  }
+
+  .status-code-badge.status-500 {
+    background-color: #e74c3c;
+  }
+
+  .user-agent {
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .error-suggestions {
+    background-color: #e8f5e8;
+    border: 1px solid #c3e6c3;
+    border-radius: 4px;
+    padding: 15px;
+  }
+
+  .error-suggestions h3 {
+    margin-top: 0;
+    color: #2d5a2d;
+  }
+
+  .error-suggestions ul {
+    margin-bottom: 0;
+  }
+
+  .error-suggestions li {
+    margin-bottom: 5px;
+    color: #2d5a2d;
+  }
+
   .no-exception {
     color: #27ae60;
     font-weight: bold;
+    text-align: center;
+    padding: 20px;
+    background-color: #e8f5e8;
+    border: 1px solid #c3e6c3;
+    border-radius: 4px;
   }
 </style>
