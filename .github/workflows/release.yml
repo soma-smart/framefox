@@ -19,21 +19,44 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
-
       - name: Extract version from release tag
         id: get_version
         run: |
-          # Récupère la version depuis le tag (ex: refs/tags/v1.0.0-alpha → 1.0.0-alpha)
-          VERSION=${GITHUB_REF#refs/tags/}
-          # Supprime le 'v' initial si présent
-          VERSION=${VERSION#v}
+          echo "DEBUG: GITHUB_REF complet = $GITHUB_REF"
+          
+          # Récupère la version depuis le tag
+          RAW_VERSION=$(echo "$GITHUB_REF" | sed 's/refs\/tags\///')
+          RAW_VERSION=$(echo "$RAW_VERSION" | sed 's/^v//')
+          
+          # Conversion vers PEP 440
+          case "$RAW_VERSION" in
+            *-*-rc*)
+              # 2.0.0-Fennec-rc1 → 2.0.0rc1
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-.*-rc([0-9]+)/\1rc\2/')
+              ;;
+            *-rc*)
+              # 2.0.0-rc1 → 2.0.0rc1
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-rc([0-9]+)/\1rc\2/')
+              ;;
+            *)
+              # Version normale
+              VERSION="$RAW_VERSION"
+              ;;
+          esac
+          
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Version détectée: $VERSION"
+          echo "📦 Tag original: $RAW_VERSION"
+          echo "📦 Version PEP440: $VERSION"
+
 
       - name: Update version in pyproject.toml
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           echo "🔄 Mise à jour de la version vers: $VERSION"
+          
+          # Debug - vérifier les valeurs
+          echo "DEBUG: GITHUB_REF=$GITHUB_REF"
+          echo "DEBUG: VERSION extraite=$VERSION"
           
           # Remplace la version dans pyproject.toml
           sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
