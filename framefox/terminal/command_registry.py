@@ -28,6 +28,7 @@ class CommandRegistry:
         if cls._instance is None:
             cls._instance = super(CommandRegistry, cls).__new__(cls)
             cls._instance.commands = {}
+            cls._instance.command_groups = {}  # Nouveau : groupes de commandes
             cls._instance.initialized = False
         return cls._instance
 
@@ -35,8 +36,13 @@ class CommandRegistry:
         """Retrieve a command by its full name (e.g., 'server:start')"""
         if not self.initialized:
             self.discover_commands()
-
         return self.commands.get(name)
+
+    def get_command_groups(self) -> Dict[str, Dict[str, any]]:
+        """Get commands organized by groups for Typer subcommands"""
+        if not self.initialized:
+            self.discover_commands()
+        return self.command_groups
 
     def add_command(self, command_class, namespace=None, name=None):
         """Add a command to the registry with an optional namespace"""
@@ -62,8 +68,15 @@ class CommandRegistry:
             else:
                 namespace = "main"
 
+        # Garder l'ancien système pour compatibilité
         command_id = f"{namespace}:{name}" if namespace != "main" else name
         self.commands[command_id] = command_class
+
+        # Nouveau système de groupes
+        if namespace not in self.command_groups:
+            self.command_groups[namespace] = {}
+        self.command_groups[namespace][name] = command_class
+
         return command_id
 
     def discover_commands(self):
