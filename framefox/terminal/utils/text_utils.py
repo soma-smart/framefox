@@ -35,13 +35,54 @@ def levenshtein_distance(s1: str, s2: str) -> int:
 def suggest_similar_commands(
     target: str, available_commands: list, threshold: int = 3
 ) -> list:
-    """Suggest similar commands based on Levenshtein distance"""
-    suggestions = []
-    for command in available_commands:
-        distance = levenshtein_distance(target, command)
-        if distance <= threshold:
-            suggestions.append((command, distance))
+    """Suggest similar commands based on Levenshtein distance with smart scoring"""
+    if not target or not available_commands:
+        return []
 
-    # Sort by distance (closest first)
+    suggestions = []
+    target_lower = target.lower()
+
+    for command in available_commands:
+        command_lower = command.lower()
+
+        # Exact match (shouldn't happen in error context, but just in case)
+        if target_lower == command_lower:
+            continue
+
+        # Calculate base distance
+        distance = levenshtein_distance(target_lower, command_lower)
+
+        # Smart scoring: give bonus for common mistakes
+        score = distance
+
+        # Bonus for commands that start with the same letter(s)
+        if target_lower and command_lower.startswith(target_lower[0]):
+            score -= 0.5
+
+        # Bonus for length similarity
+        length_diff = abs(len(target) - len(command))
+        if length_diff <= 2:
+            score -= 0.3
+
+        # Bonus for substring matches
+        if target_lower in command_lower or command_lower in target_lower:
+            score -= 1
+
+        # Only include if within threshold
+        if score <= threshold:
+            suggestions.append((command, score))
+
+    # Sort by score (best matches first)
     suggestions.sort(key=lambda x: x[1])
-    return [cmd for cmd, _ in suggestions]
+    return [cmd for cmd, _ in suggestions[:5]]  # Return top 5 matches
+
+
+def calculate_similarity_ratio(s1: str, s2: str) -> float:
+    """Calculate similarity ratio between two strings (0.0 to 1.0)"""
+    if not s1 or not s2:
+        return 0.0
+
+    max_len = max(len(s1), len(s2))
+    distance = levenshtein_distance(s1.lower(), s2.lower())
+
+    return 1.0 - (distance / max_len)
