@@ -27,15 +27,13 @@ class Terminal:
         self.registry = CommandRegistry()
         self.rich_console = RichConsole()
         self.app = typer.Typer(
-            name="framefox",
+            name="Framefox",
             help="🦊 Framefox - Swift, smart, and a bit foxy",
-            no_args_is_help=True,
+            no_args_is_help=False,
             rich_markup_mode="rich",
             pretty_exceptions_enable=False,
-            add_completion=False,
+            add_completion=True,
         )
-
-        self.service_container = ServiceContainer()
 
         self.registry.discover_commands()
         self._configure_app()
@@ -91,8 +89,20 @@ class Terminal:
             subapp = typer.Typer(
                 name=namespace,
                 help=self._get_namespace_description(namespace),
-                no_args_is_help=True,
+                no_args_is_help=False,
             )
+
+            def create_subgroup_callback(ns=namespace):
+                @subapp.callback(invoke_without_command=True)
+                def subgroup_main(ctx: typer.Context):
+                    if ctx.invoked_subcommand is None:
+                        self._print_header()
+                        self._display_subgroup_help(ns)
+                        raise typer.Exit()
+
+                return subgroup_main
+
+            create_subgroup_callback()
 
             # Ajouter chaque commande au sous-groupe
             for command_name, command_class in commands.items():
@@ -100,6 +110,42 @@ class Terminal:
 
             # Ajouter le sous-groupe à l'app principale
             self.app.add_typer(subapp, name=namespace)
+
+    def _display_subgroup_help(self, namespace: str):
+        """Display help for a specific command group"""
+        self.rich_console.print(
+            f"[bold orange1]{namespace.upper()} COMMANDS[/bold orange1]"
+        )
+        self.rich_console.print("")
+        self.rich_console.print(
+            self._get_namespace_description(namespace), style="dim white"
+        )
+        self.rich_console.print("")
+
+        # Table des commandes du groupe
+        table = Table(show_header=True, header_style="bold orange1")
+        table.add_column("Command", style="bold orange3", no_wrap=True)
+        table.add_column("Description", style="white")
+
+        command_groups = self.registry.get_command_groups()
+        if namespace in command_groups:
+            for command_name, command_class in sorted(
+                command_groups[namespace].items()
+            ):
+                doc = (
+                    command_class.execute.__doc__
+                    if hasattr(command_class, "execute")
+                    else ""
+                )
+                first_line = doc.strip().split("\n")[0] if doc else ""
+                table.add_row(command_name, first_line)
+
+        self.rich_console.print(table)
+        self.rich_console.print("")
+        self.rich_console.print(
+            f"Run 'framefox {namespace} COMMAND --help' for specific command details",
+            style="bold white",
+        )
 
     def _add_command_to_subapp(
         self, subapp: typer.Typer, command_name: str, command_class
@@ -135,107 +181,6 @@ class Terminal:
             "fixtures": "Fixture operations for test data management.",
         }
         return descriptions.get(namespace, f"{namespace.title()} operations")
-
-    # def run(self, args: List[str] = None):
-    #     """Run the console application with the given arguments"""
-    #     if args is None:
-    #         args = sys.argv[1:]
-
-    #     if not args:
-    #         self._create_standard_console()
-    #         self._display_help()
-    #         return 0
-
-    #     # Ajout pour gérer spécifiquement la commande 'init'
-    #     if len(args) == 1 and args[0] == "init":
-    #         command_class = self.registry.get_command("init")
-    #         if command_class:
-    #             try:
-    #                 # Instantiate and execute the command
-    #                 instance = self._instantiate_command(command_class)
-    #                 if instance:
-    #                     print("Executing command init")
-    #                     return instance.execute()
-    #                 else:
-    #                     self.rich_console.print(
-    #                         "Error instantiating command init",
-    #                         style="bold red",
-    #                     )
-    #                     return 1
-    #             except Exception as e:
-    #                 self.rich_console.print(
-    #                     f"Error executing command init: {e}",
-    #                     style="bold red",
-    #                 )
-    #                 return 1
-
-    #     if len(args) == 1 and ":" not in args[0] and args[0] != "list":
-    #         namespace = args[0]
-    #         commands_by_namespace = self.registry.list_commands()
-
-    #         if namespace in commands_by_namespace:
-    #             self._create_standard_console()
-    #             self._display_namespace_commands(namespace)
-    #             return 0
-
-    #     # Check if we have a command with the format namespace:name
-    #     if len(args) > 0 and ":" in args[0]:
-    #         command_id = args[0]
-    #         command_class = self.registry.get_command(command_id)
-    #         if command_class:
-    #             try:
-    #                 # Instantiate and execute the command
-    #                 instance = self._instantiate_command(command_class)
-    #                 if instance:
-    #                     print(f"Executing command {command_id}")
-    #                     return instance.execute(*args[1:])
-    #                 else:
-    #                     self.rich_console.print(
-    #                         f"Error instantiating command {command_id}",
-    #                         style="bold red",
-    #                     )
-    #                     return 1
-    #             except Exception as e:
-    #                 self.rich_console.print(
-    #                     f"Error executing command {command_id}: {e}",
-    #                     style="bold red",
-    #                 )
-    #                 return 1
-    #         else:
-    #             self.rich_console.print("Command not found", style="bold red")
-
-    #             # Calculate Levenshtein distance for all commands
-    #             command_similarities = []
-    #             for cmd in self.registry.commands.keys():
-    #                 # Calculate the distance between the requested command and each available command
-    #                 distance = self.levenshtein_distance(command_id, cmd)
-
-    #                 # If the namespace is the same, give a bonus (reduce the distance)
-    #                 if ":" in cmd and ":" in command_id:
-    #                     if cmd.split(":")[0] == command_id.split(":")[0]:
-    #                         distance -= 2
-
-    #                 # Store the distance and the command
-    #                 command_similarities.append((distance, cmd))
-
-    #             # Sort by distance (smaller distance = more similar)
-    #             command_similarities.sort()
-
-    #             # Only suggest the most similar command if it has a reasonable distance
-    #             if command_similarities and command_similarities[0][0] < 5:
-    #                 best_match = command_similarities[0][1]
-    #                 self.rich_console.print(
-    #                     f"Did you mean [bold yellow]{best_match}[/] ?", style="yellow"
-    #                 )
-
-    #             return 1
-
-    #     # Otherwise, use Typer normally
-    #     try:
-    #         return self.app()
-    #     except SystemExit as e:
-    #         # Intercept Typer's exit to return the status code
-    #         return e.code
 
     def run(self, args: List[str] = None):
         """Run the console application with the given arguments"""
@@ -283,92 +228,16 @@ class Terminal:
                 )
                 return None
 
-    # def _print_header(self):
-    #     """Print the application header"""
-    #     print("")
-    #     self.rich_console.print(
-    #         "🦊 Framefox - Swift, smart, and a bit foxy", style="bold orange1"
-    #     )
-    #     print("")
     def _print_header(self):
         """Print the application header"""
         self.rich_console.print("")
         self.rich_console.print(
-            "🦊 [bold orange1]Framefox Framework CLI[/bold orange1]", justify="center"
+            "🦊 [bold orange1]Framefox Framework CLI[/bold orange1]", justify="left"
         )
         self.rich_console.print(
-            "[dim]Swift, smart, and a bit foxy[/dim]", justify="center"
+            "[dim]Swift, smart, and a bit foxy[/dim]", justify="left"
         )
         self.rich_console.print("")
-
-    def _create_standard_console(self, help=True):
-        """Create a console with the standard Framefox style"""
-        print("")
-        self.rich_console.print(
-            "🦊 Framefox - Swift, smart, and a bit foxy",
-            style="bold orange1",
-        )
-        print("")
-        self.rich_console.print(
-            "Usage: framefox [namespace:command] [OPTIONS]", style="bold white"
-        )
-        if help:
-            self.rich_console.print(
-                "Try 'framefox list' for available commands", style="bold white"
-            )
-        print("")
-        return self.rich_console
-
-    # def _display_all_commands(self):
-    #     """Display all commands with their description in an enhanced style"""
-    #     # Vérifier si le projet est initialisé
-    #     project_exists = os.path.exists("src")
-
-    #     table = Table(show_header=True, header_style="bold orange1")
-    #     table.add_column("Commands", style="bold orange3", no_wrap=True)
-    #     table.add_column("Description", style="white")
-
-    #     if not project_exists:
-    #         # Afficher uniquement la commande init
-    #         init_command = self.registry.get_command("init")
-    #         if init_command:
-    #             doc = init_command.execute.__doc__ or ""
-    #             first_line = doc.strip().split("\n")[0] if doc else ""
-    #             table.add_row("init", first_line)
-
-    #         self.rich_console.print(table)
-    #         return
-
-    #     commands_by_namespace = self.registry.list_commands()
-
-    #     # For each namespace
-    #     for namespace, commands in sorted(commands_by_namespace.items()):
-    #         if namespace != "main":
-    #             # Add an empty row and a section header
-    #             if namespace != next(iter(sorted(commands_by_namespace))):
-    #                 table.add_row("", "")
-    #             table.add_row(f"{namespace.upper()}", "")
-
-    #             # Add the commands of this namespace
-    #             for name in sorted(commands):
-    #                 command_id = f"{namespace}:{name}"
-    #                 command_class = self.registry.get_command(command_id)
-    #                 doc = command_class.execute.__doc__ or ""
-    #                 first_line = doc.strip().split("\n")[0] if doc else ""
-    #                 table.add_row(command_id, first_line)
-
-    #     # Display the commands of the main namespace at the end
-    #     if "main" in commands_by_namespace:
-    #         table.add_row("", "")
-    #         table.add_row("MAIN", "")
-    #         for name in sorted(commands_by_namespace["main"]):
-    #             command_class = self.registry.get_command(name)
-    #             doc = command_class.execute.__doc__ or ""
-    #             first_line = doc.strip().split("\n")[0] if doc else ""
-    #             table.add_row(name, first_line)
-
-    #     self.rich_console.print(table)
-    #     print("")
 
     def _display_all_commands(self):
         """Display all commands with their descriptions"""
@@ -393,9 +262,9 @@ class Terminal:
             if namespace != "main":
                 # Section header
                 table.add_row("", "")
-                table.add_row(f"[bold cyan]{namespace.upper()}[/bold cyan]", "")
 
                 for command_name, command_class in sorted(commands.items()):
+                    # ✅ CHANGEMENT : Utiliser des espaces au lieu de ':'
                     full_command = f"{namespace} {command_name}"
                     doc = (
                         command_class.execute.__doc__
@@ -407,70 +276,6 @@ class Terminal:
 
         self.rich_console.print(table)
         self.rich_console.print("")
-
-    # def _display_help(self):
-    #     """Display simplified help in an enhanced style"""
-    #     project_exists = os.path.exists("src")
-
-    #     if not project_exists:
-    #         # Afficher uniquement la commande init
-    #         init_table = Table(show_header=True, header_style="bold orange1")
-    #         init_table.add_column("Command", style="bold orange3", no_wrap=True)
-    #         init_table.add_column("Description", style="white")
-
-    #         init_command = self.registry.get_command("init")
-    #         if init_command:
-    #             doc = init_command.execute.__doc__ or ""
-    #             first_line = doc.strip().split("\n")[0] if doc else ""
-    #             init_table.add_row("init", first_line)
-
-    #         self.rich_console.print(init_table)
-    #         self.rich_console.print("")
-    #         self.rich_console.print(
-    #             "Run 'framefox init --help' for command details",
-    #             style="bold white",
-    #         )
-    #         return
-    #     options_table = Table(show_header=True, header_style="bold orange1")
-    #     options_table.add_column("Options", style="bold orange3", no_wrap=True)
-    #     options_table.add_column("Description", style="white")
-    #     options_table.add_row(
-    #         "--all", "Display all available commands in detailed view"
-    #     )
-    #     options_table.add_row("namespace:command", "Execute a specific command")
-    #     options_table.add_row("list", "Show detailed list of all commands")
-
-    #     self.rich_console.print(options_table)
-    #     self.rich_console.print("")
-
-    #     # Command panel - display namespaces
-    #     commands_table = Table(show_header=True, header_style="bold orange1")
-    #     commands_table.add_column("Namespace", style="bold orange3", no_wrap=True)
-    #     commands_table.add_column("Description", style="white")
-
-    #     namespace_descriptions = {
-    #         "server": "Server operations like starting or stopping the server.",
-    #         "create": "Create various resources like entities or CRUD operations.",
-    #         "database": "Database operations like creating or migrating databases.",
-    #         "debug": "Debug operations like checking routes or testing security.",
-    #         "cache": "Cache operations like clearing cache files and directories.",
-    #         "mock": "Mock operations like generating or loading mock data.",
-    #     }
-
-    #     commands_by_namespace = self.registry.list_commands()
-
-    #     # Display only the namespaces that have commands
-    #     for namespace in sorted(commands_by_namespace.keys()):
-    #         if namespace != "main":
-    #             description = namespace_descriptions.get(namespace, "")
-    #             commands_table.add_row(namespace, description)
-
-    #     self.rich_console.print(commands_table)
-    #     self.rich_console.print("")
-    #     self.rich_console.print(
-    #         "Run 'framefox namespace:command --help' for specific command details",
-    #         style="bold white",
-    #     )
 
     def _display_help(self):
         """Display simplified help"""
@@ -496,14 +301,25 @@ class Terminal:
             )
             return
 
-        # Afficher les groupes de commandes
+        # Afficher les options disponibles
         options_table = Table(show_header=True, header_style="bold orange1")
         options_table.add_column("Options", style="bold orange3", no_wrap=True)
         options_table.add_column("Description", style="white")
         options_table.add_row(
+            "--install-completion", "Install completion for the current shell"
+        )
+        options_table.add_row(
+            "--show-completion", "Show completion for the current shell"
+        )
+        options_table.add_row(
             "--all", "Display all available commands in detailed view"
         )
-        options_table.add_row("COMMAND --help", "Show help for a specific command")
+        options_table.add_row(
+            "COMMAND --help", "Show help for a specific command group"
+        )
+        # options_table.add_row(
+        #     "COMMAND SUBCOMMAND --help", "Show help for a specific command"
+        # )
         options_table.add_row("list", "Show detailed list of all commands")
 
         self.rich_console.print(options_table)
@@ -522,9 +338,15 @@ class Terminal:
 
         self.rich_console.print(commands_table)
         self.rich_console.print("")
+        # ✅ CHANGEMENT : Mettre à jour les instructions avec la nouvelle syntaxe
         self.rich_console.print(
             "Run 'framefox COMMAND --help' for specific command group details",
             style="bold white",
+        )
+        self.rich_console.print("")
+        self.rich_console.print(
+            "Example: 'framefox server start' or 'framefox create controller'",
+            style="dim white",
         )
 
     def _display_namespace_commands(self, namespace: str):
