@@ -1,7 +1,6 @@
 import logging
+from importlib.metadata import entry_points
 from typing import Dict
-
-import pkg_resources
 
 from framefox.core.bundle.abstract_bundle import AbstractBundle
 from framefox.core.di.service_container import ServiceContainer
@@ -27,7 +26,7 @@ class BundleManager:
 
     def discover_bundles(self) -> None:
         """Discovers all bundles installed via entry points"""
-        for entry_point in pkg_resources.iter_entry_points("framefox.bundles"):
+        for entry_point in entry_points(group="framefox.bundles"):
             try:
                 bundle_class = entry_point.load()
                 bundle = bundle_class()
@@ -41,9 +40,7 @@ class BundleManager:
             try:
                 bundle.register_services(container)
             except Exception as e:
-                self.logger.error(
-                    f"Error registering services for bundle {name}: {str(e)}"
-                )
+                self.logger.error(f"Error registering services for bundle {name}: {str(e)}")
 
     def register_bundle_commands(self, registry: CommandRegistry) -> None:
         """Registers commands for all bundles"""
@@ -51,9 +48,7 @@ class BundleManager:
             try:
                 bundle.register_commands(registry)
             except Exception as e:
-                self.logger.error(
-                    f"Error registering commands for bundle {name}: {str(e)}"
-                )
+                self.logger.error(f"Error registering commands for bundle {name}: {str(e)}")
 
     def boot_bundles(self, container: ServiceContainer) -> None:
         """Boots all bundles after complete initialization"""

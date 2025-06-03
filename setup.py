@@ -1,9 +1,8 @@
 from setuptools import find_packages, setup
 
-
-def parse_requirements(filename):
-    with open(filename, "r") as file:
-        return file.read().splitlines()
+# def parse_requirements(filename):
+#     with open(filename, "r") as file:
+#         return file.read().splitlines()
 
 
 setup(
@@ -42,7 +41,7 @@ setup(
         "aiosmtplib>=4.0.0",
         "pika>=1.3.2",
     ],
-    install_requires=parse_requirements("requirements.txt"),
+    # install_requires=parse_requirements("requirements.txt"),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

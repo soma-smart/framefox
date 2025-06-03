@@ -250,7 +250,7 @@ class InitCommand(AbstractCommand):
             "Disk Space",
             "[green]OK[/green]" if space_ok else "[red]Insufficient[/red]",
             "100 MB minimum",
-            f"{free // (1024*1024)} MB available",
+            f"{free // (1024 * 1024)} MB available",
         )
 
         console.print(table)
