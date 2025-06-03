@@ -23,20 +23,30 @@ jobs:
       - name: Extract version from release tag
         id: get_version
         run: |
-          # Récupère la version depuis le tag (ex: refs/tags/v1.0.0-alpha → 1.0.0-alpha)
-          VERSION=${GITHUB_REF#refs/tags/}
+          echo "DEBUG: GITHUB_REF complet = $GITHUB_REF"
+          
+          # Récupère la version depuis le tag
+          VERSION=$(echo "$GITHUB_REF" | sed 's/refs\/tags\///')
           # Supprime le 'v' initial si présent
-          VERSION=${VERSION#v}
+          VERSION=$(echo "$VERSION" | sed 's/^v//')
+          
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Version détectée: $VERSION"
+          
+          # Debug supplémentaire
+          echo "DEBUG: Version finale = $VERSION"
 
       - name: Update version in pyproject.toml
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           echo "🔄 Mise à jour de la version vers: $VERSION"
           
+          # Debug - vérifier les valeurs
+          echo "DEBUG: GITHUB_REF=$GITHUB_REF"
+          echo "DEBUG: VERSION extraite=$VERSION"
+          
           # Remplace la version dans pyproject.toml
-          sed -i "s#^version = \".*\"#version = \"$VERSION\"#" pyproject.toml
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
           
           # Vérifie que la modification a été effectuée
           echo "✅ Nouvelle version dans pyproject.toml:"
