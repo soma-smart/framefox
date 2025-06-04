@@ -9,7 +9,7 @@ Framefox's routing system provides an elegant and powerful way to define how you
 
 The routing system is the backbone of your web application, determining which controller methods handle specific URL patterns and HTTP methods. Whether you're building a simple website or a complex API, Framefox's routing capabilities scale with your needs.
 
-:::info[FastAPI Integration]
+:::note[FastAPI Integration]
 Framefox routing leverages FastAPI's robust routing engine, providing:
 - High-performance request handling
 - Automatic OpenAPI documentation generation
@@ -128,7 +128,7 @@ async def health_check(self):
 
 Parameterized routes capture dynamic segments from the URL and pass them as arguments to your controller methods. This enables you to build flexible, data-driven applications that can handle variable content based on URL parameters.
 
-:::info[Parameter Extraction]
+:::note[Parameter Extraction]
 Framefox automatically extracts URL parameters and converts them to the appropriate Python types based on your method signature. This provides type safety and eliminates manual parsing.
 :::
 
