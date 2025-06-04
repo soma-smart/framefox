@@ -23,8 +23,9 @@ By participating in this project, you agree to abide by our code of conduct. Be 
 Before contributing, please:
 
 1. Read this entire contributing guide
-2. Check the [existing issues](../../issues) and [pull requests](../../pulls)
-3. Familiarize yourself with the project structure and architecture
+<!-- 2. Check the [existing issues](../../issues) and [pull requests](../../pulls) -->
+1. Check the existing issues and pull requests
+2. Familiarize yourself with the project structure and architecture
 
 ## How to Contribute
 
@@ -43,7 +44,8 @@ There are several ways to contribute to Framefox:
 
 Before reporting a bug:
 
-1. Check that the bug hasn't already been reported in [Issues](../../issues)
+<!-- 1. Check that the bug hasn't already been reported in [Issues](../../issues) -->
+1. Check that the bug hasn't already been reported
 2. Ensure you're using the latest version of Framefox
 3. Test with a minimal reproduction case
 
@@ -79,7 +81,8 @@ Add any other context about the problem here.
 
 For new feature suggestions:
 
-1. Check if it's not already proposed in [Issues](../../issues)
+<!-- 1. Check if it's not already proposed in [Issues](../../issues) -->
+1. Check if it's not already proposed
 2. Create a new issue with the "enhancement" label
 3. Clearly describe:
    - The problem this feature solves
