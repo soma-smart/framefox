@@ -4,7 +4,7 @@ import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
-  // Starlight assets and links will be prefixed with /docs
+  site: "https://soma-smart.github.io",
   base: "/",
   integrations: [
     starlight({

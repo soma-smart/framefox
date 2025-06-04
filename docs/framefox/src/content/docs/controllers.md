@@ -13,7 +13,7 @@ In Framefox, controllers inherit from `AbstractController`, providing a rich set
 Controllers should focus on handling HTTP concerns (request/response) and delegating business logic to services or repositories. This keeps your controllers thin and your application well-structured.
 :::
 
-:::info[Framework Architecture]
+:::note[Framework Architecture]
 Framefox follows the MVC (Model-View-Controller) pattern where controllers serve as the coordination layer between your routes and business logic. They should not contain complex business rules but rather orchestrate the flow of data between different layers of your application.
 :::
 
@@ -21,7 +21,7 @@ Framefox follows the MVC (Model-View-Controller) pattern where controllers serve
 
 ### Using the Interactive Terminal
 
-Framefox provides several commands to create different types of controllers through an interactive command-line interface that guides you through the process step by step.
+Framefox provides commands to create different types of controllers through an interactive command-line interface that guides you through the process step by step.
 
 :::warning[Prerequisites]
 Before creating controllers, ensure that:
@@ -47,7 +47,7 @@ This interactive command will guide you through the controller creation process:
    - Generates corresponding view template in `templates/{name}/index.html`
    - Sets up basic route structure with proper naming conventions
 
-:::info[File Naming Convention]
+:::note[File Naming Convention]
 Framefox follows Python naming conventions:
 - Controller files: `{name}_controller.py`
 - Controller classes: `{Name}Controller` (PascalCase)
@@ -134,7 +134,7 @@ Consider extending from a base template for consistent styling:
 
 CRUD generation creates comprehensive, database-ready controllers with full Create, Read, Update, Delete functionality.
 
-:::info[Entity Relationship]
+:::note[Entity Relationship]
 CRUD controllers automatically establish relationships with your data layer:
 - **Entity**: The data model representing your database table
 - **Repository**: The data access layer for database operations
@@ -471,7 +471,7 @@ class MyController(AbstractController):
         self.custom_service = self._container.get_by_name("CustomService")
 ```
 
-:::info[Dependency Injection]
+:::note[Dependency Injection]
 Framefox uses a powerful dependency injection container that:
 - Automatically resolves service dependencies
 - Provides access to framework services (templating, routing, etc.)
@@ -669,7 +669,7 @@ async def api_create_post(self, request: Request):
         }, status=422)
 ```
 
-:::info[API Best Practices]
+:::note[API Best Practices]
 Follow RESTful conventions for status codes:
 - **200**: Success (GET, PUT, PATCH)
 - **201**: Created (POST)
@@ -1542,7 +1542,7 @@ class TestUserControllerIntegration:
         assert "/users/" in response.headers["location"]
 ```
 
-:::info[Testing Strategy]
+:::note[Testing Strategy]
 Implement comprehensive testing:
 - **Unit Tests**: Test individual controller methods with mocked dependencies
 - **Integration Tests**: Test complete request/response cycles

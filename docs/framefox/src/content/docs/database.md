@@ -9,7 +9,7 @@ Framefox includes a powerful Object-Relational Mapping (ORM) system that simplif
 
 The ORM supports multiple database engines including SQLite, MySQL, PostgreSQL, and other SQL-compatible databases, making it easy to switch between development and production environments without code changes.
 
-:::info[ORM Architecture]
+:::note[ORM Architecture]
 Framefox ORM is built on top of SQLAlchemy, providing:
 - **Type Safety**: Full Python type hints and validation
 - **Performance**: Optimized queries with connection pooling
@@ -88,7 +88,7 @@ database:
   autoflush: false                # Manual session flushing
 ```
 
-:::info[Connection Pooling Explained]
+:::note[Connection Pooling Explained]
 Framefox's connection pooling optimizes database performance:
 - **pool_size**: Core connections kept alive (recommended: 10-50)
 - **max_overflow**: Extra connections during peak load
@@ -216,7 +216,7 @@ class Product(AbstractEntity, table=True):
     orders: List["OrderItem"] = Relationship(back_populates="product")
 ```
 
-:::info[Entity Design Philosophy]
+:::note[Entity Design Philosophy]
 Framefox entities follow these principles:
 - **Data Only**: Entities contain only data structure and basic validation
 - **No Business Logic**: Business operations are handled by repositories and services
@@ -272,7 +272,7 @@ class Product(AbstractEntity, table=True):
     external_id: uuid.UUID = Field(default_factory=uuid.uuid4)
 ```
 
-:::info[Field Type Selection Guide]
+:::note[Field Type Selection Guide]
 Choose appropriate field types based on your data:
 - **str**: Text data with length constraints using `min_length`/`max_length`
 - **int/float**: Numeric data with validation using `gt`, `ge`, `lt`, `le`
@@ -451,7 +451,7 @@ When implementing many-to-many relationships:
 - **Consider the order of operations** when creating/deleting relationships
 :::
 
-:::info[Relationship Performance Tips]
+:::note[Relationship Performance Tips]
 - **Use eager loading** when you know you'll need related data
 - **Implement repository methods** for common relationship queries
 - **Consider denormalization** for frequently accessed data
@@ -1026,7 +1026,7 @@ echo "Cleaning up..."
 framefox database:drop
 ```
 
-:::info[Best Practices]
+:::note[Best Practices]
 Follow these guidelines for database command usage:
 - **Always backup** before running destructive operations
 - **Test migrations** in development before production
@@ -1055,7 +1055,7 @@ Database migrations provide version control for your database schema, allowing y
 
 Framefox uses Alembic for database migrations, providing powerful schema management capabilities:
 
-:::info[Migration Benefits]
+:::note[Migration Benefits]
 Migrations provide:
 - **Version Control**: Track database schema changes over time
 - **Team Collaboration**: Share schema changes across development teams
