@@ -232,5 +232,5 @@ class SessionManager:
         if hmac.compare_digest(received_sig, expected_sig):
             return raw_id
 
-        self.logger.warning(f"Invalid session signature detected")
+        # self.logger.warning(f"Invalid session signature detected")
         return None

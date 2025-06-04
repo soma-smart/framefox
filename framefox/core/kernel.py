@@ -41,13 +41,12 @@ class Kernel:
     def __init__(self, container=None, bundle_manager=None) -> None:
         if hasattr(self, "_initialized") and self._initialized:
             return
-        self._container = container or self._create_default_container()
-        self._bundle_manager = bundle_manager or self._create_default_bundle_manager()
+        self._container = container
+        self._bundle_manager = bundle_manager
 
         try:
             self._settings = Settings()
             self._logger = logging.getLogger("KERNEL")
-            self._init_security_services()
             self._app = self._create_fastapi_app()
             self._configure_app()
             self._initialized = True
@@ -55,30 +54,6 @@ class Kernel:
         except Exception as e:
             self._logger.error(f"Failed to initialize Kernel: {e}")
             raise RuntimeError(f"Kernel initialization failed: {e}") from e
-
-    def _create_default_container(self):
-        from framefox.core.di.service_container import ServiceContainer
-        return ServiceContainer()
-
-    def _create_default_bundle_manager(self):
-        from framefox.core.bundle.bundle_manager import BundleManager
-        manager = BundleManager()
-        manager.discover_bundles()
-        return manager
-
-    def _init_security_services(self) -> None:
-        session = self._container.get_by_name("Session")
-        token_storage = TokenStorage(session)
-        self._container.set_instance(TokenStorage, token_storage)
-        entity_user_provider = self._container.get(EntityUserProvider)
-        self._container.set_instance(
-            UserProvider, UserProvider(token_storage, session, entity_user_provider)
-        )
-        self._container.set_instance(SecurityContextHandler, SecurityContextHandler())
-        self._container.set_instance(EntityManagerInterface, EntityManagerInterface())
-        self._logger.debug("Security services initialized.")
-        if not self.settings.firewalls:
-            self._logger.debug("No firewalls configured.")
 
     def _create_fastapi_app(self) -> FastAPI:
         return FastAPI(
@@ -96,6 +71,8 @@ class Kernel:
         self._setup_static_files()
         self._bundle_manager.boot_bundles(self._container)
         dispatcher.load_listeners()
+        self._container.freeze_registry()
+        self._logger.debug("Application configuration complete - registry frozen")
 
     def _setup_middlewares(self) -> None:
         middleware_manager = MiddlewareManager(self._app, self._settings)

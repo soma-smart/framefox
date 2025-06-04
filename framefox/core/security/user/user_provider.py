@@ -1,10 +1,8 @@
 import logging
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Optional, Type, TypeVar
 
-from framefox.core.request.session.session_interface import SessionInterface
-from framefox.core.security.token_storage import TokenStorage
-from framefox.core.security.user.entity_user_provider import EntityUserProvider
 
+from framefox.core.di.service_container import ServiceContainer
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -23,15 +21,11 @@ class UserProvider:
     the token or session cache.
     """
 
-    def __init__(
-        self,
-        token_storage: TokenStorage,
-        session: SessionInterface,
-        entity_user_provider: EntityUserProvider,
-    ):
-        self.token_storage = token_storage
-        self.session = session
-        self.entity_user_provider = entity_user_provider
+    def __init__(self):
+        self._container = ServiceContainer()
+        self.token_storage = self._container.get_by_name("TokenStorage")
+        self.session = self._container.get_by_name("Session")
+        self.entity_user_provider = self._container.get_by_name("EntityUserProvider")
         self.logger = logging.getLogger("USER_PROVIDER")
 
     def get_current_user(self, user_class: Type[T] = None) -> Optional[T]:
