@@ -1,0 +1,2 @@
+faire en sorte que le patch de l'api crud controller fonctionne
+retirer le entity_instance et mettre le nom de l'entité donc toto si l'entity est Toto
