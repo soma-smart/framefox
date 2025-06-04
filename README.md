@@ -18,37 +18,6 @@ Key features include an interactive terminal, a powerful routing system, advance
 
 Dive into the documentation to discover how Framefox can transform your Python development experience.
 
-## Development Setup
-
-### Prerequisites
-- Python 3.12+
-- uv, pip or conda
-
-### Local Testing Without PyPI Installation
-
-To test the terminal locally and contribute to the project:
-
-#### Using venv
-```bash
-python -m venv env
-source env/bin/activate  # Linux/Mac
-# or
-env\Scripts\activate     # Windows
-```
-
-#### Using Conda
-```bash
-conda create -n framefox_env python=3.12
-conda activate framefox_env
-```
-
-#### Install in Development Mode
-```bash
-pip install -e .
-```
-
-This will install Framefox in editable mode, allowing you to use the `framefox` command while making changes to the source code.
-
 ## Contributing
 
 We welcome contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) to get started.
