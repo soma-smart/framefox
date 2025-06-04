@@ -118,7 +118,7 @@ pip install -e .
 python -m pytest
 ```
 
-### Running the Development Server
+### Running the Documentation
 
 ```bash
 # Navigate to the docs example
@@ -268,44 +268,6 @@ If any pre-commit hook fails, the commit will be rejected. Fix the issues and tr
 3. **Fill out the PR template** completely
 4. **Link any related issues**
 
-### Pull Request Template
-
-```markdown
-## Description
-Brief description of the changes made.
-
-## Type of Change
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Performance improvement
-- [ ] Code refactoring
-
-## Changes Made
-- List the specific changes made
-- Include any new files created
-- Mention any files deleted or moved
-
-## Testing
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] I have tested this change manually
-
-## Documentation
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-
-## Screenshots (if applicable)
-Add screenshots to help explain your changes.
-
-## Related Issues
-Fixes #(issue number)
-```
-
 ### Review Process
 
 - All PRs require review from at least one maintainer
@@ -373,8 +335,7 @@ user-project/
 ├── src/
 │   ├── controllers/       # User application controllers
 │   ├── entity/            # Database entities (models)
-│   ├── repository/        # Custom repository classes
-│   └── services/          # User-defined services
+│   └── repository/        # Custom repository classes
 ├── config/                # Application configuration
 ├── public/                # Static assets
 ├── migrations/            # Database migrations
@@ -416,27 +377,6 @@ Since Framefox is a library that developers will use to build production applica
 - **Memory Management**: Avoid memory leaks in long-running applications
 - **Async Support**: Ensure all I/O operations support async/await patterns
 - **Minimal Overhead**: Keep framework overhead as low as possible
-
-#### Code Performance Guidelines
-
-```python
-# ✅ Good: Lazy imports
-def get_database_connection():
-    from framefox.core.orm import DatabaseManager
-    return DatabaseManager.get_connection()
-
-# ❌ Bad: Heavy imports at module level
-from some_heavy_library import ExpensiveClass
-
-# ✅ Good: Use __slots__ for performance-critical classes
-class Entity:
-    __slots__ = ['id', 'created_at', 'updated_at']
-
-# ✅ Good: Cache expensive operations
-@lru_cache(maxsize=128)
-def parse_route_pattern(pattern: str):
-    return compiled_pattern
-```
 
 #### Database Performance
 
