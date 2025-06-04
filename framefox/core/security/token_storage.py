@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, Optional
-
-from framefox.core.request.session.session_interface import SessionInterface
+from framefox.core.di.service_container import ServiceContainer
 
 """
 Framefox Framework developed by SOMA
@@ -18,8 +17,9 @@ class TokenStorage:
     This class centralizes the management of security tokens.
     """
 
-    def __init__(self, session: SessionInterface):
-        self.session = session
+    def __init__(self):
+        self._container = ServiceContainer()
+        self.session = self._container.get_by_name("Session")
         self.logger = logging.getLogger("TOKEN_STORAGE")
 
     def get_token(self) -> Optional[str]:
