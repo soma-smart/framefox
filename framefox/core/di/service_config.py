@@ -15,7 +15,7 @@ Github: https://github.com/RayenBou
 class ServiceConfig:
     """Loads and manages service configuration from a YAML file"""
 
-    def __init__(self):
+    def __init__(self): 
         if hasattr(self, "_initialized") and self._initialized:
             return
         config_path = Path("config/services.yaml")

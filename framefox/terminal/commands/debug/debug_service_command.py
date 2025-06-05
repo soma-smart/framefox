@@ -42,6 +42,14 @@ class DebugServiceCommand(AbstractCommand):
         console = Console()
         print("")
 
+        # ✅ AJOUTER : Option pour forcer le scan complet
+        scan_status = self.container.get_scan_status()
+        if not scan_status['src_scanned']:
+            console.print("🔄 [yellow]Src services not yet scanned. Forcing complete scan...[/yellow]")
+            self.container.force_complete_scan()
+            console.print("✅ [green]Complete scan finished[/green]")
+            print("")
+
         # Afficher les statistiques générales
         self._display_container_stats(console)
 
@@ -68,26 +76,23 @@ class DebugServiceCommand(AbstractCommand):
 
         stats_text = Text()
         stats_text.append("Service Container Statistics\n", style="bold cyan")
-        stats_text.append(
-            f"• Total definitions: {stats['total_definitions']}\n", style="white"
-        )
-        stats_text.append(
-            f"• Instantiated services: {stats['instantiated_services']}\n",
-            style="green",
-        )
-        stats_text.append(
-            f"• Cached resolutions: {stats['cached_resolutions']}\n", style="yellow"
-        )
+        stats_text.append(f"• Total definitions: {stats['total_definitions']}\n", style="white")
+        stats_text.append(f"• Instantiated services: {stats['instantiated_services']}\n", style="green")
+        stats_text.append(f"• Cached resolutions: {stats['cached_resolutions']}\n", style="yellow")
         stats_text.append(f"• Total aliases: {stats['total_aliases']}\n", style="blue")
         stats_text.append(f"• Total tags: {stats['total_tags']}\n", style="magenta")
-        stats_text.append(
-            f"• Registered factories: {stats['registered_factories']}\n",
-            style="orange1",
-        )
-        stats_text.append(
-            f"• Registry frozen: {stats['frozen']}\n",
-            style="red" if stats["frozen"] else "green",
-        )
+        stats_text.append(f"• Registered factories: {stats['registered_factories']}\n", style="orange1")
+        stats_text.append(f"• Registry frozen: {stats['frozen']}\n", style="red" if stats["frozen"] else "green")
+
+        # ✅ AJOUTER : État du scan lazy
+        scan_status = self.container.get_scan_status()
+        stats_text.append("\nLazy Scan Status:\n", style="bold yellow")
+        stats_text.append(f"• Src scanned: {scan_status['src_scanned']}\n", style="green" if scan_status['src_scanned'] else "red")
+        stats_text.append(f"• Src scan in progress: {scan_status['src_scan_in_progress']}\n", style="yellow" if scan_status['src_scan_in_progress'] else "white")
+        stats_text.append(f"• Scanned modules: {scan_status['scanned_modules_count']}\n", style="cyan")
+        stats_text.append(f"• Cached modules: {scan_status['cached_modules_count']}\n", style="cyan")
+        stats_text.append(f"• Src paths found: {scan_status['src_paths_count']}\n", style="cyan")
+        stats_text.append(f"• Background scan enabled: {scan_status['background_scan_enabled']}\n", style="cyan")
 
         # Ajouter des informations sur le filtrage
         stats_text.append("\nFiltering Info:\n", style="bold yellow")

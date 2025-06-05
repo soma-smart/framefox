@@ -1,12 +1,8 @@
-import hashlib
-import json
-import logging
-import os
+import hashlib, json, logging, os, time
 from pathlib import Path
 
 from fastapi.exceptions import HTTPException
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
-from jinja2.exceptions import TemplateNotFound
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.form.extension.form_extension import FormExtension
@@ -22,6 +18,14 @@ Github: https://github.com/RayenBou
 
 
 class TemplateRenderer:
+    """
+    Template rendering service for the Framefox framework.
+    
+    Provides Jinja2-based template rendering with custom filters, globals,
+    and memory profiling capabilities. Handles both user and framework templates,
+    manages template context, and provides utility functions for web templates.
+    """
+    
     def __init__(self):
         self.container = ServiceContainer()
         self.logging = logging.getLogger("TEMPLATE_RENDERER")
@@ -51,7 +55,6 @@ class TemplateRenderer:
         self._register_filters(self.env)
 
     def _register_filters(self, env):
-        """Registers custom filters for Jinja2"""
         env.filters["relation_display"] = self._relation_display_filter
         env.filters["date"] = self._date_filter
         env.filters["format_date"] = self._format_date_filter
@@ -68,7 +71,6 @@ class TemplateRenderer:
         env.filters["slice"] = self._slice_filter
 
     def get_csrf_token(self) -> str:
-        """Returns a regenerated CSRF token on each request for enhanced security"""
         try:
             session = self.container.get_by_name("Session")
             csrf_manager = self.container.get_by_name("CsrfTokenManager")
@@ -85,7 +87,6 @@ class TemplateRenderer:
             return ""
 
     def url_for(self, name: str, **params) -> str:
-        """Generates a URL from the route name"""
         try:
             router = self.container.get_by_name("Router")
             return str(router.url_path_for(name, **params))
@@ -94,7 +95,6 @@ class TemplateRenderer:
             return "#"
 
     def get_current_request(self):
-        """Récupère la requête actuelle depuis le RequestStack"""
         try:
             return RequestStack.get_request()
         except Exception as e:
@@ -102,23 +102,51 @@ class TemplateRenderer:
             return None
 
     def get_flash_messages(self):
-        """Retrieves flash messages from the session in template format"""
         session = self.container.get_by_name("Session")
         flash_bag = session.get_flash_bag()
         return flash_bag.get_for_template()
 
     def render(self, template_name: str, context: dict = {}) -> str:
-        """
-        Renders a template with error handling based on environment
-        """
         if "request" not in context:
             request = self.get_current_request()
             if request:
                 context["request"] = request
+
+        start_time = time.time()
+        
+        memory_collector = None
+        try:
+            from framefox.core.debug.profiler.profiler import Profiler
+            profiler = Profiler()
+            if profiler.is_enabled():
+                memory_collector = profiler.get_collector("memory")
+                if memory_collector:
+                    if hasattr(memory_collector, 'start_template_measurement'):
+                        memory_collector.start_template_measurement()
+                        self.logging.debug(f"Started memory measurement for template: {template_name}")
+        except Exception as e:
+            self.logging.debug(f"Could not start memory measurement: {e}")
+
         try:
             template = self.env.get_template(template_name)
-            return template.render(**context)
+            result = template.render(**context)
+            
+            end_time = time.time()
+            render_time_ms = (end_time - start_time) * 1000
+            
+            if memory_collector and hasattr(memory_collector, 'end_template_measurement'):
+                template_memory = memory_collector.end_template_measurement()
+                
+                if hasattr(memory_collector, 'add_template_metrics'):
+                    memory_collector.add_template_metrics(template_memory, render_time_ms)
+                    self.logging.debug(f"Template {template_name}: {template_memory:.2f}MB, {render_time_ms:.2f}ms")
+                
+            return result
+            
         except Exception as e:
+            if memory_collector and hasattr(memory_collector, 'end_template_measurement'):
+                memory_collector.end_template_measurement()
+                
             self.logging.error(f"Template rendering error: {str(e)}")
             if self.settings.is_debug:
                 raise HTTPException(
@@ -132,70 +160,49 @@ class TemplateRenderer:
                 )
 
     def _max_filter(self, value, max_value=None):
-        """
-        Returns the maximum value
-
-        If max_value is provided: Compares value and max_value
-        If value is a list/tuple: Returns the max value of the list
-        """
         try:
             if max_value is None:
-
                 if isinstance(value, (list, tuple)) and value:
                     return max(value)
                 return value
             else:
-
                 return max(float(value), float(max_value))
         except (ValueError, TypeError):
             return value
 
     def _min_filter(self, value, min_value=None):
-        """
-        Returns the minimum value
-
-        If min_value is provided: Compares value and min_value
-        If value is a list/tuple: Returns the min value of the list
-        """
         try:
             if min_value is None:
-
                 if isinstance(value, (list, tuple)) and value:
                     return min(value)
                 return value
             else:
-
                 return min(float(value), float(min_value))
         except (ValueError, TypeError):
             return value
 
     def _split_filter(self, value, delimiter=","):
-        """Splits a string by a delimiter"""
         if not value:
             return []
         return value.split(delimiter)
 
     def _last_filter(self, value):
-        """Returns the last element of a list"""
         if not value or not isinstance(value, (list, tuple)):
             return ""
         return value[-1] if value else ""
 
     def _lower_filter(self, value):
-        """Converts a string to lowercase"""
         if value is None:
             return ""
         return str(value).lower()
 
     def _json_encode_filter(self, value):
-        """Converts a Python value to a JSON string"""
         try:
             return json.dumps(value)
         except TypeError:
             return json.dumps(str(value))
 
     def _filesize_format_filter(self, size):
-        """Format file size in human readable format"""
         if size is None:
             return "0 B"
 
@@ -213,7 +220,6 @@ class TemplateRenderer:
         return f"{size:.2f} PB"
 
     def _relation_display_filter(self, value):
-        """Filter to properly display relations"""
         if value is None:
             return "None"
         elif isinstance(value, list):
@@ -231,7 +237,6 @@ class TemplateRenderer:
             return str(value)
 
     def _date_filter(self, value, format="%d/%m/%Y"):
-        """Filter to format dates in templates"""
         if value is None:
             return ""
 
@@ -257,11 +262,9 @@ class TemplateRenderer:
             return str(value)
 
     def _format_date_filter(self, value, format="%d/%m/%Y %H:%M"):
-        """Filter to format dates with time in templates"""
         return self._date_filter(value, format)
 
     def get_current_user(self):
-        """Récupère l'utilisateur actuellement connecté pour les templates"""
         try:
             user_provider = self.container.get_by_name("UserProvider")
             return user_provider.get_current_user()
@@ -270,16 +273,6 @@ class TemplateRenderer:
             return None
 
     def asset(self, path: str, versioning: bool = True) -> str:
-        """
-        Generates a URL for a static resource
-
-        Args:
-            path: Relative path of the file in the public folder
-            versioning: Enables versioning for cache invalidation
-
-        Returns:
-            Full URL to the resource
-        """
         path = path.lstrip("/")
         base_url = self.settings.base_url if hasattr(self.settings, "base_url") else ""
         asset_url = f"{base_url}/{path}"
@@ -298,7 +291,6 @@ class TemplateRenderer:
         return asset_url
 
     def _dump_function(self, obj):
-        """Function to display the content of an object in templates"""
         import pprint
 
         return pprint.pformat(obj, depth=3)
@@ -306,21 +298,6 @@ class TemplateRenderer:
     def _format_number_filter(
         self, value, decimal_places=2, decimal_separator=",", thousand_separator=" "
     ):
-        """
-        Formats a number with thousand separators and decimals.
-
-        Args:
-            value: The number to format
-            decimal_places: Number of decimal places to display
-            decimal_separator: Character for decimal separator
-            thousand_separator: Character for thousand separator
-
-        Usage:
-            {{ 1234.5678|format_number }}           -> 1 234,57
-            {{ 1234.5678|format_number(1) }}        -> 1 234,6
-            {{ 1234.5678|format_number(3, '.') }}   -> 1 234.568
-            {{ 1234.5678|format_number(0, ',', '.') }} -> 1.235
-        """
         if value is None:
             return "0"
 
@@ -346,16 +323,6 @@ class TemplateRenderer:
         return formatted
 
     def _time_filter(self, value, include_ms=True):
-        """
-        Formats a time in milliseconds into a readable string (h:m:s.ms)
-
-        Args:
-            value: Duration in milliseconds
-            include_ms: Include milliseconds in the result
-
-        Returns:
-            Formatted string according to the duration magnitude
-        """
         try:
             value = float(value)
         except (TypeError, ValueError):
@@ -379,17 +346,6 @@ class TemplateRenderer:
             return f"{int(milliseconds)} ms"
 
     def _slice_filter(self, value, start, length=None):
-        """
-        Returns a substring based on the start index and length
-
-        Args:
-            value: The string to slice
-            start: The start index (inclusive)
-            length: The desired length (or until the end if not specified)
-
-        Returns:
-            The extracted substring
-        """
         try:
             if length:
                 return str(value)[start : start + length]
