@@ -6,7 +6,6 @@ from rich.table import Table
 
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.kernel import Kernel
 from framefox.core.templates.template_renderer import TemplateRenderer
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
@@ -22,7 +21,7 @@ Github: https://github.com/RayenBou
 class CacheWarmupCommand(AbstractCommand):
     def __init__(self):
         super().__init__("warmup")
-        self.kernel = Kernel()
+        # self.kernel = Kernel()
         self.container = ServiceContainer()
         self.settings = Settings()
         self.template_renderer = self.container.get(TemplateRenderer)
@@ -52,16 +51,12 @@ class CacheWarmupCommand(AbstractCommand):
         route_start = time.time()
         route_count = self._warmup_routes()
         route_time = time.time() - route_start
-        table.add_row(
-            "Routes", f"[green]{route_count} loaded[/green]", f"{route_time:.2f}s"
-        )
+        table.add_row("Routes", f"[green]{route_count} loaded[/green]", f"{route_time:.2f}s")
 
         service_start = time.time()
         service_count = self._warmup_services()
         service_time = time.time() - service_start
-        table.add_row(
-            "Services", f"[green]{service_count} loaded[/green]", f"{service_time:.2f}s"
-        )
+        table.add_row("Services", f"[green]{service_count} loaded[/green]", f"{service_time:.2f}s")
 
         total_time = time.time() - start_time
 
@@ -84,12 +79,16 @@ class CacheWarmupCommand(AbstractCommand):
                     try:
                         self.template_renderer.env.get_template(relative_path)
                         count += 1
-                    except:
-                        pass
+                    except Exception as e:
+                        self.printer.print_error(f"Error loading template {relative_path}: {e}")
         return count
 
     def _warmup_routes(self) -> int:
-        return len(self.kernel.app.routes)
+        from framefox.application import Application
+
+        app = Application()
+        kernel = app.boot_web()
+        return len(kernel.app.routes)
 
     def _warmup_services(self) -> int:
         return len(self.container.services)
