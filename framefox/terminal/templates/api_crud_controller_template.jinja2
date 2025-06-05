@@ -39,7 +39,7 @@ class {{ controller_class_name }}(AbstractController):
                     "error": "{{ entity_class_name }} not found",
                     "status": "not_found"
                 }, status=404)
-            
+
             return self.json({
                 "{{ entity_name }}": item.dict(),
                 "status": "success"
@@ -58,7 +58,7 @@ class {{ controller_class_name }}(AbstractController):
             entity_instance = self.repository.model(**{{ entity_name }}.dict())
             self.entity_manager.persist(entity_instance)
             self.entity_manager.commit()
-            
+
             return self.json({
                 "{{ entity_name }}": entity_instance.model_dump(),
                 "message": "{{ entity_class_name }} created successfully",
@@ -81,16 +81,16 @@ class {{ controller_class_name }}(AbstractController):
                     "error": "{{ entity_class_name }} not found",
                     "status": "not_found"
                 }, status=404)
-            
+
             # Complete replacement of the resource
             update_data = {{ entity_name }}.dict()
             for key, value in update_data.items():
                 if hasattr(entity_instance, key):
                     setattr(entity_instance, key, value)
-            
+
             self.entity_manager.persist(entity_instance)
             self.entity_manager.commit()
-            
+
             return self.json({
                 "{{ entity_name }}": entity_instance.dict(),
                 "message": "{{ entity_class_name }} updated successfully",
@@ -104,7 +104,7 @@ class {{ controller_class_name }}(AbstractController):
             }, status=400)
 
     @Route("/{{ entity_name }}s/{id}", "{{ entity_file_name }}.patch", methods=["PATCH"])
-    async def patch(self, request: Request, id: int):
+    async def patch(self, id: int, data: {{ entity_class_name }}.generate_patch_model()):
         """PATCH /{{ entity_name }}s/{id} - Partially update a {{ entity_name }} resource"""
         try:
             entity_instance = self.repository.find(id)
@@ -113,18 +113,17 @@ class {{ controller_class_name }}(AbstractController):
                     "error": "{{ entity_class_name }} not found",
                     "status": "not_found"
                 }, status=404)
-            
-            # Get partial data from request body
-            data = await request.json()
-            
+
+            update_data = data.dict(exclude_unset=True)
+
             # Partial update - only modify provided fields
-            for key, value in data.items():
+            for key, value in update_data.items():
                 if hasattr(entity_instance, key):
                     setattr(entity_instance, key, value)
-            
+
             self.entity_manager.persist(entity_instance)
             self.entity_manager.commit()
-            
+
             return self.json({
                 "{{ entity_name }}": entity_instance.dict(),
                 "message": "{{ entity_class_name }} partially updated successfully",
@@ -147,10 +146,10 @@ class {{ controller_class_name }}(AbstractController):
                     "error": "{{ entity_class_name }} not found",
                     "status": "not_found"
                 }, status=404)
-            
+
             self.entity_manager.delete(entity_instance)
             self.entity_manager.commit()
-            
+
             return self.json({
                 "message": "{{ entity_class_name }} deleted successfully",
                 "status": "deleted"
