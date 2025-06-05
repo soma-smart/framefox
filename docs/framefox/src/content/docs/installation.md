@@ -9,7 +9,7 @@ description: Guide complet pour installer et configurer Framefox
 
 Avant d'installer Framefox, assurez-vous d'avoir :
 
-- **Python 3.8+** installé sur votre système
+- **Python 3.12+** installé sur votre système
 - **pip** (gestionnaire de paquets Python)
 - Un éditeur de code (VS Code, PyCharm, etc.)
 
@@ -20,21 +20,35 @@ La méthode la plus simple pour installer Framefox :
 ```bash
 pip install framefox
 ```
-
 ### Installation dans un environnement virtuel (recommandé)
 
 ```bash
 # Créer un environnement virtuel
-python -m venv framefox-env
+python -m venv venv
 
 # Activer l'environnement virtuel
 # Sur Linux/macOS :
-source framefox-env/bin/activate
+source venv/bin/activate
 # Sur Windows :
-framefox-env\Scripts\activate
+venv\Scripts\activate
 
 # Installer Framefox
 pip install framefox
+```
+
+### Installation avec uv (plus rapide)
+
+Si vous avez [uv](https://docs.astral.sh/uv/) installé, vous pouvez l'utiliser pour une installation plus rapide :
+
+```bash
+# Installation directe
+uv pip install framefox
+
+# Ou dans un environnement virtuel
+uv venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate   # Windows
+uv pip install framefox
 ```
 
 ## Créer un nouveau projet
@@ -53,23 +67,27 @@ framefox init
 Cette commande créera automatiquement la structure de base :
 
 ```
-mon-premier-projet/
+user-project/
 ├── src/
-│   ├── controllers/
-│   ├── entities/
-│   ├── forms/
-│   ├── repository/
-│   └── templates/
-├── public/
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── config/
-│   ├── services.yaml
-│   ├── routing.yaml
-│   └── security.yaml
-├── main.py
-└── requirements.txt
+│   ├── controllers/       # User application controllers
+│   ├── entity/            # Database entities (models)
+│   └── repository/        # Custom repository classes
+├── config/                # Application configuration
+│   ├── application.yaml   # Configuration principale de l'application
+│   ├── debug.yaml         # Configuration du débogage
+│   ├── mail.yaml          # Configuration des emails
+│   ├── orm.yaml           # Configuration de l'ORM
+│   ├── parameter.yaml     # Paramètres de l'application
+│   ├── security.yaml      # Configuration de sécurité
+│   ├── services.yaml      # Configuration des services
+│   └── tasks.yaml         # Configuration des tâches
+├── public/                # Static assets
+├── migrations/            # Database migrations
+├── templates/             # Jinja2 templates
+├── var/                   # Variable data (logs, cache)
+├── .env                   # Environment variables
+├── requirements.txt       # Python dependencies
+└── main.py                # Application entry point
 ```
 
 ## Configuration de base
