@@ -9,6 +9,7 @@ from rich.table import Table
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.file_creator import FileCreator
+from framefox.terminal.common.input_manager import InputManager
 
 """
 Framefox Framework developed by SOMA
@@ -21,203 +22,271 @@ Github: https://github.com/Vasulvius
 
 
 class InitCommand(AbstractCommand):
+    """Command to initialize a new Framefox project"""
+
+    MIN_PYTHON_VERSION = (3, 12)
+    MIN_DISK_SPACE = 100 * 1024 * 1024
+
+    # Project structure to create
+    PROJECT_DIRECTORIES = [
+        "src",
+        "src/controllers",
+        "src/tests",
+        "src/entity",
+        "src/repository",
+        "src/security",
+        "templates",
+        "public",
+        "config",
+        "var",
+        "var/log",
+        "var/session",
+        "migrations",
+        "migrations/versions",
+        "migrations/versions/__pycache__",
+    ]
+
+    PROJECT_FILES = [
+        "main.py",
+        ".env",
+        "templates/base.html",
+        "config/application.yaml",
+        "config/orm.yaml",
+        "config/security.yaml",
+        "config/mail.yaml",
+        "config/debug.yaml",
+        "config/parameter.yaml",
+        "config/services.yaml",
+        "config/tasks.yaml",
+        "migrations/env.py",
+        "migrations/script.py.mako",
+        "migrations/versions/__pycache__/.gitkeep",
+        ".gitignore",
+        "requirements.txt",
+    ]
+
     def __init__(self):
         super().__init__("init")
-        self.MIN_PYTHON_VERSION = (3, 11)
-        self.MIN_DISK_SPACE = 100 * 1024 * 1024
 
     def execute(self):
-        """
-        Initializes a new Framefox project
-        """
-
-        if not self.check_requirements():
+        """Initialize a new Framefox project"""
+        if not self._check_system_requirements():
             return
 
-        if os.path.exists("src"):
+        existing_items = self._check_existing_project_structure()
+
+        if existing_items and not self._handle_existing_files(existing_items):
+            return
+
+        self._create_project()
+        self._display_success_message()
+
+    def _check_existing_project_structure(self):
+        """Check which project files and directories already exist"""
+        existing_items = []
+
+        # Check directories
+        for directory in self.PROJECT_DIRECTORIES:
+            if os.path.exists(directory):
+                existing_items.append(f"{directory}/ (directory)")
+
+        # Check files
+        for file in self.PROJECT_FILES:
+            if os.path.exists(file):
+                existing_items.append(f"{file} (file)")
+
+        return existing_items
+
+    def _handle_existing_files(self, existing_items):
+        """Handle conflicts with existing files"""
+        self._display_existing_files_warning(existing_items)
+
+        choice = InputManager().wait_input("Your choice", choices=["1", "2"], default="1")
+
+        if choice == "1":
             self.printer.print_msg(
-                "If you want to create a new project, delete the existing project first",
-                theme="warning",
+                "Initialization cancelled.",
+                theme="info",
                 linebefore=True,
                 newline=True,
             )
-            return
-        else:
-            InitCommand.create_empty_project()
-            self.printer.print_msg(
-                "✓ Project created successfully",
-                theme="success",
-                linebefore=True,
-                newline=True,
-            )
-            self.printer.print_full_text(
-                "Next, try [bold orange1]framefox[/bold orange1] to see the available commands",
-                newline=True,
-            )
+            return False
+
+        self.printer.print_msg(
+            "Overwriting existing files...",
+            theme="warning",
+            linebefore=True,
+        )
+        return True
+
+    def _display_existing_files_warning(self, existing_items):
+        """Display warning for existing files"""
+        self.printer.print_msg(
+            "The following files/directories already exist:",
+            theme="warning",
+            linebefore=True,
+        )
+
+        for item in existing_items:
+            self.printer.print_msg(f"• {item}", theme="warning")
+
+        print("")
+        self.printer.print_msg("What do you want to do?", theme="bold_normal")
+        self.printer.print_msg("1. Cancel initialization", theme="normal")
+        self.printer.print_msg("2. Overwrite existing files/directories", theme="normal")
+
+    def _create_project(self):
+        """Create the complete project structure"""
+        self._create_directories()
+        self._create_files()
+
+    def _create_directories(self):
+        """Create all project directories"""
+        for directory in self.PROJECT_DIRECTORIES:
+            os.makedirs(directory, exist_ok=True)
+
+    def _create_files(self):
+        """Create all project files"""
+        files_config = self._get_files_configuration()
+
+        for file_config in files_config:
+            FileCreator().create_file(**file_config)
+
+    def _get_files_configuration(self):
+        """Return the configuration of all files to create"""
+        return [
+            # Main file
+            {
+                "template": "init_files/main.jinja2",
+                "path": ".",
+                "name": "main",
+                "data": {},
+            },
+            # Environment file
+            {
+                "template": "init_files/env.jinja2",
+                "path": ".",
+                "name": ".env",
+                "data": {"session_secret_key": self._generate_secret_key()},
+                "format": "env",
+            },
+            # Base HTML template
+            {
+                "template": "init_files/base.jinja2",
+                "path": "./templates",
+                "name": "base.html",
+                "data": {},
+                "format": "html",
+            },
+            # YAML configuration files
+            *self._get_yaml_config_files(),
+            # Migration files
+            *self._get_migration_files(),
+            # Miscellaneous files
+            *self._get_misc_files(),
+        ]
+
+    def _get_yaml_config_files(self):
+        """Return the configuration for YAML files"""
+        yaml_files = ["application", "orm", "security", "mail", "debug", "parameter", "services", "tasks"]
+
+        return [
+            {
+                "template": f"init_files/{name}.jinja2",
+                "path": "./config",
+                "name": f"{name}.yaml",
+                "data": {},
+                "format": "yaml",
+            }
+            for name in yaml_files
+        ]
+
+    def _get_migration_files(self):
+        """Return the configuration for migration files"""
+        return [
+            {
+                "template": "init_files/env.py.jinja2",
+                "path": "./migrations",
+                "name": "env",
+                "data": {},
+                "format": "py",
+            },
+            {
+                "template": "init_files/script.py.mako",
+                "path": "./migrations",
+                "name": "script.py.mako",
+                "data": {},
+                "format": "py.mako",
+            },
+            {
+                "template": "init_files/blank.jinja2",
+                "path": "./migrations/versions/__pycache__",
+                "name": ".gitkeep",
+                "data": {},
+                "format": "gitkeep",
+            },
+        ]
+
+    def _get_misc_files(self):
+        """Return the configuration for miscellaneous files"""
+        return [
+            {
+                "template": "init_files/gitignore.jinja2",
+                "path": ".",
+                "name": ".gitignore",
+                "data": {},
+                "format": "gitignore",
+            },
+            {
+                "template": "init_files/requirements.jinja2",
+                "path": ".",
+                "name": "requirements.txt",
+                "data": {},
+                "format": "txt",
+            },
+        ]
+
+    def _display_success_message(self):
+        """Display success message"""
+        self.printer.print_msg(
+            "✓ Project created successfully",
+            theme="success",
+            linebefore=True,
+            newline=True,
+        )
+        self.printer.print_full_text(
+            "Next, try [bold orange1]framefox[/bold orange1] to see the available commands",
+            newline=True,
+        )
 
     @staticmethod
-    def generate_secret_key():
-        """Generates a random secret key of 32 bytes encoded in base64"""
+    def _generate_secret_key():
+        """Generate a random secret key of 32 bytes encoded in base64"""
         return secrets.token_urlsafe(32)
 
-    @staticmethod
-    def create_empty_project():
-        # Create src directories
-        project_path = "src"
-        os.makedirs(os.path.join(project_path, "controllers"))
-        os.makedirs(os.path.join(project_path, "tests"))
-        os.makedirs(os.path.join(project_path, "entity"))
-        os.makedirs(os.path.join(project_path, "repository"))
-        os.makedirs(os.path.join(project_path, "security"))
-        # Create templates directory
-        os.makedirs(os.path.join(".", "templates"))
-        # Create public directory
-        os.makedirs(os.path.join(".", "public"))
-
-        # Create config directory
-        os.makedirs(os.path.join(".", "config"))
-        # Create var directory
-        os.makedirs(os.path.join(".", "var"))
-        os.makedirs(os.path.join("./var", "log"))
-        os.makedirs(os.path.join("./var", "session"))
-        # Create migrations directory
-        os.makedirs(os.path.join(".", "migrations"))
-        os.makedirs(os.path.join("./migrations", "versions"))
-        os.makedirs(os.path.join("./migrations", "versions", "__pycache__"))
-        # Create usefull files
-        # main.py
-        FileCreator().create_file(
-            template="init_files/main.jinja2",
-            path=".",
-            name="main",
-            data={},
-        )
-        # .env
-        FileCreator().create_file(
-            template="init_files/env.jinja2",
-            path=".",
-            name=".env",
-            data={"session_secret_key": InitCommand.generate_secret_key()},
-            format="env",
-        )
-        # base.html
-        FileCreator().create_file(
-            template="init_files/base.jinja2",
-            path="./templates",
-            name="base.html",
-            data={},
-            format="html",
-        )
-        # yaml files
-        FileCreator().create_file(
-            template="init_files/application.jinja2",
-            path="./config",
-            name="application.yaml",
-            data={},
-            format="yaml",
-        )
-        FileCreator().create_file(
-            template="init_files/orm.jinja2",
-            path="./config",
-            name="orm.yaml",
-            data={},
-            format="yaml",
-        )
-        FileCreator().create_file(
-            template="init_files/security.jinja2",
-            path="./config",
-            name="security.yaml",
-            data={},
-            format="yaml",
-        )
-        FileCreator().create_file(
-            template="init_files/mail.jinja2",
-            path="./config",
-            name="mail.yaml",
-            data={},
-            format="yaml",
-        )
-        FileCreator().create_file(
-            template="init_files/debug.jinja2",
-            path="./config",
-            name="debug.yaml",
-            data={},
-            format="yaml",
-        )
-        FileCreator().create_file(
-            template="init_files/parameter.jinja2",
-            path="./config",
-            name="parameter.yaml",
-            data={},
-            format="yaml",
-        )
-        FileCreator().create_file(
-            template="init_files/services.jinja2",
-            path="./config",
-            name="services.yaml",
-            data={},
-            format="yaml",
-        )
-        FileCreator().create_file(
-            template="init_files/tasks.jinja2",
-            path="./config",
-            name="tasks.yaml",
-            data={},
-            format="yaml",
-        )
-        # env.py in migrations
-        FileCreator().create_file(
-            template="init_files/env.py.jinja2",
-            path="./migrations",
-            name="env",
-            data={},
-            format="py",
-        )
-        FileCreator().create_file(
-            template="init_files/script.py.mako",
-            path="./migrations",
-            name="script.py.mako",
-            data={},
-            format="py.mako",
-        )
-        # env.py in migrations
-        FileCreator().create_file(
-            template="init_files/blank.jinja2",
-            path="./migrations/versions/__pycache__",
-            name=".gitkeep",
-            data={},
-            format="gitkeep",
-        )
-        # gitignore
-        FileCreator().create_file(
-            template="init_files/gitignore.jinja2",
-            path=".",
-            name=".gitignore",
-            data={},
-            format="gitignore",
-        )
-        # requirements.txt
-        FileCreator().create_file(
-            template="init_files/requirements.jinja2",
-            path=".",
-            name="requirements.txt",
-            data={},
-            format="txt",
-        )
-
-    def check_requirements(self):
-        """
-        Check if the system meets the requirements to run Framefox
-        """
+    def _check_system_requirements(self):
+        """Check if the system meets the requirements to run Framefox"""
         console = Console()
         print("")
 
+        table = self._build_requirements_table()
+        console.print(table)
+        print("")
+
+        requirements_met = self._evaluate_requirements()
+        self._display_requirements_result(requirements_met)
+
+        return requirements_met
+
+    def _build_requirements_table(self):
+        """Build the system requirements table"""
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Component", style="bold orange3")
         table.add_column("Status", style="white")
         table.add_column("Required", style="white")
         table.add_column("Current", style="white")
 
+        # Python version check
         python_version = sys.version_info
         python_ok = python_version >= self.MIN_PYTHON_VERSION
         table.add_row(
@@ -227,6 +296,7 @@ class InitCommand(AbstractCommand):
             f"Python {'.'.join(map(str, python_version[:3]))}",
         )
 
+        # Operating system check
         os_name = platform.system()
         os_ok = os_name in ["Linux", "Darwin", "Windows", "MacOS"]
         table.add_row(
@@ -235,6 +305,8 @@ class InitCommand(AbstractCommand):
             "Win/Linux/MacOS",
             os_name,
         )
+
+        # Permissions check
         home = os.path.expanduser("~")
         can_write = os.access(home, os.W_OK)
         table.add_row(
@@ -244,6 +316,7 @@ class InitCommand(AbstractCommand):
             "OK" if can_write else "Denied",
         )
 
+        # Disk space check
         _, _, free = shutil.disk_usage(home)
         space_ok = free > self.MIN_DISK_SPACE
         table.add_row(
@@ -253,19 +326,45 @@ class InitCommand(AbstractCommand):
             f"{free // (1024 * 1024)} MB available",
         )
 
-        console.print(table)
-        print("")
+        return table
 
-        all_ok = python_ok and os_ok and can_write and space_ok
-        if all_ok:
+    def _evaluate_requirements(self):
+        """Evaluate if all requirements are satisfied"""
+        python_version = sys.version_info
+        python_ok = python_version >= self.MIN_PYTHON_VERSION
+
+        os_name = platform.system()
+        os_ok = os_name in ["Linux", "Darwin", "Windows", "MacOS"]
+
+        home = os.path.expanduser("~")
+        can_write = os.access(home, os.W_OK)
+
+        _, _, free = shutil.disk_usage(home)
+        space_ok = free > self.MIN_DISK_SPACE
+
+        return python_ok and os_ok and can_write and space_ok
+
+    def _display_requirements_result(self, requirements_met):
+        """Display the result of requirements check"""
+        if requirements_met:
             self.printer.print_full_text(
                 "[bold orange1]✓ Your system is compatible with Framefox[/bold orange1]",
                 linebefore=True,
             )
-            return True
         else:
             self.printer.print_full_text(
                 "[bold red]✗ Your system does not meet all the required conditions[/bold red]",
                 linebefore=True,
             )
-            return False
+
+    # Static method kept for compatibility (if used elsewhere)
+    @staticmethod
+    def create_empty_project():
+        """Static method kept for compatibility - delegates to an instance"""
+        command = InitCommand()
+        command._create_project()
+
+    @staticmethod
+    def generate_secret_key():
+        """Static method kept for compatibility"""
+        return InitCommand._generate_secret_key()
