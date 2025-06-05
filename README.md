@@ -4,6 +4,8 @@
 
 Framefox is a modern Python web framework designed to make web development enjoyable and productive.
 
+![Demo](./docs/images/demo.gif)
+
 ## Documentation 
 Our comprehensive documentation is available [here](https://soma-smart.github.io/doc-framefox/) 📖
 
