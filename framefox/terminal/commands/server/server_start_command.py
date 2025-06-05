@@ -4,6 +4,9 @@ import subprocess
 import threading
 import time
 import webbrowser
+from typing import Annotated
+
+import typer
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
@@ -17,7 +20,12 @@ class ServerStartCommand(AbstractCommand):
         self.worker_thread = None
         self.worker_stop_event = None
 
-    def execute(self, port: int = 8000, *args, **kwargs):
+    def execute(
+        self,
+        port: Annotated[int, typer.Option("--port", "-p", help="Port to run the server on")] = 8000,
+        with_workers: Annotated[bool, typer.Option("--with-workers", help="Start background workers")] = False,
+        no_browser: Annotated[bool, typer.Option("--no-browser", help="Don't open browser automatically")] = False,
+    ):
         """
         Starts the development server with Uvicorn.
         """
@@ -25,15 +33,8 @@ class ServerStartCommand(AbstractCommand):
         original_port = port
 
         while self._is_port_in_use(port) and port < original_port + 10:
-            self.printer.print_msg(
-                f"Port {port} already in use, trying {port+1}...", theme="warning"
-            )
+            self.printer.print_msg(f"Port {port} already in use, trying {port + 1}...", theme="warning")
             port += 1
-
-        with_workers = False
-        for arg in args:
-            if arg == "--with-workers":
-                with_workers = True
 
         self.printer.print_msg(
             f"Starting the server on port {port}",
@@ -42,10 +43,15 @@ class ServerStartCommand(AbstractCommand):
         )
         if with_workers:
             self._setup_workers()
-        browser_thread = threading.Thread(
-            target=self._open_browser, args=(port,), daemon=True
-        )
-        browser_thread.start()
+
+        if not no_browser:
+            browser_thread = threading.Thread(target=self._open_browser, args=(port,), daemon=True)
+            browser_thread.start()
+        else:
+            self.printer.print_msg(
+                f"Server will be available at http://localhost:{port}",
+                theme="info",
+            )
 
         try:
             uvicorn_cmd = ["uvicorn", "main:app", "--reload", "--port", str(port)]
@@ -78,9 +84,7 @@ class ServerStartCommand(AbstractCommand):
         )
         try:
             self.worker_stop_event = threading.Event()
-            self.worker_thread = threading.Thread(
-                target=self._run_worker_thread, daemon=True
-            )
+            self.worker_thread = threading.Thread(target=self._run_worker_thread, daemon=True)
             self.worker_thread.start()
         except Exception as e:
             self.printer.print_msg(f"Failed to start worker: {str(e)}", theme="error")

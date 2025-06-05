@@ -38,9 +38,7 @@ class CommandBuilder:
         def subgroup_main(ctx: typer.Context):
             if ctx.invoked_subcommand is None:
                 self.display_manager.print_header()
-                self.display_manager.display_subgroup_help(
-                    namespace, commands, description
-                )
+                self.display_manager.display_subgroup_help(namespace, commands, description)
                 raise typer.Exit()
 
         # Add commands to subapp
@@ -49,25 +47,16 @@ class CommandBuilder:
 
         return subapp
 
-    def _add_command_to_subapp(
-        self, subapp: typer.Typer, command_name: str, command_class
-    ):
+    def _add_command_to_subapp(self, subapp: typer.Typer, command_name: str, command_class):
         """Add a single command to a subapp"""
 
-        def create_command_func(cmd_class):
-            def command_func():
-                instance = self.instantiate_command(cmd_class)
-                if instance:
-                    return instance.execute()
-                return 1
+        # Créer une instance de la commande
+        instance = self.instantiate_command(command_class)
+        if not instance:
+            return
 
-            # Copy docstring for help
-            if hasattr(cmd_class, "execute") and cmd_class.execute.__doc__:
-                command_func.__doc__ = cmd_class.execute.__doc__.strip()
-
-            return command_func
-
-        subapp.command(name=command_name)(create_command_func(command_class))
+        # Utiliser directement la méthode execute avec ses annotations Typer
+        subapp.command(name=command_name)(instance.execute)
 
     def instantiate_command(self, command_class):
         """Instantiate a command using dependency injection if needed"""
@@ -83,6 +72,4 @@ class CommandBuilder:
 
     def _get_namespace_description(self, namespace: str) -> str:
         """Get description for a namespace"""
-        return FramefoxMessages.NAMESPACE_DESCRIPTIONS.get(
-            namespace, f"{namespace.title()} operations"
-        )
+        return FramefoxMessages.NAMESPACE_DESCRIPTIONS.get(namespace, f"{namespace.title()} operations")
