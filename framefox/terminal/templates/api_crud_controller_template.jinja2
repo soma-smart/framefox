@@ -5,6 +5,25 @@ from src.repository.{{ repository_file_name }} import {{ repository_class_name }
 from src.entity.{{ entity_file_name }} import {{ entity_class_name }}
 from framefox.core.orm.entity_manager_interface import EntityManagerInterface
 
+"""
+Inherited from AbstractController:
+
+redirect(location: str, code: int = 302) -> RedirectResponse - Redirects to URL
+flash(category: str, message: str) - Adds flash message to session
+generate_url(route_name: str, **params) - Generates URL from route name
+render(template_path, context=None) -> HTMLResponse - Renders template
+json(data: dict, status: int = 200) -> JSONResponse - Returns JSON response
+create_form(form_type_class, entity_instance) - Creates form from type and entity
+get_user(user_class=None) - Gets currently authenticated user
+
+Usage:
+return self.redirect("/home")                    # Redirect
+self.flash("success", "User created")            # Flash message
+url = self.generate_url("user.show", id=1)       # Generate URL
+return self.render("user/show.html", {"user": user})  # Render template
+return self.json({"status": "ok"})               # JSON response
+"""
+
 
 class {{ controller_class_name }}(AbstractController):
     def __init__(self, entityManager: EntityManagerInterface):

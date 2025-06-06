@@ -1,6 +1,26 @@
 from framefox.core.orm.abstract_repository import AbstractRepository
 from src.entity.{{ snake_case_name }} import {{ entity_class_name }}
 
+"""
+Inherited from AbstractRepository:
+
+find(id) -> Optional[T] - Retrieve entity by ID
+find_all() -> List[T] - Retrieve all entities
+find_by(criteria, order_by=None, limit=None, offset=None) -> List[T] - Retrieve entities by criteria
+get_query_builder() -> QueryBuilder - Get QueryBuilder instance for complex queries
+
+Properties:
+entity_manager - Access to EntityManager for database operations
+model - The entity model class
+create_model - Generated create model for the entity
+
+Usage:
+user = user_repo.find(1)                          # Find by ID
+users = user_repo.find_all()                      # Get all
+active_users = user_repo.find_by({"active": True}) # Find by criteria
+qb = user_repo.get_query_builder()                # Complex queries
+"""
+
 
 class {{ repository_class_name }}(AbstractRepository):
     def __init__(self):
