@@ -1,4 +1,5 @@
 import asyncio
+import os
 import socket
 import subprocess
 import threading
@@ -14,9 +15,10 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 
 class ServerStartCommand(AbstractCommand):
     """
-    Command to start the Framefox development server with Uvicorn.
-
-    Supports automatic port detection, background workers, and browser opening.
+    Command to start the development server with optimizations.
+    
+    This command handles starting a uvicorn server with automatic port detection,
+    container pre-warming, optional background workers, and automatic browser opening.
     """
 
     # Configuration constants
@@ -37,7 +39,7 @@ class ServerStartCommand(AbstractCommand):
         no_browser: Annotated[bool, typer.Option("--no-browser", help="Don't open browser automatically")] = False,
     ):
         """
-        Start the development server with Uvicorn.
+        Start the development server with optimizations.
 
         Args:
             port: The port to run the server on (default: 8000)
@@ -47,12 +49,20 @@ class ServerStartCommand(AbstractCommand):
         Returns:
             int: Exit code (0 for success, non-zero for failure)
         """
+        # Set development environment variables for optimizations
+        os.environ['FRAMEFOX_DEV_MODE'] = 'true'
+        os.environ['FRAMEFOX_CACHE_ENABLED'] = 'true'
+        os.environ['FRAMEFOX_MINIMAL_SCAN'] = 'true'
+        
         # Find an available port starting from the requested port
         available_port = self._find_available_port(port)
+        
+        # Prewarm the container for better performance
+        self._prewarm_container()
 
         # Display startup message
         self.printer.print_msg(
-            f"Starting the server on port {available_port}",
+            f"Starting optimized dev server on port {available_port}",
             theme="success",
             linebefore=True,
         )
@@ -108,7 +118,7 @@ class ServerStartCommand(AbstractCommand):
 
     def _start_uvicorn_server(self, port: int) -> int:
         """
-        Start the Uvicorn server and handle interruptions gracefully.
+        Start the Uvicorn server with optimizations and handle interruptions gracefully.
 
         Args:
             port: The port to run the server on
@@ -117,7 +127,14 @@ class ServerStartCommand(AbstractCommand):
             int: Process exit code
         """
         try:
-            uvicorn_cmd = ["uvicorn", "main:app", "--reload", "--port", str(port)]
+            uvicorn_cmd = [
+                "uvicorn", "main:app", 
+                "--reload", 
+                "--reload-delay", "0.5",
+                "--reload-dir", "src",
+                "--port", str(port)
+            ]
+            
             process = subprocess.run(uvicorn_cmd)
             return process.returncode
 
@@ -125,6 +142,18 @@ class ServerStartCommand(AbstractCommand):
             self.printer.print_msg("\nStopping the server...", theme="warning")
             self._cleanup_workers()
             return 0
+
+    def _prewarm_container(self) -> None:
+        """Prewarm the service container for better startup performance."""
+        try:    
+            container = ServiceContainer()
+            container.force_complete_scan()
+            
+            cache_data = container._create_cache_snapshot()
+            container._save_service_cache(cache_data)
+            
+        except Exception as e:
+            self.printer.print_msg(f"⚠️ Pre-warm failed: {e}", theme="warning")
 
     def _cleanup_workers(self):
         """

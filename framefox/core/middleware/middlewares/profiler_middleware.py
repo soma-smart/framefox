@@ -26,8 +26,19 @@ Github: https://github.com/RayenBou
 class ProfilerMiddleware(BaseHTTPMiddleware):
     """
     Middleware for profiling HTTP requests in a FastAPI application.
-    It collects request, response, SQL, and exception data, and injects a profiler toolbar
-    into HTML responses for debugging and performance monitoring.
+    
+    This middleware collects comprehensive request data including:
+    - Request and response details
+    - SQL queries and database operations
+    - Memory usage statistics
+    - Exception information
+    - Performance metrics
+    
+    For HTML responses, it automatically injects a profiler toolbar
+    for debugging and performance monitoring when profiling is enabled.
+    
+    Args:
+        app: The FastAPI application instance
     """
 
     def __init__(self, app):
@@ -46,6 +57,9 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
 
         start_time = time.time()
         request.state.request_start_time = start_time
+
+        token = None
+        profiler_enabled = False
 
         request_collector = self.profiler.get_collector("request")
         if request_collector and request.method in ("POST", "PUT", "PATCH"):
@@ -78,19 +92,22 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             raise e
 
         try:
+            profiler_enabled = self.profiler.is_enabled()
+            
+            if profiler_enabled:
+                try:
+                    token = self.profiler.collect(request, response)
+                except Exception as e:
+                    self.logger.debug(f"Failed to collect profiler data: {e}")
+                    token = None
+
             content_type = response.headers.get("content-type", "")
             is_html = "text/html" in content_type
 
-            if self.profiler.is_enabled():
-                token = self.profiler.collect(request, response)
-
-            if not is_html:
+            if not is_html or not profiler_enabled or not token:
                 return response
 
             if response.status_code in (301, 302, 303, 307, 308):
-                return response
-
-            if not token:
                 return response
 
             is_streaming = (
@@ -110,13 +127,16 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                 has_body_tag = "</body>" in response_text
 
                 if has_body_tag:
-                    html = self._generate_profiler_bar(
-                        token, time.time() - start_time, request
-                    )
+                    try:
+                        html = self._generate_profiler_bar(
+                            token, time.time() - start_time, request
+                        )
 
-                    response_text = response_text.replace("</body>", f"{html}</body>")
-                    response.body = response_text.encode("utf-8")
-                    response.headers["content-length"] = str(len(response.body))
+                        response_text = response_text.replace("</body>", f"{html}</body>")
+                        response.body = response_text.encode("utf-8")
+                        response.headers["content-length"] = str(len(response.body))
+                    except Exception as e:
+                        self.logger.debug(f"Failed to inject profiler bar: {e}")
 
             return response
 
@@ -196,11 +216,17 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
         profile = self.profiler.get_profile(token)
 
         duration_ms = round(duration * 1000, 2)
-        memory = (
-            profile.get("memory", {}).get("memory_usage", 0)
-            if "memory" in profile
-            else 0
-        )
+        
+        memory_data = profile.get("memory", {})
+        memory = 0
+        
+        if memory_data:
+            memory = (
+                memory_data.get("memory_usage_mb") or 
+                memory_data.get("memory_usage") or 
+                0
+            )
+        
         route = request.url.path
         status_code = (
             profile.get("request", {}).get("status_code", 200)

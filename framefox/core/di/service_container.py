@@ -1,16 +1,15 @@
-import importlib
-import inspect
-import logging
-import os
-import sys
+
+import importlib, inspect, logging, os, sys, threading, time, gc
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Type, get_type_hints
+from concurrent.futures import ThreadPoolExecutor
 
 from framefox.core.di.exceptions import (
     CircularDependencyError,
     ServiceInstantiationError,
     ServiceNotFoundError,
 )
+from framefox.core.di.service_cache_manager import ServiceCacheManager
 from framefox.core.di.service_config import ServiceConfig
 from framefox.core.di.service_definition import ServiceDefinition
 from framefox.core.di.service_factory_manager import ServiceFactoryManager
@@ -28,15 +27,35 @@ Github: https://github.com/RayenBou
 class ServiceContainer:
     """
     Advanced dependency injection container for the Framefox framework.
-
-    Features:
+    
+    The ServiceContainer implements a comprehensive dependency injection system with features including:
     - Automatic service discovery and registration
-    - Dependency injection with type hints
-    - Service factories and method calls
-    - Tag-based service grouping
+    - Lazy loading with background scanning capabilities
     - Circular dependency detection
-    - Performance optimizations with caching
-    - Thread safety considerations
+    - Service caching and performance optimization
+    - Memory management and cleanup
+    - Factory pattern support
+    - Tag-based service retrieval
+    
+    This container follows a singleton pattern and provides both eager and lazy initialization
+    strategies for optimal performance.
+    
+    Key Features:
+    - Autowiring: Automatic dependency resolution based on type hints
+    - Service Discovery: Automatic scanning of modules for service classes
+    - Caching: Intelligent caching of service definitions and instances
+    - Background Scanning: Non-blocking service discovery for large projects
+    - Memory Management: Cleanup capabilities to manage memory usage
+    - Essential Services: Priority loading for critical framework components
+    
+    Usage:
+        container = ServiceContainer()
+        service = container.get(MyService)
+        services = container.get_all_by_tag('controllers')
+        
+    Thread Safety:
+        The container is thread-safe for service retrieval but not for registration.
+        Service registration should be completed during initialization.
     """
 
     _instance: Optional["ServiceContainer"] = None
@@ -58,75 +77,67 @@ class ServiceContainer:
         self._registry = ServiceRegistry()
         self._factory_manager = ServiceFactoryManager()
         self._config = ServiceConfig()
+        self._cache_manager = ServiceCacheManager()
 
         # Instance storage and tracking
         self._instances: Dict[Type[Any], Any] = {}
         self._resolution_cache: Dict[Type[Any], Any] = {}
         self._circular_detection: Set[Type[Any]] = set()
 
-        # Initialization state
+        # Lazy loading state
+        self._scanned_modules: Set[str] = set()
+        self._module_scan_cache: Dict[str, List[Type]] = {}
+        self._src_scanned: bool = False
+        self._src_scan_in_progress: bool = False
+        self._src_paths: List[Path] = []
+        self._excluded_directories: List[str] = []
+        self._excluded_modules: List[str] = []
+
+        # Background scanning
+        self._executor: Optional[ThreadPoolExecutor] = None
+        self._background_scan_enabled: bool = True
+
+        # Initialization
         self._instance_counter = 1
         self._initialized = True
-
-        # Initialize container
         self._initialize_container()
 
     def _ensure_python_path(self) -> None:
         """Ensure project directory is in PYTHONPATH."""
-        # Add the root directory of the framefox project
         project_root = Path(__file__).resolve().parent.parent.parent.parent
         project_root_str = str(project_root)
         if project_root_str not in sys.path:
             sys.path.insert(0, project_root_str)
         
-        # Add the current working directory
         current_dir = str(Path.cwd())
         if current_dir not in sys.path:
             sys.path.insert(0, current_dir)
-            self._logger.debug(f"Added current directory to PYTHONPATH: {current_dir}")
-        
-        # Add parent of src folder explicitly
+
         src_paths = self._find_source_paths()
         for src_path in src_paths:
-            if src_path.exists():
-                # Add parent of src folder to PYTHONPATH
-                src_parent = str(src_path.parent)
-                if src_parent not in sys.path:
-                    sys.path.insert(0, src_parent)
-                    self._logger.debug(f"Added src parent directory to PYTHONPATH: {src_parent}")
+            parent_path = str(src_path.parent)
+            if parent_path not in sys.path:
+                sys.path.insert(0, parent_path)
 
     def _initialize_container(self) -> None:
         """Initialize the container with all services."""
         try:
+            self._cache_manager.settings = getattr(self, 'settings', None)
+            
             self._create_module_aliases()
             self._register_essential_services()
             self._discover_and_register_services()
-            # self._registry.freeze()
+            self._logger.debug("Service container initialized successfully")
 
         except Exception as e:
             self._logger.error(f"Failed to initialize service container: {e}")
-            raise
-    def freeze_registry(self) -> None:
-        """Freeze the registry when initialization is complete."""
-        if not self._registry._frozen:
-            self._registry.freeze()
-            self._logger.debug("Service registry frozen after complete initialization")
+            raise RuntimeError(f"Service container initialization failed: {e}") from e
+
     def _create_module_aliases(self) -> None:
         """Create module aliases for easier imports (framefox.X -> framefox.core.X)."""
         core_modules = [
-            "controller",
-            "routing",
-            "logging",
-            "di",
-            "events",
-            "config",
-            "debug",
-            "request",
-            "orm",
-            "templates",
-            "security",
-            "middleware",
-            "kernel",
+            "controller", "routing", "logging", "di", "events", "config",
+            "debug", "request", "orm", "templates", "security", "middleware", "kernel"
         ]
 
         for module_name in core_modules:
@@ -149,7 +160,6 @@ class ServiceContainer:
             "framefox.core.security.user.entity_user_provider.EntityUserProvider",
             "framefox.core.orm.entity_manager_registry.EntityManagerRegistry",
             "framefox.core.bundle.bundle_manager.BundleManager",
-
             "framefox.core.security.token_storage.TokenStorage",
             "framefox.core.security.user.user_provider.UserProvider",
             "framefox.core.security.handlers.security_context_handler.SecurityContextHandler",
@@ -159,57 +169,78 @@ class ServiceContainer:
 
         for service_path in essential_services:
             try:
-                service_cls = self._import_service_class(service_path)
-                definition = ServiceDefinition(service_cls, public=True, synthetic=True, tags=["essential"])
+                service_class = self._import_service_class(service_path)
+                definition = ServiceDefinition(service_class, public=True, autowire=True, tags=["essential"])
                 self._registry.register_definition(definition)
-
-                # Immediately instantiate essential services
-                self.get(service_cls)
-
+                
+                self.get(service_class)
+                
             except Exception as e:
-                self._logger.warning(f"Could not register essential service {service_path}: {e}")
+                self._logger.debug(f"Could not register essential service {service_path}: {e}")
 
-    def _import_service_class(self, service_path: str) -> Type[Any]:
-        """Import a service class from its full path."""
-        parts = service_path.split(".")
-        module_path = ".".join(parts[:-1])
-        class_name = parts[-1]
+    def _create_cache_snapshot(self) -> Dict[str, Any]:
+        """Create a cache snapshot via the ServiceCacheManager."""
+        return self._cache_manager.create_cache_snapshot(self._registry)
 
-        module = importlib.import_module(module_path)
-        return getattr(module, class_name)
+    def _save_service_cache(self, cache_data: Dict[str, Any]) -> None:
+        """Save cache via the ServiceCacheManager."""
+        self._cache_manager.save_cache(cache_data)
 
     def _discover_and_register_services(self) -> None:
-        """Discover and register all services from core and src directories."""
+        """Discover services with cache support and lazy loading."""
         
-        # Find source paths
-        src_paths = self._find_source_paths()
-
-        # Core framework path
+        cache_data = self._cache_manager.load_cache()
+        if cache_data and self._cache_manager.load_services_from_cache(cache_data, self._registry, self._scanned_modules):
+            self._logger.debug("Services loaded from cache")
+            self._src_scanned = True
+            return
+        
         core_path = Path(__file__).resolve().parent.parent
+        self._setup_exclusions()
+        self._scan_for_service_definitions(core_path, "framefox.core", self._excluded_directories, self._excluded_modules)
+        
+        self._src_paths = self._find_source_paths()
+        for src_path in self._src_paths:
+            controllers_path = src_path / "controllers"
+            if controllers_path.exists():
+                self._scan_for_service_definitions(
+                    controllers_path, 
+                    "src.controllers", 
+                    [],
+                    []
+                )
+        
+        self._save_initial_cache()
+        
+        if self._should_use_background_scan():
+            self._start_background_src_scan()
+        else:
+            self._src_scanned = True
 
-        # Configuration for exclusions
-        excluded_directories = list(self._config.excluded_dirs) + [
+    def _setup_exclusions(self) -> None:
+        """Configure exclusions for scanning."""
+        self._excluded_directories = list(self._config.excluded_dirs) + [
             "entity", "entities", "Entity",
             "migration", "migrations", "Migrations",
             "test", "tests", "Test", "Tests",
             "__pycache__", ".pytest_cache", ".mypy_cache",
             "node_modules", "venv", "env", ".env",
-            "templates", "static", "assets", "docs", "documentation",
+            "docs", "documentation",
         ]
 
-        excluded_modules = list(self._config.excluded_modules) + [
+        self._excluded_modules = list(self._config.excluded_modules) + [
             "src.entity", "src.entities", "framefox.core.entity",
             "src.migration", "src.migrations", "src.test", "src.tests",
             "framefox.tests", "framefox.test",
         ]
 
-        # Scan core framework
-        self._scan_for_service_definitions(core_path, "framefox.core", excluded_directories, excluded_modules)
-
-        # Scan user source code
-        for src_path in src_paths:
-            if src_path.exists():
-                self._scan_for_service_definitions(src_path, "src", excluded_directories, excluded_modules)
+    def _save_initial_cache(self) -> None:
+        """Save initial cache via the cache manager."""
+        try:
+            cache_data = self._cache_manager.create_cache_snapshot(self._registry)
+            self._cache_manager.save_cache(cache_data)
+        except Exception as e:
+            self._logger.warning(f"Could not save initial cache: {e}")
 
     def _find_source_paths(self) -> List[Path]:
         """Find potential source paths for service discovery."""
@@ -229,9 +260,9 @@ class ServiceContainer:
         # Search parent directories
         parent = Path.cwd().parent
         for _ in range(3):
-            parent_src = parent / "src"
-            if parent_src.exists() and parent_src not in src_paths:
-                src_paths.append(parent_src)
+            parent_src_path = parent / "src"
+            if parent_src_path.exists() and parent_src_path not in src_paths:
+                src_paths.append(parent_src_path)
             parent = parent.parent
 
         return src_paths
@@ -249,60 +280,31 @@ class ServiceContainer:
             root_path = Path(root)
             
             if self._should_exclude_directory(root_path, excluded_dirs):
+                dirs.clear()
                 continue
-
-            for file in files:
-                if not self._should_process_file(file):
+            
+            for filename in files:
+                if not self._should_process_file(filename):
                     continue
-
-                try:
-                    module_name = self._build_module_name(root_path / file, base_path, base_package)
-
-                    if self._should_exclude_module(module_name, excluded_modules):
-                        continue
-
+                
+                file_path = root_path / filename
+                module_name = self._build_module_name(file_path, base_path, base_package)
+                
+                if not self._should_exclude_module(module_name, excluded_modules):
                     self._process_module(module_name)
-
-                except Exception as e:
-                    pass
 
     def _should_exclude_directory(self, path: Path, excluded_dirs: List[str]) -> bool:
         """Check if a directory should be excluded from scanning."""
         dir_name = path.name.lower()
         
-        # Always valid exclusions
         always_exclude = {
             "__pycache__", ".pytest_cache", ".mypy_cache",
             "node_modules", "venv", "env", ".env"
-            
         }
         
         if dir_name in always_exclude:
             return True
         
-        # Contextual exclusions
-        contextual_exclusions = {
-            "test": ["src", "framefox"],
-            "tests": ["src", "framefox"],
-            "entity": ["src"],
-            "entities": ["src"],
-            "migration": ["src", "framefox"],
-            "migrations": ["src", "framefox"],
-            "templates": ["src"],          
-            "static": ["src"],              
-            "assets": ["src"],             
-            "docs": ["src", "framefox"], 
-            "documentation": ["src", "framefox"],
-        }
-        
-        if dir_name in contextual_exclusions:
-            allowed_parents = contextual_exclusions[dir_name]
-            path_parts = [part.lower() for part in path.parts]
-            
-            if any(parent in path_parts for parent in allowed_parents):
-                return True
-        
-        # Check configured exclusions
         for excluded_dir in excluded_dirs:
             if dir_name == excluded_dir.lower():
                 return True
@@ -311,20 +313,13 @@ class ServiceContainer:
 
     def _should_process_file(self, filename: str) -> bool:
         """Check if a file should be processed for service discovery."""
-
         if not filename.endswith(".py"):
             return False
 
         ignored_files = [
-            "__init__.py",
-            "service_container.py",
-            "conftest.py",
-            "test_*.py",
-            "*_test.py",
-            "migrations.py",
-            "migration.py",
-            "settings.py",
-            "config.py",
+            "__init__.py", "service_container.py", "conftest.py",
+            "test_*.py", "*_test.py", "migrations.py", "migration.py",
+            "settings.py", "config.py"
         ]
 
         for pattern in ignored_files:
@@ -353,29 +348,61 @@ class ServiceContainer:
         return any(module_name.startswith(excluded) for excluded in excluded_modules)
 
     def _process_module(self, module_name: str) -> None:
-        """Process a module and register service definitions."""
-        
+        """Process a module with optimized caching."""
+        if module_name in self._scanned_modules:
+            return
+            
+        if module_name in self._module_scan_cache:
+            for service_class in self._module_scan_cache[module_name]:
+                if not self._registry.has_definition(service_class):
+                    self._create_and_register_definition(service_class)
+            self._scanned_modules.add(module_name)
+            return
+
+        if self._should_skip_module(module_name):
+            self._scanned_modules.add(module_name)
+            self._module_scan_cache[module_name] = []
+            return
+
         try:
             module = importlib.import_module(module_name)
+            discovered_services = []
             
             for attr_name in dir(module):
+                if not attr_name[0].isupper():
+                    continue
+                    
                 try:
                     attr = getattr(module, attr_name)
+                    if (inspect.isclass(attr) and 
+                        attr.__module__ == module_name and 
+                        self._can_be_service(attr)):
+                        
+                        discovered_services.append(attr)
+                        self._create_and_register_definition(attr)
+                except Exception:
+                    pass
+            
+            self._module_scan_cache[module_name] = discovered_services
+            self._scanned_modules.add(module_name)
+            
+        except (ModuleNotFoundError, ImportError):
+            self._scanned_modules.add(module_name)
+            self._module_scan_cache[module_name] = []
 
-                    if inspect.isclass(attr):
-                        if attr.__module__ == module_name:  # Class defined in this module
-                            if self._can_be_service(attr):
-                                self._create_and_register_definition(attr)
-
-                except Exception as e:
-                    debug_modules = ["icecream", "devtools", "pytest", "IPython"]
-                    if not any(debug_module in str(e) for debug_module in debug_modules):
-                        pass
-
-        except (ModuleNotFoundError, ImportError) as e:
-            debug_modules = ["icecream", "devtools", "pytest", "IPython"]
-            if not any(debug_module in str(e) for debug_module in debug_modules):
-                pass
+    def _should_skip_module(self, module_name: str) -> bool:
+        """Early filter to avoid unnecessary imports."""
+        skip_patterns = [
+            "entity", "entities", "migration", "migrations",
+            "test", "tests", "static", "templates", "assets",
+            "docs", "documentation", "utils", "helpers"
+        ]
+        
+        for pattern in skip_patterns:
+            if pattern in module_name.lower():
+                return True
+        
+        return False
 
     def _create_and_register_definition(self, service_class: Type[Any]) -> None:
         """Create and register a service definition."""
@@ -383,7 +410,6 @@ class ServiceContainer:
         autowire = self._config.autowire_enabled
         tags = self._config.get_service_tags(service_class)
 
-        # Add default tag based on the module
         default_tag = self._get_default_tag(service_class)
         if default_tag and default_tag not in tags:
             tags.append(default_tag)
@@ -399,133 +425,13 @@ class ServiceContainer:
 
     def _can_be_service(self, cls: Type) -> bool:
         """Determine if a class can be a service."""
-       
-        
         if not inspect.isclass(cls):
             return False
 
-        # Ignore exceptions
         if issubclass(cls, Exception):
             return False
 
         module_name = cls.__module__
-
-        # Check module
-        if not (module_name.startswith("framefox.") or module_name.startswith("src.")):
-            return False
-
-        # Ignore built-in modules and libraries
-        builtin_modules = [
-            "builtins",
-            "typing",
-            "abc",
-            "datetime",
-            "pathlib",
-            "logging",
-            "_contextvars",
-            "collections",
-            "functools",
-            "itertools",
-            "operator",
-            "re",
-            "json",
-            "urllib",
-            "http",
-            "ssl",
-            "socket",
-            "threading",
-            "multiprocessing",
-            "asyncio",
-            "concurrent",
-            "queue",
-            "time",
-        ]
-
-        # Ignore all external libraries that are not part of the core framework
-        external_libraries = [
-            "fastapi",
-            "starlette",
-            "pydantic",
-            "sqlalchemy",
-            "sqlmodel",
-            "alembic",
-            "jinja2",
-            "email",
-            "passlib",
-            "bcrypt",
-            "cryptography",
-            "requests",
-            "urllib3",
-            "certifi",
-            "charset_normalizer",
-            "idna",
-            "bs4",
-            "lxml",
-            "markupsafe",
-            "click",
-            "rich",
-            "typer",
-            "uvicorn",
-            "gunicorn",
-            "pytest",
-            "coverage",
-            "mypy",
-        ]
-
-        module_name = cls.__module__
-
-        if any(module_name == builtin or module_name.startswith(f"{builtin}.") for builtin in builtin_modules):
-            return False
-
-        if any(module_name == lib or module_name.startswith(f"{lib}.") for lib in external_libraries):
-            return False
-
-        if (
-            hasattr(cls, "__pydantic_self__")
-            or hasattr(cls, "__pydantic_model__")
-            or hasattr(cls, "__pydantic_core_schema__")
-            or hasattr(cls, "model_config")
-        ):
-            return False
-
-        if cls.__name__.startswith("I") and hasattr(cls, "__abstractmethods__") and len(cls.__abstractmethods__) > 0:
-            return False
-
-        if (
-            hasattr(cls, "__abstractmethods__")
-            and len(cls.__abstractmethods__) > 0
-            and len([m for m in dir(cls) if not m.startswith("_") and callable(getattr(cls, m))]) == len(cls.__abstractmethods__)
-        ):
-            return False
-
-        if cls.__name__.startswith("_"):
-            return False
-
-        if hasattr(cls, "__service__") and not cls.__service__:
-            return False
-
-        try:
-            import enum
-
-            if issubclass(cls, enum.Enum):
-                return False
-        except (ImportError, TypeError):
-            pass
-
-        if hasattr(cls, "__dataclass_fields__") and not hasattr(cls, "__post_init__"):
-
-            custom_methods = [
-                name
-                for name in dir(cls)
-                if not name.startswith("_")
-                and callable(getattr(cls, name))
-                and name not in ["__dataclass_fields__", "__dataclass_params__"]
-            ]
-            if len(custom_methods) == 0:
-                return False
-
-        if not any(callable(getattr(cls, attr)) and not attr.startswith("_") for attr in dir(cls)):
-            return False
 
         if not (module_name.startswith("framefox.") or module_name.startswith("src.")):
             return False
@@ -537,17 +443,6 @@ class ServiceContainer:
             return False
 
         if self._config.is_in_excluded_directory(cls.__module__):
-            return False
-        if (hasattr(cls, "__pydantic_self__") or 
-            hasattr(cls, "__pydantic_model__") or
-            hasattr(cls, "__pydantic_core_schema__") or
-            hasattr(cls, "model_config")):
-            return False
-
-        if cls.__name__.startswith("_"):
-            return False
-
-        if hasattr(cls, "__service__") and not cls.__service__:
             return False
 
         return True
@@ -563,51 +458,47 @@ class ServiceContainer:
 
         return ".".join(parts)
 
+    def _import_service_class(self, service_path: str) -> Type[Any]:
+        """Import a service class from its full path."""
+        parts = service_path.split(".")
+        module_path = ".".join(parts[:-1])
+        class_name = parts[-1]
+
+        module = importlib.import_module(module_path)
+        return getattr(module, class_name)
+
     def get(self, service_class: Type[Any]) -> Any:
-        """Retrieve or create an instance of the requested service."""
-        # Check cache first
+        """Get a service instance with dependency injection."""
+        
         if service_class in self._resolution_cache:
             return self._resolution_cache[service_class]
 
-        # Check existing instances
         if service_class in self._instances:
             cached_instance = self._instances[service_class]
             self._resolution_cache[service_class] = cached_instance
             return cached_instance
 
-        # Handle non-class types
         if not inspect.isclass(service_class):
             return service_class
 
-        # Handle primitive types
-        if service_class in (str, int, float, bool, list, dict, set, tuple):
-            instance = service_class()
-            self._instances[service_class] = instance
-            self._resolution_cache[service_class] = instance
-            return instance
-
-        # Check for circular dependencies
+        definition = self._registry.get_definition(service_class)
+        
+        if not definition and self._can_be_service(service_class):
+            definition = ServiceDefinition(service_class, autowire=True)
+            self._registry.register_definition(definition)
+        
         if service_class in self._circular_detection:
             chain = list(self._circular_detection)
             raise CircularDependencyError(service_class, chain)
 
-        # Use _find_or_create_definition
-        definition = self._find_or_create_definition(service_class)
         if not definition:
-            # List of known external classes to silently ignore
-            silent_classes = {"FastAPI", "Depends", "Request", "Response"}
-            if service_class.__name__ not in silent_classes:
-                self._logger.debug(f"No service definition found for {service_class.__name__}")
-            raise ServiceNotFoundError(service_class)
+            definition = self._find_or_create_definition(service_class)
+            if not definition:
+                silent_classes = {"FastAPI", "Depends", "Request", "Response"}
+                if service_class.__name__ not in silent_classes:
+                    self._logger.debug(f"No service definition found for {service_class.__name__}")
+                raise ServiceNotFoundError(service_class)
 
-        # Cannot instantiate abstract classes
-        if definition.abstract:
-            raise ServiceInstantiationError(
-                service_class,
-                Exception(f"Cannot instantiate abstract class {service_class.__name__}")
-            )
-
-        # Mark as being resolved
         self._circular_detection.add(service_class)
 
         try:
@@ -626,20 +517,17 @@ class ServiceContainer:
             raise ServiceInstantiationError(service_class, e)
         finally:
             self._circular_detection.discard(service_class)
+
     def _find_or_create_definition(self, service_class: Type) -> Optional[ServiceDefinition]:
-        """Finds an existing service definition or creates a new one if possible."""
-        # First, look for an existing definition
+        """Find an existing service definition or create a new one if possible."""
         definition = self._registry.get_definition(service_class)
         if definition:
             return definition
 
-        # If it's not a class, we can't create a definition
         if not inspect.isclass(service_class):
             return None
 
-        # Check if the class can be a service
         if self._can_be_service(service_class):
-            # Create a default definition
             tags = []
             default_tag = self._get_default_tag(service_class)
             if default_tag:
@@ -650,32 +538,21 @@ class ServiceContainer:
             return definition
 
         return None
-    def _create_dynamic_definition(self, service_class: Type[Any]) -> Optional[ServiceDefinition]:
-        """Create a service definition dynamically if the class qualifies."""
-        if self._can_be_service(service_class):
-            definition = ServiceDefinition(service_class, tags=[self._get_default_tag(service_class)])
-            self._registry.register_definition(definition)
-            return definition
-        return None
 
     def _create_service_instance(self, definition: ServiceDefinition) -> Any:
         """Create a service instance using various strategies."""
         service_class = definition.service_class
 
-        # Use factory if available
         if definition.factory:
             return definition.factory()
 
-        # Try registered service factories
         instance = self._factory_manager.create_service(service_class, self)
         if instance is not None:
             return instance
 
-        # Use explicit arguments if provided
         if definition.arguments:
             return service_class(*definition.arguments)
 
-        # Standard autowiring
         if definition.autowire:
             dependencies = self._resolve_dependencies(service_class)
             return service_class(*dependencies)
@@ -690,7 +567,6 @@ class ServiceContainer:
             constructor = inspect.signature(service_class.__init__)
             params = constructor.parameters
 
-            # Get type annotations
             try:
                 module = sys.modules[service_class.__module__]
                 type_hints = get_type_hints(
@@ -705,15 +581,38 @@ class ServiceContainer:
 
                     dependency_cls = type_hints.get(name)
 
-                    if dependency_cls:
-                        # Recursively get the dependency
-                        dependency = self.get(dependency_cls)
-                        dependencies.append(dependency)
+                    if dependency_cls in (str, int, float, bool, list, dict, set, tuple):
+                        if param.default != inspect.Parameter.empty:
+                            dependencies.append(param.default)
+                        else:
+                            if dependency_cls == str:
+                                dependencies.append("")
+                            elif dependency_cls == int:
+                                dependencies.append(0)
+                            elif dependency_cls == float:
+                                dependencies.append(0.0)
+                            elif dependency_cls == bool:
+                                dependencies.append(False)
+                            elif dependency_cls in (list, set, tuple):
+                                dependencies.append(dependency_cls())
+                            elif dependency_cls == dict:
+                                dependencies.append({})
+                            else:
+                                dependencies.append(None)
+                            self._logger.debug(f"Using default value for primitive type {dependency_cls.__name__} in {service_class.__name__}.{name}")
+                    elif dependency_cls:
+                        try:
+                            dependency = self.get(dependency_cls)
+                            dependencies.append(dependency)
+                        except (ServiceNotFoundError, ServiceInstantiationError) as e:
+                            if param.default != inspect.Parameter.empty:
+                                dependencies.append(param.default)
+                            else:
+                                dependencies.append(None)
+                                self._logger.warning(f"Could not inject {dependency_cls.__name__} for {service_class.__name__}.{name}, using None")
                     elif param.default != inspect.Parameter.empty:
-                        # Use the default value if available
                         dependencies.append(param.default)
                     else:
-                        # No type annotation and no default value
                         dependencies.append(None)
                         self._logger.warning(f"Parameter {name} of {service_class.__name__} has no type hint and no default value")
 
@@ -733,6 +632,112 @@ class ServiceContainer:
                 method(*args)
             except Exception as e:
                 self._logger.error(f"Error calling {method_name} on {definition.service_class.__name__}: {e}")
+
+    def _should_use_background_scan(self) -> bool:
+        """Disable automatic scan for large projects."""
+        return False
+
+    def _start_background_src_scan(self) -> None:
+        """Start background src scan with cache."""
+        if self._src_scan_in_progress or self._src_scanned:
+            return
+        
+        self._src_scan_in_progress = True
+        
+        def background_scan():
+            try:
+                threading.Event().wait(0.1)
+                
+                self._logger.debug("Starting background src scan...")
+                start_time = time.time()
+                
+                for src_path in self._src_paths:
+                    if src_path.exists():
+                        self._scan_for_service_definitions(
+                            src_path, "src", 
+                            self._excluded_directories, 
+                            self._excluded_modules
+                        )
+                
+                self._src_scanned = True
+                self._src_scan_in_progress = False
+                
+                cache_data = self._cache_manager.create_cache_snapshot(self._registry)
+                self._cache_manager.save_cache(cache_data)
+                
+                elapsed = time.time() - start_time
+                total_services = len(self._registry.get_all_definitions())
+                self._logger.debug(f"Background src scan completed in {elapsed:.2f}s. Total services: {total_services}")
+                
+            except Exception as e:
+                self._logger.error(f"Background scan failed: {e}")
+                self._src_scan_in_progress = False
+        
+        scan_thread = threading.Thread(target=background_scan, daemon=True)
+        scan_thread.start()
+
+    def _ensure_src_scanned_sync(self) -> None:
+        """Force src scan synchronously if needed."""
+        if self._src_scanned:
+            return
+        
+        if self._src_scan_in_progress:
+            max_wait = 5.0
+            wait_interval = 0.1
+            waited = 0.0
+            
+            while self._src_scan_in_progress and waited < max_wait:
+                threading.Event().wait(wait_interval)
+                waited += wait_interval
+            
+            if self._src_scanned:
+                return
+        
+        self._logger.debug("Forcing synchronous src scan...")
+        start_time = time.time()
+        
+        for src_path in self._src_paths:
+            if src_path.exists():
+                self._scan_for_service_definitions(
+                    src_path, "src", 
+                    self._excluded_directories, 
+                    self._excluded_modules
+                )
+        
+        self._src_scanned = True
+        self._src_scan_in_progress = False
+        
+        elapsed = time.time() - start_time
+        self._logger.debug(f"Synchronous src scan completed in {elapsed:.2f}s")
+
+    def cleanup_memory(self) -> None:
+        """Clean up container memory."""
+        self._resolution_cache.clear()
+        
+        essential_modules = {mod for mod in self._module_scan_cache.keys() 
+                           if mod.startswith('framefox.core') or 'controller' in mod}
+        
+        modules_to_remove = set(self._module_scan_cache.keys()) - essential_modules
+        for module_name in modules_to_remove:
+            del self._module_scan_cache[module_name]
+        
+        collected = gc.collect()
+        
+        self._logger.debug(f"Memory cleanup: removed {len(modules_to_remove)} cached modules, collected {collected} objects")
+
+    def clear_cache(self) -> None:
+        """Clear all caches."""
+        self._resolution_cache.clear()
+        self._cache_manager.clear_cache()
+        self._logger.debug("All caches cleared")
+
+    def rebuild_cache(self) -> None:
+        """Force cache rebuild."""
+        self._cache_manager.clear_cache()
+        self._scanned_modules.clear()
+        self._module_scan_cache.clear()
+        self._src_scanned = False
+        self._discover_and_register_services()
 
     def get_by_name(self, class_name: str) -> Optional[Any]:
         """Retrieve a service by its class name."""
@@ -778,10 +783,31 @@ class ServiceContainer:
         """Register a service factory."""
         self._factory_manager.register_factory(factory)
 
-    def clear_cache(self) -> None:
-        """Clear resolution cache (useful for testing)."""
-        self._resolution_cache.clear()
-        self._logger.debug("Resolution cache cleared")
+    def freeze_registry(self) -> None:
+        """Freeze the registry when initialization is complete."""
+        if not self._registry._frozen:
+            self._registry.freeze()
+            self._logger.debug("Service registry frozen")
+
+    def force_complete_scan(self) -> None:
+        """Force complete scan immediately."""
+        self._logger.debug("Forcing complete scan...")
+        self._ensure_src_scanned_sync()
+
+    def get_scan_status(self) -> Dict[str, Any]:
+        """Get scan status for debugging."""
+        return {
+            "src_scanned": self._src_scanned,
+            "src_scan_in_progress": self._src_scan_in_progress,
+            "scanned_modules_count": len(self._scanned_modules),
+            "cached_modules_count": len(self._module_scan_cache),
+            "src_paths_count": len(self._src_paths),
+            "background_scan_enabled": self._background_scan_enabled
+        }
+
+    def disable_background_scan(self) -> None:
+        """Disable background scanning."""
+        self._background_scan_enabled = False
 
     def get_stats(self) -> Dict[str, Any]:
         """Get container statistics."""
@@ -794,3 +820,8 @@ class ServiceContainer:
             "registered_factories": len(self._factory_manager.get_factories()),
             **registry_stats,
         }
+
+    def __del__(self):
+        """Cleanup resources."""
+        if hasattr(self, '_executor') and self._executor:
+            self._executor.shutdown(wait=False)
