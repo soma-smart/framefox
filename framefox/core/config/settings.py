@@ -1,8 +1,5 @@
-import os
-import re
+import os, re, yaml
 from pathlib import Path
-
-import yaml
 from dotenv import load_dotenv
 
 from framefox.core.mail.mail_url_parser import MailUrlParser
@@ -200,11 +197,20 @@ class Settings:
     @property
     def database_echo(self):
         """
-        Returns whether SQL statements should be echoed.
-        Automatically enabled in debug mode (dev environment).
+        Returns whether SQL statements should be echoed to console.
+        Controlled by database.logging.echo_sql in orm.yaml
+        """
+        if not self.is_debug:
+            return False
+        return self.config.get("database", {}).get("logging", {}).get("echo_sql", False)
+
+    @property
+    def database_echo_for_profiler(self):
+        """
+        Returns True if SQL should be logged for profiler.
+        The profiler ALWAYS collects SQL queries in debug mode.
         """
         return self.is_debug
-
     @property
     def orm_config(self):
         """Returns the ORM configuration from the configuration."""

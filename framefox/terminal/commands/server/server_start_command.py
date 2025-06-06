@@ -1,17 +1,14 @@
-import asyncio
-import os
-import socket
-import subprocess
-import threading
-import time
-import webbrowser
+import asyncio, os, socket, subprocess, threading, time, webbrowser, typer
 from typing import Annotated
-
-import typer
-
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
-
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 class ServerStartCommand(AbstractCommand):
     """
@@ -21,7 +18,6 @@ class ServerStartCommand(AbstractCommand):
     container pre-warming, optional background workers, and automatic browser opening.
     """
 
-    # Configuration constants
     BROWSER_DELAY_SECONDS = 2
     MAX_PORT_SEARCH_ATTEMPTS = 10
     WORKER_SHUTDOWN_TIMEOUT = 2.0
@@ -38,55 +34,26 @@ class ServerStartCommand(AbstractCommand):
         with_workers: Annotated[bool, typer.Option("--with-workers", help="Start background workers")] = False,
         no_browser: Annotated[bool, typer.Option("--no-browser", help="Don't open browser automatically")] = False,
     ):
-        """
-        Start the development server with optimizations.
-
-        Args:
-            port: The port to run the server on (default: 8000)
-            with_workers: Whether to start background workers (default: False)
-            no_browser: Whether to prevent automatic browser opening (default: False)
-
-        Returns:
-            int: Exit code (0 for success, non-zero for failure)
-        """
-        # Set development environment variables for optimizations
         os.environ['FRAMEFOX_DEV_MODE'] = 'true'
         os.environ['FRAMEFOX_CACHE_ENABLED'] = 'true'
         os.environ['FRAMEFOX_MINIMAL_SCAN'] = 'true'
         
-        # Find an available port starting from the requested port
         available_port = self._find_available_port(port)
-        
-        # Prewarm the container for better performance
         self._prewarm_container()
 
-        # Display startup message
         self.printer.print_msg(
             f"Starting optimized dev server on port {available_port}",
             theme="success",
             linebefore=True,
         )
 
-        # Setup background components if requested
         if with_workers:
             self._setup_workers()
 
-        # Handle browser opening based on user preference
         self._handle_browser_opening(available_port, no_browser)
-
-        # Start the Uvicorn server
         return self._start_uvicorn_server(available_port)
 
     def _find_available_port(self, initial_port: int) -> int:
-        """
-        Find an available port starting from the initial port.
-
-        Args:
-            initial_port: The preferred port to start checking from
-
-        Returns:
-            int: An available port number
-        """
         current_port = initial_port
 
         while self._is_port_in_use(current_port) and current_port < initial_port + self.MAX_PORT_SEARCH_ATTEMPTS:
@@ -96,36 +63,18 @@ class ServerStartCommand(AbstractCommand):
         return current_port
 
     def _handle_browser_opening(self, port: int, no_browser: bool):
-        """
-        Handle browser opening based on user preferences.
-
-        Args:
-            port: The port where the server will run
-            no_browser: Whether to prevent automatic browser opening
-        """
         server_url = f"http://localhost:{port}"
 
         if not no_browser:
-            # Start browser opening in a separate daemon thread
             browser_thread = threading.Thread(target=self._open_browser_delayed, args=(server_url,), daemon=True)
             browser_thread.start()
         else:
-            # Just inform the user about the URL
             self.printer.print_msg(
                 f"Server will be available at {server_url}",
                 theme="info",
             )
 
     def _start_uvicorn_server(self, port: int) -> int:
-        """
-        Start the Uvicorn server with optimizations and handle interruptions gracefully.
-
-        Args:
-            port: The port to run the server on
-
-        Returns:
-            int: Process exit code
-        """
         try:
             uvicorn_cmd = [
                 "uvicorn", "main:app", 
@@ -156,44 +105,20 @@ class ServerStartCommand(AbstractCommand):
             self.printer.print_msg(f"⚠️ Pre-warm failed: {e}", theme="warning")
 
     def _cleanup_workers(self):
-        """
-        Clean up background worker threads gracefully.
-
-        This method ensures that:
-        1. The worker stop event is set to signal shutdown
-        2. The worker thread is given time to finish gracefully
-        3. Resources are properly released
-        """
         if self.worker_stop_event:
             self.worker_stop_event.set()
 
         if self.worker_thread and self.worker_thread.is_alive():
-            # Wait for the worker thread to finish, but don't block indefinitely
             self.worker_thread.join(timeout=self.WORKER_SHUTDOWN_TIMEOUT)
 
             if self.worker_thread.is_alive():
                 self.printer.print_msg("Warning: Worker thread did not shut down gracefully", theme="warning")
 
     def _is_port_in_use(self, port: int) -> bool:
-        """
-        Check if a port is already in use.
-
-        Args:
-            port: The port number to check
-
-        Returns:
-            bool: True if the port is in use, False otherwise
-        """
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             return s.connect_ex(("localhost", port)) == 0
 
     def _open_browser_delayed(self, url: str):
-        """
-        Open the browser after a delay to allow the server to start.
-
-        Args:
-            url: The URL to open in the browser
-        """
         time.sleep(self.BROWSER_DELAY_SECONDS)
         webbrowser.open(url)
 
@@ -231,8 +156,6 @@ class ServerStartCommand(AbstractCommand):
 
             # Get the worker manager from the service container
             worker_manager = ServiceContainer().get(WorkerManager)
-
-            # Create a new event loop for this thread
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
@@ -249,7 +172,6 @@ class ServerStartCommand(AbstractCommand):
                 while not self.worker_stop_event.is_set():
                     await asyncio.sleep(1.0)
 
-                # Signal the worker to stop
                 worker_manager.running = False
                 loop.stop()
 
@@ -263,7 +185,6 @@ class ServerStartCommand(AbstractCommand):
         except Exception as e:
             print(f"Worker thread error: {e}")
         finally:
-            # Ensure the event loop is properly closed
             try:
                 loop.close()
             except Exception as e:

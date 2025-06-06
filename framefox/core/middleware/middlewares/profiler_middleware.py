@@ -1,7 +1,4 @@
-import logging
-import sys
-import time
-import traceback
+import logging, sys, time, traceback
 from typing import Callable
 
 from fastapi import Request, Response
@@ -78,28 +75,38 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             if sql_collector:
                 sql_collector.request_active = False
 
-            exception_collector = self.profiler.get_collector("exception")
-            if exception_collector:
-                stack_trace = traceback.format_exc()
-                exception_collector.collect_exception(e, stack_trace)
-
             request.state.exception = {
                 "class": e.__class__.__name__,
                 "message": str(e),
                 "trace": traceback.format_exc(),
             }
 
-            raise e
+            exception_collector = self.profiler.get_collector("exception")
+            if exception_collector:
+                stack_trace = traceback.format_exc()
+                exception_collector.collect_exception(e, stack_trace)
 
+            if self.profiler.is_enabled():
+                try:
+                    error_token = self.profiler.collect_error_profile(request, e)
+                    request.state.profiler_token = error_token
+          
+                except Exception as profiler_error:
+                    pass
+
+            raise e
         try:
             profiler_enabled = self.profiler.is_enabled()
             
             if profiler_enabled:
                 try:
                     token = self.profiler.collect(request, response)
+                    if token:
+                        request.state.profiler_token = token
                 except Exception as e:
                     self.logger.debug(f"Failed to collect profiler data: {e}")
                     token = None
+
 
             content_type = response.headers.get("content-type", "")
             is_html = "text/html" in content_type

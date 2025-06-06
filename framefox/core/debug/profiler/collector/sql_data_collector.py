@@ -1,10 +1,7 @@
 import datetime
-import logging
 from typing import Any, Dict, Optional
-
 from fastapi import Request, Response
 
-from framefox.core.config.settings import Settings
 from framefox.core.debug.profiler.collector.data_collector import DataCollector
 
 """
@@ -15,69 +12,99 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
-
 class SQLDataCollector(DataCollector):
     """
-    Collects and stores SQL query information during a request lifecycle.
-    Captures SQL queries, their execution time, and database configuration details.
-    Integrates with SQLAlchemy and SQLModel loggers to intercept SQL statements.
+    SQL profiling data collector that captures SQL queries for the profiler.
+    
+    This collector intercepts and stores SQL queries executed during a request,
+    providing detailed information about database operations including query text,
+    parameters, execution time, and database configuration.
+    
+    Attributes:
+        name (str): Identifier for this collector type
+        request_active (bool): Flag indicating if request collection is active
+        queries (list): List of captured SQL queries for the current request
     """
+    name = "database"
 
     def __init__(self):
         super().__init__("database", "fa-database")
-        self.queries = []
-        self.settings = Settings()
         self.request_active = False
-        self._setup_sql_handler()
+        self.queries = []
+        
+        self._setup_sql_logging()
 
-    def _setup_sql_handler(self):
-        class SQLHandler(logging.Handler):
+    def _setup_sql_logging(self):
+        """Setup SQL logging specifically for profiler collection."""
+        import logging
+        
+        class ProfilerSQLHandler(logging.Handler):
             def __init__(self, collector):
                 super().__init__()
                 self.collector = collector
+                self.setLevel(logging.INFO)
 
             def emit(self, record):
-                if not self.collector.request_active:
-                    return
-                message = record.getMessage()
-                if self._is_sql_query(message):
-                    duration = self._extract_duration(message)
-                    self.collector.add_query(message, record.created, duration=duration)
+                if self.collector.request_active:
+                    message = record.getMessage()
+                    timestamp = record.created
+                    
+                    if self._is_sql_query(message):
+                        query_info = self._parse_sql_message(message, record)
+                        if query_info:
+                            self.collector.add_query(
+                                query_info['query'],
+                                timestamp,
+                                query_info.get('parameters'),
+                                query_info.get('duration')
+                            )
 
             def _is_sql_query(self, message):
+                """Check if the message is a SQL query."""
                 sql_keywords = [
-                    "SELECT",
-                    "INSERT",
-                    "UPDATE",
-                    "DELETE",
-                    "CREATE",
-                    "ALTER",
-                    "BEGIN",
-                    "COMMIT",
-                    "ROLLBACK",
+                    "SELECT", "INSERT", "UPDATE", "DELETE", 
+                    "BEGIN", "COMMIT", "ROLLBACK",
+                    "CREATE", "ALTER", "DROP"
                 ]
                 message_upper = message.upper()
                 return any(keyword in message_upper for keyword in sql_keywords)
 
-            def _extract_duration(self, message):
-                import re
+            def _parse_sql_message(self, message, record):
+                """Parse SQL message to extract query and parameters."""
+                try:
+                    if message.startswith("SQL "):
+                        query = message[4:]
+                    else:
+                        query = message
 
-                duration_patterns = [
-                    r"\[generated in ([\d.]+)s\]",
-                    r"\[cached since ([\d.]+)s ago\]",
-                ]
-                for pattern in duration_patterns:
-                    match = re.search(pattern, message)
-                    if match:
-                        duration_sec = float(match.group(1))
-                        return round(duration_sec * 1000, 2)
-                return 0.0
+                    parameters = None
+                    if hasattr(record, 'args') and record.args:
+                        parameters = record.args
 
-        self.sql_handler = SQLHandler(self)
-        sql_loggers = ["sqlalchemy.engine.Engine", "sqlmodel"]
-        for logger_name in sql_loggers:
-            logger = logging.getLogger(logger_name)
-            logger.addHandler(self.sql_handler)
+                    duration = None
+                    if "[generated in" in message:
+                        import re
+                        duration_match = re.search(r'\[generated in ([\d.]+)s\]', message)
+                        if duration_match:
+                            duration = float(duration_match.group(1)) * 1000
+
+                    return {
+                        'query': query.strip(),
+                        'parameters': parameters,
+                        'duration': duration
+                    }
+                except Exception:
+                    return None
+
+        profiler_handler = ProfilerSQLHandler(self)
+        
+        sql_loggers = [
+            logging.getLogger("sqlalchemy.engine.Engine"),
+            logging.getLogger("sqlmodel")
+        ]
+        
+        for logger in sql_loggers:
+            logger.addHandler(profiler_handler)
 
     def start_request(self):
         self.request_active = True

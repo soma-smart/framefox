@@ -1,12 +1,6 @@
-import datetime
-import json
-import logging
-import random
-import shutil
-import uuid
+import datetime, json, logging, random, shutil, uuid, traceback
 from pathlib import Path
 from typing import Dict, List, Optional
-
 from fastapi import Request, Response
 
 from framefox.core.config.settings import Settings
@@ -26,6 +20,9 @@ from framefox.core.debug.profiler.collector.route_data_collector import (
 )
 from framefox.core.debug.profiler.collector.sql_data_collector import SQLDataCollector
 from framefox.core.debug.profiler.collector.time_data_collector import TimeDataCollector
+from framefox.core.debug.profiler.collector.user_data_collector import (
+    UserDataCollector,
+)
 
 """
 Framefox Framework developed by SOMA
@@ -96,6 +93,7 @@ class Profiler:
         self.register_collector(RouteDataCollector())
         self.register_collector(ExceptionDataCollector())
         self.register_collector(LogDataCollector())
+        self.register_collector(UserDataCollector())
 
         self._setup_storage_directory()
         self._cleanup_old_profiles()
@@ -324,3 +322,75 @@ class Profiler:
 
         except Exception as e:
             self.logger.error(f"Error saving profile {token}: {str(e)}")
+
+    def collect_error_profile(self, request: Request, exception: Exception) -> Optional[str]:
+        """Create an error profile and return the token."""
+        if not self.enabled:
+            return None
+
+        current_day = self._get_today_folder()
+        if self.storage_dir.name != current_day:
+            self._setup_storage_directory()
+
+        token = str(uuid.uuid4())[:8]
+
+        profile_data = {
+            "url": str(request.url),
+            "method": request.method,
+            "time": datetime.datetime.now().isoformat(),
+            "token": token,
+            "is_error_profile": True
+        }
+
+        for name, collector in self.collectors.items():
+            try:
+                if name == "exception":
+                    collector.collect_exception(exception, traceback.format_exc())
+                    
+                    from fastapi.responses import Response
+                    fake_response = Response(status_code=500)
+                    collector.collect(request, fake_response)
+                    
+                elif name == "request":
+                    from fastapi.responses import Response
+                    fake_response = Response(status_code=500)
+                    collector.collect(request, fake_response)
+                    
+                elif name == "time":
+                    start_time = getattr(request.state, 'request_start_time', datetime.datetime.now().timestamp())
+                    duration = datetime.datetime.now().timestamp() - start_time
+                    collector.duration = duration * 1000
+                    collector.collect(request, None)
+                    
+                elif name in ["memory", "route", "user", "log"]:
+                    try:
+                        from fastapi.responses import Response
+                        fake_response = Response(status_code=500)
+                        collector.collect(request, fake_response)
+                    except:
+                        pass
+                
+                collector_data = collector.get_data()
+                profile_data[name] = collector_data
+                
+         
+                    
+            except Exception as e:
+                self.logger.error(f"Error collecting data from {name} for error profile: {str(e)}")
+
+        for name, collector in self.collectors.items():
+            try:
+                if hasattr(collector, "reset"):
+                    collector.reset()
+            except Exception as e:
+                self.logger.error(f"Error resetting collector {name}: {str(e)}")
+
+
+     
+            
+
+        self.profiles_cache[token] = profile_data
+        self._maintain_cache_size()
+        self._save_profile(token, profile_data)
+
+        return token

@@ -1,4 +1,3 @@
-import logging
 import time
 
 from fastapi import Request
@@ -37,7 +36,6 @@ class RequestMiddleware(BaseHTTPMiddleware):
     )
     async def dispatch(self, request: Request, call_next):
         RequestStack.set_request(request)
-        request_id = ContextLogger.set_request_id()
         ContextLogger.set_context_value(
             "client_ip", request.client.host if request.client else "unknown"
         )
@@ -45,20 +43,24 @@ class RequestMiddleware(BaseHTTPMiddleware):
         ContextLogger.set_context_value("path", request.url.path)
         path = request.url.path
         is_static_resource = StaticResourceDetector.is_static_resource(path)
-        if not is_static_resource:
-            self.logger.info(f"Incoming request: {request.method} {path}")
+        
         start_time = time.time()
         try:
             response = await call_next(request)
             duration_ms = round((time.time() - start_time) * 1000, 2)
             ContextLogger.set_context_value("status_code", response.status_code)
             ContextLogger.set_context_value("duration_ms", duration_ms)
+            
+
+            if not is_static_resource:
+                self.logger.info(f"{request.method} {path} - {response.status_code}")
+            
             return response
         except Exception as e:
             duration_ms = round((time.time() - start_time) * 1000, 2)
             ContextLogger.set_context_value("duration_ms", duration_ms)
             ContextLogger.set_context_value("error", str(e))
             self.logger.error(
-                f"Request failed: {request.method} {path} - Error: {str(e)} - Duration: {duration_ms} ms"
+                f"{request.method} {path} - ERROR: {str(e)}"
             )
             raise

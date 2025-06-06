@@ -5,6 +5,13 @@ from sqlmodel import Session
 
 from framefox.core.orm.entity_manager import EntityManager
 from framefox.core.request.request_stack import RequestStack
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 
 class EntityManagerInterface:

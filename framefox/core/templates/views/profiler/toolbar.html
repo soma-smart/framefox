@@ -103,7 +103,17 @@
       {{ status_code }}
     </span>
   </div>
-
+  <div class="profiler-item" data-panel="user">
+    <span class="profiler-label">USER</span>
+    <span
+      class="profiler-value {{ 'success' if profile.user.is_authenticated else 'warning' }}"
+    >
+      {% if profile.user and profile.user.is_authenticated %} {{
+      profile.user.email[:10] + '...' if profile.user.email and
+      profile.user.email|length > 10 else profile.user.email or 'AUTH' }} {%
+      else %} ANON {% endif %}
+    </span>
+  </div>
   <div class="profiler-item" data-panel="route">
     <span class="profiler-label">ROUTE</span>
     <span class="profiler-value">{{ route }}</span>

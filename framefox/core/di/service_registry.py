@@ -93,6 +93,9 @@ class ServiceRegistry:
 
     def freeze(self) -> None:
         self._frozen = True
+    def is_frozen(self) -> bool:
+        """Check if the registry is frozen."""
+        return getattr(self, '_frozen', False)
 
     def _clear_caches(self) -> None:
         self._name_cache.clear()

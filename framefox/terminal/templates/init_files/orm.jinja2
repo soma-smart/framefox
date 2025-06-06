@@ -27,3 +27,8 @@ database:
   pool_pre_ping: true
   autocommit: false
   autoflush: false
+
+  logging:
+    # Controls SQL display in console (dev only)
+    echo_sql: false # true = display in console, false = hide
+    # The profiler ALWAYS collects SQL queries, regardless of this setting
