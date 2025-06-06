@@ -495,7 +495,7 @@ class ProductDetails(AbstractEntity, table=True):
     product: Product = Relationship(back_populates="details")
 ```
 
-:::info[Relationship Pattern Benefits]
+:::note[Relationship Pattern Benefits]
 SQLModel relationships provide:
 - **Automatic Loading**: Related data loaded efficiently
 - **Type Safety**: Full Python type hints for related objects

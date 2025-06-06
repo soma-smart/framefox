@@ -150,7 +150,7 @@ class UserController(AbstractController):
         return self.render("user/register.html", {"form": form})
 ```
 
-:::info[Form Lifecycle]
+:::note[Form Lifecycle]
 The form lifecycle in Framefox follows this pattern:
 1. **Creation**: Form is instantiated with `create_form()`
 2. **Submission**: Request data is processed with `handle_request()`
@@ -654,7 +654,7 @@ class AvatarUploadType(FormTypeInterface):
         })
 ```
 
-:::info[File Storage]
+:::note[File Storage]
 Framefox automatically handles file storage, validation, and security. Files are validated for:
 - **File size limits**: Prevent large file uploads
 - **Extension validation**: Only allowed file types
