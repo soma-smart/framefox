@@ -41,7 +41,8 @@ class Settings:
         if os.path.exists(env_path):
             load_dotenv(dotenv_path=env_path, override=True)
         else:
-            print(f"WARNING: .env file not found!")
+            # print(f"WARNING: .env file not found!")
+            pass
         self.app_env = os.getenv("APP_ENV", "prod")
         self.config = {}
         try:
@@ -61,9 +62,7 @@ class Settings:
         """
         config_path = Path(config_folder).resolve()
         if not os.path.exists(config_path):
-            raise FileNotFoundError(
-                f"""Configuration file '{config_folder}' does not exist"""
-            )
+            raise FileNotFoundError(f"""Configuration file '{config_folder}' does not exist""")
 
         for filename in os.listdir(config_path):
             if filename.endswith(".yaml") or filename.endswith(".yml"):
@@ -181,12 +180,8 @@ class Settings:
             if "url" in db_config and db_config["url"]:
                 return DatabaseUrlParser.parse_url(db_config["url"])
 
-            has_required_details = all(
-                key in db_config for key in ["driver", "host", "database"]
-            ) or (
-                "driver" in db_config
-                and db_config["driver"] == "sqlite"
-                and "database" in db_config
+            has_required_details = all(key in db_config for key in ["driver", "host", "database"]) or (
+                "driver" in db_config and db_config["driver"] == "sqlite" and "database" in db_config
             )
 
             if has_required_details:
@@ -237,33 +232,19 @@ class Settings:
     @property
     def session_name(self):
         """Returns the session name from the configuration."""
-        return (
-            self.config.get("application", {})
-            .get("session", {})
-            .get("name", "session_id")
-        )
+        return self.config.get("application", {}).get("session", {}).get("name", "session_id")
 
     @property
     def session_file_path(self):
         """Returns the session file path from the configuration."""
-        return (
-            self.config.get("application", {})
-            .get("session", {})
-            .get("file_path", "var/session/sessions.db")
-        )
+        return self.config.get("application", {}).get("session", {}).get("file_path", "var/session/sessions.db")
 
     @property
     def session_secret_key(self):
         """Returns the session secret key from the configuration."""
-        secret_key = (
-            self.config.get("application", {})
-            .get("session", {})
-            .get("secret_key", None)
-        )
+        secret_key = self.config.get("application", {}).get("session", {}).get("secret_key", None)
         if not secret_key or secret_key == "default_secret":
-            print(
-                "WARNING: Using default session secret key. This is insecure for production environments."
-            )
+            print("WARNING: Using default session secret key. This is insecure for production environments.")
         return secret_key or "default_secret"
 
     # ------------------------------ cookie ------------------------------
@@ -276,9 +257,7 @@ class Settings:
     @property
     def cookie_same_site(self):
         """Returns the cookie same site policy from the configuration, default is 'lax'."""
-        return (
-            self.config.get("application", {}).get("cookie", {}).get("same_site", "lax")
-        )
+        return self.config.get("application", {}).get("cookie", {}).get("same_site", "lax")
 
     @property
     def cookie_secure(self):
@@ -288,9 +267,7 @@ class Settings:
     @property
     def cookie_http_only(self):
         """Returns True if cookies should be HTTP only (not accessible via JavaScript), otherwise False."""
-        return (
-            self.config.get("application", {}).get("cookie", {}).get("http_only", True)
-        )
+        return self.config.get("application", {}).get("cookie", {}).get("http_only", True)
 
     @property
     def cookie_path(self):
@@ -303,9 +280,7 @@ class Settings:
     def openapi_url(self):
         """Returns the OpenAPI URL only if in debug mode."""
         if self.is_debug:
-            return self.config.get("application", {}).get(
-                "openapi_url", "/openapi.json"
-            )
+            return self.config.get("application", {}).get("openapi_url", "/openapi.json")
         return None
 
     @property
@@ -318,11 +293,7 @@ class Settings:
     @property
     def controller_dir(self):
         """Returns the controllers directory from the configuration."""
-        return (
-            self.config.get("application", {})
-            .get("controllers", {})
-            .get("dir", "controllers")
-        )
+        return self.config.get("application", {}).get("controllers", {}).get("dir", "controllers")
 
     @property
     def cors_config(self):
@@ -351,31 +322,23 @@ class Settings:
     @property
     def profiler_max_files_per_day(self) -> int:
         """Maximum number of profile files per day"""
-        return int(
-            self.config.get("debug", {}).get("profiler", {}).get("max_files", 1000)
-        )
+        return int(self.config.get("debug", {}).get("profiler", {}).get("max_files", 1000))
 
     @property
     def profiler_retention_days(self) -> int:
         """Number of days to keep profile files"""
-        return int(
-            self.config.get("debug", {}).get("profiler", {}).get("retention_days", 7)
-        )
+        return int(self.config.get("debug", {}).get("profiler", {}).get("retention_days", 7))
 
     @property
     def profiler_sampling_rate(self) -> float:
         """Percentage of requests to profile (0.0 to 1.0)"""
-        rate = float(
-            self.config.get("debug", {}).get("profiler", {}).get("sampling_rate", 1.0)
-        )
+        rate = float(self.config.get("debug", {}).get("profiler", {}).get("sampling_rate", 1.0))
         return max(0.0, min(1.0, rate))
 
     @property
     def profiler_max_memory(self) -> int:
         """Maximum number of profiles in memory"""
-        return int(
-            self.config.get("debug", {}).get("profiler", {}).get("max_memory", 50)
-        )
+        return int(self.config.get("debug", {}).get("profiler", {}).get("max_memory", 50))
 
     @property
     def logging_level(self) -> str:
@@ -387,11 +350,7 @@ class Settings:
     @property
     def logging_file_path(self) -> str:
         """Returns the logging file path"""
-        return (
-            self.config.get("debug", {})
-            .get("logging", {})
-            .get("file_path", "var/log/app.log")
-        )
+        return self.config.get("debug", {}).get("logging", {}).get("file_path", "var/log/app.log")
 
     @property
     def logging_max_size(self) -> int:
@@ -401,9 +360,7 @@ class Settings:
     @property
     def logging_backup_count(self) -> int:
         """Returns the number of backup log files"""
-        return int(
-            self.config.get("debug", {}).get("logging", {}).get("backup_count", 5)
-        )
+        return int(self.config.get("debug", {}).get("logging", {}).get("backup_count", 5))
 
     # ------------------------------ mail ------------------------------
 
@@ -422,9 +379,7 @@ class Settings:
     @property
     def task_transport_url(self) -> str:
         """Returns the transport URL for RabbitMQ"""
-        return self.config.get("tasks", {}).get(
-            "task_transport_url", "amqp://guest:guest@localhost:5672/%2F"
-        )
+        return self.config.get("tasks", {}).get("task_transport_url", "amqp://guest:guest@localhost:5672/%2F")
 
     @property
     def task_worker_concurrency(self) -> int:
@@ -439,11 +394,7 @@ class Settings:
     @property
     def task_default_queues(self) -> list:
         """Default queues"""
-        return (
-            self.config.get("tasks", {})
-            .get("worker", {})
-            .get("default_queues", ["default"])
-        )
+        return self.config.get("tasks", {}).get("worker", {}).get("default_queues", ["default"])
 
     @property
     def task_cleanup_interval(self) -> int:

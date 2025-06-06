@@ -35,9 +35,7 @@ class AlembicManager:
             self._project_root = Path(os.getcwd())
             self._migrations_dir = self._project_root / "migrations"
             self._versions_dir = self._migrations_dir / "versions"
-            self._templates_dir = (
-                self._project_root / "framefox" / "core" / "migration" / "templates"
-            )
+            self._templates_dir = self._project_root / "framefox" / "core" / "migration" / "templates"
             self._initialized = True
             self._temp_files = []
 
@@ -45,6 +43,13 @@ class AlembicManager:
         """Creates necessary directories for Alembic"""
         os.makedirs(self._migrations_dir, exist_ok=True)
         os.makedirs(self._versions_dir, exist_ok=True)
+
+        # Ensure __pycache__ directory exists with .gitkeep
+        pycache_dir = self._versions_dir / "__pycache__"
+        pycache_dir.mkdir(exist_ok=True)
+        gitkeep_file = pycache_dir / ".gitkeep"
+        if not gitkeep_file.exists():
+            gitkeep_file.touch()
 
     def setup_templates(self) -> None:
         """Copies necessary template files"""
@@ -87,9 +92,7 @@ prepend_sys_path = .
         database = str(db_config.database) if db_config.database else ""
         return f"{dialect}://{username}:{password}@{host}:{port}/{database}"
 
-    def create_migration(
-        self, message: str, autogenerate: bool = True
-    ) -> Optional[str]:
+    def create_migration(self, message: str, autogenerate: bool = True) -> Optional[str]:
         """Creates a new migration and returns the created file"""
         self.setup_directories()
         self.setup_templates()
@@ -113,17 +116,13 @@ prepend_sys_path = .
         try:
             with create_engine(self.get_database_url_string()).connect() as conn:
                 try:
-                    current = conn.execute(
-                        text("SELECT version_num FROM alembic_version")
-                    ).scalar()
+                    current = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
                 except Exception:
                     current = None
             config = self.create_config()
             command.upgrade(config, revision)
             with create_engine(self.get_database_url_string()).connect() as conn:
-                new = conn.execute(
-                    text("SELECT version_num FROM alembic_version")
-                ).scalar()
+                new = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
             self.cleanup_temp_files()
             return (True, current != new)
         except Exception as e:
@@ -209,6 +208,84 @@ prepend_sys_path = .
         self._temp_files = []
 
     def cleanup_migrations(self):
-        """Deletes all migration files"""
-        if os.path.exists(self._migrations_dir):
-            shutil.rmtree(self._migrations_dir)
+        """Deletes all migration files but preserves env.py and script.py.mako"""
+        if not os.path.exists(self._migrations_dir):
+            return
+
+        # Files to preserve in migrations directory
+        preserve_files = {"env.py", "script.py.mako"}
+
+        # Clean versions directory (remove all .py files except __init__.py)
+        if os.path.exists(self._versions_dir):
+            for file in os.listdir(self._versions_dir):
+                file_path = os.path.join(self._versions_dir, file)
+                if os.path.isfile(file_path):
+                    # Keep __init__.py, remove all other .py files
+                    if file != "__init__.py" and file.endswith(".py"):
+                        os.remove(file_path)
+                elif os.path.isdir(file_path) and file == "__pycache__":
+                    # Clean __pycache__ directory
+                    shutil.rmtree(file_path)
+
+        # Clean migration directory root but preserve important files
+        for item in os.listdir(self._migrations_dir):
+            item_path = os.path.join(self._migrations_dir, item)
+
+            if os.path.isfile(item_path):
+                # Only remove files that are not in preserve list
+                if item not in preserve_files:
+                    os.remove(item_path)
+            elif os.path.isdir(item_path):
+                # Don't remove versions directory, we cleaned it above
+                if item != "versions":
+                    shutil.rmtree(item_path)
+
+    def clear_alembic_version_table(self, db_url: Optional[str] = None) -> bool:
+        """Clears all entries from the alembic_version table in the database"""
+        if not db_url:
+            db_url = self.get_database_url_string()
+        engine = create_engine(db_url)
+        try:
+            with engine.connect() as connection:
+                # Check if alembic_version table exists
+                if "sqlite" in db_url:
+                    check_sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version'"
+                elif "mysql" in db_url:
+                    check_sql = (
+                        "SELECT TABLE_NAME FROM information_schema.TABLES "
+                        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'alembic_version'"
+                    )
+                else:  # postgresql
+                    check_sql = "SELECT tablename FROM pg_tables " "WHERE schemaname = 'public' AND tablename = 'alembic_version'"
+
+                result = connection.execute(text(check_sql))
+
+                if result.fetchone():
+                    # Clear all entries from alembic_version table
+                    connection.execute(text("DELETE FROM alembic_version"))
+                    connection.commit()
+                    return True
+                else:
+                    # Table doesn't exist
+                    return False
+
+        except Exception as e:
+            print(f"Error clearing alembic_version table: {e}")
+            return False
+
+    def clear_all_migrations(self) -> bool:
+        """Deletes all migration files and clears alembic_version table"""
+        try:
+            # Clear database table
+            self.clear_alembic_version_table()
+
+            # Clear migration files
+            self.cleanup_migrations()
+
+            # Recreate basic structure
+            self.setup_directories()
+
+            return True
+        except Exception as e:
+            print(f"Error clearing all migrations: {e}")
+            return False
