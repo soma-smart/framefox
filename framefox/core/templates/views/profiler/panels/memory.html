@@ -63,33 +63,6 @@
     </div>
   </div>
 
-  <div class="panel-section">
-    <h3>Python Objects</h3>
-    <div class="memory-summary">
-      <div class="memory-metric">
-        <span class="metric-label">Total Objects</span>
-        <span class="metric-value"
-          >{{ data.gc_objects_count | format_number }}</span
-        >
-      </div>
-
-      <div class="memory-metric">
-        <span class="metric-label">GC Generation 0</span>
-        <span class="metric-value">{{ data.gc_generation_0 }}</span>
-      </div>
-
-      <div class="memory-metric">
-        <span class="metric-label">GC Generation 1</span>
-        <span class="metric-value">{{ data.gc_generation_1 }}</span>
-      </div>
-
-      <div class="memory-metric">
-        <span class="metric-label">GC Generation 2</span>
-        <span class="metric-value">{{ data.gc_generation_2 }}</span>
-      </div>
-    </div>
-  </div>
-
   {% if data.status == "high" or data.template_memory_mb > 10 %}
   <div class="panel-section">
     <h3>💡 Recommendations</h3>
@@ -107,11 +80,6 @@
     <div class="warning">
       <strong>Template Performance:</strong> Rendering took {{
       data.template_render_time_ms }}ms. Consider template optimization.
-    </div>
-    {% endif %} {% if data.gc_objects_count > 100000 %}
-    <div class="warning">
-      <strong>Object Count:</strong> High number of Python objects ({{
-      data.gc_objects_count | format_number }}). Consider periodic cleanup.
     </div>
     {% endif %}
   </div>
@@ -168,7 +136,7 @@
     border: 1px solid #f5c6cb;
   }
 
-  /* Memory summary (identique à database.html) */
+  /* Memory summary */
   .memory-summary {
     display: flex;
     flex-wrap: wrap;

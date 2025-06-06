@@ -1,17 +1,17 @@
 <div class="profiler-panel">
   <h2>Exception Details</h2>
 
-  {% if data.has_exception %}
-
-  <!-- Vraie exception Python -->
-  {% if data.is_python_exception %}
+  {% if data.has_exception %} {% if data.is_python_exception %}
   <div class="exception-summary python-exception">
     <div class="exception-type-badge python">Python Exception</div>
     <div class="exception-message">
       {{ data.exception.class }}: {{ data.exception.message }}
     </div>
     <div class="exception-metadata">
-      <span>In {{ data.exception.file }} line {{ data.exception.line }}</span>
+      <span
+        >In {{ data.exception.get('file', 'Unknown') }} line {{
+        data.exception.get('line', 'Unknown') }}</span
+      >
     </div>
   </div>
 
@@ -20,7 +20,6 @@
     <pre>{{ data.exception.trace }}</pre>
   </div>
 
-  <!-- Erreur HTTP (404, 500, etc.) -->
   {% elif data.is_http_error %}
   <div class="exception-summary http-error">
     <div class="exception-type-badge http">HTTP Error</div>
@@ -76,7 +75,6 @@
     </table>
   </div>
 
-  <!-- Suggestions selon le type d'erreur -->
   <div class="error-suggestions">
     <h3>💡 Possible Solutions</h3>
     {% if data.status_code == 404 %}

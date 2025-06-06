@@ -199,8 +199,13 @@
         <div class="tab" onclick="showPanel('database')">Database</div>
         {% endif %}
         <div class="tab" onclick="showPanel('route')">Route</div>
-
-        {% if profile.exception %}
+        {% if profile.user %}
+        <div class="tab" onclick="showPanel('user')">
+          User {% if profile.user.is_authenticated %}
+          <span class="tab-badge success">✓</span>
+          {% endif %}
+        </div>
+        {% endif %} {% if profile.exception %}
         <div
           class="tab {% if profile.exception.has_exception %}error{% endif %}"
           onclick="showPanel('exception')"

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 from urllib.parse import urlparse
 
 from framefox.core.orm.driver.database_config import DatabaseConfig
@@ -8,7 +8,7 @@ Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: LEUROND Raphaël & BOUMAZA Rayen
-Github: https://github.com/Vasulvius & https://github.com/RayenBou
+Github: https://github.com/Vasulvius & https://github.cWom/RayenBou
 """
 
 
@@ -25,14 +25,13 @@ class DatabaseUrlParser:
             DatabaseConfig object with parsed connection parameters
         """
 
-        # If a dictionary is provided, use it directly
         if isinstance(url_or_config, dict):
-            # Handle both formats: nested config or flat config
+  
             if "url" in url_or_config and isinstance(url_or_config["url"], str):
-                # If URL is provided inside the dict, parse it
+               
                 return DatabaseUrlParser.parse_url(url_or_config["url"])
 
-            # Use the dict as direct configuration
+       
             driver = url_or_config.get("driver", "postgresql")
 
             if driver == "sqlite":
@@ -45,7 +44,6 @@ class DatabaseUrlParser:
                     password=None,
                 )
 
-            # Extract values with defaults
             return DatabaseConfig(
                 driver=driver,
                 host=url_or_config.get("host", "localhost"),

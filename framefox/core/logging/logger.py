@@ -42,8 +42,10 @@ class Logger:
         log_dir.mkdir(parents=True, exist_ok=True)
 
         app_log_file = str(log_file_path)
-
         max_bytes = max_size_mb * 1024 * 1024
+
+        sql_console_enabled = self.settings.database_echo
+        sql_profiler_enabled = self.settings.database_echo_for_profiler
 
         color_formatter_app = {
             "()": "colorlog.ColoredFormatter",
@@ -96,7 +98,8 @@ class Logger:
         }
 
         sql_handlers = ["app_file"]
-        if self.settings.is_debug:
+        
+        if self.settings.is_debug and sql_console_enabled:
             sql_handlers.append("console_sql")
 
         logging_config = {
@@ -167,22 +170,22 @@ class Logger:
                 },
                 "sqlalchemy.engine.Engine": {
                     "handlers": sql_handlers,
-                    "level": "INFO" if self.settings.is_debug else "INFO",
+                    "level": "INFO" if sql_profiler_enabled else "WARNING",
                     "propagate": False,
                 },
                 "sqlmodel": {
                     "handlers": sql_handlers,
-                    "level": "INFO" if self.settings.is_debug else "INFO",
+                    "level": "INFO" if sql_profiler_enabled else "WARNING",
                     "propagate": False,
                 },
                 "sqlalchemy.dialects": {
                     "handlers": ["app_file"],
-                    "level": "WARNING",
+                    "level": "ERROR",
                     "propagate": False,
                 },
                 "sqlalchemy.pool": {
                     "handlers": ["app_file"],
-                    "level": "WARNING",
+                    "level": "ERROR",
                     "propagate": False,
                 },
                 "python_multipart": {

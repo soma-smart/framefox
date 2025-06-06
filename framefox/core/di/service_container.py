@@ -78,7 +78,10 @@ class ServiceContainer:
         self._factory_manager = ServiceFactoryManager()
         self._config = ServiceConfig()
         self._cache_manager = ServiceCacheManager()
-
+        self._factory_manager = ServiceFactoryManager()
+        
+        self._register_core_factories()
+    
         # Instance storage and tracking
         self._instances: Dict[Type[Any], Any] = {}
         self._resolution_cache: Dict[Type[Any], Any] = {}
@@ -101,7 +104,17 @@ class ServiceContainer:
         self._instance_counter = 1
         self._initialized = True
         self._initialize_container()
-
+    def _register_core_factories(self):
+        """Register core factories before registry freeze."""
+        try:
+            from framefox.core.di.factory.entity_manager_factory import EntityManagerFactory
+            self._factory_manager.register_factory(EntityManagerFactory())
+            from framefox.core.di.factory.pydantic_model_factory import PydanticModelFactory
+            self._factory_manager.register_factory(PydanticModelFactory())
+            self._logger.debug("Core factories registered successfully")
+            
+        except ImportError as e:
+            self._logger.warning(f"Could not register some core factories: {e}")
     def _ensure_python_path(self) -> None:
         """Ensure project directory is in PYTHONPATH."""
         project_root = Path(__file__).resolve().parent.parent.parent.parent
@@ -467,11 +480,12 @@ class ServiceContainer:
         module = importlib.import_module(module_path)
         return getattr(module, class_name)
 
+
     def get(self, service_class: Type[Any]) -> Any:
         """Get a service instance with dependency injection."""
-        
         if service_class in self._resolution_cache:
             return self._resolution_cache[service_class]
+
 
         if service_class in self._instances:
             cached_instance = self._instances[service_class]
@@ -481,42 +495,79 @@ class ServiceContainer:
         if not inspect.isclass(service_class):
             return service_class
 
+        instance = self._factory_manager.create_service(service_class, self)
+        if instance is not None:
+            self._instances[service_class] = instance
+            self._resolution_cache[service_class] = instance
+            return instance
+
         definition = self._registry.get_definition(service_class)
-        
+
         if not definition and self._can_be_service(service_class):
             definition = ServiceDefinition(service_class, autowire=True)
-            self._registry.register_definition(definition)
+      
+            if self._registry.is_frozen():
+                self._registry._frozen = False
+                self._registry.register_definition(definition)
+                self._registry._frozen = True
+                self._logger.debug(f"Force-registered {service_class.__name__} in frozen registry")
+            else:
+                self._registry.register_definition(definition)
         
         if service_class in self._circular_detection:
             chain = list(self._circular_detection)
             raise CircularDependencyError(service_class, chain)
 
         if not definition:
-            definition = self._find_or_create_definition(service_class)
-            if not definition:
-                silent_classes = {"FastAPI", "Depends", "Request", "Response"}
-                if service_class.__name__ not in silent_classes:
-                    self._logger.debug(f"No service definition found for {service_class.__name__}")
-                raise ServiceNotFoundError(service_class)
+            raise ServiceNotFoundError(f"Service {service_class.__name__} not found and cannot be auto-registered")
 
         self._circular_detection.add(service_class)
 
         try:
             instance = self._create_service_instance(definition)
-            if instance is not None:
-                self._instances[service_class] = instance
-                self._resolution_cache[service_class] = instance
-                self._apply_method_calls(instance, definition)
-                return instance
-            else:
-                raise ServiceInstantiationError(service_class, Exception("Failed to create instance"))
+            self._instances[service_class] = instance
+            self._resolution_cache[service_class] = instance
+            return instance
 
         except Exception as e:
-            if isinstance(e, (CircularDependencyError, ServiceNotFoundError, ServiceInstantiationError)):
-                raise
-            raise ServiceInstantiationError(service_class, e)
+            self._logger.error(f"Failed to create service {service_class.__name__}: {e}")
+            raise ServiceInstantiationError(f"Cannot create service {service_class.__name__}: {e}") from e
         finally:
             self._circular_detection.discard(service_class)
+
+    def _create_service_instance(self, definition: ServiceDefinition) -> Any:
+        """Create a service instance using various strategies."""
+        service_class = definition.service_class
+
+
+        if definition.factory:
+            try:
+                if callable(definition.factory):
+                    return definition.factory()
+                else:
+                    return definition.factory
+            except Exception as e:
+                self._logger.error(f"Factory failed for {service_class.__name__}: {e}")
+                raise
+
+   
+        instance = self._factory_manager.create_service(service_class, self)
+        if instance is not None:
+            return instance
+
+        if definition.arguments:
+            return service_class(*definition.arguments)
+
+    
+        if definition.autowire:
+            dependencies = self._resolve_dependencies(service_class)
+            instance = service_class(*dependencies)
+        else:
+            instance = service_class()
+        if definition.method_calls:
+            self._apply_method_calls(instance, definition)
+
+        return instance
 
     def _find_or_create_definition(self, service_class: Type) -> Optional[ServiceDefinition]:
         """Find an existing service definition or create a new one if possible."""
@@ -564,63 +615,42 @@ class ServiceContainer:
         dependencies = []
 
         try:
-            constructor = inspect.signature(service_class.__init__)
-            params = constructor.parameters
-
+            signature = inspect.signature(service_class.__init__)
+            
+            # ✅ FIX : Import safe pour get_type_hints
             try:
-                module = sys.modules[service_class.__module__]
-                type_hints = get_type_hints(
-                    service_class.__init__,
-                    localns=vars(service_class),
-                    globalns=module.__dict__,
-                )
+                type_hints = get_type_hints(service_class.__init__)
+            except NameError as e:
+                self._logger.warning(f"Error getting type hints for {service_class.__name__}: {e}")
+                type_hints = {}
 
-                for name, param in params.items():
-                    if name == "self":
-                        continue
+            for param_name, param in signature.parameters.items():
+                if param_name == "self":
+                    continue
 
-                    dependency_cls = type_hints.get(name)
+                param_type = type_hints.get(param_name)
 
-                    if dependency_cls in (str, int, float, bool, list, dict, set, tuple):
+                if param_type:
+                    try:
+                        dependency = self.get(param_type)
+                        dependencies.append(dependency)
+                    except Exception as dep_e:
                         if param.default != inspect.Parameter.empty:
                             dependencies.append(param.default)
                         else:
-                            if dependency_cls == str:
-                                dependencies.append("")
-                            elif dependency_cls == int:
-                                dependencies.append(0)
-                            elif dependency_cls == float:
-                                dependencies.append(0.0)
-                            elif dependency_cls == bool:
-                                dependencies.append(False)
-                            elif dependency_cls in (list, set, tuple):
-                                dependencies.append(dependency_cls())
-                            elif dependency_cls == dict:
-                                dependencies.append({})
-                            else:
-                                dependencies.append(None)
-                            self._logger.debug(f"Using default value for primitive type {dependency_cls.__name__} in {service_class.__name__}.{name}")
-                    elif dependency_cls:
-                        try:
-                            dependency = self.get(dependency_cls)
-                            dependencies.append(dependency)
-                        except (ServiceNotFoundError, ServiceInstantiationError) as e:
-                            if param.default != inspect.Parameter.empty:
-                                dependencies.append(param.default)
-                            else:
-                                dependencies.append(None)
-                                self._logger.warning(f"Could not inject {dependency_cls.__name__} for {service_class.__name__}.{name}, using None")
-                    elif param.default != inspect.Parameter.empty:
-                        dependencies.append(param.default)
-                    else:
-                        dependencies.append(None)
-                        self._logger.warning(f"Parameter {name} of {service_class.__name__} has no type hint and no default value")
-
-            except Exception as e:
-                self._logger.error(f"Error getting type hints for {service_class.__name__}: {e}")
+                            self._logger.warning(
+                                f"Could not resolve dependency {param_name} of type {param_type} for {service_class.__name__}: {dep_e}"
+                            )
+                elif param.default != inspect.Parameter.empty:
+                    dependencies.append(param.default)
+                else:
+                    self._logger.warning(
+                        f"Parameter {param_name} of {service_class.__name__} has no type hint and no default value"
+                    )
 
         except Exception as e:
-            self._logger.error(f"Error analyzing constructor of {service_class.__name__}: {e}")
+            self._logger.error(f"Failed to resolve dependencies for {service_class.__name__}: {e}")
+            return []
 
         return dependencies
 
