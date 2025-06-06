@@ -23,7 +23,7 @@ Framefox follows the MVC (Model-View-Controller) pattern where controllers serve
 
 Framefox provides commands to create different types of controllers through an interactive command-line interface that guides you through the process step by step.
 
-:::warning[Prerequisites]
+:::caution[Prerequisites]
 Before creating controllers, ensure that:
 - Your Framefox project is properly initialized
 - You're running commands from the project root directory
@@ -379,7 +379,7 @@ class PostController(AbstractController):
             return self.redirect(self.generate_url("post.read_all"))
 ```
 
-:::warning[Form Security]
+:::caution[Form Security]
 Always validate form data and sanitize user input:
 - Use form types for validation
 - Implement CSRF protection
@@ -628,7 +628,7 @@ templates/
 ```
 :::
 
-:::warning[Template Security]
+:::caution[Template Security]
 Always escape user-generated content to prevent XSS attacks:
 ```html
 <!-- Safe: automatically escaped -->

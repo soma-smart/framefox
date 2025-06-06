@@ -51,7 +51,7 @@ DATABASE_URL=sqlite:///app.db
 # DATABASE_URL=postgresql://user:pass@db-host:5432/production_db?sslmode=require
 ```
 
-:::warning[Security Best Practices]
+:::caution[Security Best Practices]
 Never commit database credentials to version control:
 - Use environment variables for sensitive data
 - Use different credentials for each environment
@@ -224,7 +224,7 @@ Framefox entities follow these principles:
 - **Automatic Models**: Generate create/find models automatically for API endpoints
 :::
 
-:::warning[Data Security]
+:::caution[Data Security]
 Never store sensitive information in plain text:
 - Always hash passwords using secure algorithms (bcrypt, Argon2)
 - Use encryption for personal data
@@ -441,7 +441,7 @@ SQLModel relationships provide:
 
 
 
-:::warning[Many-to-Many Considerations]
+:::caution[Many-to-Many Considerations]
 When implementing many-to-many relationships:
 - **Junction tables should have meaningful names** (product_tags, not product_tag_mapping)
 - **Consider additional metadata** in junction tables (created_at, expires_at)
@@ -1037,7 +1037,7 @@ Follow these guidelines for database command usage:
 - **Document complex migrations** with clear comments
 :::
 
-:::warning[Production Considerations]
+:::caution[Production Considerations]
 In production environments:
 - **Schedule migrations** during maintenance windows
 - **Monitor migration progress** for large datasets
@@ -1221,7 +1221,7 @@ framefox database show --pending
 framefox database test-cycle
 ```
 
-:::warning[Migration Safety]
+:::caution[Migration Safety]
 Follow these migration best practices:
 - **Test migrations thoroughly** in development environments
 - **Backup production data** before applying migrations

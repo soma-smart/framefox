@@ -306,14 +306,14 @@ The `csrf_token()` function automatically generates and includes CSRF protection
 
 ### Form Rendering Functions Reference
 
-| Function | Purpose | Example |
-|----------|---------|---------|
-| `form_start(form, options)` | Opens form tag with attributes | `form_start(form, {'method': 'POST'})` |
-| `form_end(form)` | Closes form tag | `form_end(form)` |
-| `form_row(form, field)` | Complete field with label and errors | `form_row(form, 'email')` |
-| `form_label(form, field)` | Field label only | `form_label(form, 'name')` |
-| `form_widget(form, field)` | Field input only | `form_widget(form, 'password')` |
-| `form_errors(form, field)` | Field errors only | `form_errors(form, 'email')` |
+| Function                    | Purpose                              | Example                                |
+| --------------------------- | ------------------------------------ | -------------------------------------- |
+| `form_start(form, options)` | Opens form tag with attributes       | `form_start(form, {'method': 'POST'})` |
+| `form_end(form)`            | Closes form tag                      | `form_end(form)`                       |
+| `form_row(form, field)`     | Complete field with label and errors | `form_row(form, 'email')`              |
+| `form_label(form, field)`   | Field label only                     | `form_label(form, 'name')`             |
+| `form_widget(form, field)`  | Field input only                     | `form_widget(form, 'password')`        |
+| `form_errors(form, field)`  | Field errors only                    | `form_errors(form, 'email')`           |
 
 ## Available Field Types
 
@@ -321,15 +321,15 @@ The `csrf_token()` function automatically generates and includes CSRF protection
 
 Framefox provides comprehensive field types for all common form inputs:
 
-| Type | Purpose | Features |
-|------|---------|----------|
-| `TextType` | Basic text input | String validation, length constraints |
-| `EmailType` | Email address input | Built-in email format validation |
-| `PasswordType` | Password input | Masked input, strength validation |
-| `NumberType` | Numeric input | Integer/float validation, min/max constraints |
-| `TextareaType` | Multi-line text | Configurable rows, character limits |
-| `CheckboxType` | Boolean checkbox | True/false values |
-| `DateTimeType` | Date/time picker | Native HTML5 datetime-local support |
+| Type           | Purpose             | Features                                      |
+| -------------- | ------------------- | --------------------------------------------- |
+| `TextType`     | Basic text input    | String validation, length constraints         |
+| `EmailType`    | Email address input | Built-in email format validation              |
+| `PasswordType` | Password input      | Masked input, strength validation             |
+| `NumberType`   | Numeric input       | Integer/float validation, min/max constraints |
+| `TextareaType` | Multi-line text     | Configurable rows, character limits           |
+| `CheckboxType` | Boolean checkbox    | True/false values                             |
+| `DateTimeType` | Date/time picker    | Native HTML5 datetime-local support           |
 
 ### Choice and Selection Types
 
@@ -406,7 +406,7 @@ class DocumentType(FormTypeInterface):
         })
 ```
 
-:::warning[File Security]
+:::caution[File Security]
 Always validate file uploads on both client and server side. The `FileType` automatically validates file extensions, MIME types, and file sizes to prevent security vulnerabilities.
 :::
 
