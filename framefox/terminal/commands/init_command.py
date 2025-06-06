@@ -3,6 +3,7 @@ import platform
 import secrets
 import shutil
 import sys
+from importlib.metadata import version
 
 from rich.console import Console
 from rich.table import Table
@@ -241,7 +242,7 @@ class InitCommand(AbstractCommand):
                 "template": "init_files/requirements.jinja2",
                 "path": ".",
                 "name": "requirements.txt",
-                "data": {},
+                "data": {"framefox_version": version("framefox")},
                 "format": "txt",
             },
         ]
