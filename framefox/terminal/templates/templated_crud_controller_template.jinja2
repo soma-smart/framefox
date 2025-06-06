@@ -5,6 +5,7 @@ from src.repository.{{ repository_file_name }} import {{ repository_class_name }
 from src.entity.{{ entity_file_name }} import {{ entity_class_name }}
 from framefox.core.orm.entity_manager_interface import EntityManagerInterface
 from src.form.{{ entity_name }}_type import {{ entity_class_name }}Type
+from starlette.responses import HTMLResponse, RedirectResponse
 
 
 class {{ controller_class_name }}(AbstractController):
@@ -13,13 +14,12 @@ class {{ controller_class_name }}(AbstractController):
         self.repository = {{ repository_class_name }}()
 
     @Route("/{{ entity_name }}s", "{{ entity_file_name }}.read_all", methods=["GET"])
-    async def read_all(self):
+    async def read_all(self) -> HTMLResponse:
         items = self.repository.find_all()
         return self.render("{{ entity_name }}/index.html", {"items": items})
 
     @Route("/{{ entity_name }}/create", "{{ entity_name }}.create", methods=["GET", "POST"])
-    async def create(self, request: Request):
-   
+    async def create(self, request: Request) -> HTMLResponse:
         entity_instance = {{ entity_class_name }}()
         form = self.create_form({{ entity_class_name }}Type, entity_instance)
         await form.handle_request(request)
@@ -28,14 +28,12 @@ class {{ controller_class_name }}(AbstractController):
             self.entity_manager.commit()
             self.flash("success", "{{ entity_class_name }} created successfully!")
             return self.redirect(self.generate_url("{{ entity_file_name }}.read_all"))
-
-
         return self.render("{{ entity_name }}/create.html", {
             "form": form.create_view()
         })
 
     @Route("/{{ entity_name }}/{id}", "{{ entity_file_name }}.read", methods=["GET"])
-    async def read(self, id: int):
+    async def read(self, id: int) -> HTMLResponse:
         item = self.repository.find(id)
         if not item:
             self.flash("error", "{{ entity_class_name }} not found!")
@@ -43,10 +41,10 @@ class {{ controller_class_name }}(AbstractController):
         return self.render("{{ entity_name }}/read.html", {"item": item})
 
     @Route("/{{ entity_name }}/{id}/update", "{{ entity_file_name }}.update", methods=["GET", "POST"])
-    async def update(self, request: Request, id: int):
+    async def update(self, request: Request, id: int) -> HTMLResponse:
         entity_instance = self.repository.find(id)
         form = self.create_form({{ entity_class_name }}Type, entity_instance)
-        
+
         await form.handle_request(request)
         if form.is_submitted() and form.is_valid():
             self.entity_manager.persist(entity_instance)
@@ -54,14 +52,13 @@ class {{ controller_class_name }}(AbstractController):
             self.flash("success", "{{ entity_class_name }} updated successfully!")
             return self.redirect(self.generate_url("{{ entity_file_name }}.read_all"))
 
-
         return self.render("{{ entity_name }}/update.html", {
             "form": form.create_view(),
             "item": entity_instance  # Pour compatibilité avec les templates existants
         })
 
     @Route("/{{ entity_name }}/delete/{id}", "{{ entity_file_name }}.delete", methods=["POST"])
-    async def delete(self, id: int):
+    async def delete(self, id: int) -> RedirectResponse:
         try:
             entity_instance = self.repository.find(id)
             if not entity_instance:
