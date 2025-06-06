@@ -778,7 +778,7 @@ Pass variables to included templates for flexible component behavior:
 
 Framefox allows you to customize error pages to maintain your application's design consistency even when errors occur. Custom error templates provide better user experience and can include helpful navigation or debugging information in development environments.
 
-:::warning[Error Template Location]
+:::caution[Error Template Location]
 Error templates should be placed in an `errors/` directory and follow the HTTP status code naming convention (404.html, 500.html, etc.).
 :::
 

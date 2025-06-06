@@ -59,7 +59,7 @@ Understanding each parameter helps you create more precise and maintainable rout
   - Common values: `["GET"]`, `["POST"]`, `["PUT", "PATCH"]`, `["DELETE"]`
   - Multiple methods: `["GET", "POST"]` for form handling
 
-:::warning[Route Name Uniqueness]
+:::caution[Route Name Uniqueness]
 Route names must be unique across your entire application:
 ```python
 # ❌ Conflict: Same name used twice
@@ -268,7 +268,7 @@ async def search(self, q: str = "", page: int = 1, per_page: int = 10):
     })
 ```
 
-:::warning[Parameter Validation]
+:::caution[Parameter Validation]
 Always validate URL parameters in your controller methods:
 ```python
 @Route("/users/{id}", "user.show", methods=["GET"])

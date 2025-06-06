@@ -1138,7 +1138,7 @@ framefox security:audit --check=dependencies
 
 ### Security Best Practices
 
-:::warning[Security Checklist]
+:::caution[Security Checklist]
 Follow these essential security practices in your Framefox application:
 
 1. **Environment Variables**: Store sensitive data like JWT secrets in environment variables
