@@ -4,8 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "framefox"
-version = "1.0.54"
+version = "0.0.0"  # Version placeholder, will be overwritten by the workflow
 description = "Modular development framework"
+
+
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.12"
 license = {text = "MIT"}

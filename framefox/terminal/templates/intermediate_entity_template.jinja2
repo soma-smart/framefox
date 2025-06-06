@@ -2,6 +2,21 @@ from sqlmodel import Field, Relationship
 from framefox.core.orm.abstract_entity import AbstractEntity
 from typing import TYPE_CHECKING
 
+"""
+Inherited from AbstractEntity:
+
+generate_create_model() -> Type[BaseModel] - Creates model excluding 'id' field
+generate_find_model() -> Type[BaseModel] - Creates model with primary keys only  
+generate_patch_model() -> Type[BaseModel] - Creates model with all fields optional
+get_primary_keys() -> List[str] - Returns list of primary key column names
+
+Usage:
+CreateModel = User.generate_create_model()  # UserCreate
+FindModel = User.generate_find_model()      # UserFind  
+PatchModel = User.generate_patch_model()    # UserPatch
+keys = User.get_primary_keys()              # ['id']
+"""
+
 
 class {{ intermediate_class }}(AbstractEntity, table=True):
     __tablename__ = '{{ source_entity }}_{{ target_entity }}'

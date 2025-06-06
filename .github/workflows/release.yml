@@ -38,6 +38,10 @@ jobs:
               # 2.0.0-rc1 → 2.0.0rc1
               VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-rc([0-9]+)/\1rc\2/')
               ;;
+            *-alpha|*-beta|*-dev|*-*)
+              # 2.0.0-alpha → 2.0.0 (supprime tout après le premier tiret)
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-.*/\1/')
+              ;;
             *)
               # Version normale
               VERSION="$RAW_VERSION"

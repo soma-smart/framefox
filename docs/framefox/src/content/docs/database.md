@@ -51,7 +51,7 @@ DATABASE_URL=sqlite:///app.db
 # DATABASE_URL=postgresql://user:pass@db-host:5432/production_db?sslmode=require
 ```
 
-:::warning[Security Best Practices]
+:::caution[Security Best Practices]
 Never commit database credentials to version control:
 - Use environment variables for sensitive data
 - Use different credentials for each environment
@@ -167,6 +167,72 @@ volumes:
 
 ## Entity Management
 
+### What is an entity ?
+
+An entity represents a **data model** in your application - a Python class that maps directly to a database table. In the MVC (Model-View-Controller) architectural pattern, entities serve as the **Model layer**, encapsulating the structure, validation rules, and relationships of your data without containing business logic.
+
+Think of an entity as a **blueprint** for your data. When you create a `Product` entity, you're defining what a product looks like in your database: it has a name, price, description, and relationships to other entities like categories or orders. The entity class describes these properties using Python type hints and SQLModel field definitions.
+
+#### Core Characteristics of Entities
+
+**Data Structure Definition**: Entities define the schema of your database tables using Python classes. Each property corresponds to a database column, with type hints providing both Python and database type information.
+
+**Validation and Constraints**: Entities include field-level validation rules such as required fields, length constraints, numeric ranges, and custom validation logic. This ensures data integrity at both the application and database levels.
+
+**Relationship Mapping**: Entities define how different data models relate to each other - whether a product belongs to a category, an order contains multiple items, or a user has a profile. These relationships are automatically translated into foreign keys and JOIN operations.
+
+**Framework Integration**: Framefox entities extend `AbstractEntity`, providing automatic generation of API models, form validation classes, and repository integration without additional configuration.
+
+#### Entity vs Business Logic Separation
+
+In Framefox's clean architecture approach, entities are **data-focused only**. They don't contain business operations like "calculate discount" or "send notification" - these belong in service classes. This separation makes your code more maintainable, testable, and follows the single responsibility principle from SOLID principles.
+
+```python
+# ✅ Good: Entity focuses on data structure
+class Product(AbstractEntity, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(min_length=1, max_length=255)
+    price: float = Field(gt=0)
+    is_active: bool = Field(default=True)
+    
+    # Relationships only - no business logic
+    category: "Category" = Relationship(back_populates="products")
+
+# ✅ Good: Business logic in service classes
+class ProductService:
+    def calculate_discounted_price(self, product: Product, discount: float) -> float:
+        return product.price * (1 - discount)
+```
+
+#### Automatic Model Generation
+
+One of Framefox's most powerful features is automatic model generation from entities. Each entity automatically provides:
+
+- **CreateModel**: For API endpoints that create new records (excludes ID)
+- **FindModel**: For lookup operations using primary keys
+- **PatchModel**: For partial updates with all fields optional
+
+This eliminates boilerplate code while ensuring type safety across your entire application stack.
+
+#### Entity Lifecycle in MVC
+
+In the MVC pattern, entities flow through your application layers:
+1. **Controller**: Receives HTTP requests and validates input against entity models
+2. **Service**: Applies business logic using entities retrieved from repositories
+3. **Repository**: Handles entity persistence, queries, and database operations
+4. **Entity**: Provides the data structure and validation rules throughout this flow
+
+This clear separation ensures that each layer has a single responsibility while maintaining type safety and data integrity.
+
+:::note[Entity Design Philosophy]
+Framefox entities follow the **data model** approach:
+- **Structure First**: Define your data schema clearly and explicitly
+- **Validation Built-in**: Use type hints and Field constraints for data integrity
+- **Relationship Aware**: Model real-world data connections naturally
+- **Framework Integrated**: Automatic API model generation and ORM integration
+- **Business Logic Free**: Keep entities focused on data, not operations
+:::
+
 ### Creating Entities
 
 Entity creation in Framefox can be done through the command-line interface or manually. Entities represent your database tables as Python classes, following the clean architecture principle where entities contain only data structure and validation logic.
@@ -224,7 +290,7 @@ Framefox entities follow these principles:
 - **Automatic Models**: Generate create/find models automatically for API endpoints
 :::
 
-:::warning[Data Security]
+:::caution[Data Security]
 Never store sensitive information in plain text:
 - Always hash passwords using secure algorithms (bcrypt, Argon2)
 - Use encryption for personal data
@@ -429,7 +495,7 @@ class ProductDetails(AbstractEntity, table=True):
     product: Product = Relationship(back_populates="details")
 ```
 
-:::info[Relationship Pattern Benefits]
+:::note[Relationship Pattern Benefits]
 SQLModel relationships provide:
 - **Automatic Loading**: Related data loaded efficiently
 - **Type Safety**: Full Python type hints for related objects
@@ -441,7 +507,7 @@ SQLModel relationships provide:
 
 
 
-:::warning[Many-to-Many Considerations]
+:::caution[Many-to-Many Considerations]
 When implementing many-to-many relationships:
 - **Junction tables should have meaningful names** (product_tags, not product_tag_mapping)
 - **Consider additional metadata** in junction tables (created_at, expires_at)
@@ -1037,7 +1103,7 @@ Follow these guidelines for database command usage:
 - **Document complex migrations** with clear comments
 :::
 
-:::warning[Production Considerations]
+:::caution[Production Considerations]
 In production environments:
 - **Schedule migrations** during maintenance windows
 - **Monitor migration progress** for large datasets
@@ -1221,7 +1287,7 @@ framefox database show --pending
 framefox database test-cycle
 ```
 
-:::warning[Migration Safety]
+:::caution[Migration Safety]
 Follow these migration best practices:
 - **Test migrations thoroughly** in development environments
 - **Backup production data** before applying migrations

@@ -23,7 +23,7 @@ Framefox follows the MVC (Model-View-Controller) pattern where controllers serve
 
 Framefox provides commands to create different types of controllers through an interactive command-line interface that guides you through the process step by step.
 
-:::warning[Prerequisites]
+:::caution[Prerequisites]
 Before creating controllers, ensure that:
 - Your Framefox project is properly initialized
 - You're running commands from the project root directory
@@ -49,10 +49,26 @@ This interactive command will guide you through the controller creation process:
 
 :::note[File Naming Convention]
 Framefox follows Python naming conventions:
-- Controller files: `{name}_controller.py`
+- Controller files: `{name}_controller.py` (snake_case)
 - Controller classes: `{Name}Controller` (PascalCase)
 - Template directories: `{name}/` (snake_case)
 :::
+
+Example with the creation of a home controller :  
+
+```bash
+framefox create controller
+
+# Output:
+What is the name of the controller ?(snake_case)
+
+# Requested input:
+Controller name: home
+
+# Output:
+Controller created successfully: src/controllers/home_controller.py
+View created successfully: templates/home/index.html
+```
 
 #### CRUD Controller Creation
 
@@ -86,6 +102,30 @@ Without these, the command will fail with an error message.
   - `index.html` - Entity listing with pagination
 - Proper view folder structure with consistent styling
 
+Example with the creation of a RESTful crud controller for product entity :  
+
+```bash
+framefox create crud
+
+# Output:
+What is the name of the entity you want to create a CRUD with ?(snake_case)
+
+# Requested input:
+Entity name: product
+
+# Output:
+What type of controller do you want to create?
+
+1.API CRUD controller
+2.Templated CRUD controller
+
+# Requested input:
+CRUD controller type (1): 1
+
+# Output:
+✓ CRUD Controller created successfully: src/controllers/product_controller.py
+```
+
 ## Generated Controller Examples
 
 The Framefox CLI generates well-structured, production-ready code that follows framework conventions and best practices. Let's examine what gets generated for different controller types.
@@ -94,8 +134,8 @@ The Framefox CLI generates well-structured, production-ready code that follows f
 
 When you run `framefox create controller` with the name "user", the CLI generates:
 
-**File:** `src/controllers/user_controller.py`
 ```python
+# src/controllers/user_controller.py
 from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
 
@@ -105,8 +145,8 @@ class UserController(AbstractController):
         return self.render("user/index.html")
 ```
 
-**File:** `templates/user/index.html`
 ```html
+# templates/user/index.html
 <!DOCTYPE html>
 <html>
 <head>
@@ -144,76 +184,119 @@ CRUD controllers automatically establish relationships with your data layer:
 
 #### API CRUD Controller Example
 
-For an entity called "post", the API CRUD controller (`src/controllers/post_controller.py`) includes:
+For an entity called "post", the API CRUD controller includes:
 
 ```python
-from framefox.core.routing.decorator.route import Route
+# src/controllers/post_controller.py
 from framefox.core.controller.abstract_controller import AbstractController
-from src.repository.post_repository import PostRepository
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
+from framefox.core.routing.decorator.route import Route
 from src.entity.post import Post
-from fastapi import Request
-import json
+from src.repository.post_repository import PostRepository
+
 
 class PostController(AbstractController):
-    def __init__(self):
-      
-        self.post_repository = PostRepository()
-    
-    @Route("/api/posts", "api.post.index", methods=["GET"])
+    def __init__(self, entityManager: EntityManagerInterface):
+        self.entity_manager = entityManager
+        self.repository = PostRepository()
+
+    @Route("/posts", "post.index", methods=["GET"])
     async def index(self):
-        """Retrieve all posts with pagination support."""
-        posts = await self.post_repository.find_all()
-        return self.json({
-            "posts": [post.to_dict() for post in posts],
-            "total": len(posts),
-            "status": "success"
-        })
-    
-    @Route("/api/posts", "api.post.create", methods=["POST"])
-    async def create(self, request: Request):
-        """Create a new post from JSON data."""
+        """GET /posts - Retrieve all post resources"""
         try:
-            data = await request.json()
-            post = Post(**data)
-            created_post = await self.post_repository.save(post)
-            return self.json({
-                "post": created_post.to_dict(),
-                "message": "Post created successfully",
-                "status": "success"
-            }, status=201)
+            items = self.repository.find_all()
+            return self.json({"posts": [item.dict() for item in items], "total": len(items), "status": "success"}, status=200)
         except Exception as e:
-            return self.json({
-                "error": str(e),
-                "status": "error"
-            }, status=400)
-    
-    @Route("/api/posts/{id}", "api.post.show", methods=["GET"])
+            return self.json({"error": "Failed to retrieve posts", "message": str(e), "status": "error"}, status=500)
+
+    @Route("/posts/{id}", "post.show", methods=["GET"])
     async def show(self, id: int):
-        """Retrieve a specific post by ID."""
-        post = await self.post_repository.find_by_id(id)
-        if not post:
-            return self.json({"error": "Post not found"}, status=404)
-        return self.json({"post": post.to_dict()})
-    
-    @Route("/api/posts/{id}", "api.post.update", methods=["PUT"])
-    async def update(self, id: int, request: Request):
-        """Update an existing post."""
-        data = await request.json()
-        updated_post = await self.post_repository.update(id, data)
-        if not updated_post:
-            return self.json({"error": "Post not found"}, status=404)
-        return self.json({
-            "post": updated_post.to_dict(),
-            "message": "Post updated successfully"
-        })
-    
-    @Route("/api/posts/{id}", "api.post.delete", methods=["DELETE"])
-    async def delete(self, id: int):
-        """Delete a post by ID."""
-        success = await self.post_repository.delete(id)
-        if not success:
-            return self.json({"error": "Post not found"}, status=404)
-        return self.json({"message": "Post deleted successfully"})
+        """GET /posts/{id} - Retrieve a specific post resource"""
+        try:
+            item = self.repository.find(id)
+            if not item:
+                return self.json({"error": "Post not found", "status": "not_found"}, status=404)
+
+            return self.json({"post": item.dict(), "status": "success"}, status=200)
+        except Exception as e:
+            return self.json({"error": "Failed to retrieve post", "message": str(e), "status": "error"}, status=500)
+
+    @Route("/posts", "post.create", methods=["POST"])
+    async def create(self, data: Post.generate_create_model()):
+        """POST /posts - Create a new post resource"""
+        try:
+            post = self.repository.model(**data.dict())
+            self.entity_manager.persist(post)
+            self.entity_manager.commit()
+
+            self.entity_manager.refresh(post)
+
+            return self.json({"post": post.dict(), "message": "Post created successfully", "status": "created"}, status=201)
+        except Exception as e:
+            return self.json({"error": "Failed to create post", "message": str(e), "status": "error"}, status=400)
+
+    @Route("/posts/{id}", "data.update", methods=["PUT"])
+    async def update(self, id: int, data: Post.generate_create_model()):
+        """PUT /posts/{id} - Replace the entire post resource"""
+        try:
+            post = self.repository.find(id)
+            if not post:
+                return self.json({"error": "Post not found", "status": "not_found"}, status=404)
+
+            # Complete replacement of the resource
+            update_data = data.dict()
+            for key, value in update_data.items():
+                if hasattr(post, key):
+                    setattr(post, key, value)
+
+            self.entity_manager.persist(post)
+            self.entity_manager.commit()
+
+            self.entity_manager.refresh(post)
+
+            return self.json({"post": post.dict(), "message": "Post updated successfully", "status": "updated"}, status=200)
+        except Exception as e:
+            return self.json({"error": "Failed to update post", "message": str(e), "status": "error"}, status=400)
+
+    @Route("/posts/{id}", "post.patch", methods=["PATCH"])
+    async def patch(self, id: int, data: Post.generate_patch_model()):
+        """PATCH /posts/{id} - Partially update a post resource"""
+        try:
+            post = self.repository.find(id)
+            if not post:
+                return self.json({"error": "Post not found", "status": "not_found"}, status=404)
+
+            update_data = data.dict(exclude_unset=True)
+
+            # Partial update - only modify provided fields
+            for key, value in update_data.items():
+                if hasattr(post, key):
+                    setattr(post, key, value)
+
+            self.entity_manager.persist(post)
+            self.entity_manager.commit()
+
+            self.entity_manager.refresh(post)
+
+            return self.json({"post": post.dict(), "message": "Post partially updated successfully", "status": "updated"}, status=200)
+        except Exception as e:
+            return self.json({"error": "Failed to patch post", "message": str(e), "status": "error"}, status=400)
+
+    @Route("/posts/{id}", "post.destroy", methods=["DELETE"])
+    async def destroy(self, id: int):
+        """DELETE /posts/{id} - Delete a post resource"""
+        try:
+            post = self.repository.find(id)
+            if not post:
+                return self.json({"error": "Post not found", "status": "not_found"}, status=404)
+
+            self.entity_manager.delete(post)
+            self.entity_manager.commit()
+
+            return self.json({"message": "Post deleted successfully", "status": "deleted"}, status=204)
+        except Exception as e:
+            return self.json({"error": "Failed to delete post", "message": str(e), "status": "error"}, status=500)
+
 ```
 
 #### Templated CRUD Controller Example
@@ -221,116 +304,82 @@ class PostController(AbstractController):
 The templated CRUD controller generates HTML-based interfaces:
 
 ```python
-from framefox.core.routing.decorator.route import Route
-from framefox.core.controller.abstract_controller import AbstractController
-from src.repository.post_repository import PostRepository
-from src.form.post_type import PostType
-from src.entity.post import Post
+# src/controllers/post_controller.py
 from fastapi import Request
 
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
+from framefox.core.routing.decorator.route import Route
+from src.entity.post import Post
+from src.form.post_type import PostType
+from src.repository.post_repository import PostRepository
+
+
 class PostController(AbstractController):
-    def __init__(self):
-        self.post_repository = PostRepository()
-    
-    @Route("/posts", "post.index", methods=["GET"])
-    async def index(self):
-        """Display all posts in a paginated table."""
-        posts = await self.post_repository.find_all()
-        return self.render("post/index.html", {
-            "posts": posts,
-            "title": "All Posts"
-        })
-    
-    @Route("/posts/create", "post.create", methods=["GET"])
-    async def create(self):
-        """Show the post creation form."""
-        form = self.create_form(PostType, Post())
-        return self.render("post/create.html", {
-            "form": form,
-            "title": "Create New Post"
-        })
-    
-    @Route("/posts", "post.store", methods=["POST"])
-    async def store(self, request: Request):
-        """Handle post creation form submission."""
-        form_data = await request.form()
-        form = self.create_form(PostType, Post())
-        
-        if form.validate(form_data):
-            post = form.get_entity()
-            await self.post_repository.save(post)
+    def __init__(self, entityManager: EntityManagerInterface):
+        self.entity_manager = entityManager
+        self.repository = PostRepository()
+
+    @Route("/posts", "post.read_all", methods=["GET"])
+    async def read_all(self):
+        items = self.repository.find_all()
+        return self.render("post/index.html", {"items": items})
+
+    @Route("/post/create", "post.create", methods=["GET", "POST"])
+    async def create(self, request: Request):
+
+        entity_instance = Post()
+        form = self.create_form(PostType, entity_instance)
+        await form.handle_request(request)
+        if form.is_submitted() and form.is_valid():
+            self.entity_manager.persist(entity_instance)
+            self.entity_manager.commit()
             self.flash("success", "Post created successfully!")
-            return self.redirect(self.generate_url("post.index"))
-        
-        return self.render("post/create.html", {
-            "form": form,
-            "title": "Create New Post"
-        })
-    
-    @Route("/posts/{id}", "post.show", methods=["GET"])
-    async def show(self, id: int):
-        """Display a single post."""
-        post = await self.post_repository.find_by_id(id)
-        if not post:
-            self.flash("error", "Post not found")
-            return self.redirect(self.generate_url("post.index"))
-        
-        return self.render("post/show.html", {
-            "post": post,
-            "title": f"Post: {post.title}"
-        })
-    
-    @Route("/posts/{id}/edit", "post.edit", methods=["GET"])
-    async def edit(self, id: int):
-        """Show the post editing form."""
-        post = await self.post_repository.find_by_id(id)
-        if not post:
-            self.flash("error", "Post not found")
-            return self.redirect(self.generate_url("post.index"))
-        
-        form = self.create_form(PostType, post)
-        return self.render("post/edit.html", {
-            "form": form,
-            "post": post,
-            "title": f"Edit: {post.title}"
-        })
-    
-    @Route("/posts/{id}", "post.update", methods=["POST"])
-    async def update(self, id: int, request: Request):
-        """Handle post update form submission."""
-        post = await self.post_repository.find_by_id(id)
-        if not post:
-            self.flash("error", "Post not found")
-            return self.redirect(self.generate_url("post.index"))
-        
-        form_data = await request.form()
-        form = self.create_form(PostType, post)
-        
-        if form.validate(form_data):
-            updated_post = form.get_entity()
-            await self.post_repository.update(id, updated_post)
+            return self.redirect(self.generate_url("post.read_all"))
+
+        return self.render("post/create.html", {"form": form.create_view()})
+
+    @Route("/post/{id}", "post.read", methods=["GET"])
+    async def read(self, id: int):
+        item = self.repository.find(id)
+        if not item:
+            self.flash("error", "Post not found!")
+            return self.redirect(self.generate_url("post.read_all"))
+        return self.render("post/read.html", {"item": item})
+
+    @Route("/post/{id}/update", "post.update", methods=["GET", "POST"])
+    async def update(self, request: Request, id: int):
+        entity_instance = self.repository.find(id)
+        form = self.create_form(PostType, entity_instance)
+
+        await form.handle_request(request)
+        if form.is_submitted() and form.is_valid():
+            self.entity_manager.persist(entity_instance)
+            self.entity_manager.commit()
             self.flash("success", "Post updated successfully!")
-            return self.redirect(self.generate_url("post.show", id=id))
-        
-        return self.render("post/edit.html", {
-            "form": form,
-            "post": post,
-            "title": f"Edit: {post.title}"
-        })
-    
-    @Route("/posts/{id}/delete", "post.destroy", methods=["POST"])
-    async def destroy(self, id: int):
-        """Delete a post."""
-        success = await self.post_repository.delete(id)
-        if success:
+            return self.redirect(self.generate_url("post.read_all"))
+
+        return self.render(
+            "post/update.html", {"form": form.create_view(), "item": entity_instance}
+        )
+
+    @Route("/post/delete/{id}", "post.delete", methods=["POST"])
+    async def delete(self, id: int):
+        try:
+            entity_instance = self.repository.find(id)
+            if not entity_instance:
+                self.flash("error", "Post not found!")
+                return self.redirect(self.generate_url("post.read_all"))
+            self.entity_manager.delete(entity_instance)
+            self.entity_manager.commit()
             self.flash("success", "Post deleted successfully!")
-        else:
-            self.flash("error", "Failed to delete post")
-        
-        return self.redirect(self.generate_url("post.index"))
+            return self.redirect(self.generate_url("post.read_all"))
+        except Exception as e:
+            self.flash("error", str(e))
+            return self.redirect(self.generate_url("post.read_all"))
 ```
 
-:::warning[Form Security]
+:::caution[Form Security]
 Always validate form data and sanitize user input:
 - Use form types for validation
 - Implement CSRF protection
@@ -341,11 +390,10 @@ Always validate form data and sanitize user input:
 **Generated Templates Structure:**
 ```
 templates/post/
-├── index.html      # Post listing with pagination
 ├── create.html     # Post creation form
-├── show.html       # Single post display
-├── edit.html       # Post editing form
-└── _form.html      # Reusable form partial
+├── index.html      # Post listing with pagination
+├── read.html       # Single post display
+└── update.html     # Post editing form
 ```
 
 ### Manual Controller Creation
@@ -360,9 +408,8 @@ Choose manual creation when:
 - Need fine-grained control over routing and methods
 :::
 
-**Example:** `src/controllers/user_controller.py`
-
 ```python
+# src/controllers/user_controller.py
 from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
 from fastapi import Request, HTTPException
@@ -440,7 +487,7 @@ class UserController(AbstractController):
             return self.json({"error": str(e)}, status=500)
 ```
 
-:::warning[Error Handling]
+:::caution[Error Handling]
 Always implement proper error handling in manual controllers:
 - Use try-catch blocks for database operations
 - Validate input parameters
@@ -455,6 +502,7 @@ Always implement proper error handling in manual controllers:
 All Framefox controllers inherit from `AbstractController`, which provides a comprehensive set of methods and follows dependency injection patterns for clean, testable code.
 
 ```python
+# src/controllers/my_controller.py
 from framefox.core.controller.abstract_controller import AbstractController
 
 class MyController(AbstractController):
@@ -484,6 +532,7 @@ Framefox uses a powerful dependency injection container that:
 The `AbstractController` provides seamless integration with Framefox's service container:
 
 ```python
+# src/controllers/advance_controller.py
 class AdvancedController(AbstractController):
     def __init__(self):
         
@@ -579,7 +628,7 @@ templates/
 ```
 :::
 
-:::warning[Template Security]
+:::caution[Template Security]
 Always escape user-generated content to prevent XSS attacks:
 ```html
 <!-- Safe: automatically escaped -->
