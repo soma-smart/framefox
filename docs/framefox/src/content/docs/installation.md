@@ -57,8 +57,8 @@ Once Framefox is installed, create your first project:
 
 ```bash
 # Create the project folder
-mkdir my-first-project
-cd my-first-project
+mkdir my-project
+cd my-project
 
 # Initialize the Framefox project
 framefox init
@@ -67,7 +67,7 @@ framefox init
 This command will automatically create the basic structure:
 
 ```
-user-project/
+my-project/
 ├── src/
 │   ├── controllers/       # User application controllers
 │   ├── entity/            # Database entities (models)
@@ -249,8 +249,6 @@ security:
 
     - { path: ^/users, roles: ROLE_USER }
     - { path: ^/products, roles: ROLE_ADMIN }
-    # - { path: ^/test2, roles: ROLE_USER }
-    # - { path: ^/test3, roles: ROLE_ADMIN }
 ```
 
 **Parameter descriptions:**
@@ -339,10 +337,10 @@ Start the development server:
 framefox server start
 
 # Output example:
-# Starting the server on port 8000
-# INFO:     Will watch for changes in these directories: ['/my_project']
-# INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-# INFO:     Started reloader process [16768] using StatReload
+Starting the server on port 8000
+INFO:     Will watch for changes in these directories: ['/my_project']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [16768] using StatReload
 ```
 
 Visit `http://localhost:8000` in your browser. You should see the default Framefox homepage!
