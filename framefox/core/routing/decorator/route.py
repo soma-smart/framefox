@@ -1,4 +1,5 @@
 import inspect
+import logging
 from functools import wraps
 from typing import get_type_hints
 
@@ -12,10 +13,6 @@ Github: https://github.com/RayenBou
 
 
 class Route:
-    """
-    A decorator class to define route information for a web framework with dependency injection support.
-    """
-
     def __init__(self, path: str, name: str, methods: list, response_model=None):
         self.path = path
         self.name = name
@@ -28,23 +25,16 @@ class Route:
         
         @wraps(func)
         async def wrapper(*args, **kwargs):
-         
             controller_instance = args[0] if args else None
             
             if controller_instance and hasattr(controller_instance, '_container'):
-             
                 for param_name, param in original_sig.parameters.items():
-                    if param_name == 'self':
+                    if param_name == 'self' or param_name in kwargs:
                         continue
                     
-                    if param_name in kwargs:
-                        continue
-                    
-                   
                     param_type = type_hints.get(param_name)
                     
                     if param_type and param_type != type(None):
-                    
                         if self._is_fastapi_native_type(param_type):
                             continue
                         
@@ -52,65 +42,49 @@ class Route:
                             service = controller_instance._container.get(param_type)
                             kwargs[param_name] = service
                         except Exception as e:
-                    
                             if param.default != inspect.Parameter.empty:
                                 kwargs[param_name] = param.default
                             else:
-                            
-                                import logging
-                                logger = logging.getLogger("CONTAINER")
-                                logger.error(f"Could not inject {param_type.__name__} for {func.__name__}.{param_name}: {e}")
+                                logger = logging.getLogger("ROUTE")
+                                logger.error(f"Dependency injection failed for {param_type.__name__} in {func.__name__}.{param_name}: {e}")
                                 raise RuntimeError(f"Dependency injection failed for {param_type.__name__}")
             
             return await func(*args, **kwargs)
 
         self._create_fastapi_signature(wrapper, original_sig, type_hints)
         
-
         wrapper.route_info = {
             "path": self.path,
             "name": self.name,
             "methods": self.methods,
             "response_model": self.response_model,
+            "operation_ids": self._generate_operation_ids(func),
             "original_function": func,
         }
         
         return wrapper
 
     def _create_fastapi_signature(self, wrapper_func, original_sig, type_hints):
-        """Create a FastAPI-compatible signature by removing injected dependencies."""
         new_params = []
         
         for param_name, param in original_sig.parameters.items():
             if param_name == 'self':
                 new_params.append(param)
                 continue
+                
             param_type = type_hints.get(param_name)
-  
-            if param_type and self._is_fastapi_native_type(param_type):
-                new_params.append(param)
-                continue
-
-            if not param_type:
-                new_params.append(param)
-                continue
-
-            if self._is_path_parameter(param_name):
+            
+            if (param_type and self._is_fastapi_native_type(param_type)) or not param_type or self._is_path_parameter(param_name):
                 new_params.append(param)
                 continue
                 
         wrapper_func.__signature__ = original_sig.replace(parameters=new_params)
 
     def _is_path_parameter(self, param_name: str) -> bool:
-        """Check if parameter is a path parameter (exists in route path)."""
         return f"{{{param_name}}}" in self.path
 
     def _is_fastapi_native_type(self, param_type) -> bool:
-        """Check if the parameter type is a FastAPI native type that shouldn't be injected."""
-        fastapi_native_modules = {
-            'fastapi', 'starlette'
-        }
-        
+        fastapi_native_modules = {'fastapi', 'starlette'}
         fastapi_types = {
             'Request', 'Response', 'BackgroundTasks', 'WebSocket',
             'HTTPException', 'Depends', 'Security', 'Cookie', 'Header',
@@ -127,14 +101,26 @@ class Route:
             if type_module.startswith(module):
                 return True
         
-     
         if type_module.startswith('pydantic'):
-       
             from pydantic import BaseModel
             if hasattr(param_type, '__bases__') and BaseModel in getattr(param_type, '__mro__', []):
-        
                 return False
-        
             return True
         
         return False
+
+    def _generate_operation_ids(self, func) -> dict:
+        operation_ids = {}
+        path_clean = self.path.replace("/", "_").replace("{", "").replace("}", "").strip("_")
+        func_name = func.__name__
+        
+        for method in self.methods:
+            if path_clean:
+                operation_id = f"{path_clean}_{func_name}_{method.lower()}"
+            else:
+                operation_id = f"{func_name}_{method.lower()}"
+            
+            operation_id = operation_id.replace("-", "_").replace(".", "_")
+            operation_ids[method] = operation_id
+        
+        return operation_ids
