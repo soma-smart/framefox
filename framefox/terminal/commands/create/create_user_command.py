@@ -36,7 +36,8 @@ class CreateUserCommand(AbstractCommand):
         if name is None:
             name = InputManager().wait_input("Entity name", default="user")
             if name == "":
-                return
+                raise Exception("Entity name cannot be empty.")
+
         if not ClassNameManager.is_snake_case(name):
             self.printer.print_msg(
                 "Invalid name. Must be in snake_case.",
@@ -44,7 +45,8 @@ class CreateUserCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
-            return
+            raise Exception("Invalid name. Must be in snake_case.")
+
         if ModelChecker().check_entity_and_repository(name):
             self.printer.print_msg(
                 "Entity already exists. You cannot replace it by a provider.",
@@ -52,7 +54,8 @@ class CreateUserCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
-            return
+            raise Exception("Entity already exists.")
+
         entity_path = self.create_entity_command.create_entity_and_repository(name)
 
         self.entity_property_manager.insert_property(
