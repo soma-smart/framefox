@@ -37,6 +37,9 @@ If applicable, add screenshots to help explain your problem.
 - **Framefox version:** [e.g. 1.0.0]
 - **Browser (if applicable):** [e.g. Chrome 120, Safari 17]
 
+## Framefox version
+Version==x.x.x
+
 ## Error Logs
 ```
 Paste here the error logs or Python tracebacks
