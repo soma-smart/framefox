@@ -1,100 +1,58 @@
 import subprocess
-import shutil
 import pytest
 import os
 import yaml
 
-
-TMP_PATH = "test_dir"
-
-
-@pytest.fixture(autouse=True)
-def init_project():
-    if os.path.exists(TMP_PATH):
-        shutil.rmtree(TMP_PATH)
-
-    os.mkdir(TMP_PATH)
-    result = subprocess.run(
-        ["framefox", "init"],
-        cwd=TMP_PATH,
-        capture_output=True,
-        text=True
-    )
-
-    yield
-    if os.path.exists(TMP_PATH):
-        shutil.rmtree(TMP_PATH)
+from framefox.tests.e2e.fixtures.commands import TMP_PATH, handle_tmp_path, init_project, exec_command
 
 
 @pytest.fixture
 def create_user(init_project):
-    result = subprocess.run(
+    result = exec_command(
         ["framefox", "create", "user"],
-        cwd=TMP_PATH,
-        input="user\n",
-        capture_output=True,
-        text=True
+        input_value="user\n"
     )
 
     assert result.returncode == 0, f"User creation failed with error: {result.stderr.strip()}"
 
 
-def test_create_auth_command_should_exist():
-    result = subprocess.run(
-        ["framefox", "create", "auth", "--help"],
-        cwd=TMP_PATH,
-        capture_output=True,
-        text=True
-    )
+def test_create_auth_command_should_exist(init_project):
+    result = exec_command(["framefox", "create", "auth", "--help"])
 
     assert result.returncode == 0, f"Command failed with error: {result.stderr.strip()}"
 
 
-def test_create_auth_command_without_input_should_fail():
-    result = subprocess.run(
-        ["framefox", "create", "auth"],
-        cwd=TMP_PATH,
-        capture_output=True,
-        text=True
-    )
+def test_create_auth_command_without_input_should_fail(init_project):
+    result = exec_command(["framefox", "create", "auth"])
 
     assert result.returncode != 0, "Command should fail without input"
 
 
 def test_create_auth_command_without_user_before_should_fail(init_project):
-    result = subprocess.run(
+    result = exec_command(
         ["framefox", "create", "auth"],
-        cwd=TMP_PATH,
-        input="1\n\nuser\n",
-        capture_output=True,
-        text=True,
+        input_value="1\n\nuser\n"
     )
 
     assert result.returncode != 0, f"Command should fail without user before input"
 
 
 @pytest.mark.parametrize("user_input", ["\n\n\n", "1\n\n\n", "1\n\nuser\n", "1\nauth\n\n"])
-def test_create_auth_command_with_user_before_should_succeed(user_input, init_project, create_user):
-    result = subprocess.run(
+def test_create_auth_command_with_user_before_should_succeed(user_input, create_user):
+    result = exec_command(
         ["framefox", "create", "auth"],
-        cwd=TMP_PATH,
-        input=user_input,
-        capture_output=True,
-        text=True,
+        input_value=user_input
     )
 
     assert result.returncode == 0, f"Command should succeed with user before input"
 
 
-def test_create_auth_command_should_create_authenticator_file(init_project, create_user):
+def test_create_auth_command_should_create_authenticator_file(create_user):
     files = ["src/security/default_authenticator.py", "src/controllers/login_controller.py", "templates/security/login.html", "config/security.yaml"]
 
-    subprocess.run(
+    exec_command(
         ["framefox", "create", "auth"],
-        cwd=TMP_PATH,
-        input="\n\n\n",
-        capture_output=True,
-        text=True,
+        input_value="\n\n\n"
     )
 
     for file in files:
@@ -114,21 +72,15 @@ def test_create_auth_command_should_create_authenticator_file(init_project, crea
     assert main.get("provider") == "app_user_provider", "Incorrect provider in firewalls.main in security.yaml"
 
 
-def test_create_auth_command_when_already_done_should_fail(init_project, create_user):
-    subprocess.run(
+def test_create_auth_command_when_already_done_should_fail(create_user):
+    exec_command(
         ["framefox", "create", "auth"],
-        cwd=TMP_PATH,
-        input="\n\n\n",
-        capture_output=True,
-        text=True,
+        input_value="\n\n\n"
     )
 
-    result = subprocess.run(
+    result = exec_command(
         ["framefox", "create", "auth"],
-        cwd=TMP_PATH,
-        input="\n\n\n",
-        capture_output=True,
-        text=True,
+        input_value="\n\n\n"
     )
 
     assert result.returncode != 0, "Command should fail if authenticator already exists"
