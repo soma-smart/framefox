@@ -71,6 +71,16 @@ class ErrorHandler:
 
         return False
 
+    def handle_suggestion(self, error_message: str, suggestion: str) -> None:
+        """Handle a simple suggestion display"""
+        self._print_error_header(error_message)
+        self._display_single_suggestion(suggestion)
+
+    def handle_group_suggestion(self, error_message: str, group: str, subcommands: List[str]) -> None:
+        """Handle suggestion of a group with its subcommands"""
+        self._print_error_header(error_message)
+        self.display_group_with_available_subcommands(group, subcommands)
+
     def _print_error_header(self, error_message: str):
         """Print styled error header"""
         self.console.print("")
