@@ -28,14 +28,10 @@ class ErrorHandler:
         suggestions = suggest_similar_commands(command, available_commands, threshold=3)
 
         if suggestions:
-            # Afficher le header comme pour les autres commandes
-            if self.display_manager:
-                self.display_manager.print_header()
-
-            # Message d'erreur principal
+            # Main error message
             self._print_error_header(f"Unknown command: '{command}'")
 
-            # Créer un tableau de suggestions
+            # Create a table of suggestions
             self._display_suggestions_table(suggestions, is_subcommand=False)
 
             return True
@@ -49,11 +45,11 @@ class ErrorHandler:
         suggestions = suggest_similar_commands(subcommand, available_subcommands, threshold=3)
 
         if suggestions:
-            # Afficher le header comme pour les autres commandes
+            # Display the header as for other commands
             if self.display_manager:
                 self.display_manager.print_header()
 
-            # Message d'erreur principal
+            # Main error message
             self._print_error_header(f"Unknown command: '{group} {subcommand}'")
 
             # Créer un tableau de suggestions avec le groupe
@@ -72,7 +68,7 @@ class ErrorHandler:
     def _display_suggestions_table(self, suggestions: List[str], is_subcommand: bool = False, group: str = None):
         """Display suggestions in a styled table"""
         if len(suggestions) == 1:
-            # Single suggestion - format spécial
+            # Single suggestion - special format
             self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]💡 DID YOU MEAN?[/{FramefoxTheme.HEADER_STYLE}]")
             self.console.print("")
 
@@ -110,7 +106,7 @@ class ErrorHandler:
 
         self._print_error_header(f"Invalid command: {' '.join(args)}")
 
-        # Table avec les commandes de base
+        # Table with basic commands
         self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]🚀 GETTING STARTED[/{FramefoxTheme.HEADER_STYLE}]")
         self.console.print("")
 
