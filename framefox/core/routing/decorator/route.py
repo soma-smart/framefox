@@ -35,7 +35,11 @@ class Route:
                     param_type = type_hints.get(param_name)
                     
                     if param_type and param_type != type(None):
-                        if self._is_fastapi_native_type(param_type):
+
+                        if (self._is_fastapi_native_type(param_type) or 
+                            self._is_pydantic_model(param_type) or
+                            self._is_primitive_type(param_type) or
+                            self._is_path_parameter(param_name)):
                             continue
                         
                         try:
@@ -74,7 +78,24 @@ class Route:
                 
             param_type = type_hints.get(param_name)
             
-            if (param_type and self._is_fastapi_native_type(param_type)) or not param_type or self._is_path_parameter(param_name):
+            if self._is_path_parameter(param_name):
+                new_params.append(param)
+                continue
+            
+
+            if param_type and self._is_fastapi_native_type(param_type):
+                new_params.append(param)
+                continue
+            
+            if param_type and self._is_pydantic_model(param_type):
+                new_params.append(param)
+                continue
+
+            if param_type and self._is_primitive_type(param_type):
+                new_params.append(param)
+                continue
+
+            if not param_type:
                 new_params.append(param)
                 continue
                 
@@ -83,7 +104,50 @@ class Route:
     def _is_path_parameter(self, param_name: str) -> bool:
         return f"{{{param_name}}}" in self.path
 
+    def _is_pydantic_model(self, param_type) -> bool:
+        """Check if the parameter type is a Pydantic model (static or dynamic)."""
+        try:
+            from pydantic import BaseModel
+
+            if (inspect.isclass(param_type) and 
+                hasattr(param_type, '__bases__') and 
+                BaseModel in getattr(param_type, '__mro__', [])):
+                return True
+
+            if hasattr(param_type, '__pydantic_model__'):
+                return True
+
+            type_module = getattr(param_type, '__module__', '')
+            if 'pydantic' in type_module and hasattr(param_type, '__fields__'):
+                return True
+                
+            return False
+        except Exception:
+            return False
+
+    def _is_primitive_type(self, param_type) -> bool:
+        """Check if the parameter type is a primitive type."""
+        primitive_types = {int, str, float, bool, bytes}
+        
+        # Basic primitive types
+        if param_type in primitive_types:
+            return True
+        
+        # Optional types (Union[type, None])
+        if hasattr(param_type, '__origin__'):
+            if param_type.__origin__ is type(None):
+                return True
+            # Union types (Optional[int] = Union[int, None])
+            if hasattr(param_type, '__args__'):
+                args = getattr(param_type, '__args__', ())
+                if len(args) == 2 and type(None) in args:
+                    other_type = args[0] if args[1] is type(None) else args[1]
+                    return other_type in primitive_types
+        
+        return False
+
     def _is_fastapi_native_type(self, param_type) -> bool:
+        """Check if the parameter type is a FastAPI native type."""
         fastapi_native_modules = {'fastapi', 'starlette'}
         fastapi_types = {
             'Request', 'Response', 'BackgroundTasks', 'WebSocket',
@@ -100,12 +164,6 @@ class Route:
         for module in fastapi_native_modules:
             if type_module.startswith(module):
                 return True
-        
-        if type_module.startswith('pydantic'):
-            from pydantic import BaseModel
-            if hasattr(param_type, '__bases__') and BaseModel in getattr(param_type, '__mro__', []):
-                return False
-            return True
         
         return False
 
