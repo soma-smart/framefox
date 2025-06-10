@@ -51,7 +51,7 @@ class Router:
 
     def register_controllers(self):
         self._register_handlers()
-        controllers_path = os.path.join(os.getcwd(), "src", "controllers")
+        controllers_path = os.path.join(os.getcwd(), "src", "controller")
 
         process_controllers = self._registered_controllers.get(self.process_id, set())
 
@@ -104,7 +104,7 @@ class Router:
         # ✅ GÉNÉRATION : Tag automatique basé sur le nom du contrôleur
         controller_name = controller_instance.__class__.__name__
         controller_tag = controller_name.replace("Controller", "").title()
-        
+
         for name, method in inspect.getmembers(controller_instance, predicate=inspect.ismethod):
             if hasattr(method, "route_info"):
                 route = method.route_info
@@ -112,7 +112,7 @@ class Router:
 
                 operation_ids = route.get("operation_ids", {})
                 route_tags = route.get("tags", [])
-                
+
                 # ✅ AJOUT : Tag automatique si pas de tags personnalisés
                 if not route_tags:
                     route_tags = [controller_tag]
