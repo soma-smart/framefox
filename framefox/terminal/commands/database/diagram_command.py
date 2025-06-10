@@ -1,10 +1,16 @@
 import os
-from typing import Any, Dict, List
+import time
+import webbrowser
+from datetime import datetime
+from typing import Dict, List
+
+from sqlalchemy import create_engine, inspect
 
 from framefox.core.orm.migration.alembic_manager import AlembicManager
 from framefox.terminal.commands.database.abstract_database_command import (
     AbstractDatabaseCommand,
 )
+from framefox.terminal.common.file_creator import FileCreator
 
 """
 Framefox Framework developed by SOMA
@@ -18,49 +24,15 @@ Github: https://github.com/Vasulvius
 class DiagramCommand(AbstractDatabaseCommand):
     def __init__(self):
         super().__init__("diagram")
-        self.output_path = "database"
+        self.output_path = "temp"
         self.alembic_manager = AlembicManager()
 
-    # def execute(self):
-    #     """
-    #     Generate a Mermaid diagram of the database schema by analyzing the DB directly
-    #     """
-    #     self.printer.print_msg(
-    #         "Generating Mermaid diagram from database...",
-    #         theme="bold_normal",
-    #         linebefore=True,
-    #     )
-
-    #     try:
-    #         # Analyze database structure
-    #         tables_info = self._analyze_database_schema()
-
-    #         if not tables_info:
-    #             self.printer.print_msg(
-    #                 "No tables found in the database",
-    #                 theme="error",
-    #                 linebefore=True,
-    #                 newline=True,
-    #             )
-    #             return
-
-    #         # Generate Mermaid code
-    #         mermaid_code = self._generate_mermaid_diagram(tables_info)
-
-    #         # Save to file
-    #         self._save_diagram(mermaid_code)
-
-    #     except Exception as e:
-    #         self.printer.print_msg(
-    #             f"Error generating diagram: {str(e)}",
-    #             theme="error",
-    #             linebefore=True,
-    #             newline=True,
-    #         )
-
-    def execute(self):
+    def execute(self, no_browser: bool = False):
         """
         Generate a Mermaid diagram of the database schema by analyzing the DB directly
+
+        Args:
+            no_browser: If True, generate only text file without opening browser
         """
         self.printer.print_msg(
             "Generating Mermaid diagram from database...",
@@ -84,12 +56,12 @@ class DiagramCommand(AbstractDatabaseCommand):
             # Generate Mermaid code
             mermaid_code = self._generate_mermaid_diagram(tables_info)
 
-            # Save to file
-            self._save_diagram(mermaid_code)
-
-            # Try terminal rendering first, fallback to web viewer
-            # self._render_diagram_in_terminal(mermaid_code)
-            self._open_web_viewer(mermaid_code)
+            if no_browser:
+                # Generate text file only
+                self._save_mermaid_text_file(mermaid_code)
+            else:
+                # Generate HTML and open in browser
+                self._generate_and_open_html(mermaid_code)
 
         except Exception as e:
             self.printer.print_msg(
@@ -103,7 +75,6 @@ class DiagramCommand(AbstractDatabaseCommand):
         """
         Analyze database structure directly via AlembicManager
         """
-        from sqlalchemy import create_engine, inspect
 
         # Use AlembicManager to get database URL
         database_url = self.alembic_manager.get_database_url_string()
@@ -271,9 +242,6 @@ class DiagramCommand(AbstractDatabaseCommand):
         Determine relationship type based on foreign key constraints
         """
         # By default, FK indicates many-to-one relationship
-        # (multiple records from this table can reference one record in target table)
-
-        # Check if FK column is unique (one-to-one relationship)
         table_info = tables_info[table_name]
         fk_column = fk["constrained_columns"][0]
 
@@ -287,10 +255,7 @@ class DiagramCommand(AbstractDatabaseCommand):
         """
         Format relationship for Mermaid (simple format with action name)
         """
-        # Generate a simple action name based on the foreign key column
         fk_column = fk["constrained_columns"][0]
-
-        # Try to generate a meaningful action name
         action = self._generate_action_name(entity_name, referred_entity, fk_column)
 
         if relationship_type == "one-to-one":
@@ -304,7 +269,6 @@ class DiagramCommand(AbstractDatabaseCommand):
         """
         Generate a meaningful action name for relationships
         """
-        # Remove common suffixes from FK column name
         clean_column = fk_column.replace("_id", "").replace("id", "")
 
         # Common relationship patterns
@@ -323,368 +287,83 @@ class DiagramCommand(AbstractDatabaseCommand):
         else:
             return "references"
 
-    def _save_diagram(self, mermaid_code: str):
+    def _save_mermaid_text_file(self, mermaid_code: str):
         """
-        Save Mermaid diagram to file
+        Save only the Mermaid code to a text file for copy-paste
         """
-        os.makedirs(self.output_path, exist_ok=True)
-        output_file = os.path.join(self.output_path, "database_diagram.md")
+        # os.makedirs(self.output_path, exist_ok=True)
+        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # output_file = os.path.join(self.output_path, f"database_diagram_{timestamp}.txt")
+        output_file = "database_diagram.txt"
 
         try:
             with open(output_file, "w", encoding="utf-8") as file:
-                file.write("# Database Schema Diagram\n\n")
-                file.write("This diagram was automatically generated from the database structure.\n\n")
-                file.write("```mermaid\n")
                 file.write(mermaid_code)
-                file.write("\n```\n")
 
             self.printer.print_msg(
-                f"✓ Mermaid diagram successfully generated: {output_file}",
+                f"✓ Mermaid code generated: {output_file}",
                 theme="success",
                 linebefore=True,
+            )
+            self.printer.print_msg(
+                "  Copy the content and paste it in your Mermaid editor",
+                theme="normal",
                 newline=True,
             )
 
         except Exception as e:
             self.printer.print_msg(
-                f"Error saving diagram: {str(e)}",
+                f"Error saving text file: {str(e)}",
                 theme="error",
                 linebefore=True,
                 newline=True,
             )
 
-    def _render_diagram_in_terminal(self, mermaid_code: str):
+    def _generate_and_open_html(self, mermaid_code: str):
         """
-        Render Mermaid diagram directly in terminal using mermaid-cli + image viewer
+        Generate HTML file using template and open in browser
         """
-        import os
-        import subprocess
-        import tempfile
-
         try:
-            # Check if mermaid-cli is installed
-            result = subprocess.run(["mmdc", "--version"], capture_output=True, text=True)
-            if result.returncode != 0:
-                raise FileNotFoundError("mermaid-cli not found")
+            # Prepare template data
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            formatted_timestamp = datetime.now().strftime("%Y-%m-%d at %H:%M:%S")
 
-            # Create temporary files
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".mmd", delete=False) as f:
-                f.write(mermaid_code)
-                mmd_file = f.name
+            template_data = {
+                "mermaid_code": mermaid_code,
+                "timestamp": timestamp,
+                "formatted_timestamp": formatted_timestamp,
+            }
 
-            png_file = mmd_file.replace(".mmd", ".png")
-
-            # Generate PNG image
-            subprocess.run(
-                [
-                    "mmdc",
-                    "-i",
-                    mmd_file,
-                    "-o",
-                    png_file,
-                    "-w",
-                    "1200",  # Width
-                    "-H",
-                    "800",  # Height
-                    "-b",
-                    "white",  # Background
-                    "-t",
-                    "default",  # Theme
-                ],
-                check=True,
-                capture_output=True,
+            # Generate HTML file using FileCreator and template
+            file_creator = FileCreator()
+            html_file_path = file_creator.create_file(
+                template="diagram_template.jinja2",
+                path=".",
+                name="database_diagram",
+                data=template_data,
+                format="html",
             )
 
-            # Try different terminal image viewers
-            image_viewers = [
-                ["chafa", png_file, "--size=100x40", "--colors=256"],
-                ["catimg", png_file],
-                ["img2txt", png_file],
-                ["tiv", png_file],
-                ["viu", png_file],
-            ]
-
-            displayed = False
-            for viewer_cmd in image_viewers:
-                try:
-                    subprocess.run(viewer_cmd, check=True)
-                    displayed = True
-                    break
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    continue
-
-            if not displayed:
-                # Fallback: open with system image viewer
-                if os.name == "nt":  # Windows
-                    os.startfile(png_file)
-                elif os.name == "posix":  # Linux/Mac
-                    subprocess.run(["xdg-open", png_file], capture_output=True)
-
-                self.printer.print_msg(f"✓ Diagram saved and opened: {png_file}", theme="success")
-            else:
-                self.printer.print_msg("✓ Diagram displayed in terminal", theme="success")
-
-            # Cleanup
-            os.unlink(mmd_file)
-            # Keep PNG file for a while in case user wants to see it again
-
-        except FileNotFoundError:
-            self.printer.print_msg("⚠️  Terminal diagram display requires additional tools:", theme="warning", linebefore=True)
-            self.printer.print_msg("   npm install -g @mermaid-js/mermaid-cli", theme="normal")
-            self.printer.print_msg("   # And one of these image viewers:", theme="normal")
-            self.printer.print_msg("   sudo apt install chafa      # Recommended", theme="normal")
-            self.printer.print_msg("   pip install catimg          # Alternative", theme="normal")
-            self.printer.print_msg("   cargo install viu           # Rust-based", theme="normal")
-            return False
-
-        except subprocess.CalledProcessError as e:
-            self.printer.print_msg(f"Error rendering diagram: {e}", theme="error")
-            return False
-
-        return True
-
-    def _open_web_viewer(self, mermaid_code: str):
-        """
-        Open a temporary web page with the Mermaid diagram
-        """
-        import os
-        import tempfile
-        import webbrowser
-        from datetime import datetime
-
-        # Enhanced HTML with better styling and features
-        html_content = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Database Schema - Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</title>
-            <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
-            <style>
-                body {{
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    margin: 0;
-                    padding: 20px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                }}
-                .container {{
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    background: white;
-                    border-radius: 15px;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-                    overflow: hidden;
-                }}
-                .header {{
-                    background: #2c3e50;
-                    color: white;
-                    padding: 20px;
-                    text-align: center;
-                }}
-                .header h1 {{
-                    margin: 0;
-                    font-size: 2em;
-                }}
-                .timestamp {{
-                    opacity: 0.7;
-                    font-size: 0.9em;
-                    margin-top: 5px;
-                }}
-                .diagram-container {{
-                    padding: 30px;
-                    text-align: center;
-                    background: white;
-                }}
-                .controls {{
-                    margin-bottom: 20px;
-                    text-align: center;
-                }}
-                button {{
-                    background: #3498db;
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    margin: 5px;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    transition: background 0.3s;
-                }}
-                button:hover {{
-                    background: #2980b9;
-                }}
-                .mermaid {{
-                    background: white;
-                    border-radius: 10px;
-                    padding: 20px;
-                    margin: 20px 0;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                }}
-                .footer {{
-                    background: #ecf0f1;
-                    padding: 15px;
-                    text-align: center;
-                    color: #7f8c8d;
-                    font-size: 0.9em;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🗄️ Database Schema Diagram</h1>
-                    <div class="timestamp">Generated on {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}</div>
-                </div>
-                
-                <div class="diagram-container">
-                    <div class="controls">
-                        <button onclick="downloadSVG()">📥 Download SVG</button>
-                        <button onclick="downloadPNG()">📥 Download PNG</button>
-                        <button onclick="copyMermaidCode()">📋 Copy Mermaid Code</button>
-                        <button onclick="toggleTheme()">🎨 Toggle Theme</button>
-                    </div>
-                    
-                    <div class="mermaid" id="diagram">
-    {mermaid_code}
-                    </div>
-                </div>
-                
-                <div class="footer">
-                    Generated by Framefox Framework • 
-                    <a href="https://mermaid.js.org/" target="_blank">Powered by Mermaid.js</a>
-                </div>
-            </div>
-
-            <script>
-                // Mermaid configuration
-                mermaid.initialize({{ 
-                    startOnLoad: true,
-                    theme: 'default',
-                    themeVariables: {{
-                        primaryColor: '#3498db',
-                        primaryTextColor: '#2c3e50',
-                        primaryBorderColor: '#2980b9',
-                        lineColor: '#34495e'
-                    }}
-                }});
-
-                let currentTheme = 'default';
-                const mermaidCode = `{mermaid_code}`;
-
-                function downloadSVG() {{
-                    const svg = document.querySelector('#diagram svg');
-                    if (svg) {{
-                        const svgData = new XMLSerializer().serializeToString(svg);
-                        const svgBlob = new Blob([svgData], {{type: 'image/svg+xml;charset=utf-8'}});
-                        const svgUrl = URL.createObjectURL(svgBlob);
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = svgUrl;
-                        downloadLink.download = 'database_schema.svg';
-                        document.body.appendChild(downloadLink);
-                        downloadLink.click();
-                        document.body.removeChild(downloadLink);
-                    }}
-                }}
-
-                function downloadPNG() {{
-                    const svg = document.querySelector('#diagram svg');
-                    if (svg) {{
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const data = new XMLSerializer().serializeToString(svg);
-                        const img = new Image();
-                        const svgBlob = new Blob([data], {{ type: 'image/svg+xml;charset=utf-8' }});
-                        const url = URL.createObjectURL(svgBlob);
-                        
-                        img.onload = function() {{
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-                            ctx.drawImage(img, 0, 0);
-                            URL.revokeObjectURL(url);
-                            
-                            canvas.toBlob(function(blob) {{
-                                const url = URL.createObjectURL(blob);
-                                const downloadLink = document.createElement('a');
-                                downloadLink.href = url;
-                                downloadLink.download = 'database_schema.png';
-                                document.body.appendChild(downloadLink);
-                                downloadLink.click();
-                                document.body.removeChild(downloadLink);
-                                URL.revokeObjectURL(url);
-                            }});
-                        }};
-                        img.src = url;
-                    }}
-                }}
-
-                function copyMermaidCode() {{
-                    navigator.clipboard.writeText(mermaidCode).then(function() {{
-                        alert('Mermaid code copied to clipboard!');
-                    }}, function(err) {{
-                        console.error('Could not copy text: ', err);
-                        // Fallback
-                        const textArea = document.createElement('textarea');
-                        textArea.value = mermaidCode;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        alert('Mermaid code copied to clipboard!');
-                    }});
-                }}
-
-                function toggleTheme() {{
-                    const themes = ['default', 'dark', 'forest', 'neutral'];
-                    const currentIndex = themes.indexOf(currentTheme);
-                    currentTheme = themes[(currentIndex + 1) % themes.length];
-                    
-                    mermaid.initialize({{ 
-                        startOnLoad: true,
-                        theme: currentTheme
-                    }});
-                    
-                    // Re-render diagram
-                    const diagramDiv = document.getElementById('diagram');
-                    diagramDiv.innerHTML = mermaidCode;
-                    mermaid.init(undefined, diagramDiv);
-                }}
-            </script>
-        </body>
-        </html>
-        """
-
-        try:
-            # # Create temporary HTML file
-            # with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False, encoding="utf-8") as f:
-            #     f.write(html_content)
-            #     html_file = f.name
-
-            # # Open in default browser
-            # webbrowser.open(f"file://{os.path.abspath(html_file)}")
-
-            # Create output directory if it doesn't exist
-            os.makedirs(self.output_path, exist_ok=True)
-
-            # Generate filename with timestamp to avoid conflicts
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            html_filename = f"database_diagram_{timestamp}.html"
-            html_file = os.path.join(self.output_path, html_filename)
-
-            # Save HTML file locally
-            with open(html_file, "w", encoding="utf-8") as f:
-                f.write(html_content)
+            # Set proper permissions
+            os.chmod(html_file_path, 0o644)
 
             # Open in default browser
-            webbrowser.open(f"file://{os.path.abspath(html_file)}")
+            webbrowser.open(f"file://{os.path.abspath(html_file_path)}")
 
-            self.printer.print_msg(f"✓ Interactive diagram opened in browser", theme="success", linebefore=True)
-            self.printer.print_msg(f"   File: {html_file}", theme="normal")
-            self.printer.print_msg("   Features: Download SVG/PNG, Copy code, Change themes", theme="normal", newline=True)
+            time.sleep(2)  # Wait for browser to open
+            # delete html_file_path
+            os.remove(html_file_path)
 
-            return True
+            self.printer.print_msg(
+                "✓ Interactive diagram opened in browser",
+                theme="success",
+                linebefore=True,
+            )
 
         except Exception as e:
-            self.printer.print_msg(f"Error opening web viewer: {str(e)}", theme="error")
-            return False
+            self.printer.print_msg(
+                f"Error generating HTML: {str(e)}",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
