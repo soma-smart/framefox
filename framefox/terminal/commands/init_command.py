@@ -31,7 +31,7 @@ class InitCommand(AbstractCommand):
     # Project structure to create
     PROJECT_DIRECTORIES = [
         "src",
-        "src/controllers",
+        "src/controller",
         "src/tests",
         "src/entity",
         "src/repository",

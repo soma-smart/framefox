@@ -24,15 +24,18 @@ class TestSettings:
                 - role: "ROLE_USER"
         application:
             openapi_url: "/docs"
-            controllers:
-                dir: "controllers"
+            controller:
+                dir: "controller"
         """
 
     @pytest.fixture
     def settings_with_mocked_config(self, mock_yaml_config):
-        with patch("os.path.exists") as mock_exists, patch(
-            "builtins.open", mock_open(read_data=mock_yaml_config)
-        ), patch("os.listdir") as mock_listdir, patch("os.getenv") as mock_getenv:
+        with (
+            patch("os.path.exists") as mock_exists,
+            patch("builtins.open", mock_open(read_data=mock_yaml_config)),
+            patch("os.listdir") as mock_listdir,
+            patch("os.getenv") as mock_getenv,
+        ):
 
             mock_exists.return_value = True
             mock_listdir.return_value = ["config.yml"]
@@ -64,7 +67,7 @@ class TestSettings:
             assert settings_with_mocked_config.get_param("invalid.path") is None
 
     def test_controller_dir_default(self, settings_with_mocked_config):
-        assert settings_with_mocked_config.controller_dir == "controllers"
+        assert settings_with_mocked_config.controller_dir == "controller"
 
     # @pytest.mark.parametrize("env,expected", [("dev", "/docs"), ("prod", None)])
     # def test_openapi_url_per_environment(self, env, expected):

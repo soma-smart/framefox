@@ -1,5 +1,8 @@
-import os, re, yaml
+import os
+import re
 from pathlib import Path
+
+import yaml
 from dotenv import load_dotenv
 
 from framefox.core.mail.mail_url_parser import MailUrlParser
@@ -206,6 +209,7 @@ class Settings:
         The profiler ALWAYS collects SQL queries in debug mode.
         """
         return self.is_debug
+
     @property
     def orm_config(self):
         """Returns the ORM configuration from the configuration."""
@@ -298,8 +302,8 @@ class Settings:
 
     @property
     def controller_dir(self):
-        """Returns the controllers directory from the configuration."""
-        return self.config.get("application", {}).get("controllers", {}).get("dir", "controllers")
+        """Returns the controller directory from the configuration."""
+        return self.config.get("application", {}).get("controller", {}).get("dir", "controller")
 
     @property
     def cors_config(self):

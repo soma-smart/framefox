@@ -67,9 +67,9 @@ class TestRouter:
         """Test path to module name conversion"""
         with patch("pathlib.Path.cwd") as mock_cwd:
             mock_cwd.return_value = Path("/home/project")
-            module_path = "/home/project/src/controllers/home.py"
+            module_path = "/home/project/src/controller/home.py"
             result = router._get_module_name(module_path)
-            assert result == "src.controllers.home"
+            assert result == "src.controller.home"
 
     def test_url_path_for_existing_route(self, router):
         """Test URL generation for an existing route"""
@@ -84,7 +84,7 @@ class TestRouter:
 
     # def test_register_default_route(self, router, mock_app):
     #     """Test default route registration"""
-    #     router.register_controllers()
+    #     router.register_controller()
     #     mock_app.add_api_route.assert_called_with(
     #         "/",
     #         "",
