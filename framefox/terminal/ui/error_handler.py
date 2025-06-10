@@ -28,19 +28,31 @@ class ErrorHandler:
         suggestions = suggest_similar_commands(command, available_commands, threshold=3)
 
         if suggestions:
-            # Afficher le header comme pour les autres commandes
-            if self.display_manager:
-                self.display_manager.print_header()
-
-            # Message d'erreur principal
+            # Main error message
             self._print_error_header(f"Unknown command: '{command}'")
 
-            # Créer un tableau de suggestions
-            self._display_suggestions_table(suggestions, is_subcommand=False)
+            # Display only the best suggestion
+            self._display_single_suggestion(suggestions[0])
 
             return True
 
         return False
+
+    def display_group_with_available_subcommands(self, group: str, subcommands: List[str]):
+        """Display a group suggestion with its available subcommands"""
+        self.console.print(
+            f"[{FramefoxTheme.HEADER_STYLE}]💡 Did you mean group:[/{FramefoxTheme.HEADER_STYLE}] "
+            f"[{FramefoxTheme.TEXT}]framefox {group}[/{FramefoxTheme.TEXT}]"
+        )
+        self.console.print("")
+
+        # Show available subcommands for this group
+        self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]Available {group} commands:[/{FramefoxTheme.HEADER_STYLE}]")
+
+        for subcommand in sorted(subcommands):
+            self.console.print(f"  • [bold {FramefoxTheme.SECONDARY}]framefox {group} {subcommand}[/bold {FramefoxTheme.SECONDARY}]")
+
+        self.console.print("")
 
     def handle_unknown_subcommand(self, group: str, subcommand: str, available_subcommands: List[str]) -> bool:
         """Handle unknown subcommand within a group"""
@@ -49,19 +61,25 @@ class ErrorHandler:
         suggestions = suggest_similar_commands(subcommand, available_subcommands, threshold=3)
 
         if suggestions:
-            # Afficher le header comme pour les autres commandes
-            if self.display_manager:
-                self.display_manager.print_header()
-
-            # Message d'erreur principal
+            # Main error message
             self._print_error_header(f"Unknown command: '{group} {subcommand}'")
 
-            # Créer un tableau de suggestions avec le groupe
-            formatted_suggestions = [f"{group} {cmd}" for cmd in suggestions]
-            self._display_suggestions_table(formatted_suggestions, is_subcommand=True, group=group)
+            # Display only the best suggestion with group prefix
+            self._display_single_suggestion(f"{group} {suggestions[0]}")
+
             return True
 
         return False
+
+    def handle_suggestion(self, error_message: str, suggestion: str) -> None:
+        """Handle a simple suggestion display"""
+        self._print_error_header(error_message)
+        self._display_single_suggestion(suggestion)
+
+    def handle_group_suggestion(self, error_message: str, group: str, subcommands: List[str]) -> None:
+        """Handle suggestion of a group with its subcommands"""
+        self._print_error_header(error_message)
+        self.display_group_with_available_subcommands(group, subcommands)
 
     def _print_error_header(self, error_message: str):
         """Print styled error header"""
@@ -69,48 +87,20 @@ class ErrorHandler:
         self.console.print(f"[{FramefoxTheme.ERROR}]❌ {error_message}[/{FramefoxTheme.ERROR}]")
         self.console.print("")
 
-    def _display_suggestions_table(self, suggestions: List[str], is_subcommand: bool = False, group: str = None):
-        """Display suggestions in a styled table"""
-        if len(suggestions) == 1:
-            # Single suggestion - format spécial
-            self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]💡 DID YOU MEAN?[/{FramefoxTheme.HEADER_STYLE}]")
-            self.console.print("")
-
-            table = TableBuilder.create_basic_table()
-            table.add_column("Suggested Command", style=FramefoxTheme.COMMAND_STYLE, no_wrap=True)
-            table.add_column("Action", style=FramefoxTheme.DESCRIPTION_STYLE)
-
-            suggestion = suggestions[0]
-            action = "Run this command instead"
-            table.add_row(f"framefox {suggestion}", action)
-
-        else:
-            # Multiple suggestions
-            self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]💡 SIMILAR COMMANDS[/{FramefoxTheme.HEADER_STYLE}]")
-            self.console.print("")
-
-            table = TableBuilder.create_basic_table()
-            table.add_column("Suggested Commands", style=FramefoxTheme.COMMAND_STYLE, no_wrap=True)
-            table.add_column("Type", style=FramefoxTheme.DESCRIPTION_STYLE)
-
-            for suggestion in suggestions[:3]:  # Limit to top 3
-                if is_subcommand and group:
-                    command_type = f"{group.title()} command"
-                else:
-                    command_type = "Command group"
-                table.add_row(f"framefox {suggestion}", command_type)
-
-        self.console.print(table)
+    def _display_single_suggestion(self, suggestion: str):
+        """Display a single suggestion without table"""
+        msg = (
+            f"[{FramefoxTheme.HEADER_STYLE}]💡 Did you mean:[/{FramefoxTheme.HEADER_STYLE}] "
+            f"[{FramefoxTheme.TEXT}]framefox {suggestion}[/{FramefoxTheme.TEXT}]"
+        )
+        self.console.print(msg)
         self.console.print("")
 
     def handle_general_error(self, args: List[str]):
         """Handle general errors with styled display"""
-        if self.display_manager:
-            self.display_manager.print_header()
-
         self._print_error_header(f"Invalid command: {' '.join(args)}")
 
-        # Table avec les commandes de base
+        # Table with basic commands
         self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]🚀 GETTING STARTED[/{FramefoxTheme.HEADER_STYLE}]")
         self.console.print("")
 
