@@ -38,6 +38,22 @@ class ErrorHandler:
 
         return False
 
+    def display_group_with_available_subcommands(self, group: str, subcommands: List[str]):
+        """Display a group suggestion with its available subcommands"""
+        self.console.print(
+            f"[{FramefoxTheme.HEADER_STYLE}]💡 Did you mean group:[/{FramefoxTheme.HEADER_STYLE}] "
+            f"[{FramefoxTheme.TEXT}]framefox {group}[/{FramefoxTheme.TEXT}]"
+        )
+        self.console.print("")
+
+        # Show available subcommands for this group
+        self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]Available {group} commands:[/{FramefoxTheme.HEADER_STYLE}]")
+
+        for subcommand in sorted(subcommands):
+            self.console.print(f"  • [bold {FramefoxTheme.SECONDARY}]framefox {group} {subcommand}[/bold {FramefoxTheme.SECONDARY}]")
+
+        self.console.print("")
+
     def handle_unknown_subcommand(self, group: str, subcommand: str, available_subcommands: List[str]) -> bool:
         """Handle unknown subcommand within a group"""
         from framefox.terminal.utils.text_utils import suggest_similar_commands
