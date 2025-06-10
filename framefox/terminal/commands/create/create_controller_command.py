@@ -68,7 +68,7 @@ class CreateControllerCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
-            return
+            raise Exception("Controller already exists")
 
         # Vérifier si le template existe
         if os.path.exists(os.path.join(self.view_path, name)):
