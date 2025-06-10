@@ -16,14 +16,12 @@ class AbstractController:
     def __init__(self):
         """
         Initializes a new controller.
-        Child controllers can override this method
+        Child controller can override this method
         to inject their own dependencies.
         """
 
         self._container = ServiceContainer()
-        self.template_renderer = self._container.get_by_tag(
-            "core.templates.template_renderer"
-        )
+        self.template_renderer = self._container.get_by_tag("core.templates.template_renderer")
 
     def redirect(self, location: str, code: int = 302):
         """Redirects to a specific URL."""

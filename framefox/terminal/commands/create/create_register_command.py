@@ -17,11 +17,9 @@ Github: https://github.com/RayenBou
 class CreateRegisterCommand(AbstractCommand):
     def __init__(self):
         super().__init__("register")
-        self.register_controller_template_name = (
-            r"security/register_controller_template.jinja2"
-        )
+        self.register_controller_template_name = r"security/register_controller_template.jinja2"
         self.register_view_template_name = r"security/register_view_template.jinja2"
-        self.controller_path = r"src/controllers"
+        self.controller_path = r"src/controller"
         self.view_path = r"templates/security"
         os.makedirs(self.view_path, exist_ok=True)
 
@@ -40,7 +38,7 @@ class CreateRegisterCommand(AbstractCommand):
 
     def _create_register_files(self, provider_name: str):
 
-        controller_path = os.path.join("src/controllers", "register_controller.py")
+        controller_path = os.path.join("src/controller", "register_controller.py")
         view_path = os.path.join("templates/security", "register.html")
 
         existing_files = []
@@ -51,7 +49,7 @@ class CreateRegisterCommand(AbstractCommand):
 
         if existing_files:
             self.printer.print_full_text(
-                f"[bold red]Cannot create register files. Following files already exist:[/bold red]",
+                "[bold red]Cannot create register files. Following files already exist:[/bold red]",
                 linebefore=True,
             )
             for file in existing_files:

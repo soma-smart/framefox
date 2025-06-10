@@ -17,7 +17,7 @@ Github: https://github.com/Vasulvius
 class CreateControllerCommand(AbstractCommand):
     def __init__(self):
         super().__init__("controller")
-        self.controller_path = r"src/controllers"
+        self.controller_path = r"src/controller"
         self.view_path = r"templates"
         self.controller_template = r"controller_template.jinja2"
         self.view_template = r"view_template.jinja2"
@@ -49,7 +49,6 @@ class CreateControllerCommand(AbstractCommand):
             return
 
         class_name = f"{ClassNameManager.snake_to_pascal(name)}Controller"
-        view_name = f"{name}.html"
 
         data_controller = {
             "controller_class_name": class_name,
