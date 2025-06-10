@@ -13,11 +13,12 @@ Github: https://github.com/RayenBou
 
 
 class Route:
-    def __init__(self, path: str, name: str, methods: list, response_model=None):
+    def __init__(self, path: str, name: str, methods: list, response_model=None, tags=None):
         self.path = path
         self.name = name
         self.methods = methods
         self.response_model = response_model
+        self.tags = tags or []  
 
     def __call__(self, func):
         original_sig = inspect.signature(func)
@@ -35,7 +36,6 @@ class Route:
                     param_type = type_hints.get(param_name)
                     
                     if param_type and param_type != type(None):
-
                         if (self._is_fastapi_native_type(param_type) or 
                             self._is_pydantic_model(param_type) or
                             self._is_primitive_type(param_type) or
@@ -63,6 +63,7 @@ class Route:
             "methods": self.methods,
             "response_model": self.response_model,
             "operation_ids": self._generate_operation_ids(func),
+            "tags": self.tags,  # ✅ AJOUT : Tags dans route_info
             "original_function": func,
         }
         
@@ -82,7 +83,6 @@ class Route:
                 new_params.append(param)
                 continue
             
-
             if param_type and self._is_fastapi_native_type(param_type):
                 new_params.append(param)
                 continue
@@ -129,15 +129,12 @@ class Route:
         """Check if the parameter type is a primitive type."""
         primitive_types = {int, str, float, bool, bytes}
         
-        # Basic primitive types
         if param_type in primitive_types:
             return True
         
-        # Optional types (Union[type, None])
         if hasattr(param_type, '__origin__'):
             if param_type.__origin__ is type(None):
                 return True
-            # Union types (Optional[int] = Union[int, None])
             if hasattr(param_type, '__args__'):
                 args = getattr(param_type, '__args__', ())
                 if len(args) == 2 and type(None) in args:
