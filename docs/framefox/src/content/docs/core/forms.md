@@ -3,14 +3,9 @@ title: Forms and Validation
 description: Create and validate forms easily with Framefox
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-import CodeBlock from '../../../components/CodeBlock.astro';
+Working with forms is part of every web application. Framefox makes it straightforward to create forms, validate user input, and handle data safely.
 
-# Forms and Data Validation
-
-Framefox provides a comprehensive form system that enables easy definition, validation, and processing of user-submitted data. The form system is built around type-safe field definitions, automatic validation, CSRF protection, and seamless integration with entities and templates.
-
-This powerful form framework includes support for complex field types, file uploads, entity relationships, custom validation, and automatic CRUD generation - making it ideal for building robust web applications with minimal boilerplate code.
+You define your forms as Python classes, specify validation rules, and let Framefox handle the rest - including CSRF protection and error handling.
 
 :::tip[Framework Architecture]
 Framefox forms follow the builder pattern with a clear separation between form definition (FormTypeInterface), form building (FormBuilder), and form rendering (FormView). This architecture ensures maintainable, testable, and reusable form components throughout your application.

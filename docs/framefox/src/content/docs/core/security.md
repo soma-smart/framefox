@@ -3,12 +3,10 @@ title: Authentication and Security
 description: Implement authentication and security mechanisms in your Framefox application
 ---
 
-# Authentication and Security
-
-Framefox provides a comprehensive authentication and security system to protect your application and manage users. The framework implements modern security practices including CSRF protection, role-based access control, and flexible authentication mechanisms that can be easily customized for your specific needs.
+Framefox helps you add login, registration, and access control without the security headaches. You'll create a user entity, set up login forms, and define who can access what. The framework handles password hashing, CSRF protection, and session management automatically.
 
 :::note[Security Best Practices]
-Framefox follows industry-standard security practices as outlined in the [OWASP Application Security Verification Standard](https://owasp.org/www-project-application-security-verification-standard/). The framework automatically handles common security concerns like CSRF protection, secure session management, and password hashing.
+Framefox follows established security practices as outlined in the [OWASP Application Security Verification Standard](https://owasp.org/www-project-application-security-verification-standard/). The framework automatically handles common security concerns like CSRF protection, secure session management, and password hashing.
 :::
 
 ## Quick Start with Authentication
@@ -45,7 +43,6 @@ from src.entity.user import User
 class UserRepository(AbstractRepository[User]):
     def __init__(self):
         super().__init__(User)
-```
 ```
 
 ### Step 2: Configure Authentication
@@ -166,8 +163,9 @@ framefox create register
 
 This command generates:
 
-**Registration Controller** (`src/controllers/register_controller.py`):
+**Registration Controller**:
 ```python
+# src/controllers/register_controller.py
 from fastapi import Request
 from src.entity.user import User
 from framefox.core.routing.decorator.route import Route
@@ -190,8 +188,10 @@ class RegisterController(AbstractController):
             self.entity_manager.persist(user)
             self.entity_manager.commit()
             return self.redirect("/login")
+```
 
-```python title="src/controllers/register_controller.py"
+```python
+# src/controllers/register_controller.py
 from fastapi import Request
 from src.entity.user import User
 from framefox.core.routing.decorator.route import Route
@@ -267,7 +267,6 @@ security:
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/users, roles: ROLE_USER }
     - { path: ^/api, roles: ROLE_API_USER }
-```
     - { path: ^/api, roles: ROLE_API_USER }
 ```
 
@@ -341,10 +340,6 @@ security:
     ROLE_MODERATOR: [ROLE_USER]
     ROLE_USER: []
 ```
-    ROLE_ADMIN: [ROLE_MODERATOR, ROLE_USER]
-    ROLE_MODERATOR: [ROLE_USER]
-    ROLE_USER: []
-```
 
 With this hierarchy, a user with `ROLE_ADMIN` automatically has the permissions of `ROLE_MODERATOR` and `ROLE_USER`.
 
@@ -355,30 +350,39 @@ Check user roles in your controllers:
 ```python title="src/controllers/admin_controller.py"
 from framefox.core.controller.abstract_controller import AbstractController
 from framefox.core.routing.decorator.route import Route
-from framefox.core.security.decorator.is_granted import IsGranted
+from framefox.core.di.service_container import ServiceContainer
 
 class AdminController(AbstractController):
-    # Automatic role checking with decorator
-    @IsGranted("ROLE_ADMIN")
+    # Manual role checking with access manager
     @Route("/admin/dashboard", "admin.dashboard")
     async def dashboard(self):
+        # Get current user and check permissions
+        user = self.get_user()
+        if not user:
+            return self.redirect("/login")
+            
+        container = ServiceContainer()
+        access_manager = container.get("framefox.core.security.access_manager.AccessManager")
+        
+        if not access_manager.is_allowed(user.roles, ["ROLE_ADMIN"]):
+            return self.json({"error": "Access denied"}, status_code=403)
+        
         return self.render("admin/dashboard.html")
     
-    # Manual role checking
-    @Route("/admin/users", "admin.users")
-    async def manage_users(self):
-        if not self.is_granted("ROLE_ADMIN"):
-            raise self.create_access_denied_exception("Access denied")
-        
-        # Admin-only logic here
-        users = await self.get_repository("User").find_all()
-        return self.render("admin/users.html", {"users": users})
-    
     # Multiple roles allowed
-    @IsGranted(["ROLE_ADMIN", "ROLE_MODERATOR"])
     @Route("/moderate", "admin.moderate")
     async def moderate_content(self):
+        user = self.get_user()
+        if not user:
+            return self.redirect("/login")
+            
+        container = ServiceContainer()
+        access_manager = container.get("framefox.core.security.access_manager.AccessManager")
+        
         # User needs either ROLE_ADMIN or ROLE_MODERATOR
+        if not access_manager.is_allowed(user.roles, ["ROLE_ADMIN", "ROLE_MODERATOR"]):
+            return self.json({"error": "Insufficient permissions"}, status_code=403)
+            
         return self.render("admin/moderate.html")
 ```
 
@@ -799,26 +803,6 @@ class ProfileController(AbstractController):
         return self.render("admin/dashboard.html")
 ```
 
-### Route Protection with Decorators
-
-Protect entire routes using security decorators:
-
-```python title="src/controllers/admin_controller.py"
-from framefox.core.security.decorator.is_granted import IsGranted
-
-class AdminController(AbstractController):
-    @IsGranted("ROLE_ADMIN")
-    @Route("/admin", "admin.dashboard")
-    async def dashboard(self):
-        return self.render("admin/dashboard.html")
-        
-    @IsGranted(["ROLE_ADMIN", "ROLE_MODERATOR"])
-    @Route("/moderate", "admin.moderate")
-    async def moderate(self):
-        # User must have either ROLE_ADMIN or ROLE_MODERATOR
-        return self.render("admin/moderate.html")
-```
-
 ## Template Security Integration
 
 Framefox provides security-aware template functions for displaying conditional content based on user authentication and roles.
@@ -1118,25 +1102,7 @@ security:
     max_age: 86400  # 24 hours
 ```
 
-## Security Audit and Best Practices
-
-Framefox includes built-in security auditing tools:
-
-### Security Audit Command
-
-Run comprehensive security checks:
-
-```bash
-# Full security audit
-framefox security:audit
-
-# Check specific areas
-framefox security:audit --check=passwords
-framefox security:audit --check=configuration
-framefox security:audit --check=dependencies
-```
-
-### Security Best Practices
+## Security Best Practices
 
 :::caution[Security Checklist]
 Follow these essential security practices in your Framefox application:
@@ -1186,4 +1152,4 @@ class SecurityMonitor:
         self.dispatcher.dispatch("security.suspicious_activity", event)
 ```
 
-The Framefox security system provides enterprise-grade protection while maintaining developer-friendly APIs and extensive customization options. Follow the [OWASP Security Guidelines](https://owasp.org/www-project-top-ten/) for additional security considerations.
+That's security in Framefox. Set up authentication with a few commands, define access rules in YAML, and let the framework handle the security details. You get protection without complexity. For more security guidance, check out the [OWASP Security Guidelines](https://owasp.org/www-project-top-ten/).

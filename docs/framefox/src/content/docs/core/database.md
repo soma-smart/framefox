@@ -3,11 +3,9 @@ title: Database & ORM
 description: Complete guide to Framefox's integrated ORM for powerful data management
 ---
 
-# Database & ORM
+Framefox includes a powerful ORM (Object-Relational Mapping) based on SQLModel for database operations, making it easy to work with your data while keeping your code type-safe and maintainable.
 
-Framefox includes a powerful Object-Relational Mapping (ORM) system that simplifies database interactions while providing enterprise-grade features for data management. Built with modern Python standards and designed for performance, scalability, and developer productivity.
-
-The ORM supports multiple database engines including SQLite, MySQL, PostgreSQL, and other SQL-compatible databases, making it easy to switch between development and production environments without code changes.
+It works with SQLite, MySQL, PostgreSQL and other SQL databases, making it easy to switch between development and production environments without code changes.
 
 :::note[ORM Architecture]
 Framefox ORM is built on top of SQLAlchemy, providing:
@@ -23,9 +21,8 @@ Framefox ORM is built on top of SQLAlchemy, providing:
 ORMs provide several advantages over raw SQL:
 - **Database Agnostic**: Write code once, run on any supported database
 - **Type Safety**: Catch errors at development time, not runtime
-- **Security**: Automatic parameterization prevents SQL injection
+- **Security**: Protects against SQL injection attacks
 - **Maintainability**: Cleaner, more readable code
-- **Productivity**: Rapid development with intelligent code completion
 - **Testing**: Easy mocking and fixtures for unit tests
 :::
 
@@ -65,7 +62,7 @@ Never commit database credentials to version control:
 For complex deployments, use the detailed configuration in `config/orm.yaml`:
 
 ```yaml
-database:
+database 
   # Environment variable takes precedence
   url: "${DATABASE_URL}"
   
@@ -75,7 +72,7 @@ database:
   # port: "${DATABASE_PORT:-5432}"
   # username: "${DATABASE_USER:-framefox}"
   # password: "${DATABASE_PASSWORD}"
-  # database: "${DATABASE_NAME:-framefoxdb}"
+  # database  "${DATABASE_NAME:-framefoxdb}"
   # charset: "utf8mb4"
 
   # Production-optimized connection pooling
@@ -171,7 +168,7 @@ volumes:
 
 An entity represents a **data model** in your application - a Python class that maps directly to a database table. In the MVC (Model-View-Controller) architectural pattern, entities serve as the **Model layer**, encapsulating the structure, validation rules, and relationships of your data without containing business logic.
 
-Think of an entity as a **blueprint** for your data. When you create a `Product` entity, you're defining what a product looks like in your database: it has a name, price, description, and relationships to other entities like categories or orders. The entity class describes these properties using Python type hints and SQLModel field definitions.
+Think of an entity as a **blueprint** for your data. When you create a `Product` entity, you're defining what a product looks like in your database  it has a name, price, description, and relationships to other entities like categories or orders. The entity class describes these properties using Python type hints and SQLModel field definitions.
 
 #### Core Characteristics of Entities
 
@@ -774,15 +771,21 @@ class ProductService:
     Service demonstrating proper EntityManagerInterface usage
     Notice how we inject the interface, not the concrete EntityManager
     """
-    
+
     def __init__(self, entity_manager: EntityManagerInterface):
         self.em = entity_manager
-    
+
     def transfer_products_category(self, from_category_id: int, to_category_id: int, 
                                    product_ids: List[int]) -> bool:
         """
         Complex business operation demonstrating transaction management
         """
+        if not product_ids:
+            raise ValueError("No products specified for transfer")
+        
+        if from_category_id == to_category_id:
+            raise ValueError("Source and destination categories must be different")
+
         try:
             # The interface automatically handles transaction context
             with self.em.transaction():
@@ -792,20 +795,23 @@ class ProductService:
                 
                 if not from_category or not to_category:
                     raise ValueError("Invalid category specified")
-                
+
                 # Process each product - the EntityManager tracks all changes
                 for product_id in product_ids:
                     product = self.em.find(Product, product_id)
                     if product and product.category_id == from_category_id:
                         product.category_id = to_category_id
                         # No need to call persist - EntityManager tracks this change
-                
+
                 # Transaction commits automatically on successful exit
                 return True
-                
-        except Exception:
-            # Transaction automatically rolls back on exception
+
+        except ValueError:
+            # Re-raise validation errors without modification
             raise
+        except Exception as e:
+            # Wrap unexpected errors with context
+            raise RuntimeError(f"Failed to transfer products: {str(e)}") from e
 ```
 
 #### Change Tracking and Performance Optimization
@@ -833,28 +839,6 @@ This prevents memory leaks in long-running applications while ensuring that enti
 **Explicit Transaction Control**: For complex operations involving multiple entities, use explicit transaction boundaries to ensure data consistency.
 
 **Lazy Loading Awareness**: Understand when related entities are loaded from the database versus when they're accessed from the identity map cache.
-            
-            # Log deactivation
-            from src.entity.product_log import ProductLog
-            log = ProductLog()
-            log.product_id = product_id
-            log.action = "deactivated"
-            log.timestamp = datetime.now()
-            log.details = "Product deactivated with cascade operations"
-            
-            self.em.persist(log)
-            self.em.commit()
-            
-            return True
-            
-        except Exception as e:
-            self.em.rollback()
-            raise Exception(f"Product deactivation failed: {str(e)}")
-    
-    def _calculate_price_with_tax(self, base_price: float, tax_rate: float = 0.2) -> float:
-        """Calculate price including tax"""
-        return round(base_price * (1 + tax_rate), 2)
-```
 
 :::danger[Transaction Management]
 Always follow these transaction patterns:
@@ -873,7 +857,7 @@ Framefox provides a comprehensive set of database commands through the CLI to ma
 :::tip[Command Syntax]
 All database commands follow the pattern:
 ```bash
-framefox database:<command> [options]
+framefox database <command> [options]
 ```
 Use `framefox database --help` to see all available commands.
 :::
@@ -886,7 +870,7 @@ Initialize a new database based on your configuration:
 
 ```bash
 # Create the database if it doesn't exist
-framefox database:create
+framefox database create
 
 # Output example:
 # ✓ Database 'app.db' created successfully
@@ -904,7 +888,7 @@ Remove the entire database and all its data:
 
 ```bash
 # Drop the database (use with caution!)
-framefox database:drop
+framefox database drop
 
 # Output example:
 # ⚠ Warning: This will permanently delete all data
@@ -923,7 +907,7 @@ Generate a new migration file to track schema changes:
 
 ```bash
 # Create a new migration with descriptive name
-framefox database:create-migration
+framefox database create-migration
 
 # Output example:
 # ✓ Migration created: migrations/versions/20240603_152345_migration.py
@@ -962,7 +946,7 @@ Run pending migrations to update your database schema:
 
 ```bash
 # Apply all pending migrations
-framefox database:upgrade
+framefox database upgrade
 
 # Output example:
 # ✓ Running migration 20240603_152345 -> 20240603_152400
@@ -976,7 +960,7 @@ Revert database schema to a previous state:
 
 ```bash
 # Rollback to previous migration
-framefox database:downgrade
+framefox database downgrade
 
 # Output example:
 # ✓ Rolling back migration 20240603_152400 -> 20240603_152345
@@ -989,7 +973,7 @@ View the current migration state and history:
 
 ```bash
 # Show migration status
-framefox database:status
+framefox database status
 
 # Output example:
 # Current revision: 20240603_152400
@@ -1005,11 +989,11 @@ framefox database:status
 
 #### Copy Database
 
-Create a backup copy of your database:
+Create a backup copy of your database 
 
 ```bash
 # Copy database to backup location
-framefox database:copy
+framefox database copy
 
 # Output example:
 # ✓ Database copied successfully
@@ -1028,7 +1012,7 @@ Clean up database metadata and temporary files:
 
 ```bash
 # Clear database metadata cache
-framefox database:clear-metadata
+framefox database clear-metadata
 
 # Output example:
 # ✓ Metadata cache cleared
@@ -1048,28 +1032,13 @@ Run database commands for specific environments:
 
 ```bash
 # Production environment
-DATABASE_URL=postgresql://prod_user:pass@prod-host:5432/prod_db framefox database:status
+DATABASE_URL=postgresql://prod_user:pass@prod-host:5432/prod_db framefox database status
 
 # Development environment
-DATABASE_URL=sqlite:///dev.db framefox database:create
+DATABASE_URL=sqlite:///dev.db framefox database create
 
 # Testing environment
-DATABASE_URL=sqlite:///:memory: framefox database:upgrade
-```
-
-#### Command Chaining for Development Workflow
-
-Common development patterns:
-
-```bash
-# Fresh database setup
-framefox database:drop && framefox database:create && framefox database:upgrade
-
-# Reset database with fresh data
-framefox database:drop && framefox database:create && framefox database:upgrade && python seed_data.py
-
-# Safe deployment workflow
-framefox database:copy && framefox database:upgrade
+DATABASE_URL=sqlite:///:memory: framefox database upgrade
 ```
 
 #### Automation and CI/CD Integration
@@ -1082,14 +1051,15 @@ Database commands in automated environments:
 set -e
 
 echo "Setting up test database..."
-framefox database:create
-framefox database:upgrade
+framefox database create
+framefox database create-migration
+framefox database upgrade
 
 echo "Running tests..."
 python -m pytest
 
 echo "Cleaning up..."
-framefox database:drop
+framefox database drop
 ```
 
 :::note[Best Practices]
@@ -1132,21 +1102,6 @@ Migrations provide:
 :::
 
 ### Creating Migrations
-
-#### Generate Migration from Changes
-
-Create a migration automatically by detecting changes in your entities:
-
-```bash
-# Generate migration with descriptive name
-framefox database create-migration "add_product_details_table"
-
-# Generate migration with auto-detected changes
-framefox database create-migration "update_product_indexes" --auto-detect
-
-# Create empty migration for custom SQL
-framefox database create-migration "custom_data_migration" --empty
-```
 
 #### Basic Migration Example
 
@@ -1231,76 +1186,9 @@ def downgrade():
     op.drop_table('products')
 ```
 
-
-
-
-#### Essential Commands
-
-```bash
-# Check current migration status
-framefox database status
-
-# Apply all pending migrations
-framefox database migrate
-
-# Migrate to specific revision
-framefox database migrate --revision 20240115_001
-
-# Downgrade to previous revision  
-framefox database downgrade --revision 20240114_005
-
-# Show migration history
-framefox database history
-
-# Show current revision
-framefox database current
-
-# Validate migration scripts
-framefox database check
-
-# Generate SQL for migration (don't execute)
-framefox database migrate --sql > migration.sql
-```
-
-#### Advanced Migration Operations
-
-```bash
-# Create database from scratch with all migrations
-framefox database create
-
-# Drop all tables and recreate
-framefox database reset
-
-# Reset to specific revision
-framefox database reset --revision 20240115_001
-
-# Stamp database as specific revision (without running migrations)
-framefox database stamp 20240115_002
-
-# Merge multiple migration heads
-framefox database merge --message "merge branches"
-
-# Show pending migrations
-framefox database show --pending
-
-# Validate all migrations can be applied and reversed
-framefox database test-cycle
-```
-
-:::caution[Migration Safety]
-Follow these migration best practices:
-- **Test migrations thoroughly** in development environments
-- **Backup production data** before applying migrations
-- **Keep migrations small and focused** on single changes
-- **Use transactions** for data migrations when possible
-- **Avoid destructive operations** without confirmation
-- **Document complex migrations** with clear comments
-- **Test rollback scenarios** before production deployment
-:::
-
 ### Query Builder Pattern
 
-Le Query Builder fournit une interface fluide pour construire des requêtes complexes de manière programmatique, éliminant le besoin d'écrire du SQL brut :
+The Query Builder provides a fluent interface for building complex queries programmatically, eliminating the need to write raw SQL:
 
 ```python
 from framefox.core.orm.query_builder import QueryBuilder
