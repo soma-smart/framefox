@@ -1,7 +1,6 @@
 import secrets
 
 from fastapi import Request
-
 from framefox.core.security.exceptions.invalid_csrf_token_exception import (
     InvalidCsrfTokenException,
 )

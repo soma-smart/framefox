@@ -2,7 +2,6 @@ from typing import Optional
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
-
 from framefox.core.request.session.session import Session
 
 # from src.entity.user import User
