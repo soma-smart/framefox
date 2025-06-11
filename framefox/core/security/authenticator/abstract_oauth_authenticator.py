@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional
 
 from fastapi import Request
 from fastapi.responses import Response
-
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.security.authenticator.abstract_authenticator import (
     AbstractAuthenticator,
@@ -44,12 +43,8 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
         self.logger = logging.getLogger(f"OAUTH_{self.oauth_provider_name.upper()}")
         self.service_container = ServiceContainer()
 
-    async def authenticate(
-        self, request: Request, firewall_name: str = None
-    ) -> Optional[Response]:
-        self.logger.debug(
-            "Default authenticate method called in AbstractOAuthAuthenticator"
-        )
+    async def authenticate(self, request: Request, firewall_name: str = None) -> Optional[Response]:
+        self.logger.debug("Default authenticate method called in AbstractOAuthAuthenticator")
         return None
 
     @abstractmethod
@@ -81,9 +76,7 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
         oauth_config = firewall_config.get("oauth", {})
 
         if not oauth_config:
-            base_path = firewall_config.get(
-                "login_path", f"/{self.oauth_provider_name}-login"
-            )
+            base_path = firewall_config.get("login_path", f"/{self.oauth_provider_name}-login")
             oauth_config = {
                 "init_path": base_path,
                 "callback_path": f"/{self.oauth_provider_name}-callback",

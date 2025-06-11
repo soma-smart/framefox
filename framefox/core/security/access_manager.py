@@ -40,9 +40,7 @@ class AccessManager:
 
             if re.match(pattern, path):
                 if not is_static_resource:
-                    self.logger.debug(
-                        f"Path {path} matches pattern {pattern} with roles {roles}"
-                    )
+                    self.logger.debug(f"Path {path} matches pattern {pattern} with roles {roles}")
                 return roles
         return []
 

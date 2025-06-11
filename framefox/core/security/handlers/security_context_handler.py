@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from fastapi import Request
-
 from framefox.core.request.request_stack import RequestStack
 
 """

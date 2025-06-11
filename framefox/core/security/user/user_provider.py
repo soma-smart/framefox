@@ -1,8 +1,8 @@
 import logging
 from typing import Optional, Type, TypeVar
 
-
 from framefox.core.di.service_container import ServiceContainer
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -44,9 +44,7 @@ class UserProvider:
         if user_id_cache:
 
             firewall_name = "main"
-            provider_info = self.entity_user_provider.get_repository_and_property(
-                firewall_name
-            )
+            provider_info = self.entity_user_provider.get_repository_and_property(firewall_name)
 
             if provider_info:
                 repository, _ = provider_info
@@ -68,9 +66,7 @@ class UserProvider:
         if not user_id:
             return None
 
-        provider_info = self.entity_user_provider.get_repository_and_property(
-            firewall_name
-        )
+        provider_info = self.entity_user_provider.get_repository_and_property(firewall_name)
 
         if not provider_info:
             self.logger.warning(f"No provider found for firewall '{firewall_name}'")
