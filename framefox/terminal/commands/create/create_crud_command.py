@@ -82,7 +82,7 @@ class CreateCrudCommand(AbstractCommand):
                 linebefore=True,
                 newline=True,
             )
-            return
+            raise Exception("Entity or repository does not exist.")
 
         self.printer.print_msg(
             "What type of controller do you want to create?",

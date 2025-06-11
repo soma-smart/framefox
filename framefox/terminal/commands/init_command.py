@@ -22,50 +22,50 @@ Github: https://github.com/Vasulvius
 """
 
 
+MIN_PYTHON_VERSION = (3, 12)
+MIN_DISK_SPACE = 100 * 1024 * 1024
+
+# Project structure to create
+PROJECT_DIRECTORIES = [
+    "src",
+    "src/controller",
+    "src/tests",
+    "src/entity",
+    "src/repository",
+    "src/security",
+    "templates",
+    "public",
+    "config",
+    "var",
+    "var/log",
+    "var/session",
+    "migrations",
+    "migrations/versions",
+    "migrations/versions/__pycache__",
+]
+
+PROJECT_FILES = [
+    "main.py",
+    ".env",
+    "templates/base.html",
+    "config/application.yaml",
+    "config/orm.yaml",
+    "config/security.yaml",
+    "config/mail.yaml",
+    "config/debug.yaml",
+    "config/parameter.yaml",
+    "config/services.yaml",
+    "config/tasks.yaml",
+    "migrations/env.py",
+    "migrations/script.py.mako",
+    "migrations/versions/__pycache__/.gitkeep",
+    ".gitignore",
+    "requirements.txt",
+]
+
+
 class InitCommand(AbstractCommand):
     """Command to initialize a new Framefox project"""
-
-    MIN_PYTHON_VERSION = (3, 12)
-    MIN_DISK_SPACE = 100 * 1024 * 1024
-
-    # Project structure to create
-    PROJECT_DIRECTORIES = [
-        "src",
-        "src/controller",
-        "src/tests",
-        "src/entity",
-        "src/repository",
-        "src/security",
-        "templates",
-        "public",
-        "config",
-        "var",
-        "var/log",
-        "var/session",
-        "migrations",
-        "migrations/versions",
-        "migrations/versions/__pycache__",
-    ]
-
-    PROJECT_FILES = [
-        "main.py",
-        ".env",
-        "templates/base.html",
-        "config/application.yaml",
-        "config/orm.yaml",
-        "config/security.yaml",
-        "config/mail.yaml",
-        "config/debug.yaml",
-        "config/parameter.yaml",
-        "config/services.yaml",
-        "config/tasks.yaml",
-        "migrations/env.py",
-        "migrations/script.py.mako",
-        "migrations/versions/__pycache__/.gitkeep",
-        ".gitignore",
-        "requirements.txt",
-    ]
-
     def __init__(self):
         super().__init__("init")
 
@@ -87,12 +87,12 @@ class InitCommand(AbstractCommand):
         existing_items = []
 
         # Check directories
-        for directory in self.PROJECT_DIRECTORIES:
+        for directory in PROJECT_DIRECTORIES:
             if os.path.exists(directory):
                 existing_items.append(f"{directory}/ (directory)")
 
         # Check files
-        for file in self.PROJECT_FILES:
+        for file in PROJECT_FILES:
             if os.path.exists(file):
                 existing_items.append(f"{file} (file)")
 
@@ -143,7 +143,7 @@ class InitCommand(AbstractCommand):
 
     def _create_directories(self):
         """Create all project directories"""
-        for directory in self.PROJECT_DIRECTORIES:
+        for directory in PROJECT_DIRECTORIES:
             os.makedirs(directory, exist_ok=True)
 
     def _create_files(self):
@@ -289,11 +289,11 @@ class InitCommand(AbstractCommand):
 
         # Python version check
         python_version = sys.version_info
-        python_ok = python_version >= self.MIN_PYTHON_VERSION
+        python_ok = python_version >= MIN_PYTHON_VERSION
         table.add_row(
             "Python Version",
             "[green]OK[/green]" if python_ok else "[red]Error[/red]",
-            f"Python {'.'.join(map(str, self.MIN_PYTHON_VERSION))}+",
+            f"Python {'.'.join(map(str, MIN_PYTHON_VERSION))}+",
             f"Python {'.'.join(map(str, python_version[:3]))}",
         )
 
@@ -319,7 +319,7 @@ class InitCommand(AbstractCommand):
 
         # Disk space check
         _, _, free = shutil.disk_usage(home)
-        space_ok = free > self.MIN_DISK_SPACE
+        space_ok = free > MIN_DISK_SPACE
         table.add_row(
             "Disk Space",
             "[green]OK[/green]" if space_ok else "[red]Insufficient[/red]",
@@ -332,7 +332,7 @@ class InitCommand(AbstractCommand):
     def _evaluate_requirements(self):
         """Evaluate if all requirements are satisfied"""
         python_version = sys.version_info
-        python_ok = python_version >= self.MIN_PYTHON_VERSION
+        python_ok = python_version >= MIN_PYTHON_VERSION
 
         os_name = platform.system()
         os_ok = os_name in ["Linux", "Darwin", "Windows", "MacOS"]
@@ -341,7 +341,7 @@ class InitCommand(AbstractCommand):
         can_write = os.access(home, os.W_OK)
 
         _, _, free = shutil.disk_usage(home)
-        space_ok = free > self.MIN_DISK_SPACE
+        space_ok = free > MIN_DISK_SPACE
 
         return python_ok and os_ok and can_write and space_ok
 

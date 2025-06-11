@@ -4,6 +4,7 @@ from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
+from framefox.terminal.common.model_checker import ModelChecker
 
 """
 Framefox Framework developed by SOMA
@@ -33,8 +34,54 @@ class CreateRegisterCommand(AbstractCommand):
             linebefore=True,
         )
         provider_name = InputManager().wait_input("Provider name")
+        if not provider_name:
+            self.printer.print_msg(
+                "Provider name cannot be empty. Please try again.",
+                theme="error",
+                linebefore=True,
+            )
+            raise Exception("Provider name cannot be empty.")
+        
+        if not self._validate_provider(provider_name):
+            self.printer.print_msg(
+                "Provider validation failed. It should be in snake_case, and must have 'password' and 'email' properties.",
+                theme="error",
+                linebefore=True,
+            )
+            raise Exception("Provider validation failed.")
 
         self._create_register_files(provider_name)
+
+    def _validate_provider(self, provider_name: str) -> bool:
+        if not ClassNameManager.is_snake_case(provider_name):
+            self.printer.print_msg(
+                "Invalid provider name. Must be in snake_case.",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
+            return False
+
+        if not ModelChecker().check_entity_and_repository(provider_name):
+            self.printer.print_msg(
+                "Provider entity does not exist.",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
+            return False
+
+        if not ModelChecker().check_entity_properties(
+            provider_name, ["password", "email"]
+        ):
+            self.printer.print_msg(
+                "Provider entity must have 'password' and 'email' properties.",
+                theme="error",
+                linebefore=True,
+                newline=True,
+            )
+            return False
+        return True
 
     def _create_register_files(self, provider_name: str):
 

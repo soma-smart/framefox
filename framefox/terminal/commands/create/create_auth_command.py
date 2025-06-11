@@ -52,7 +52,12 @@ class CreateAuthCommand(AbstractCommand):
                 return
 
         authenticator_import_path = self._create_login_files(auth_type, auth_name)
-        self._configure_security(provider_name, authenticator_import_path, auth_type, auth_name)
+        if not authenticator_import_path:
+            raise Exception("Issue while creating the authenticator.")
+
+        self._configure_security(
+            provider_name, authenticator_import_path, auth_type, auth_name
+        )
 
     def _ask_authenticator_type(self) -> str:
         self.printer.print_msg(
