@@ -234,7 +234,8 @@ class FirewallHandler:
 
         accept_header = request.headers.get("accept", "")
         if "text/html" in accept_header:
-            return RedirectResponse(url="/", status_code=302)
+            redirect_url = self._get_denied_redirect_url(request)
+            return RedirectResponse(url=redirect_url, status_code=302)
         else:
             return JSONResponse(content={"error": "Access denied"}, status_code=403)
 
@@ -268,3 +269,16 @@ class FirewallHandler:
 
         self.logger.info("User logged out and session deleted")
         return response
+    
+    def _get_denied_redirect_url(self, request: Request) -> str:
+        """Get the denied redirect URL from the appropriate firewall configuration."""
+        request_path = request.url.path  
+        for firewall_name, firewall_config in self.settings.firewalls.items():
+            login_path = firewall_config.get("login_path", "")
+            
+
+            if login_path and (request_path.startswith(login_path.rsplit('/', 1)[0]) if '/' in login_path else False):
+                denied_redirect = firewall_config.get("denied_redirect")
+                if denied_redirect:
+                    return denied_redirect  
+        return "/"
