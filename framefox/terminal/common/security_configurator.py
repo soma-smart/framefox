@@ -56,6 +56,7 @@ class SecurityConfigurator:
             "authenticator": authenticator_import_path,
             "login_path": "/login",
             "logout_path": "/logout",
+            "denied_redirect": "/"
         }
 
         if firewall_key in config["security"]["firewalls"]:
@@ -97,6 +98,7 @@ class SecurityConfigurator:
                 "authenticator": authenticator_import_path,
                 "login_path": "/login",
                 "logout_path": "/logout",
+                "denied_redirect": "/"
             }
             if provider_key:
                 new_firewall["provider"] = provider_key
