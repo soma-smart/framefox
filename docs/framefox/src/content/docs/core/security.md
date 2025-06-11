@@ -291,12 +291,11 @@ RBAC is a widely-adopted security paradigm that simplifies permission management
 Roles are stored as JSON arrays in the user entity:
 
 ```python title="src/entity/user.py"
-class User(Entity):
-    # ...existing fields...
-    roles: list[str] = Field(
-        default_factory=lambda: ['ROLE_USER'], 
-        sa_column=Column(JSON)
-    )
+class User(AbstractEntity, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    password: str= Field(nullable=False)
+    email: str= Field(nullable=False)
+    roles: list[str] = Field(default_factory=lambda: ['ROLE_USER'], sa_column=Column(JSON))
 ```
 
 #### Access Control Rules
@@ -392,7 +391,7 @@ Display content conditionally based on user roles:
 
 ```html title="templates/base.html"
 <!-- Check if user is authenticated -->
-{% if current_user %}
+{% if current_user() %}
     <nav class="user-nav">
         <span>Welcome, {{ current_user.email }}!</span>
         
@@ -424,7 +423,6 @@ Display content conditionally based on user roles:
     </div>
 {% endif %}
 ```
-
 
 ## Generated Authenticators
 
@@ -574,153 +572,6 @@ is_valid = hasher.verify("user_password", hashed_password)
 - **Secure verification** with timing attack protection
 - **Password strength validation** (customizable)
 
-### JWT Token Management
-
-Secure token-based authentication with automatic expiration:
-
-```python
-# TokenManager features:
-# - HS256 algorithm with configurable secret keys
-# - Automatic token expiration (1 hour default)
-# - Payload encryption with user roles and firewall context
-# - Token validation and decoding with error handling
-```
-
-**Token Features:**
-- **Secure token generation** with user ID, email, roles, and firewall context
-- **Automatic expiration** and validation
-- **Error handling** for expired and invalid tokens
-- **Token storage** with secure session management
-
-### Session Management
-
-Enterprise-grade session handling with security best practices:
-
-```python
-# Session security features:
-# - HttpOnly and Secure cookie flags
-# - Session regeneration on authentication changes
-# - Automatic cleanup on logout
-# - CSRF token synchronization
-```
-
-**Session Features:**
-- **Secure session cookies** with HttpOnly and Secure flags
-- **Session regeneration** on authentication state changes
-- **Automatic session cleanup** on logout and expiration
-- **Configurable session timeouts**
-- **Session hijacking prevention** with token validation
-
-### Access Control Management
-
-Sophisticated role-based access control with path-based protection:
-
-```python
-# AccessManager automatically handles:
-# - Path pattern matching (regex support)
-# - Role hierarchy validation
-# - Multi-role access control
-# - API and web route protection
-```
-
-**Access Control Features:**
-- **Path-based protection** with regex pattern matching
-- **Role hierarchy support** for complex permission structures
-- **Multiple role access** (user needs ANY of the specified roles)
-- **Automatic route protection** without controller modifications
-
-### Security Context Handling
-
-Centralized security context management for authentication state:
-
-```python
-# SecurityContextHandler provides:
-# - Authentication error tracking
-# - Last username persistence
-# - Session-based error handling
-# - Request context management
-```
-
-**Context Features:**
-- **Authentication error tracking** with session persistence
-- **Last username storage** for form pre-filling
-- **Security context** available throughout request lifecycle
-- **Error message management** with automatic cleanup
-
-### Multiple Authenticator Support
-
-Flexible authentication system supporting various protocols:
-
-```python
-# Built-in authenticator types:
-# - Form-based authentication (default)
-# - API token authentication
-# - OAuth 2.0 authentication (abstract base)
-# - Custom authenticator protocols
-```
-
-**Authenticator Features:**
-- **Form-based authentication** with email/password credentials
-- **API token authentication** for stateless API access
-- **OAuth 2.0 support** with provider abstraction
-- **Custom authenticator** support for specialized needs
-- **Passport-based** credential encapsulation
-
-### Passport Security System
-
-Advanced credential management with multi-factor support:
-
-```python
-# Passport system handles:
-# - User badge verification
-# - Password credential validation
-# - CSRF token verification
-# - Provider information context
-```
-
-**Passport Features:**
-- **Multi-badge authentication** (user, password, CSRF)
-- **Database user lookup** with configurable properties
-- **Automatic password verification** with bcrypt
-- **Role extraction** and assignment
-- **Provider context** for multi-firewall setups
-
-### User Provider System
-
-Flexible user loading with entity abstraction:
-
-```python
-# EntityUserProvider supports:
-# - Multiple entity types
-# - Configurable identification properties
-# - Repository pattern integration
-# - Firewall-specific user loading
-```
-
-**User Provider Features:**
-- **Entity-based user loading** with configurable properties
-- **Multiple identification fields** (email, username, etc.)
-- **Repository pattern integration** for data access
-- **Firewall-specific configuration** for multi-tenant applications
-
-### Security Event System
-
-Comprehensive security event tracking and logging:
-
-```python
-# Security events automatically logged:
-# - Authentication attempts (success/failure)
-# - Authorization failures
-# - CSRF token violations
-# - Session management events
-```
-
-**Event Features:**
-- **Authentication event logging** with detailed context
-- **Authorization failure tracking** for security monitoring
-- **CSRF violation detection** with request details
-- **Security audit trail** for compliance requirements
-
 ## Advanced Security Configuration
 
 ### Multiple Firewalls
@@ -793,14 +644,6 @@ class ProfileController(AbstractController):
         return self.render("user/profile.html", {
             "user": user
         })
-
-    @Route("/admin-area", "admin.dashboard")
-    async def admin_dashboard(self):
-        # Check permissions manually
-        if not self.is_granted("ROLE_ADMIN"):
-            raise self.create_access_denied_exception("Access denied")
-            
-        return self.render("admin/dashboard.html")
 ```
 
 ## Template Security Integration
@@ -814,7 +657,7 @@ Check authentication in templates:
 ```html title="templates/navigation.html"
 <!-- Navigation based on authentication status -->
 <nav class="main-nav">
-    {% if current_user %}
+    {% if current_user() %}
         <div class="user-menu">
             <span>Welcome, {{ current_user.email }}!</span>
             
