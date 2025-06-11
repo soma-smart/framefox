@@ -17,7 +17,7 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 ## What is Framefox?
 
@@ -324,16 +324,16 @@ In development mode, access the web profiler at `/_profiler` to analyze:
 
 <CardGrid>
     <Card title="Build Your First App" icon="laptop">
-        Follow the complete tutorial to build a full application.
+        [Follow the complete tutorial to build a full application.](/core/controllers)
     </Card>
-    <Card title="Explore the ORM" icon="database">
-        Learn to model your data with the integrated ORM.
+    <Card title="Explore the ORM" icon="document">
+        [Learn to model your data with the integrated ORM.](/core/database)
     </Card>
-    <Card title="Secure Your App" icon="shield">
-        Configure authentication and authorization.
+    <Card title="Secure Your App" icon="seti:lock">
+        [Configure authentication and authorization.](/core/security)
     </Card>
     <Card title="Deploy to Production" icon="rocket">
-        Deployment guide and best practices.
+        [Deployment guide and best practices.](/advanced_features/deployment)
     </Card>
 </CardGrid>
 
