@@ -3,9 +3,7 @@ title: Introduction to Framefox
 description: Learn about Framefox, a modern Python web framework built with clean architecture principles
 ---
 
-# Introduction to Framefox
-
-**Framefox** is a modern Python web framework designed to bring **enterprise-grade software engineering principles** to web development. Built from the ground up with object-oriented programming, SOLID principles, and clean code practices, Framefox empowers developers to create maintainable, scalable, and robust web applications.
+**Framefox** is a modern Python web framework designed to bring **best practices from day one** to web development. Built from the ground up with object-oriented programming, SOLID principles, and clean code practices, Framefox empowers developers to create maintainable, scalable, and robust web applications.
 
 Whether you're a seasoned developer or just starting your programming journey, Framefox provides the structure and tools needed to build professional web applications while learning industry best practices.
 
@@ -15,9 +13,9 @@ Framefox believes that **good architecture leads to good applications**. By enfo
 
 ## What Makes Framefox Different?
 
-### Enterprise-Grade Architecture in Python Web Development
+### Best practices from day one in Python Web Development
 
-While many Python web frameworks focus primarily on rapid prototyping or minimal setup, Framefox takes a different approach. It brings the architectural rigor typically found in enterprise frameworks to the Python ecosystem, without sacrificing Python's simplicity and readability.
+While many Python web frameworks focus primarily on rapid prototyping or minimal setup, Framefox takes a different approach. It provides the structured organization and proven patterns of mature frameworks, while preserving Python's natural simplicity and readability.
 
 **Core Principles:**
 - **Structure over Convention**: Clear, explicit structure that scales from small projects to large applications
@@ -79,7 +77,7 @@ Framefox implements the **SOLID principles** throughout its architecture, helpin
 
 ### Understanding SOLID
 
-**S - Single Responsibility Principle**: Each class should have only one reason to change.
+**S - Single Responsibility Principle**: Each class should have only one purpose.
 **O - Open/Closed Principle**: Software entities should be open for extension but closed for modification.
 **L - Liskov Substitution Principle**: Objects should be replaceable with instances of their subtypes.
 **I - Interface Segregation Principle**: Many client-specific interfaces are better than one general-purpose interface.
@@ -112,7 +110,7 @@ class UserController(AbstractController):
 - **Testability**: Easy to mock dependencies and write unit tests
 - **Maintainability**: Changes to one component don't ripple through the system
 - **Extensibility**: Add new features without modifying existing code
-- **Flexibility**: Swap implementations without changing client code
+- **Flexibility**: Modify one part without breaking others
 
 **Learn More:**
 - [SOLID Principles Explained](https://en.wikipedia.org/wiki/SOLID)
@@ -229,8 +227,8 @@ class ProductController(AbstractController):
 ```
 
 ```html
-<!-- VIEW: Template handling presentation -->
 <!-- templates/product/index.html -->
+<!-- VIEW: Template handling presentation -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -316,22 +314,20 @@ async def show_user(self, id: int):
 ### For Senior Developers
 
 - **Implement enterprise patterns** without boilerplate
-- **Scale applications** with confidence
-- **Maintain code quality** across large teams
+- Build apps that **grow with your needs**
+- **Keep your code clean** and readable
 - **Mentor junior developers** through structured architecture
 
 ## Next Steps
 
 Ready to experience clean, maintainable Python web development?
 
-:::note[Learning Path]
-1. **[Installation](/installation)** - Set up your development environment
-2. **[Controllers](/controllers)** - Learn the MVC controller layer
-3. **[Database](/database)** - Master entities and repositories
-4. **[Services](/services)** - Implement business logic with dependency injection
-5. **[Security](/security)** - Build secure applications from the start
-:::
+1. **[How do I get started?](/installation)** - Set up your development environment
+2. **[How do I handle web requests?](/core/controllers)** - Learn the MVC controller layer
+3. **[How do I work with data?](/core/database)** - Master entities and repositories
+4. **[How do I organize business logic?](/advanced_features/services)** - Implement services with dependency injection
+5. **[How do I secure my app?](/core/security)** - Build secure applications from the start
 
 ---
 
-**Swift, smart, and a bit foxy!** - Framefox brings enterprise-grade architecture to Python web development, making it accessible to developers at every level.
+**Swift, smart, and a bit foxy!** - Framefox brings best practices from day one to Python web development, making it accessible to developers at every level.

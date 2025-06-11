@@ -18,6 +18,8 @@ hero:
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { FileTree, Steps } from '@astrojs/starlight/components';
+
 
 ## What is Framefox?
 
@@ -42,25 +44,29 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 ## Installation
 
-Install Framefox via pip:
+<Steps>
 
-```bash
-pip install framefox
-```
+1. Install Framefox via pip:
 
-Create a new project:
+   ```bash
+   pip install framefox
+   ```
 
-```bash
-mkdir my-project
-cd my-project
-framefox init
-```
+2. Create a new project:
 
-Start the development server:
+   ```bash
+   mkdir my-project
+   cd my-project
+   framefox init
+   ```
 
-```bash
-framefox server start
-```
+3. Start the development server:
+
+   ```bash
+   framefox server start
+   ```
+
+</Steps>
 
 Your application is now accessible at `http://localhost:8000`! 🎉
 
@@ -68,29 +74,29 @@ Your application is now accessible at `http://localhost:8000`! 🎉
 
 A Framefox project follows an organized structure:
 
-```
-my-project/
-├── src/
-│   ├── controllers/       # User application controllers
-│   ├── entity/            # Database entities (models)
-│   └── repository/        # Custom repository classes
-├── config/                # Application configuration
-│   ├── application.yaml   # Main application configuration
-│   ├── debug.yaml         # Debug configuration
-│   ├── mail.yaml          # Email configuration
-│   ├── orm.yaml           # ORM configuration
-│   ├── parameter.yaml     # Application parameters
-│   ├── security.yaml      # Security configuration
-│   ├── services.yaml      # Services configuration
-│   └── tasks.yaml         # Tasks configuration
-├── public/                # Static assets
-├── migrations/            # Database migrations
-├── templates/             # Jinja2 templates
-├── var/                   # Variable data (logs, cache)
-├── .env                   # Environment variables
-├── requirements.txt       # Python dependencies
-└── main.py                # Application entry point
-```
+<FileTree>
+- my-project/
+  - src/
+    - controllers/ **User application controllers**
+    - entity/ **Database entities (models)**
+    - repository/ **Custom repository classes**
+  - config/ **Application configuration**
+    - application.yaml **Main application configuration**
+    - debug.yaml **Debug configuration**
+    - mail.yaml **Email configuration**
+    - orm.yaml **ORM configuration**
+    - parameter.yaml **Application parameters**
+    - security.yaml **Security configuration**
+    - services.yaml **Services configuration**
+    - tasks.yaml **Tasks configuration**
+  - public/ **Static assets**
+  - migrations/ **Database migrations**
+  - templates/ **Jinja2 templates**
+  - var/ **Variable data (logs, cache)**
+  - .env **Environment variables**
+  - requirements.txt **Python dependencies**
+  - main.py **Application entry point**
+</FileTree>
 
 ## Your First Controller
 
