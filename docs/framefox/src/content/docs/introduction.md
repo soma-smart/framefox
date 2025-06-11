@@ -41,19 +41,19 @@ Object-oriented programming helps you:
 
 ```python
 # Entity representing a real-world concept
+from sqlmodel import Field
+from pydantic import EmailStr
+
+from framefox.core.orm.abstract_entity import AbstractEntity
+
 class User(AbstractEntity, table=True):
     id: int | None = Field(default=None, primary_key=True)
     username: str = Field(min_length=3, max_length=50)
-    email: str = Field(regex=r'^[\w\.-]+@[\w\.-]+\.\w+$')
-    
-    # Encapsulated behavior within the entity
-    def get_display_name(self) -> str:
-        return f"{self.first_name} {self.last_name}"
+    email: EmailStr = Field(nullable=False
 
 # Controller inheriting from AbstractController
 class UserController(AbstractController):
     def __init__(self):
-        super().__init__()
         # Dependency injection for loose coupling
         self.user_service = self._container.get_service("user_service")
     
@@ -104,7 +104,6 @@ class UserService:
 # Dependency Inversion: Controller depends on abstraction (service interface)
 class UserController(AbstractController):
     def __init__(self):
-        super().__init__()
         # Injected dependency, not concrete implementation
         self.user_service = self._container.get_service("user_service")
 ```
@@ -126,34 +125,53 @@ Framefox enforces **clean code** practices through its architecture, naming conv
 ### Clean Code in Practice
 
 ```python
+from fastapi import Request
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
+from framefox.core.routing.decorator.route import Route
+
+from src.entity.user import User
+from src.form.user_registration_form import UserRegistrationForm
+from src.services.user.user_service import UserService
+
 # Descriptive names and clear structure
 class UserRegistrationController(AbstractController):
+    """Controller for managing user registration"""
+    
+    def __init__(self):
+        self.entity_manager = EntityManagerInterface()
+        self.user_service = UserService()
+    
     @Route("/register", "user.register", methods=["GET", "POST"])
-    async def register_new_user(self, request: Request) -> HTMLResponse:
-        form = self.create_form(UserRegistrationForm)
+    async def register_new_user(self, request: Request):
+        """Register a new user"""
+        # Check if user is already logged in
+        if self.get_user():
+            return self.redirect(self.generate_url("dashboard.index"))
         
-        if request.method == "POST":
-            await form.handle_request(request)
-            
-            if form.is_valid():
-                return await self._process_valid_registration(form)
-            else:
-                return await self._handle_registration_errors(form)
+        # Create and handle form
+        user = User()
+        form = self.create_form(UserRegistrationForm, user)
+        await form.handle_request(request)
         
-        return self.render("user/register.html", {"form": form})
-    
-    async def _process_valid_registration(self, form: UserRegistrationForm) -> Response:
-        """Process a valid user registration form."""
-        user_data = form.get_data()
-        user = await self.user_service.create_user(user_data)
-        await self.login_user(user)
-        return self.redirect("dashboard.index")
-    
-    async def _handle_registration_errors(self, form: UserRegistrationForm) -> HTMLResponse:
-        """Handle registration form validation errors."""
+        if form.is_submitted() and form.is_valid():
+            try:
+                form_data = dict(await request.form())
+                success, message, created_user = await self.user_service.create_user(form_data)
+                
+                if success:
+                    await self.login_user(created_user)
+                    self.flash("success", "Registration successful! Welcome.")
+                    return self.redirect(self.generate_url("dashboard.index"))
+                else:
+                    self.flash("error", message)
+                    
+            except Exception as e:
+                self.flash("error", f"Registration error: {str(e)}")
+        
         return self.render("user/register.html", {
-            "form": form,
-            "errors": form.get_errors()
+            "form": form.create_view(),
+            "user": user
         })
 ```
 
@@ -199,7 +217,6 @@ class ProductRepository(AbstractRepository):
 # CONTROLLER: Coordinating between Model and View
 class ProductController(AbstractController):
     def __init__(self):
-        super().__init__()
         self.product_repository = ProductRepository()
     
     @Route("/products", "product.index")
