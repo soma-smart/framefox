@@ -1,95 +1,106 @@
 ---
-title: Guide de démarrage rapide
-description: Commencez à développer avec Framefox, le framework web Python moderne et productif.
-template: splash
+title: Quick Start Guide
+description: Start developing with Framefox, the modern and productive Python web framework.
+template: doc
 hero:
-  tagline: Développez des applications web Python rapidement et efficacement !
+  tagline: Develop Python web applications quickly and efficiently!
   image:
     file: ../../assets/houston.webp
   actions:
-    - text: Commencer maintenant
-      link: /docs/installation
+    - text: Get Started
+      link: /installation
       icon: right-arrow
-    - text: Voir les exemples
-      link: /docs/controllers
+      variant: secondary
+    - text: View Examples
+      link: /core/controllers
       icon: external
       variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Qu'est-ce que Framefox ?
+## What is Framefox?
 
-**Framefox** est un framework web Python moderne, conçu pour simplifier le développement d'applications web robustes et maintenables. Basé sur **FastAPI**, il adopte une approche orientée objet avec une architecture **MVC claire** pour améliorer la productivité des développeurs.
+**Framefox** is a modern Python web framework, designed to simplify the development of robust and maintainable web applications. Based on **FastAPI**, it adopts an object-oriented approach with a **clear MVC architecture** to improve developer productivity.
 
-### Caractéristiques principales
+### Key Features
 
-<CardGrid stagger>
-	<Card title="Architecture MVC" icon="setting">
-		Structure claire avec séparation des responsabilités : Modèles, Vues et Contrôleurs.
-	</Card>
-	<Card title="Basé sur FastAPI" icon="rocket">
-		Performance élevée avec validation automatique des types et documentation OpenAPI.
-	</Card>
-	<Card title="Terminal interactif" icon="laptop">
-		Commandes intégrées pour générer rapidement contrôleurs, entités et formulaires.
-	</Card>
-	<Card title="Système de routing avancé" icon="star">
-		Décorateurs de routes simples avec noms et méthodes HTTP personnalisables.
-	</Card>
+<CardGrid>
+    <Card title="MVC Architecture" icon="setting">
+        Clear structure with separation of concerns: Models, Views, and Controllers.
+    </Card>
+    <Card title="Built on FastAPI" icon="rocket">
+        High performance with automatic type validation and OpenAPI documentation.
+    </Card>
+    <Card title="Interactive Terminal" icon="laptop">
+        Built-in commands to quickly generate controllers, entities, and forms.
+    </Card>
+    <Card title="Advanced Routing System" icon="star">
+        Simple route decorators with customizable names and HTTP methods.
+    </Card>
 </CardGrid>
 
 ## Installation
 
-Installez Framefox via pip :
+Install Framefox via pip:
 
 ```bash
 pip install framefox
 ```
 
-Créez un nouveau projet :
+Create a new project:
 
 ```bash
-mkdir mon-projet-framefox
-cd mon-projet-framefox
+mkdir my-project
+cd my-project
 framefox init
 ```
 
-Démarrez le serveur de développement :
+Start the development server:
 
 ```bash
-framefox serve
+framefox server start
 ```
 
-Votre application est maintenant accessible sur `http://localhost:8000` ! 🎉
+Your application is now accessible at `http://localhost:8000`! 🎉
 
-## Structure du projet
+## Project Structure
 
-Un projet Framefox suit une structure organisée :
+A Framefox project follows an organized structure:
 
 ```
-mon-projet/
+my-project/
 ├── src/
-│   ├── controllers/       # Contrôleurs de votre application
-│   ├── entities/          # Modèles de données (ORM)
-│   ├── forms/             # Formulaires et validation
-│   ├── repository/        # Couche d'accès aux données
-│   └── templates/         # Templates Jinja2
-├── public/                # Assets statiques (CSS, JS, images)
-├── config/                # Configuration de l'application
-├── requirements.txt       # Dépendances Python
-└── main.py               # Point d'entrée de l'application
+│   ├── controllers/       # User application controllers
+│   ├── entity/            # Database entities (models)
+│   └── repository/        # Custom repository classes
+├── config/                # Application configuration
+│   ├── application.yaml   # Main application configuration
+│   ├── debug.yaml         # Debug configuration
+│   ├── mail.yaml          # Email configuration
+│   ├── orm.yaml           # ORM configuration
+│   ├── parameter.yaml     # Application parameters
+│   ├── security.yaml      # Security configuration
+│   ├── services.yaml      # Services configuration
+│   └── tasks.yaml         # Tasks configuration
+├── public/                # Static assets
+├── migrations/            # Database migrations
+├── templates/             # Jinja2 templates
+├── var/                   # Variable data (logs, cache)
+├── .env                   # Environment variables
+├── requirements.txt       # Python dependencies
+└── main.py                # Application entry point
 ```
 
-## Votre premier contrôleur
+## Your First Controller
 
-Créez un contrôleur avec le terminal interactif :
+Create a controller with the interactive terminal:
 
 ```bash
 framefox create controller
 ```
 
-Ou créez manuellement un fichier `src/controllers/home_controller.py` :
+Or manually create a `src/controllers/home_controller.py` file:
 
 ```python
 from framefox.core.routing.decorator.route import Route
@@ -99,58 +110,58 @@ class HomeController(AbstractController):
     @Route("/", "home.index", methods=["GET"])
     async def index(self):
         return self.render("home/index.html", {
-            "message": "Bienvenue avec Framefox !"
+            "message": "Welcome to Framefox!"
         })
     
     @Route("/users/{id}", "home.user", methods=["GET"])
     async def show_user(self, id: int):
-        return {"user_id": id, "name": f"Utilisateur {id}"}
+        return {"user_id": id, "name": f"User {id}"}
 ```
 
-### Les décorateurs Route
+### Route Decorators
 
-Le décorateur `@Route` définit les routes de votre application :
+The `@Route` decorator defines your application routes:
 
-- **Premier paramètre** : Le chemin URL (`/`, `/users/{id}`)
-- **Deuxième paramètre** : Le nom de la route (`home.index`)
-- **methods** : Les méthodes HTTP autorisées (`["GET", "POST"]`)
+- **First parameter**: The URL path (`/`, `/users/{id}`)
+- **Second parameter**: The route name (`home.index`)
+- **methods**: Allowed HTTP methods (`["GET", "POST"]`)
 
-## Rendu de templates
+## Template Rendering
 
-Framefox utilise **Jinja2** pour le rendu des templates. Créez `src/templates/home/index.html` :
+Framefox uses **Jinja2** for template rendering. Create `src/templates/home/index.html`:
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Mon App Framefox</title>
+    <title>My Framefox App</title>
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 </head>
 <body>
     <h1>{{ message }}</h1>
-    <p>URL vers utilisateur : <a href="{{ url_for('home.user', id=123) }}">Utilisateur 123</a></p>
+    <p>URL to user: <a href="{{ url_for('home.user', id=123) }}">User 123</a></p>
     
-    <!-- Token CSRF automatique -->
+    <!-- Automatic CSRF token -->
     <form method="POST">
-        {{ csrf_token() }}
-        <input type="text" name="username" placeholder="Nom d'utilisateur">
-        <button type="submit">Valider</button>
+        {{ get_csrf_token() }}
+        <input type="text" name="username" placeholder="Username">
+        <button type="submit">Submit</button>
     </form>
 </body>
 </html>
 ```
 
-### Fonctions de template intégrées
+### Built-in Template Functions
 
-- `{{ url_for('route.name', param=value) }}` : Génère des URLs
-- `{{ asset('path/file.css') }}` : Liens vers les assets statiques
-- `{{ csrf_token() }}` : Protection CSRF automatique
-- `{{ current_user }}` : Utilisateur authentifié
-- `{{ get_flash_messages() }}` : Messages flash
+- `{{ url_for('route.name', param=value) }}`: Generate URLs
+- `{{ asset('path/file.css') }}`: Links to static assets
+- `{{ get_csrf_token() }}`: Automatic CSRF protection
+- `{{ get_current_user() }}`: Authenticated user
+- `{{ get_flash_messages() }}`: Flash messages
 
-## Gestion des formulaires
+## Form Handling
 
-Créez des formulaires typés avec validation automatique :
+Create typed forms with automatic validation:
 
 ```python
 from framefox.core.form.form_type import FormType
@@ -161,38 +172,38 @@ class UserType(FormType):
     def build_form(self, form_builder):
         form_builder.add("name", TextType, {
             "required": True,
-            "label": "Nom complet"
+            "label": "Full Name"
         })
         form_builder.add("email", EmailType, {
             "required": True,
-            "label": "Adresse e-mail"
+            "label": "Email Address"
         })
 ```
 
-Utilisez le formulaire dans votre contrôleur :
+Use the form in your controller:
 
 ```python
 @Route("/register", "user.register", methods=["GET", "POST"])
 async def register(self, request: Request):
     form = self.create_form(UserType)
     
-    if request.method == "POST":
-        await form.handle_request(request)
-        if form.is_valid():
-            # Traiter les données
-            data = form.get_data()
-            return self.redirect("user.success")
+    await form.handle_request(request)
+    if form.is_submitted() and form.is_valid():
+        # Process data
+        data = form.get_data()
+        self.flash("success", "Registration successful!")
+        return self.redirect("user.success")
     
     return self.render("user/register.html", {"form": form})
 ```
 
-## Authentification et sécurité
+## Authentication and Security
 
-Framefox inclut un système d'authentification complet :
+Framefox includes a complete authentication system:
 
-### Configuration des firewalls
+### Firewall Configuration
 
-Dans `config/security.yaml` :
+In `config/security.yaml`:
 
 ```yaml
 security:
@@ -206,12 +217,12 @@ security:
       
   access_control:
     - path: ^/admin
-      roles: [ROLE_ADMIN]
+      roles: [ROLE_USER, ROLE_ADMIN]
     - path: ^/profile
       roles: [ROLE_USER]
 ```
 
-### Contrôleur d'authentification
+### Authentication Controller
 
 ```python
 class SecurityController(AbstractController):
@@ -224,111 +235,108 @@ class SecurityController(AbstractController):
         return self.redirect("security.login")
 ```
 
-## Base de données et ORM
+## Database and ORM
 
-Définissez vos entités avec l'ORM intégré :
+Define your entities with the integrated ORM:
 
 ```python
-from framefox.core.orm.entity import Entity
-from framefox.core.orm.column import Column
+from sqlmodel import Field
+from pydantic import EmailStr
 
-class User(Entity):
-    __tablename__ = "users"
-    
-    id = Column("id", primary_key=True, auto_increment=True)
-    username = Column("username", type="VARCHAR(100)", nullable=False)
-    email = Column("email", type="VARCHAR(255)", unique=True)
-    created_at = Column("created_at", type="DATETIME", default="CURRENT_TIMESTAMP")
+from framefox.core.orm.abstract_entity import AbstractEntity
+
+class User(AbstractEntity, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    username: str = Field(min_length=3, max_length=50)
+    email: EmailStr = Field(nullable=False)
 ```
 
-### Repository pattern
+### Repository Pattern
 
-Créez des repositories pour l'accès aux données :
+Create repositories for data access:
 
 ```python
-from framefox.core.orm.repository import Repository
+from framefox.core.orm.abstract_repository import AbstractRepository
+from src.entity.user import User
 
 class UserRepository(Repository):
-    def find_by_email(self, email: str):
-        return self.find_one_by({"email": email})
-    
-    def find_active_users(self):
-        return self.find_by({"active": True})
+    def __init__(self):
+        super().__init__(User)
 ```
 
-## Commandes du terminal
+## Terminal Commands
 
-Framefox fournit un terminal interactif puissant :
+Framefox provides a powerful interactive terminal:
 
 ```bash
-# Générer un contrôleur
+# Generate a controller
 framefox create controller
 
-# Générer une entité
+# Generate an entity
 framefox create entity
 
-# Générer un CRUD complet
+# Generate a user
+framefox create user
+
+# Generate a complete CRUD
 framefox create crud
 
-# Lister toutes les routes
+# List all routes
 framefox debug router
 
-# Vider le cache
+# Clear cache
 framefox cache clear
-
-# Lancer les tests
-framefox test
 ```
 
-## Middleware et événements
+## Middleware and Events
 
-Framefox inclut plusieurs middlewares intégrés :
+Framefox includes several built-in middlewares:
 
-- **SessionMiddleware** : Gestion des sessions
-- **CsrfMiddleware** : Protection CSRF
-- **FirewallMiddleware** : Authentification et autorisation
-- **RequestMiddleware** : Logs et profiling des requêtes
+- **SessionMiddleware**: Session management
+- **CsrfMiddleware**: CSRF protection
+- **FirewallMiddleware**: Authentication and authorization
+- **RequestMiddleware**: Request logs and profiling
 
-### Événements personnalisés
+### Custom Events
 
 ```python
 from framefox.core.events.decorator.dispatch_event import DispatchEvent
 
 class UserController(AbstractController):
     @Route("/users", "user.create", methods=["POST"])
-    @DispatchEvent(event_before="user.before_create", event_after="user.after_create")
+    @DispatchEvent("user.before_create", "user.after_create")
     async def create_user(self, request: Request):
-        # Logique de création
+        # Creation logic
         return {"success": True}
 ```
 
-## Profiler de développement
+## Development Profiler
 
-En mode développement, accédez au profiler web sur `/_profiler` pour analyser :
+In development mode, access the web profiler at `/_profiler` to analyze:
 
-- Informations sur les routes
-- Performance des requêtes
-- Logs et erreurs
-- Utilisation mémoire
-- Requêtes base de données
+- Route information
+- Request performance
+- Logs and errors
+- Memory usage
+- Database queries
 
-## Prochaines étapes
+## Next Steps
 
-<CardGrid stagger>
-	<Card title="Créer votre première app" icon="laptop">
-		Suivez le tutoriel complet pour construire une application complète.
-	</Card>
-	<Card title="Explorer l'ORM" icon="database">
-		Apprenez à modéliser vos données avec l'ORM intégré.
-	</Card>
-	<Card title="Sécuriser votre app" icon="shield">
-		Configurez l'authentification et les autorisations.
-	</Card>
-	<Card title="Déployer en production" icon="rocket">
-		Guide de déploiement et bonnes pratiques.
-	</Card>
+<CardGrid>
+    <Card title="Build Your First App" icon="laptop">
+        Follow the complete tutorial to build a full application.
+    </Card>
+    <Card title="Explore the ORM" icon="database">
+        Learn to model your data with the integrated ORM.
+    </Card>
+    <Card title="Secure Your App" icon="shield">
+        Configure authentication and authorization.
+    </Card>
+    <Card title="Deploy to Production" icon="rocket">
+        Deployment guide and best practices.
+    </Card>
 </CardGrid>
 
 ---
 
-**Prêt à commencer ?** Framefox vous permet de développer rapidement des applications web Python modernes et maintenables. La philosophie du framework privilégie la productivité sans sacrifier la flexibilité !
+**Ready to start?** Framefox allows you to quickly develop modern and maintainable Python web applications. The framework philosophy prioritizes productivity without sacrificing flexibility!
