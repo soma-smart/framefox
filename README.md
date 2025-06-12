@@ -25,8 +25,6 @@
 
 ## 🌟 **Why Framefox?**
 
-> **"Finally, a Python framework that doesn't make me want to pull my hair out!"** - *Satisfied Developer*
-
 **Framefox** combines the **speed of FastAPI** with **clean MVC architecture** and **developer-friendly tooling**. Built for developers who want to ship fast without sacrificing code quality.
 
 ### ✨ **What makes it special?**
@@ -114,10 +112,11 @@ class UserController(AbstractController):
 
 ```
 my-project/
-├── 🎮 src/controllers/     # Handle HTTP requests and business logic
-├── 🏛️ src/entity/          # Database models and entities  
-├── 📝 src/form/           # Form types and validation
-├── 🗄️ src/repository/     # Data access layer
+├── src/
+│   ├── 🎮 controllers/     # Handle HTTP requests and business logic
+│   ├── 🏛️ entity/          # Database models and entities  
+│   ├── 📝 form/           # Form types and validation
+│   └── 🗄️ repository/     # Data access layer
 ├── 🎨 templates/          # Jinja2 templates with template inheritance
 ├── ⚙️ config/             # YAML configuration files
 ├── 🌐 public/            # Static assets (CSS, JS, images)
@@ -255,14 +254,14 @@ class UserController(AbstractController):
 
 ## 📚 **Learn More**
 
-| 📖 **Resource** | 🎯 **Perfect For** |
-|-----------------|-------------------|
-| [📋 Installation Guide](https://soma-smart.github.io/doc-framefox/docs/installation) | Getting up and running |
-| [🎮 Controllers Guide](https://soma-smart.github.io/doc-framefox/docs/controllers) | Building your application logic |
-| [🎨 Templates Guide](https://soma-smart.github.io/doc-framefox/docs/templates) | Creating beautiful views |
-| [🔐 Security Guide](https://soma-smart.github.io/doc-framefox/docs/security) | Securing your application |
-| [🧪 Testing Guide](https://soma-smart.github.io/doc-framefox/docs/testing) | Writing comprehensive tests |
-| [🚀 Deployment Guide](https://soma-smart.github.io/doc-framefox/docs/deployment) | Going to production |
+| 📖 **Resource**                                                                      | 🎯 **Perfect For**               |
+| ----------------------------------------------------------------------------------- | ------------------------------- |
+| [📋 Installation Guide](https://soma-smart.github.io/doc-framefox/docs/installation) | Getting up and running          |
+| [🎮 Controllers Guide](https://soma-smart.github.io/doc-framefox/docs/controllers)   | Building your application logic |
+| [🎨 Templates Guide](https://soma-smart.github.io/doc-framefox/docs/templates)       | Creating beautiful views        |
+| [🔐 Security Guide](https://soma-smart.github.io/doc-framefox/docs/security)         | Securing your application       |
+| [🧪 Testing Guide](https://soma-smart.github.io/doc-framefox/docs/testing)           | Writing comprehensive tests     |
+| [🚀 Deployment Guide](https://soma-smart.github.io/doc-framefox/docs/deployment)     | Going to production             |
 
 
 
@@ -336,10 +335,10 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 *Framefox is proudly backed by **SOMA Smart**, a technology company focused on data transformation and building innovative development tools.*
 
 | ![Rayen](https://github.com/RayenBou.png?size=100) | ![Raphaël](https://github.com/Vasulvius.png?size=100) |
-|:---:|:---:|
-| **[Rayen BOUMAZA](https://github.com/RayenBou)** | **[Raphaël LEUROND](https://github.com/Vasulvius)** |
-| *Framework Architect* | *Core Developer* |
-| 🏗️ Architecture & Performance | 🔧 Features & DevX |
+| :------------------------------------------------: | :---------------------------------------------------: |
+|  **[Rayen BOUMAZA](https://github.com/RayenBou)**  |  **[Raphaël LEUROND](https://github.com/Vasulvius)**  |
+|               *Framework Architect*                |                   *Core Developer*                    |
+|            🏗️ Architecture & Performance            |                   🔧 Features & DevX                   |
 
 ---
 
