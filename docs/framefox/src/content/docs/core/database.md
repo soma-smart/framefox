@@ -491,36 +491,16 @@ class ProductDetails(AbstractEntity, table=True):
     # Relationship back to product
     product: Product = Relationship(back_populates="details")
 ```
-
-:::note[Relationship Pattern Benefits]
-SQLModel relationships provide:
-- **Automatic Loading**: Related data loaded efficiently
-- **Type Safety**: Full Python type hints for related objects
-- **Query Optimization**: Intelligent JOIN generation
-- **Consistency**: Automatic foreign key constraint management
-- **Validation**: Pydantic validation for related data
-:::
-    
-
-
-
-:::caution[Many-to-Many Considerations]
-When implementing many-to-many relationships:
-- **Junction tables should have meaningful names** (product_tags, not product_tag_mapping)
-- **Consider additional metadata** in junction tables (created_at, expires_at)
-- **Use composite primary keys** or separate ID columns based on your needs
-- **Implement cascade deletes carefully** to maintain data integrity
-- **Add indexes** on foreign key columns for performance
-- **Consider the order of operations** when creating/deleting relationships
+:::note[Relationship Benefits]
+SQLModel relationships provide automatic loading, type safety, query optimization, and foreign key management with Pydantic validation.
 :::
 
-:::note[Relationship Performance Tips]
-- **Use eager loading** when you know you'll need related data
-- **Implement repository methods** for common relationship queries
-- **Consider denormalization** for frequently accessed data
-- **Use database indexes** on foreign key columns
-- **Batch operations** when working with multiple relationships
-- **Cache expensive relationship queries** when appropriate
+:::caution[Many-to-Many Best Practices]
+Use meaningful junction table names, add relevant metadata (timestamps), implement proper indexes on foreign keys, and handle cascade deletes carefully for data integrity.
+:::
+
+:::tip[Performance Optimization]
+Use eager loading for known related data, implement repository methods for common queries, add indexes on foreign keys, and consider caching for expensive relationship operations.
 :::
 ## Repository Pattern
 
