@@ -54,7 +54,7 @@ export default defineConfig({
               label: "Services and Dependency Injection",
               slug: "advanced_features/services",
             },
-            { label: "Terminal and Commands", slug: "advanced_features/terminal" },
+            { label: "Terminal and Workers", slug: "advanced_features/terminal" },
             { label: "Web Profiler", slug: "advanced_features/profiler" },
             { label: "Testing", slug: "advanced_features/testing" },
             { label: "Deployment", slug: "advanced_features/deployment" },
