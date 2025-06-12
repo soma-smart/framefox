@@ -494,7 +494,7 @@ class ApiKeyAuthenticator(AbstractAuthenticator):
         # Validate API key and get user information
         user_email = await self.validate_api_key(api_key)
         if not user_email:
-            return None
+            return None²
             
         # Return passport with user information
         passport = Passport(
