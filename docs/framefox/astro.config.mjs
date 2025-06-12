@@ -49,29 +49,23 @@ export default defineConfig({
         {
           label: "Advanced Features",
           items: [
-            { label: "Middleware and Events", slug: "advanced_features/middleware" },
-            {
-              label: "Services and Dependency Injection",
-              slug: "advanced_features/services",
-            },
             { label: "Terminal and Workers", slug: "advanced_features/terminal" },
             { label: "Web Profiler", slug: "advanced_features/profiler" },
-            { label: "Testing", slug: "advanced_features/testing" },
             { label: "Deployment", slug: "advanced_features/deployment" },
           ],
         },
-        {
-          label: "API Reference",
-          autogenerate: { directory: "reference" },
-        },
-        {
-          label: "Examples",
-          items: [
-            // { label: "Blog Application", slug: "examples/blog" },
-            // { label: "REST API", slug: "examples/api" },
-            // { label: "Complete Authentication", slug: "examples/auth" },
-          ],
-        },
+        // {
+        //   label: "API Reference",
+        //   autogenerate: { directory: "reference" },
+        // },
+        // {
+        //   label: "Examples",
+        //   items: [
+        //     // { label: "Blog Application", slug: "examples/blog" },
+        //     // { label: "REST API", slug: "examples/api" },
+        //     // { label: "Complete Authentication", slug: "examples/auth" },
+        //   ],
+        // },
       ],
       customCss: ["./src/styles/custom.css"],
     }),
