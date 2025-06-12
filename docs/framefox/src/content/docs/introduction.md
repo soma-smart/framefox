@@ -3,9 +3,7 @@ title: Introduction to Framefox
 description: Learn about Framefox, a modern Python web framework built with clean architecture principles
 ---
 
-# Introduction to Framefox
-
-**Framefox** is a modern Python web framework designed to bring **enterprise-grade software engineering principles** to web development. Built from the ground up with object-oriented programming, SOLID principles, and clean code practices, Framefox empowers developers to create maintainable, scalable, and robust web applications.
+**Framefox** is a modern Python web framework designed to bring **best practices from day one** to web development. Built from the ground up with object-oriented programming, SOLID principles, and clean code practices, Framefox empowers developers to create maintainable, scalable, and robust web applications.
 
 Whether you're a seasoned developer or just starting your programming journey, Framefox provides the structure and tools needed to build professional web applications while learning industry best practices.
 
@@ -15,9 +13,9 @@ Framefox believes that **good architecture leads to good applications**. By enfo
 
 ## What Makes Framefox Different?
 
-### Enterprise-Grade Architecture in Python Web Development
+### Best practices from day one in Python Web Development
 
-While many Python web frameworks focus primarily on rapid prototyping or minimal setup, Framefox takes a different approach. It brings the architectural rigor typically found in enterprise frameworks to the Python ecosystem, without sacrificing Python's simplicity and readability.
+While many Python web frameworks focus primarily on rapid prototyping or minimal setup, Framefox takes a different approach. It provides the structured organization and proven patterns of mature frameworks, while preserving Python's natural simplicity and readability.
 
 **Core Principles:**
 - **Structure over Convention**: Clear, explicit structure that scales from small projects to large applications
@@ -41,19 +39,19 @@ Object-oriented programming helps you:
 
 ```python
 # Entity representing a real-world concept
+from sqlmodel import Field
+from pydantic import EmailStr
+
+from framefox.core.orm.abstract_entity import AbstractEntity
+
 class User(AbstractEntity, table=True):
     id: int | None = Field(default=None, primary_key=True)
     username: str = Field(min_length=3, max_length=50)
-    email: str = Field(regex=r'^[\w\.-]+@[\w\.-]+\.\w+$')
-    
-    # Encapsulated behavior within the entity
-    def get_display_name(self) -> str:
-        return f"{self.first_name} {self.last_name}"
+    email: EmailStr = Field(nullable=False
 
 # Controller inheriting from AbstractController
 class UserController(AbstractController):
     def __init__(self):
-        super().__init__()
         # Dependency injection for loose coupling
         self.user_service = self._container.get_service("user_service")
     
@@ -79,7 +77,7 @@ Framefox implements the **SOLID principles** throughout its architecture, helpin
 
 ### Understanding SOLID
 
-**S - Single Responsibility Principle**: Each class should have only one reason to change.
+**S - Single Responsibility Principle**: Each class should have only one purpose.
 **O - Open/Closed Principle**: Software entities should be open for extension but closed for modification.
 **L - Liskov Substitution Principle**: Objects should be replaceable with instances of their subtypes.
 **I - Interface Segregation Principle**: Many client-specific interfaces are better than one general-purpose interface.
@@ -104,7 +102,6 @@ class UserService:
 # Dependency Inversion: Controller depends on abstraction (service interface)
 class UserController(AbstractController):
     def __init__(self):
-        super().__init__()
         # Injected dependency, not concrete implementation
         self.user_service = self._container.get_service("user_service")
 ```
@@ -113,7 +110,7 @@ class UserController(AbstractController):
 - **Testability**: Easy to mock dependencies and write unit tests
 - **Maintainability**: Changes to one component don't ripple through the system
 - **Extensibility**: Add new features without modifying existing code
-- **Flexibility**: Swap implementations without changing client code
+- **Flexibility**: Modify one part without breaking others
 
 **Learn More:**
 - [SOLID Principles Explained](https://en.wikipedia.org/wiki/SOLID)
@@ -126,34 +123,53 @@ Framefox enforces **clean code** practices through its architecture, naming conv
 ### Clean Code in Practice
 
 ```python
+from fastapi import Request
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
+from framefox.core.routing.decorator.route import Route
+
+from src.entity.user import User
+from src.form.user_registration_form import UserRegistrationForm
+from src.services.user.user_service import UserService
+
 # Descriptive names and clear structure
 class UserRegistrationController(AbstractController):
+    """Controller for managing user registration"""
+    
+    def __init__(self):
+        self.entity_manager = EntityManagerInterface()
+        self.user_service = UserService()
+    
     @Route("/register", "user.register", methods=["GET", "POST"])
-    async def register_new_user(self, request: Request) -> HTMLResponse:
-        form = self.create_form(UserRegistrationForm)
+    async def register_new_user(self, request: Request):
+        """Register a new user"""
+        # Check if user is already logged in
+        if self.get_user():
+            return self.redirect(self.generate_url("dashboard.index"))
         
-        if request.method == "POST":
-            await form.handle_request(request)
-            
-            if form.is_valid():
-                return await self._process_valid_registration(form)
-            else:
-                return await self._handle_registration_errors(form)
+        # Create and handle form
+        user = User()
+        form = self.create_form(UserRegistrationForm, user)
+        await form.handle_request(request)
         
-        return self.render("user/register.html", {"form": form})
-    
-    async def _process_valid_registration(self, form: UserRegistrationForm) -> Response:
-        """Process a valid user registration form."""
-        user_data = form.get_data()
-        user = await self.user_service.create_user(user_data)
-        await self.login_user(user)
-        return self.redirect("dashboard.index")
-    
-    async def _handle_registration_errors(self, form: UserRegistrationForm) -> HTMLResponse:
-        """Handle registration form validation errors."""
+        if form.is_submitted() and form.is_valid():
+            try:
+                form_data = dict(await request.form())
+                success, message, created_user = await self.user_service.create_user(form_data)
+                
+                if success:
+                    await self.login_user(created_user)
+                    self.flash("success", "Registration successful! Welcome.")
+                    return self.redirect(self.generate_url("dashboard.index"))
+                else:
+                    self.flash("error", message)
+                    
+            except Exception as e:
+                self.flash("error", f"Registration error: {str(e)}")
+        
         return self.render("user/register.html", {
-            "form": form,
-            "errors": form.get_errors()
+            "form": form.create_view(),
+            "user": user
         })
 ```
 
@@ -199,7 +215,6 @@ class ProductRepository(AbstractRepository):
 # CONTROLLER: Coordinating between Model and View
 class ProductController(AbstractController):
     def __init__(self):
-        super().__init__()
         self.product_repository = ProductRepository()
     
     @Route("/products", "product.index")
@@ -212,8 +227,8 @@ class ProductController(AbstractController):
 ```
 
 ```html
-<!-- VIEW: Template handling presentation -->
 <!-- templates/product/index.html -->
+<!-- VIEW: Template handling presentation -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -299,22 +314,20 @@ async def show_user(self, id: int):
 ### For Senior Developers
 
 - **Implement enterprise patterns** without boilerplate
-- **Scale applications** with confidence
-- **Maintain code quality** across large teams
+- Build apps that **grow with your needs**
+- **Keep your code clean** and readable
 - **Mentor junior developers** through structured architecture
 
 ## Next Steps
 
 Ready to experience clean, maintainable Python web development?
 
-:::note[Learning Path]
-1. **[Installation](/installation)** - Set up your development environment
-2. **[Controllers](/controllers)** - Learn the MVC controller layer
-3. **[Database](/database)** - Master entities and repositories
-4. **[Services](/services)** - Implement business logic with dependency injection
-5. **[Security](/security)** - Build secure applications from the start
-:::
+1. **[How do I get started?](/installation)** - Set up your development environment
+2. **[How do I handle web requests?](/core/controllers)** - Learn the MVC controller layer
+3. **[How do I work with data?](/core/database)** - Master entities and repositories
+4. **[How do I organize business logic?](/advanced_features/services)** - Implement services with dependency injection
+5. **[How do I secure my app?](/core/security)** - Build secure applications from the start
 
 ---
 
-**Swift, smart, and a bit foxy!** - Framefox brings enterprise-grade architecture to Python web development, making it accessible to developers at every level.
+**Swift, smart, and a bit foxy!** - Framefox brings best practices from day one to Python web development, making it accessible to developers at every level.

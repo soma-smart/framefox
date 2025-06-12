@@ -3,7 +3,6 @@ title: Controllers
 description: Complete guide to controllers in Framefox
 ---
 
-# Controllers
 
 Controllers are the heart of your Framefox application. They handle HTTP requests, orchestrate business logic, and return appropriate responses. Acting as the intermediary between your routes and your application's core functionality, controllers keep your code organized and maintainable.
 
@@ -128,7 +127,7 @@ CRUD controller type (1): 1
 
 ## Generated Controller Examples
 
-The Framefox CLI generates well-structured, production-ready code that follows framework conventions and best practices. Let's examine what gets generated for different controller types.
+The Framefox CLI generates well-structured code that follows framework conventions and best practices. Let's examine what gets generated for different controller types.
 
 ### Basic Controller Generation
 
@@ -172,7 +171,7 @@ Consider extending from a base template for consistent styling:
 
 ### CRUD Controller Generation
 
-CRUD generation creates comprehensive, database-ready controllers with full Create, Read, Update, Delete functionality.
+CRUD generation creates comprehensive controllers with full Create, Read, Update, Delete functionality.
 
 :::note[Entity Relationship]
 CRUD controllers automatically establish relationships with your data layer:

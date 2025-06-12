@@ -3,9 +3,7 @@ title: Web Profiler
 description: Debug and monitor the performance of your Framefox application with the integrated profiler
 ---
 
-# Web Profiler
-
-The Framefox web profiler is a powerful debugging and performance monitoring tool that provides detailed insights into your application's behavior during development.
+The Framefox web profiler is a debugging and performance monitoring tool that provides detailed insights into your application's behavior during development.
 
 ## Overview
 
@@ -28,7 +26,7 @@ The profiler is automatically enabled in development mode. You can control it vi
 ```yaml title="config/debug.yaml"
 debug:
   profiler:
-    enabled: true              # Enable/disable the profiler
+    enabled: true             # Enable/disable the profiler
     max_files: 1000           # Max profile files per day
     retention_days: 7         # Days to retain profile data
     max_memory: 100           # Max profiles in memory cache
@@ -413,14 +411,14 @@ curl http://localhost:8000/_profiler
 
 ### Configuration Options
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `enabled` | bool | `true` | Enable/disable profiler |
-| `max_files` | int | `1000` | Max profiles per day |
-| `retention_days` | int | `7` | Days to keep profiles |
-| `max_memory` | int | `100` | Max profiles in memory |
-| `sampling_rate` | float | `1.0` | Request sampling rate |
+| Setting          | Type  | Default | Description             |
+| ---------------- | ----- | ------- | ----------------------- |
+| `enabled`        | bool  | `true`  | Enable/disable profiler |
+| `max_files`      | int   | `1000`  | Max profiles per day    |
+| `retention_days` | int   | `7`     | Days to keep profiles   |
+| `max_memory`     | int   | `100`   | Max profiles in memory  |
+| `sampling_rate`  | float | `1.0`   | Request sampling rate   |
 
 ---
 
-The Framefox Web Profiler provides comprehensive debugging capabilities for development environments, helping developers identify performance bottlenecks, debug issues, and understand application behavior with detailed metrics and an intuitive web interface.
+The Framefox Web Profiler provides good debugging capabilities for development environments, helping developers identify performance bottlenecks, debug issues, and understand application behavior with detailed metrics and an intuitive web interface.

@@ -3,14 +3,12 @@ title: Templates and Views
 description: Complete guide to Jinja2 template system in Framefox
 ---
 
-# Templates and Views
-
-Framefox uses **Jinja2** as its template engine, allowing you to create dynamic and reusable views. The system is integrated with numerous Framefox-specific features and provides a powerful foundation for building modern web applications.
+Framefox uses **Jinja2** as its template engine, allowing you to create dynamic and reusable views. The system is integrated with numerous specific features and provides a powerful foundation for building modern web applications.
 
 Templates in Framefox serve as the presentation layer of your application, handling how data is displayed to users. The template system includes built-in security features, asset management, URL generation, and seamless integration with the framework's core components.
 
-:::tip[Template Organization]
-Organize your templates logically to maintain scalability and readability. Use descriptive names and group related templates in folders that match your application's structure.
+:::tip[Keep it organized]
+Put related templates in folders that match your controllers. Your future self will thank you.
 :::
 
 :::note[Framework Integration]
@@ -32,7 +30,7 @@ The recommended template structure follows MVC conventions and promotes maintain
 
 ```
 src/templates/
-├── base.html              # Base template with common HTML structure
+├── base.html             # Base template with common HTML structure
 ├── layouts/
 │   ├── app.html          # Main application layout for user interface
 │   └── admin.html        # Admin panel layout with specialized navigation
@@ -117,7 +115,7 @@ The base template serves as the foundation for all pages in your application. It
 
 ## Rendering from Controllers
 
-Controllers in Framefox use the `render()` method to process templates and return HTML responses. This method integrates seamlessly with the template engine and automatically injects framework-specific context variables. The rendering process handles template inheritance, includes security features, and provides access to all global template functions.
+Controllers in Framefox use the `render()` method to process templates and return HTML responses. This method integrates seamlessly with the template engine and automatically injects specific context variables. The rendering process handles template inheritance, includes security features, and provides access to all global template functions.
 
 ### render() Method
 
@@ -138,18 +136,6 @@ class UserController(AbstractController):
             "users": users,
             "page_title": "User List"
         })
-```
-
-### With Custom Layout
-
-For specialized sections of your application, you may want to use different layouts while maintaining the same rendering approach:
-
-```python
-@Route("/admin/dashboard", "admin.dashboard", methods=["GET"])
-async def dashboard(self):
-    return self.render("admin/dashboard.html", {
-        "stats": {"users": 150, "posts": 340}
-    }, layout="layouts/admin.html")
 ```
 
 ## Page Templates
@@ -245,21 +231,16 @@ The show template displays detailed information about a single entity, presentin
 
 Framefox provides a comprehensive set of built-in template functions that integrate seamlessly with the framework's core features. These functions handle common tasks like URL generation, asset management, security, and user authentication. They are automatically available in all templates without requiring imports or additional configuration.
 
-:::tip[Template Functions]
-All Framefox template functions are globally available and provide safe, framework-integrated functionality for your templates.
-:::
-
 ### URL Generation
 
 The `url_for()` function generates URLs based on your named routes. This approach provides significant advantages over hardcoded URLs and is essential for maintaining flexible applications.
 
 **Why `url_for()` is Essential:**
 
-- **Route Independence**: URLs are generated dynamically from route names, so changing route patterns doesn't break your links
-- **Parameter Safety**: Automatic URL encoding and parameter validation prevent malformed URLs
-- **Maintainability**: Centralizes URL management, making large applications easier to refactor
-- **Environment Flexibility**: Automatically adapts to different base URLs (development, staging, production)
-- **Type Safety**: Framework validates route names and required parameters at generation time
+- **Change URLs easily** - update the route definition, links update automatically
+- **No broken links** - if you mistype a route name, you'll get an error instead of a silent broken link
+- **Works everywhere** - same URLs whether you're running locally or in production
+- **URL encoding handled** - special characters in parameters are escaped properly
 
 ```html
 <!-- Basic route -->
@@ -368,14 +349,18 @@ Access current user information securely throughout your templates:
 
 ### Flash Messages
 
-Flash messages provide a powerful mechanism for displaying temporary notifications to users across page requests. They work by storing messages in the user's session and automatically clearing them after display, making them perfect for success confirmations, error notifications, and user feedback.
+Flash messages provide mechanism for displaying temporary notifications to users across page requests. They work by storing messages in the user's session and automatically clearing them after display, making them perfect for success confirmations, error notifications, and user feedback.  
+Available message types:
+- `success` - green success messages
+- `error` - red error messages  
+- `warning` - yellow warning messages
+- `info` - blue info messages
 
 **How Flash Messages Work:**
 
 1. **Controller Stage**: Controllers add messages to the flash bag using `self.flash()`
 2. **Session Storage**: Messages are temporarily stored in the user's session
 3. **Template Display**: Templates retrieve and display messages using `get_flash_messages()`
-4. **Automatic Cleanup**: Messages are removed from session after being displayed once
 
 **Sending Flash Messages from Controllers:**
 
@@ -405,39 +390,24 @@ class UserController(AbstractController):
 **Displaying Messages in Templates:**
 
 ```html
-<!-- Display all flash messages -->
-{% for message in get_flash_messages() %}
-    <div class="alert alert-{{ message.type }} alert-dismissible">
-        {{ message.content }}
-        <button type="button" class="close-btn" data-dismiss="alert">×</button>
-    </div>
-{% endfor %}
-
-<!-- Filter messages by type -->
-{% for message in get_flash_messages() %}
-    {% if message.type == 'error' %}
-        <div class="error-banner">
-            <i class="icon-error"></i>
-            {{ message.content }}
+{% if get_flash_messages() %}
+    {% for message in get_flash_messages() %}
+        <div class="alert alert-{{ message.type }}">
+            {{ message.text }}
+            <button onclick="this.parentElement.remove()">×</button>
         </div>
-    {% endif %}
-{% endfor %}
+    {% endfor %}
+{% endif %}
 ```
 
-### Request Context
+Flash messages are stored in the session until the next page load, then they're gone.
 
-The `request` object provides direct access to the current HTTP request information within templates, enabling dynamic content generation based on request characteristics, user behavior, and contextual information.
+### Request information
 
-**Why Request Context is Useful:**
-
-- **Conditional Rendering**: Show different content based on request method, headers, or parameters
-- **URL Analysis**: Display breadcrumbs, active navigation states, or page-specific information
-- **User Agent Detection**: Adapt interface for different devices or browsers
-- **Search Functionality**: Maintain search terms and filters across page interactions
-- **Debug Information**: Display request details during development for troubleshooting
+Get details about the current request in your templates:
 
 ```html
-<!-- Current path and navigation -->
+<!-- Current page path -->
 <nav class="breadcrumb">
     <a href="{{ url_for('home.index') }}">Home</a>
     {% if request.url.path.startswith('/admin') %}
@@ -480,20 +450,14 @@ The `request` object provides direct access to the current HTTP request informat
         <!-- Full desktop navigation -->
     </div>
 {% endif %}
-
-<!-- Development debugging -->
-{% if app.debug %}
-    <div class="debug-info">
-        <details>
-            <summary>Request Debug Information</summary>
-            <p><strong>Method:</strong> {{ request.method }}</p>
-            <p><strong>Path:</strong> {{ request.url.path }}</p>
-            <p><strong>Query:</strong> {{ request.url.query }}</p>
-            <p><strong>User Agent:</strong> {{ request.headers.get('user-agent', 'Unknown') }}</p>
-        </details>
-    </div>
-{% endif %}
 ```
+
+Common uses:
+- Show breadcrumbs based on current path
+- Highlight active navigation items  
+- Keep search terms in forms
+- Display different content for mobile vs desktop
+- Debug request details during development
 
 ## Forms
 
@@ -983,23 +947,3 @@ Implement security best practices and optimize for performance:
 <link rel="preload" href="{{ asset('css/critical.css') }}" as="style">
 <img src="{{ asset('images/hero.jpg') }}" loading="lazy" alt="Hero">
 ```
-
-### Debugging Templates
-
-Use debugging features during development:
-
-```html
-<!-- Debug information in development -->
-{% if app.debug %}
-<div class="debug-panel">
-    <h4>Template Debug Info</h4>
-    <p>Template: {{ self._TemplateReference__context.name }}</p>
-    <p>Request: {{ request.method }} {{ request.url.path }}</p>
-    {% if current_user %}
-        <p>User: {{ current_user.name }} ({{ current_user.id }})</p>
-    {% endif %}
-</div>
-{% endif %}
-```
-
-

@@ -3,27 +3,16 @@ title: Routing System
 description: Complete guide to the routing system in Framefox
 ---
 
-# Routing System
-
-Framefox's routing system provides an elegant and powerful way to define how your application responds to different HTTP requests. Built on top of FastAPI, it offers exceptional flexibility while maintaining clean, readable syntax that makes route definition intuitive and maintainable.
+Framefox's routing system provides a way to define how your application responds to different HTTP requests. Built on top of FastAPI, it offers good flexibility while maintaining clean, readable syntax that makes route definition intuitive and maintainable.
 
 The routing system is the backbone of your web application, determining which controller methods handle specific URL patterns and HTTP methods. Whether you're building a simple website or a complex API, Framefox's routing capabilities scale with your needs.
 
 :::note[FastAPI Integration]
 Framefox routing leverages FastAPI's robust routing engine, providing:
-- High-performance request handling
+- Good performance request handling
 - Automatic OpenAPI documentation generation
 - Built-in request validation and serialization
 - WebSocket support and async/await compatibility
-- Industry-standard HTTP compliance
-:::
-
-:::tip[Performance Benefits]
-The routing system is optimized for production use:
-- **Fast Route Matching**: O(1) lookup time for most routes
-- **Automatic Caching**: Route patterns are compiled and cached
-- **Memory Efficient**: Minimal overhead per route definition
-- **Concurrent Safe**: Thread-safe route resolution
 :::
 
 ## The @Route Decorator
@@ -119,7 +108,6 @@ async def health_check(self):
 :::tip[Static Route Best Practices]
 - Keep static routes simple and focused
 - Use descriptive route names for maintenance
-- Include SEO-friendly meta information in templates
 - Consider caching for frequently accessed static content
 - Add proper HTTP headers for static assets
 :::
@@ -384,10 +372,9 @@ async def export_data(self, format: str):
 :::tip[Type Safety Benefits]
 Using type constraints provides several advantages:
 - **Automatic Validation**: Invalid types return 422 errors automatically
-- **IDE Support**: Better autocomplete and error detection
-- **Documentation**: Self-documenting API with clear parameter types
-- **Security**: Prevents injection attacks through type validation
-- **Performance**: Faster route matching with type hints
+- **Better Documentation**: Self-documenting API with clear parameter types  
+- **Enhanced Security**: Prevents injection attacks through type validation
+- **Cleaner Code**: Reduces manual parameter validation in your methods
 :::
 
 :::danger[Common Type Pitfalls]
@@ -487,11 +474,10 @@ Consistent route naming makes your application more maintainable and enables pow
 ```python
 # Format: resource.action
 @Route("/users", "user.index", methods=["GET"])          # List all
-@Route("/users/create", "user.create", methods=["GET"])  # Creation form
-@Route("/users", "user.store", methods=["POST"])         # Store new
+@Route("/users/create", "user.create", methods=["POST"]) # Creation form
 @Route("/users/{id}", "user.show", methods=["GET"])      # Show single
-@Route("/users/{id}/edit", "user.edit", methods=["GET"]) # Edit form
 @Route("/users/{id}", "user.update", methods=["PUT"])    # Update
+@Route("/users/{id}", "user.patch", methods=["PATCH"])   # Patch
 @Route("/users/{id}", "user.delete", methods=["DELETE"]) # Delete
 ```
 
@@ -669,17 +655,6 @@ class DebugController(AbstractController):
         return {"debug": "info", "environment": self.settings.app_env}
 ```
 
-### Fallback Routes
-
-Handle unmatched routes gracefully with catch-all patterns:
-
-```python
-@Route("/{path:path}", "fallback", methods=["GET"])
-async def fallback(self, path: str):
-    # Handle all undefined routes
-    return self.render("errors/404.html", {"path": path}), 404
-```
-
 ### Route Middleware
 
 Apply middleware to specific routes for authentication, validation, or other cross-cutting concerns:
@@ -704,41 +679,176 @@ async def admin_dashboard(self):
 
 Build a full RESTful API controller following HTTP conventions:
 
+```bash
+framefox create crud
+```
+
 ```python
-class ProductController(AbstractController):
-    # GET /products - List all products
-    @Route("/products", "product.index", methods=["GET"])
-    async def index(self, request: Request):
-        page = int(request.query_params.get("page", 1))
-        return {"products": [], "page": page}
-    
-    # POST /products - Create a new product
-    @Route("/products", "product.store", methods=["POST"])
-    async def store(self, request: Request):
-        data = await request.json()
-        return {"created": True, "product": data}
-    
-    # GET /products/{id} - Show a single product
-    @Route("/products/{id}", "product.show", methods=["GET"])
+class UserController(AbstractController):
+    def __init__(self, entityManager: EntityManagerInterface):
+        self.entity_manager = entityManager
+        self.repository = UserRepository()
+
+    # GET /users - List all users
+    @Route("/users", "user.index", methods=["GET"])
+    async def index(self):
+        """GET /users - Retrieve all user resources"""
+        try:
+            items = self.repository.find_all()
+            return self.json({
+                "users": [item.dict() for item in items],
+                "total": len(items),
+                "status": "success"
+            }, status=200)
+        except Exception as e:
+            return self.json({
+                "error": "Failed to retrieve users",
+                "message": str(e),
+                "status": "error"
+            }, status=500)
+
+    # GET /users/{id} - Show a single user
+    @Route("/users/{id}", "user.show", methods=["GET"])
     async def show(self, id: int):
-        return {"product": {"id": id}}
-    
-    # PUT /products/{id} - Update a product completely
-    @Route("/products/{id}", "product.update", methods=["PUT"])
-    async def update(self, id: int, request: Request):
-        data = await request.json()
-        return {"updated": True, "product": data}
-    
-    # PATCH /products/{id} - Partially update a product
-    @Route("/products/{id}", "product.patch", methods=["PATCH"])
-    async def patch(self, id: int, request: Request):
-        data = await request.json()
-        return {"patched": True, "changes": data}
-    
-    # DELETE /products/{id} - Delete a product
-    @Route("/products/{id}", "product.destroy", methods=["DELETE"])
+        """GET /users/{id} - Retrieve a specific user resource"""
+        try:
+            item = self.repository.find(id)
+            if not item:
+                return self.json({
+                    "error": "User not found",
+                    "status": "not_found"
+                }, status=404)
+
+            return self.json({
+                "user": item.dict(),
+                "status": "success"
+            }, status=200)
+        except Exception as e:
+            return self.json({
+                "error": "Failed to retrieve user",
+                "message": str(e),
+                "status": "error"
+            }, status=500)
+
+    # POST /users - Create a new user
+    @Route("/users", "user.create", methods=["POST"])
+    async def create(self, data: User.generate_create_model()):
+        """POST /users - Create a new user resource"""
+        try:
+            user = self.repository.model(**data.dict())
+            self.entity_manager.persist(user)
+            self.entity_manager.commit()
+
+            self.entity_manager.refresh(user)
+
+            return self.json({
+                "user": user.dict(),
+                "message": "User created successfully",
+                "status": "created"
+            }, status=201)
+        except Exception as e:
+            return self.json({
+                "error": "Failed to create user",
+                "message": str(e),
+                "status": "error"
+            }, status=400)
+
+    # PUT /users/{id} - Update a user completely
+    @Route("/users/{id}", "data.update", methods=["PUT"])
+    async def update(self, id: int, data: User.generate_create_model()):
+        """PUT /users/{id} - Replace the entire user resource"""
+        try:
+            user = self.repository.find(id)
+            if not user:
+                return self.json({
+                    "error": "User not found",
+                    "status": "not_found"
+                }, status=404)
+
+            # Complete replacement of the resource
+            update_data = data.dict()
+            for key, value in update_data.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
+
+            self.entity_manager.persist(user)
+            self.entity_manager.commit()
+
+            self.entity_manager.refresh(user)
+
+            return self.json({
+                "user": user.dict(),
+                "message": "User updated successfully",
+                "status": "updated"
+            }, status=200)
+        except Exception as e:
+            return self.json({
+                "error": "Failed to update user",
+                "message": str(e),
+                "status": "error"
+            }, status=400)
+
+    # PATCH /users/{id} - Partially update a user
+    @Route("/users/{id}", "user.patch", methods=["PATCH"])
+    async def patch(self, id: int, data: User.generate_patch_model()):
+        """PATCH /users/{id} - Partially update a user resource"""
+        try:
+            user = self.repository.find(id)
+            if not user:
+                return self.json({
+                    "error": "User not found",
+                    "status": "not_found"
+                }, status=404)
+
+            update_data = data.dict(exclude_unset=True)
+
+            # Partial update - only modify provided fields
+            for key, value in update_data.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
+
+            self.entity_manager.persist(user)
+            self.entity_manager.commit()
+
+            self.entity_manager.refresh(user)
+
+            return self.json({
+                "user": user.dict(),
+                "message": "User partially updated successfully",
+                "status": "updated"
+            }, status=200)
+        except Exception as e:
+            return self.json({
+                "error": "Failed to patch user",
+                "message": str(e),
+                "status": "error"
+            }, status=400)
+
+    # DELETE /users/{id} - Delete a user
+    @Route("/users/{id}", "user.destroy", methods=["DELETE"])
     async def destroy(self, id: int):
-        return {"deleted": True, "product_id": id}
+        """DELETE /users/{id} - Delete a user resource"""
+        try:
+            user = self.repository.find(id)
+            if not user:
+                return self.json({
+                    "error": "User not found",
+                    "status": "not_found"
+                }, status=404)
+
+            self.entity_manager.delete(user)
+            self.entity_manager.commit()
+
+            return self.json({
+                "message": "User deleted successfully",
+                "status": "deleted"
+            }, status=204)
+        except Exception as e:
+            return self.json({
+                "error": "Failed to delete user",
+                "message": str(e),
+                "status": "error"
+            }, status=500)
 ```
 
 ## Debugging and Development
@@ -859,4 +969,4 @@ async def show(self, id: int):
     pass
 ```
 
-The routing system in Framefox provides the flexibility of FastAPI with the convenience of a high-level framework. By following these patterns and best practices, you can build maintainable, scalable web applications with clean, expressive routing.
+The routing system in Framefox provides the flexibility of FastAPI with the convenience of a high-level framework. By following these patterns and best practices, you can build maintainable, scalable web applications with clean routing.
