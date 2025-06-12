@@ -1,468 +1,300 @@
 ---
-title: Déploiement
-description: Déployez votre application Framefox en production
+title: Deployment
+description: Deploy your Framefox application in production
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-import CodeBlock from '../../../components/CodeBlock.astro';
+This guide shows you how to deploy your Framefox application in production, using different methods and platforms.
 
-# Déploiement de votre application Framefox
+## Deployment preparation
 
-Ce guide vous montre comment déployer votre application Framefox en production, en utilisant différentes méthodes et plateformes.
+Before deploying your application, you must ensure it is ready for production:
 
-## Préparation au déploiement
+### Environment configuration
 
-Avant de déployer votre application, vous devez vous assurer qu'elle est prête pour la production :
+Framefox uses environment variables to distinguish between development and production environments. Configure your application according to the environment in `config/application.yaml`:
 
-### Configuration des environnements
+```yaml
+# config/application.yaml
+application:
+  env: "${APP_ENV}" # Can be dev or prod
+  template_dir: "templates"
+  openapi_url: /openapi.json #empty value to disable openapi swagger ui
+  redoc_url: /redoc
 
-Framefox utilise des variables d'environnement pour distinguer les environnements de développement, de test et de production. Configurez votre application en fonction de l'environnement dans `config/application.yaml` :
+  controller:
+    dir: "src/controller/"
+  profiler:
+    enabled: true # Set to false in production
+  cors:
+    allow_origins:
+      - "http://localhost"
+      - "http://localhost:8000"
+    allow_credentials: true
+    allow_methods:
+      - "*"
+    allow_headers:
+      - "*"
 
-<CodeBlock
-  code={`application:
-  env: "%env(APP_ENV)%"  # Peut être "dev", "test", ou "prod"
-  debug: "%env(APP_DEBUG)%"
+  session:
+    name: "session_id"
+    file_path: var/session/sessions.db
+    secret_key: "${SESSION_SECRET_KEY}"
+
+  cookie:
+    max_age: 3600 # 1 hour
+    secure: true
+    http_only: true
+    same_site: "strict" # "strict", "lax", "none"
+    path: "/"
+```
+
+### Application verification
+
+Before deployment, ensure your application is configured correctly:
+
+```bash
+# Check that the application starts without error
+python main.py
+
+# Test main routes
+curl http://localhost:8000/
+
+# Check required configuration files
+ls config/
+
+# Check application configuration
+framefox debug config
+
+# Optimize application for production
+framefox cache clear
+framefox cache warmup
+```
+
+### Production configuration
+
+Modify your `config/application.yaml` for production:
+
+```yaml
+# config/application.yaml
+application:
+  env: "${APP_ENV}"
+  debug: false
   
-  # Configuration spécifique aux environnements
-  environments:
-    dev:
-      debug: true
-      profiler: true
-      
-    test:
-      debug: true
-      profiler: false
-      
-    prod:
-      debug: false
-      profiler: false
-      error_handler: "src.error.production_error_handler.ProductionErrorHandler"`}
-  lang="yaml"
-  filename="config/application.yaml"
-/>
+  controller:
+    dir: "src/controller/"
+    
+  profiler:
+    enabled: false # Disabled in production
+    
+  cors:
+    allow_origins:
+      - "https://your-domain.com"
+    allow_credentials: true
+    allow_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+    allow_headers:
+      - "*"
 
-### Vérification de l'application
+  session:
+    name: "session_id"
+    file_path: "var/session/sessions.db"
+    secret_key: "${SESSION_SECRET_KEY}"
 
-Avant le déploiement, exécutez les commandes suivantes pour vous assurer que votre application est prête :
+  cookie:
+    max_age: 3600
+    secure: true
+    http_only: true
+    same_site: "strict"
+    path: "/"
+```
 
-<CodeBlock
-  code={`# Vérifier la configuration de l'application
-framefox debug:config
-
-# Exécuter les tests
-framefox test
-
-# Vérifier les problèmes de sécurité
-framefox security:audit
-
-# Optimiser l'application pour la production
-framefox cache:clear
-framefox cache:warmup`}
-  lang="bash"
-/>
-
-## Méthodes de déploiement
-
-### 1. Déploiement traditionnel avec WSGI/ASGI
-
-Framefox utilise ASGI pour une performance optimale. Vous pouvez utiliser Uvicorn, Hypercorn ou Daphne comme serveurs ASGI.
-
-#### Configuration avec Uvicorn et Gunicorn
-
-Pour la production, il est recommandé d'utiliser Gunicorn comme gestionnaire de processus avec Uvicorn comme worker :
-
-<CodeBlock
-  code={`# Installer les dépendances
-pip install gunicorn uvicorn
-
-# Créer un fichier gunicorn.conf.py
-import multiprocessing
-
-# Configuration Gunicorn
-bind = "0.0.0.0:8000"
-workers = multiprocessing.cpu_count() * 2 + 1
-worker_class = "uvicorn.workers.UvicornWorker"
-timeout = 120
-
-# Configuration du logging
-accesslog = "/var/log/framefox/access.log"
-errorlog = "/var/log/framefox/error.log"
-loglevel = "info"
-
-# Configuration avancée
-proc_name = "framefox"
-keepalive = 65
-backlog = 2048`}
-  lang="python"
-  filename="gunicorn.conf.py"
-/>
-
-#### Script de démarrage
-
-<CodeBlock
-  code={`#!/bin/bash
-# start.sh
-
-# Définir les variables d'environnement
+```.env
+# .env
 export APP_ENV=prod
-export APP_DEBUG=0
+export SESSION_SECRET_KEY="your-generated-secret-key"
+```
 
-# Exécuter les migrations si nécessaire
-python -m framefox migration:run
+## Deployment best practices
 
-# Démarrer l'application avec Gunicorn
-gunicorn -c gunicorn.conf.py main:app`}
-  lang="bash"
-  filename="start.sh"
-/>
+### 1. Production profiler configuration
 
-N'oubliez pas de rendre le script exécutable :
+The Framefox profiler must be disabled in production for performance and security reasons:
 
-<CodeBlock
-  code={`chmod +x start.sh`}
-  lang="bash"
-/>
+```yaml
+# config/application.yaml
+application:
+  profiler:
+    enabled: false # MANDATORY in production
+```
 
-### 2. Déploiement avec Docker
+**Important**: The profiler exposes sensitive information via `/_profiler/` and can impact performance.
 
-Docker est une excellente option pour déployer des applications Framefox de manière cohérente et isolée.
+### 2. Log management
 
-#### Dockerfile
+Framefox uses Python's standard logging system. Configure it according to your needs:
 
-<CodeBlock
-  code={`# Dockerfile
-FROM python:3.12-slim
+```python
+# In your application
+import logging
 
-# Définir les variables d'environnement
-ENV APP_ENV=prod
-ENV APP_DEBUG=0
-ENV PYTHONUNBUFFERED=1
+# Simple configuration for production
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('var/log/app.log'),
+        logging.StreamHandler()
+    ]
+)
+```
 
-# Créer un utilisateur non root
-RUN adduser --disabled-password --gecos '' framefox
+### 3. Service cache optimization
 
-# Créer le répertoire de l'application
-WORKDIR /app
+Use Framefox cache commands:
 
-# Copier les fichiers de dépendances
-COPY requirements.txt .
+```bash
+# Clear cache before deployment
+framefox cache clear
 
-# Installer les dépendances
-RUN pip install --no-cache-dir -r requirements.txt
+# Warm up cache after deployment
+framefox cache warmup
+```
 
-# Copier le code de l'application
-COPY . .
+These commands optimize Framefox's [`ServiceContainer`](framefox/core/di/service_container.py).
 
-# Définir les permissions
-RUN chown -R framefox:framefox /app
-USER framefox
+### 4. Security environment variables
 
-# Exposer le port
-EXPOSE 8000
+Configure sensitive variables correctly:
 
-# Commande de démarrage
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "main:app"]`}
-  lang="dockerfile"
-  filename="Dockerfile"
-/>
+```bash
+# Mandatory variables
+export APP_ENV=prod
+export SESSION_SECRET_KEY="your-very-secure-32-character-minimum-key"
 
-#### docker-compose.yml
+# Optional variables depending on your configuration
+export DATABASE_URL="postgresql://user:password@localhost/db"
+```
 
-<CodeBlock
-  code={`# docker-compose.yml
-version: '3.8'
+### 5. Production CORS configuration
 
-services:
-  app:
-    build: .
-    restart: always
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    environment:
-      - APP_ENV=prod
-      - APP_DEBUG=0
-      - DATABASE_URL=postgresql://framefox:password@db:5432/framefox
-    volumes:
-      - ./logs:/app/var/log
-    command: >
-      bash -c "python -m framefox migration:run &&
-               gunicorn -c gunicorn.conf.py main:app"
-  
-  db:
-    image: postgres:16
-    restart: always
-    environment:
-      - POSTGRES_USER=framefox
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=framefox
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-  
-  nginx:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
-      - ./public:/app/public
-    depends_on:
-      - app
+Restrict allowed origins:
 
-volumes:
-  postgres_data:`}
-  lang="yaml"
-  filename="docker-compose.yml"
-/>
+```yaml
+# config/application.yaml
+application:
+  cors:
+    allow_origins:
+      - "https://your-domain.com"
+      - "https://www.your-domain.com"
+    allow_credentials: true
+    allow_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+    allow_headers:
+      - "Content-Type"
+      - "Authorization"
+```
 
-#### Configuration Nginx
+### 6. Session cookie security
 
-<CodeBlock
-  code={`# nginx/conf.d/app.conf
-server {
-    listen 80;
-    server_name example.com www.example.com;
+```yaml
+# config/application.yaml
+application:
+  cookie:
+    max_age: 3600
+    secure: true      # HTTPS only
+    http_only: true   # No JavaScript access
+    same_site: "strict"
+    path: "/"
+```
+
+### 7. Basic monitoring
+
+Create a simple health endpoint:
+
+```python
+# src/controller/health_controller.py
+from framefox.core.controller.controller import Controller
+from framefox.core.routing.decorators import route
+
+class HealthController(Controller):
     
-    # Redirection vers HTTPS
-    location / {
-        return 301 https://$host$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl;
-    server_name example.com www.example.com;
+    @route("/health", methods=["GET"])
+    def health_check(self):
+        return {
+            "status": "ok",
+            "service": "framefox",
+            "timestamp": self.get_current_datetime().isoformat()
+        }
     
-    # Certificats SSL
-    ssl_certificate /etc/nginx/ssl/fullchain.pem;
-    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
-    
-    # Configuration SSL optimisée
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-    
-    # Fichiers statiques
-    location /static/ {
-        alias /app/public/;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000";
-    }
-    
-    # Proxy vers l'application
-    location / {
-        proxy_pass http://app:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_buffering on;
-        proxy_buffer_size 16k;
-        proxy_busy_buffers_size 24k;
-        proxy_buffers 64 4k;
-    }
-}`}
-  lang="nginx"
-  filename="nginx/conf.d/app.conf"
-/>
+    @route("/health/ready", methods=["GET"])  
+    def readiness_check(self):
+        # More advanced checks if necessary
+        return {"status": "ready"}
+```
 
-### 3. Déploiement sur des plateformes cloud
+## Deployment checklist
 
-#### Heroku
+Before deploying your Framefox application in production, check the following points:
 
-<CodeBlock
-  code={`# Procfile
-web: gunicorn -k uvicorn.workers.UvicornWorker main:app
+1. **Production environment configured** (`APP_ENV=prod`)
+2. **Profiler disabled** (`profiler.enabled: false`)
+3. **Sensitive variables configured as environment variables** (SESSION_SECRET_KEY, etc.)
+4. **CORS configured for your production domain**
+5. **Secure cookies enabled** (`secure: true`, `http_only: true`)
+6. **SSL certificates installed** (for HTTPS)
+7. **Cache optimized** (`framefox cache clear` then `framefox cache warmup`)
+8. **Application tested locally** (`python main.py`)
+9. **Production server configured** (Gunicorn + Uvicorn)
+10. **Log directories created** (if necessary)
+11. **File permissions checked**
+12. **Database configuration** (if used)
 
-# runtime.txt
-python-3.12.0`}
-  lang="text"
-  filename="Procfile"
-/>
+## Deployment strategies
 
-Commandes de déploiement :
+### Simple deployment
 
-<CodeBlock
-  code={`# Créer une application Heroku
-heroku create mon-app-framefox
+The most basic deployment consists of:
 
-# Ajouter une base de données PostgreSQL
-heroku addons:create heroku-postgresql:hobby-dev
+```bash
+# 1. Prepare environment
+export APP_ENV=prod
+export SESSION_SECRET_KEY="your-secure-secret-key"
 
-# Configurer les variables d'environnement
-heroku config:set APP_ENV=prod
-heroku config:set APP_DEBUG=0
+# 2. Optimize cache
+framefox cache clear
+framefox cache warmup
 
-# Déployer l'application
-git push heroku main
+# 3. Start application
+gunicorn -c gunicorn.conf.py main:app
+```
 
-# Exécuter les migrations
-heroku run python -m framefox migration:run`}
-  lang="bash"
-/>
+### Docker deployment
 
-#### AWS Elastic Beanstalk
+```bash
+# Build image
+docker build -t my-framefox-app .
 
-Créez un fichier de configuration pour Elastic Beanstalk :
+# Start container
+docker run -d \
+  -p 8000:8000 \
+  -e APP_ENV=prod \
+  -e SESSION_SECRET_KEY="your-secret-key" \
+  --name framefox-app \
+  my-framefox-app
+```
 
-<CodeBlock
-  code={`# .ebextensions/01_framefox.config
-option_settings:
-  aws:elasticbeanstalk:application:environment:
-    APP_ENV: prod
-    APP_DEBUG: 0
-    
-  aws:elasticbeanstalk:container:python:
-    WSGIPath: main:app
-    
-container_commands:
-  01_migrations:
-    command: "python -m framefox migration:run"
-    leader_only: true
-  
-  02_collectstatic:
-    command: "python -m framefox assets:install"
-    
-  03_create_superuser:
-    command: "python -m framefox security:create-admin"
-    leader_only: true`}
-  lang="yaml"
-  filename=".ebextensions/01_framefox.config"
-/>
+### CI/CD deployment
 
-Déployez avec la commande :
+Simplified GitHub Actions configuration example:
 
-<CodeBlock
-  code={`# Initialiser l'application Elastic Beanstalk
-eb init -p python-3.12 mon-app-framefox
-
-# Créer un environnement et déployer
-eb create production-environment`}
-  lang="bash"
-/>
-
-## Bonnes pratiques de déploiement
-
-### 1. Surveillance et journalisation
-
-Framefox peut être configuré pour intégrer des outils de surveillance comme Sentry ou ELK Stack.
-
-<CodeBlock
-  code={`# config/services.yaml
-services:
-  logger:
-    class: src.service.logging.sentry_logger.SentryLogger
-    arguments:
-      - "%env(SENTRY_DSN)%"
-      - "%app.env%"`}
-  lang="yaml"
-  filename="config/services.yaml"
-/>
-
-### 2. Mise en cache
-
-Pour améliorer les performances en production, configurez le cache :
-
-<CodeBlock
-  code={`# config/cache.yaml
-cache:
-  default: redis
-  
-  stores:
-    redis:
-      driver: redis
-      host: "%env(REDIS_HOST)%"
-      port: "%env(REDIS_PORT)%"
-      password: "%env(REDIS_PASSWORD)%"
-      
-  ttl: 3600  # Durée par défaut en secondes`}
-  lang="yaml"
-  filename="config/cache.yaml"
-/>
-
-### 3. Serveur de tâches asynchrones
-
-Pour les tâches longues, utilisez un serveur de tâches comme Dramatiq ou Celery :
-
-<CodeBlock
-  code={`# config/tasks.yaml
-task_server:
-  driver: dramatiq
-  broker: redis
-  
-  redis:
-    host: "%env(REDIS_HOST)%"
-    port: "%env(REDIS_PORT)%"
-    password: "%env(REDIS_PASSWORD)%"
-    
-  workers: 4`}
-  lang="yaml"
-  filename="config/tasks.yaml"
-/>
-
-### 4. Sauvegarde et restauration
-
-Mettez en place un système de sauvegarde régulière de votre base de données :
-
-<CodeBlock
-  code={`#!/bin/bash
-# scripts/backup.sh
-
-# Variables
-DB_USER="framefox"
-DB_PASSWORD="password"
-DB_NAME="framefox"
-BACKUP_DIR="/var/backups/framefox"
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/backup_$DATE.sql.gz"
-
-# Créer le répertoire de sauvegarde si nécessaire
-mkdir -p $BACKUP_DIR
-
-# Créer la sauvegarde
-pg_dump -U $DB_USER $DB_NAME | gzip > $BACKUP_FILE
-
-# Rotation des sauvegardes (conserver les 7 dernières)
-ls -t $BACKUP_DIR/backup_*.sql.gz | tail -n +8 | xargs rm -f
-
-# Notification
-echo "Sauvegarde créée: $BACKUP_FILE"`}
-  lang="bash"
-  filename="scripts/backup.sh"
-/>
-
-## Liste de contrôle pour le déploiement
-
-Avant de déployer votre application Framefox en production, vérifiez les points suivants :
-
-1. **Environnement de production configuré** (`APP_ENV=prod`)
-2. **Débogage désactivé** (`APP_DEBUG=0`)
-3. **Variables sensibles configurées en tant que variables d'environnement**
-4. **Base de données configurée correctement pour la production**
-5. **Migrations exécutées**
-6. **Certificats SSL installés (pour HTTPS)**
-7. **Système de journalisation configuré**
-8. **Surveillance en place**
-9. **Stratégie de sauvegarde implémentée**
-10. **Tests exécutés avec succès**
-11. **Mise en cache configurée**
-12. **Performances optimisées**
-13. **Sécurité auditée**
-
-## Stratégies de déploiement
-
-### Déploiement continu (CI/CD)
-
-Exemple de configuration GitHub Actions pour un déploiement automatique :
-
-<CodeBlock
-  code={`# .github/workflows/deploy.yml
+```yaml
+# .github/workflows/deploy.yml
 name: Deploy to Production
 
 on:
@@ -470,97 +302,178 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+          
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run tests
+          
+      - name: Test application startup
         run: |
-          python -m framefox test
-  
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Deploy to production
-        uses: akhileshns/heroku-deploy@v3.12.12
+          export APP_ENV=dev
+          timeout 10s python main.py || true
+          
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.14
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "mon-app-framefox"
+          heroku_app_name: "my-framefox-app"
           heroku_email: ${{secrets.HEROKU_EMAIL}}
-      - name: Run migrations
-        run: |
-          heroku run python -m framefox migration:run -a mon-app-framefox`}
-  lang="yaml"
-  filename=".github/workflows/deploy.yml"
-/>
+```
 
-### Déploiement bleu-vert
+### Automated deployment script
 
-Cette stratégie consiste à maintenir deux environnements identiques (bleu et vert) et à basculer entre eux :
+```bash
+#!/bin/bash
+# deploy.sh
 
-<CodeBlock
-  code={`#!/bin/bash
-# scripts/blue-green-deploy.sh
+set -e  # Stop on error
 
-# Variables
-APP_NAME="mon-app-framefox"
-BLUE_APP="${APP_NAME}-blue"
-GREEN_APP="${APP_NAME}-green"
-ROUTER_APP="${APP_NAME}-router"
+echo "🚀 Deploying Framefox application..."
 
-# Déterminer l'environnement actif
-CURRENT_APP=$(heroku config:get ACTIVE_APP -a $ROUTER_APP)
+# Preliminary checks
+echo "📋 Preliminary checks..."
 
-if [ "$CURRENT_APP" == "$BLUE_APP" ]; then
-  TARGET_APP=$GREEN_APP
-else
-  TARGET_APP=$BLUE_APP
+# Check that environment is defined
+if [ -z "$APP_ENV" ]; then
+  echo "❌ APP_ENV variable not defined"
+  exit 1
 fi
 
-echo "Déploiement vers $TARGET_APP..."
-
-# Déployer vers l'environnement cible
-git push https://git.heroku.com/$TARGET_APP.git main
-
-# Exécuter les migrations
-heroku run python -m framefox migration:run -a $TARGET_APP
-
-# Vérifier que l'application fonctionne
-HEALTH_CHECK=$(curl -s https://$TARGET_APP.herokuapp.com/health-check)
-
-if [ "$HEALTH_CHECK" == '{"status":"ok"}' ]; then
-  echo "Application en bon état, basculement du trafic..."
-  
-  # Basculer le trafic vers le nouvel environnement
-  heroku config:set ACTIVE_APP=$TARGET_APP -a $ROUTER_APP
-  
-  echo "Déploiement terminé avec succès!"
-else
-  echo "Échec de la vérification de santé, abandon du déploiement."
+if [ -z "$SESSION_SECRET_KEY" ]; then
+  echo "❌ SESSION_SECRET_KEY variable not defined"
   exit 1
-fi`}
-  lang="bash"
-  filename="scripts/blue-green-deploy.sh"
-/>
+fi
 
-## Après le déploiement
+# Check that necessary files exist
+if [ ! -f "main.py" ]; then
+  echo "❌ main.py file not found"
+  exit 1
+fi
 
-Une fois votre application déployée, n'oubliez pas de :
+if [ ! -f "config/application.yaml" ]; then
+  echo "❌ config/application.yaml file not found"
+  exit 1
+fi
 
-1. **Surveiller les performances** : Utilisez des outils comme New Relic ou Datadog
-2. **Vérifier les journaux** : Recherchez les erreurs ou les anomalies
-3. **Tester l'application** : Assurez-vous que toutes les fonctionnalités fonctionnent
-4. **Configurer des alertes** : Pour être informé des problèmes
-5. **Documenter le processus** : Pour faciliter les déploiements futurs
+echo "✅ Checks completed"
 
-Avec ces conseils, votre application Framefox sera correctement déployée et prête à être utilisée en production.
+# Cache optimization
+echo "🔄 Cache optimization..."
+framefox cache clear
+framefox cache warmup
+
+# Quick startup test
+echo "🧪 Startup test..."
+timeout 5s python main.py &
+STARTUP_PID=$!
+sleep 2
+kill $STARTUP_PID 2>/dev/null || true
+wait $STARTUP_PID 2>/dev/null || true
+
+# Create necessary directories
+echo "📁 Creating directories..."
+mkdir -p var/log
+mkdir -p var/session
+
+# Start application
+echo "🎯 Starting application..."
+if [ -f "gunicorn.conf.py" ]; then
+  gunicorn -c gunicorn.conf.py main:app
+else
+  uvicorn main:app --host 0.0.0.0 --port 8000
+fi
+```
+
+Make the script executable:
+
+```bash
+chmod +x deploy.sh
+```
+
+## Post-deployment monitoring
+
+### Simple health check
+
+Create a health endpoint in your application:
+
+```python
+# In your main controller
+@route("/health", methods=["GET"])
+def health_check(self):
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
+```
+
+### Monitoring script
+
+```bash
+#!/bin/bash
+# monitor.sh
+
+APP_URL="https://your-domain.com"
+HEALTH_ENDPOINT="$APP_URL/health"
+
+# Check that application responds
+if curl -f -s "$HEALTH_ENDPOINT" > /dev/null; then
+  echo "✅ Application accessible"
+else
+  echo "❌ Application inaccessible"
+  exit 1
+fi
+
+# Check JSON response
+RESPONSE=$(curl -s "$HEALTH_ENDPOINT")
+if echo "$RESPONSE" | grep -q '"status":"ok"'; then
+  echo "✅ Application healthy"
+else
+  echo "❌ Problem detected: $RESPONSE"
+  exit 1
+fi
+```
+
+## Rollback in case of problems
+
+If something goes wrong after deployment:
+
+```bash
+#!/bin/bash
+# rollback.sh
+
+echo "🔄 Rollback in progress..."
+
+# Stop current application
+pkill -f "gunicorn.*main:app" || true
+
+# Return to previous version (according to your strategy)
+git checkout HEAD~1  # or your previous version tag
+
+# Clear cache
+framefox cache clear
+
+# Restart
+export APP_ENV=prod
+gunicorn -c gunicorn.conf.py main:app &
+
+echo "✅ Rollback completed"
+```
+
+## After deployment
+
+Once your application is deployed, don't forget to:
+
+1. **Monitor performance**: Use tools like New Relic or Datadog
+2. **Check logs**: Look for errors or anomalies
+3. **Test the application**: Ensure all features work
+4. **Set up alerts**: To be informed of problems
+5. **Document the process**: To facilitate future deployments
+
+With these tips, your Framefox application will be properly deployed and ready to be used in production.
