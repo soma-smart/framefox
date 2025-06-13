@@ -29,7 +29,7 @@ class CreateAuthCommand(AbstractCommand):
         self.login_view_template_name = r"security/login_view_template.jinja2"
         
         # Templates OAuth et JWT
-        self.jwt_template_name = r"security/jwt_authenticator.jinja2"
+        self.jwt_template_name = r"security/jwt_authenticator_template.jinja2"
         self.oauth_google_template_name = r"security/oauth_google_authenticator_template.jinja2"
         self.oauth_microsoft_template_name = r"security/oauth_microsoft_authenticator_template.jinja2"
         
