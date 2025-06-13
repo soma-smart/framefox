@@ -23,7 +23,11 @@ class MockCreateCommand(AbstractCommand):
         self.model_checker = ModelChecker()
 
     def execute(self, name: Optional[str] = None):
-        """Create mock file for an entity"""
+        """
+        Create mock file for an entity.
+        Args:
+            name (str, optional): The name of the entity in snake_case. Defaults to None.
+        """
         self.printer.print_msg(
             "On which entity you want to create this mock?(snake_case)",
             theme="bold_normal",
@@ -53,9 +57,7 @@ class MockCreateCommand(AbstractCommand):
         if not name:
             name = InputManager().wait_input("Entity name (snake_case)")
         if not name or not ClassNameManager.is_snake_case(name):
-            self.printer.print_msg(
-                "Invalid name. Must be in snake_case.", theme="error"
-            )
+            self.printer.print_msg("Invalid name. Must be in snake_case.", theme="error")
             return None
         return name
 
@@ -67,9 +69,7 @@ class MockCreateCommand(AbstractCommand):
         entity_class = ClassNameManager.snake_to_pascal(entity_name)
         mock_class = f"{entity_class}Mock"
 
-        properties_list = self.model_checker.get_entity_properties(
-            entity_name, verbose=True
-        )
+        properties_list = self.model_checker.get_entity_properties(entity_name, verbose=True)
 
         properties_list = [prop for prop in properties_list if prop["name"] != "id"]
 

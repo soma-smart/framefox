@@ -18,7 +18,13 @@ class ClearMigrationCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self):
-        """Clear all migration files and reset migration table in database"""
+        """
+        Clear all migration files and reset migration table in database.\n
+        This command will remove all migration files and reset the Alembic version table in the database.\n
+        It is useful when you want to start fresh with migrations, for example after a major refactor or if you\n
+        have made significant changes to your database schema that require a clean slate.\n
+        It will check if the database exists, and if not, it will only clear the migration files.\n
+        """
         try:
             self.printer.print_msg("Clearing migration files and database references...", theme="info")
 

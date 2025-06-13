@@ -50,12 +50,12 @@ class CommandBuilder:
     def _add_command_to_subapp(self, subapp: typer.Typer, command_name: str, command_class):
         """Add a single command to a subapp"""
 
-        # Créer une instance de la commande
+        # Create an instance of the command
         instance = self.instantiate_command(command_class)
         if not instance:
             return
 
-        # Utiliser directement la méthode execute avec ses annotations Typer
+        # Use the execute method directly with its Typer annotations
         subapp.command(name=command_name)(instance.execute)
 
     def instantiate_command(self, command_class):

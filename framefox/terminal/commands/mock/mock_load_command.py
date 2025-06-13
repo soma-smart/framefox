@@ -20,7 +20,14 @@ class MockLoadCommand(AbstractCommand):
 
     def execute(self):
         """
-        Load all mocks found in the mocks directory.
+        Load all mocks found in the mocks directory.\n
+        This command will search for all files ending with '_mock.py' in the 'src/mocks' directory,\n
+        import them, and call their 'load' method if it exists.\n
+        If the 'load' method is not found, it will print an error message for that mock file.\n
+        If no mock files are found, it will inform the user.\n
+        If the 'src/mocks' directory does not exist, it will print an error message.\n
+        If the user confirms, it will proceed to load all mocks.\n
+        If the user cancels, it will print a cancellation message.\n
         """
         mocks_dir = os.path.join("src", "mocks")
         if not os.path.exists(mocks_dir):

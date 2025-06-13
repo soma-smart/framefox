@@ -23,7 +23,11 @@ class CreateUserCommand(AbstractCommand):
 
     def execute(self, name: str = None):
         """
-        Create a user entity for the authentication.
+        Create a user entity for the authentication.\n
+        This command will create a user entity with the following properties:\n
+        - password: str (not nullable)\n
+        - email: str (not nullable)\n
+        - roles: list[str] (default to ['ROLE_USER'], stored as JSON in the database)\n
 
         Args:
             name (str, optional): The name of the entity in snake_case. Defaults to None.
@@ -56,14 +60,8 @@ class CreateUserCommand(AbstractCommand):
             )
             raise Exception("Entity already exists.")
 
-        entity_path = self.create_entity_command.create_entity_and_repository(name)
-
-        self.entity_property_manager.insert_property(
-            name, "    password: str= Field(nullable=False)\n"
-        )
-        self.entity_property_manager.insert_property(
-            name, "    email: str= Field(nullable=False)\n"
-        )
+        self.entity_property_manager.insert_property(name, "    password: str= Field(nullable=False)\n")
+        self.entity_property_manager.insert_property(name, "    email: str= Field(nullable=False)\n")
         self.entity_property_manager.insert_property(
             name,
             "    roles: list[str] = Field(default_factory=lambda: ['ROLE_USER'], sa_column=Column(JSON))\n",

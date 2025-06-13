@@ -44,13 +44,9 @@ class DisplayManager:
 
         self._display_full_help(command_groups)
 
-    def display_subgroup_help(
-        self, namespace: str, commands: Dict[str, Any], description: str
-    ):
+    def display_subgroup_help(self, namespace: str, commands: Dict[str, Any], description: str):
         """Display help for a specific command group"""
-        self.console.print(
-            f"[{FramefoxTheme.HEADER_STYLE}]{namespace.upper()} COMMANDS[/{FramefoxTheme.HEADER_STYLE}]"
-        )
+        self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]{namespace.upper()} COMMANDS[/{FramefoxTheme.HEADER_STYLE}]")
         self.console.print("")
         self.console.print(description, style=FramefoxTheme.DIM_STYLE)
         self.console.print("")
@@ -60,11 +56,7 @@ class DisplayManager:
         commands_data = []
 
         for command_name, command_class in sorted(commands.items()):
-            doc = (
-                command_class.execute.__doc__
-                if hasattr(command_class, "execute")
-                else ""
-            )
+            doc = command_class.execute.__doc__ if hasattr(command_class, "execute") else ""
             first_line = doc.strip().split("\n")[0] if doc else ""
             commands_data.append((command_name, first_line))
 
@@ -92,6 +84,16 @@ class DisplayManager:
         else:
             # Show all commands grouped by namespace
             commands_data = []
+
+            # First display commands from the "main" namespace (without group prefix)
+            main_commands = command_groups.get("main", {})
+            for command_name, command_class in sorted(main_commands.items()):
+                if command_name != "init":
+                    doc = command_class.execute.__doc__ if hasattr(command_class, "execute") else ""
+                    first_line = doc.strip().split("\n")[0] if doc else ""
+                    commands_data.append((command_name, first_line))
+
+            # Then display the other namespaces with their prefixes
             for namespace, commands in sorted(command_groups.items()):
                 if namespace != "main":
                     # Add section separator
@@ -99,11 +101,7 @@ class DisplayManager:
 
                     for command_name, command_class in sorted(commands.items()):
                         full_command = f"{namespace} {command_name}"
-                        doc = (
-                            command_class.execute.__doc__
-                            if hasattr(command_class, "execute")
-                            else ""
-                        )
+                        doc = command_class.execute.__doc__ if hasattr(command_class, "execute") else ""
                         first_line = doc.strip().split("\n")[0] if doc else ""
                         commands_data.append((full_command, first_line))
 
@@ -154,17 +152,13 @@ class DisplayManager:
         self.console.print("")
 
         # Help messages
-        self.console.print(
-            FramefoxMessages.HELP_COMMAND_DETAILS, style=FramefoxTheme.TEXT
-        )
+        self.console.print(FramefoxMessages.HELP_COMMAND_DETAILS, style=FramefoxTheme.TEXT)
         self.console.print("")
         self.console.print(FramefoxMessages.HELP_EXAMPLE, style=FramefoxTheme.DIM_STYLE)
 
     def _get_namespace_description(self, namespace: str) -> str:
         """Get description for a namespace"""
-        return FramefoxMessages.NAMESPACE_DESCRIPTIONS.get(
-            namespace, f"{namespace.title()} operations"
-        )
+        return FramefoxMessages.NAMESPACE_DESCRIPTIONS.get(namespace, f"{namespace.title()} operations")
 
     def print_error(self, message: str):
         """Print an error message"""

@@ -30,6 +30,12 @@ class DebugRouterCommand(AbstractCommand):
         self.app = kernel.app
 
     def execute(self):
+        """
+        Display and debug router information.\n
+        This method retrieves all routes from the FastAPI application,\n
+        filters out certain routes, and prints a formatted table with the\n
+        route paths, names, and HTTP methods.\n
+        """
         console = Console()
         print("")
         table = Table(show_header=True, header_style="bold orange1")

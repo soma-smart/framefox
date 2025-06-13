@@ -1,7 +1,17 @@
-import asyncio, os, socket, subprocess, threading, time, webbrowser, typer
+import asyncio
+import os
+import socket
+import subprocess
+import threading
+import time
+import webbrowser
 from typing import Annotated
+
+import typer
+
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -10,10 +20,11 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
-class ServerStartCommand(AbstractCommand):
+
+class RunCommand(AbstractCommand):
     """
     Command to start the development server with optimizations.
-    
+
     This command handles starting a uvicorn server with automatic port detection,
     container pre-warming, optional background workers, and automatic browser opening.
     """
@@ -23,8 +34,8 @@ class ServerStartCommand(AbstractCommand):
     WORKER_SHUTDOWN_TIMEOUT = 2.0
 
     def __init__(self):
-        """Initialize the server start command."""
-        super().__init__("start")
+        """Initialize the run command."""
+        super().__init__("run")
         self.worker_thread = None
         self.worker_stop_event = None
 
@@ -34,10 +45,25 @@ class ServerStartCommand(AbstractCommand):
         with_workers: Annotated[bool, typer.Option("--with-workers", help="Start background workers")] = False,
         no_browser: Annotated[bool, typer.Option("--no-browser", help="Don't open browser automatically")] = False,
     ):
-        os.environ['FRAMEFOX_DEV_MODE'] = 'true'
-        os.environ['FRAMEFOX_CACHE_ENABLED'] = 'true'
-        os.environ['FRAMEFOX_MINIMAL_SCAN'] = 'true'
-        
+        """
+        Execute the run command to start the development server.\n
+        This method performs the following steps:\n
+        1. Set environment variables for development mode and caching.\n
+        2. Find an available port starting from the specified port.\n
+        3. Prewarm the service container to optimize startup performance.\n
+        4. Print a success message with the server URL.\n
+        5. Optionally set up background workers for asynchronous tasks.\n
+        6. Handle browser opening based on user preference.\n
+        7. Start the uvicorn server with the specified port and options.\n
+        Args:
+            port (int): The port to run the server on. Defaults to 8000.
+            with_workers (bool): Whether to start background workers. Defaults to False.
+            no_browser (bool): Whether to skip opening the browser automatically. Defaults to False.
+        """
+        os.environ["FRAMEFOX_DEV_MODE"] = "true"
+        os.environ["FRAMEFOX_CACHE_ENABLED"] = "true"
+        os.environ["FRAMEFOX_MINIMAL_SCAN"] = "true"
+
         available_port = self._find_available_port(port)
         self._prewarm_container()
 
@@ -76,14 +102,8 @@ class ServerStartCommand(AbstractCommand):
 
     def _start_uvicorn_server(self, port: int) -> int:
         try:
-            uvicorn_cmd = [
-                "uvicorn", "main:app", 
-                "--reload", 
-                "--reload-delay", "0.5",
-                "--reload-dir", "src",
-                "--port", str(port)
-            ]
-            
+            uvicorn_cmd = ["uvicorn", "main:app", "--reload", "--reload-delay", "0.5", "--reload-dir", "src", "--port", str(port)]
+
             process = subprocess.run(uvicorn_cmd)
             return process.returncode
 
@@ -94,13 +114,13 @@ class ServerStartCommand(AbstractCommand):
 
     def _prewarm_container(self) -> None:
         """Prewarm the service container for better startup performance."""
-        try:    
+        try:
             container = ServiceContainer()
             container.force_complete_scan()
-            
+
             cache_data = container._create_cache_snapshot()
             container._save_service_cache(cache_data)
-            
+
         except Exception as e:
             self.printer.print_msg(f"⚠️ Pre-warm failed: {e}", theme="warning")
 

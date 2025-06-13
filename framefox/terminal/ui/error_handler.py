@@ -108,7 +108,7 @@ class ErrorHandler:
         starter_commands = [
             ("framefox --help", "Show all available command groups"),
             ("framefox list", "List all commands with descriptions"),
-            ("framefox server start", "Start development server"),
+            ("framefox run", "Start development server"),
             ("framefox create controller", "Create a new controller"),
         ]
 

@@ -28,12 +28,12 @@ class CommandRegistry:
         if cls._instance is None:
             cls._instance = super(CommandRegistry, cls).__new__(cls)
             cls._instance.commands = {}
-            cls._instance.command_groups = {}  # Nouveau : groupes de commandes
+            cls._instance.command_groups = {}
             cls._instance.initialized = False
         return cls._instance
 
     def get_command(self, name: str):
-        """Retrieve a command by its full name (e.g., 'server:start')"""
+        """Retrieve a command by its full name (e.g., 'create entity')"""
         if not self.initialized:
             self.discover_commands()
         return self.commands.get(name)
@@ -68,15 +68,25 @@ class CommandRegistry:
             else:
                 namespace = "main"
 
-        # Garder l'ancien système pour compatibilité
-        command_id = f"{namespace}:{name}" if namespace != "main" else name
+        # Special handling for the "root" namespace
+        if namespace == "root":
+            # For "root", the command is added without a namespace
+            command_id = name
+
+            # Add to the "main" group for display
+            if "main" not in self.command_groups:
+                self.command_groups["main"] = {}
+            self.command_groups["main"][name] = command_class
+        else:
+            # Keep the old system for other namespaces
+            command_id = f"{namespace}:{name}" if namespace != "main" else name
+
+            # New group system
+            if namespace not in self.command_groups:
+                self.command_groups[namespace] = {}
+            self.command_groups[namespace][name] = command_class
+
         self.commands[command_id] = command_class
-
-        # Nouveau système de groupes
-        if namespace not in self.command_groups:
-            self.command_groups[namespace] = {}
-        self.command_groups[namespace][name] = command_class
-
         return command_id
 
     def discover_commands(self):
@@ -88,9 +98,7 @@ class CommandRegistry:
 
         if not project_exists:
             try:
-                module = importlib.import_module(
-                    "framefox.terminal.commands.init_command"
-                )
+                module = importlib.import_module("framefox.terminal.commands.init_command")
                 command_class = getattr(module, "InitCommand")
                 self.add_command(command_class)
                 self.initialized = True
@@ -112,6 +120,15 @@ class CommandRegistry:
                 "src.commands",
                 excluded_commands=["InitCommand"] if project_exists else [],
             )
+
+        # Load the run command explicitly
+        try:
+            module = importlib.import_module("framefox.terminal.commands.run_command")
+            command_class = getattr(module, "RunCommand")
+            self.add_command(command_class, namespace="root")
+        except (ImportError, AttributeError) as e:
+            print(f"Error loading run command: {e}")
+
         try:
             from framefox.core.bundle.bundle_manager import BundleManager
 
@@ -123,9 +140,7 @@ class CommandRegistry:
             pass
         self.initialized = True
 
-    def _discover_in_path(
-        self, path: Path, package_prefix: str, excluded_commands=None
-    ):
+    def _discover_in_path(self, path: Path, package_prefix: str, excluded_commands=None):
         """
         Discover commands in a specific path
 
@@ -142,15 +157,11 @@ class CommandRegistry:
         for item in path.iterdir():
             if item.is_dir() and not item.name.startswith("__"):
                 namespace = item.name
-                self._discover_in_package(
-                    f"{package_prefix}.{namespace}", namespace, excluded_commands
-                )
+                self._discover_in_package(f"{package_prefix}.{namespace}", namespace, excluded_commands)
 
         self._discover_in_package(package_prefix, "main", excluded_commands)
 
-    def _discover_in_package(
-        self, package_name: str, namespace: str, excluded_commands=None
-    ):
+    def _discover_in_package(self, package_name: str, namespace: str, excluded_commands=None):
         """Discover commands in a Python package"""
         excluded_commands = excluded_commands or []
 
@@ -160,19 +171,13 @@ class CommandRegistry:
             print(f"Package {package_name} not found")
             return
 
-        for _, name, is_pkg in pkgutil.iter_modules(
-            package.__path__, package.__name__ + "."
-        ):
+        for _, name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
             if not is_pkg and name.endswith("_command"):
                 try:
                     module = importlib.import_module(name)
                     for item_name in dir(module):
 
-                        if (
-                            item_name.endswith("Command")
-                            and not item_name.startswith("Abstract")
-                            and item_name not in excluded_commands
-                        ):
+                        if item_name.endswith("Command") and not item_name.startswith("Abstract") and item_name not in excluded_commands:
                             command_class = getattr(module, item_name)
                             if inspect.isclass(command_class):
 

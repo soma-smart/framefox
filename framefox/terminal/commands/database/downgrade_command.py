@@ -10,7 +10,13 @@ class DowngradeCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self, steps: int = 1):
-        """Reverts the last migration(s) applied to the database."""
+        """
+        Reverts the last migration(s) applied to the database.\n
+        If steps is greater than 0, it will revert that many migrations.\n
+        If steps is 0 or negative, it will revert to the base state (no migrations).\n
+        Args:
+            steps (int): The number of migrations to revert. Defaults to 1.
+        """
         try:
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(
@@ -35,6 +41,4 @@ class DowngradeCommand(AbstractDatabaseCommand):
                 self.printer.print_msg("Failed to revert migrations.", theme="error")
 
         except Exception as e:
-            self.printer.print_msg(
-                f"Error while reverting migrations: {str(e)}", theme="error"
-            )
+            self.printer.print_msg(f"Error while reverting migrations: {str(e)}", theme="error")
