@@ -1,0 +1,161 @@
+import jwt
+import time
+from typing import Optional
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
+from framefox.core.config.settings import Settings
+
+"""
+JWT Authentication Controller
+Auto-generated minimal JWT controller for API authentication.
+
+Provides essential JWT authentication endpoints:
+- /api/auth/login: Generate JWT token
+- /api/auth/refresh: Refresh JWT token  
+- /api/auth/me: Get current user info (protected route)
+"""
+
+
+class {{ controller_class_name }}(AbstractController):
+    """Minimal JWT authentication controller"""
+
+    def __init__(self):
+        self.settings = Settings()
+    
+    @Route("/api/auth/login", "api.auth.login", methods=["POST"])
+    async def login(self, request: Request) -> JSONResponse:
+        """Generate JWT token from email/password credentials"""
+        try:
+            class LoginRequest(BaseModel):
+                email: str
+                password: str
+
+            # Parse request
+            body = await request.json()
+            login_data = LoginRequest(**body)
+            
+            # Get user (replace with your user repository)
+            user_repository = self.get_repository("user")  # Adjust to your repository
+            user = user_repository.find_one_by({"email": login_data.email})
+            
+            if not user:
+                return JSONResponse({"error": "Invalid credentials"}, status_code=401)
+            
+            # TODO: Add password verification here
+            # password_hasher = PasswordHasher()
+            # if not password_hasher.verify(login_data.password, user.password):
+            #     return JSONResponse({"error": "Invalid credentials"}, status_code=401)
+            
+            # Generate JWT token
+            secret_key = self.settings.get_param("jwt.secret_key")
+            expiration = self.settings.get_param("jwt.expiration", 3600)
+            
+            if not secret_key:
+                return JSONResponse({"error": "JWT configuration error"}, status_code=500)
+            
+            payload = {
+                "email": user.email,
+                "user_id": user.id,
+                "roles": getattr(user, 'roles', ["ROLE_USER"]),
+                "iat": int(time.time()),
+                "exp": int(time.time()) + expiration,
+                "sub": str(user.id),
+                "firewallname": "api"
+            }
+            
+            token = jwt.encode(payload, secret_key, algorithm="HS256")
+            
+            return JSONResponse({
+                "success": True,
+                "token": token,
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "roles": getattr(user, 'roles', ["ROLE_USER"])
+                },
+                "expires_in": expiration
+            })
+            
+        except Exception as e:
+            return JSONResponse({"error": "Authentication failed"}, status_code=500)
+    
+    @Route("/api/auth/refresh", "api.auth.refresh", methods=["POST"])
+    async def refresh_token(self, request: Request) -> JSONResponse:
+        """Refresh an existing JWT token"""
+        try:
+            # Extract token from Authorization header
+            auth_header = request.headers.get("Authorization", "")
+            if not auth_header.startswith("Bearer "):
+                return JSONResponse({"error": "Authorization header required"}, status_code=401)
+         
+            token = auth_header[7:]
+            secret_key = self.settings.get_param("jwt.secret_key")
+            
+            # Decode token (ignore expiration for refresh)
+            payload = jwt.decode(
+                token, 
+                secret_key, 
+                algorithms=["HS256"],
+                options={"verify_exp": False}
+            )
+            
+            # Verify user still exists
+            user_repository = self.get_repository("user")  # Adjust to your repository
+            user = user_repository.find(payload["user_id"])
+            
+            if not user:
+                return JSONResponse({"error": "User not found"}, status_code=401)
+            
+            # Generate new token
+            expiration = self.settings.get_param("jwt.expiration", 3600)
+            new_payload = {
+                "email": user.email,
+                "user_id": user.id,
+                "roles": getattr(user, 'roles', ["ROLE_USER"]),
+                "iat": int(time.time()),
+                "exp": int(time.time()) + expiration,
+                "sub": str(user.id),
+                "firewallname": "api"
+            }
+            
+            new_token = jwt.encode(new_payload, secret_key, algorithm="HS256")
+            
+            return JSONResponse({
+                "success": True,
+                "token": new_token,
+                "expires_in": expiration
+            })
+            
+        except jwt.ExpiredSignatureError:
+            return JSONResponse({"error": "Token expired"}, status_code=401)
+        except jwt.InvalidTokenError:
+            return JSONResponse({"error": "Invalid token"}, status_code=401)
+        except Exception as e:
+            return JSONResponse({"error": "Token refresh failed"}, status_code=500)
+    
+    @Route("/api/auth/me", "api.auth.me", methods=["GET"])
+    async def get_current_user(self, request: Request) -> JSONResponse:
+        """Get current authenticated user info (protected by JWT middleware)"""
+        try:
+            # User is injected by JWT authentication handler
+            current_user = self.get_user()
+            
+            if not current_user:
+                return JSONResponse({"error": "Not authenticated"}, status_code=401)
+            
+            return JSONResponse({
+                "success": True,
+                "user": {
+                    "id": current_user.id,
+                    "email": current_user.email,
+                    "roles": getattr(current_user, 'roles', ["ROLE_USER"]),
+                    "is_token_user": getattr(current_user, 'is_token_user', False)
+                }
+            })
+            
+        except Exception as e:
+            return JSONResponse({"error": "Failed to get user info"}, status_code=500)

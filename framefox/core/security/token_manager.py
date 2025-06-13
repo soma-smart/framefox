@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 import jwt
+import time
 from framefox.core.config.settings import Settings
 
 """
@@ -19,18 +20,41 @@ class TokenManager:
         self.settings = Settings()
         self.logger = logging.getLogger("TOKENMANAGER")
         self.algorithm = "HS256"
+        self.expiration = 3600  # Token expiration time in seconds
+        self.secret_key = self.settings.session_secret_key
+        if not self.secret_key:
+            raise ValueError("Session secret key is not set in settings.")
 
-    def create_token(self, user, firewallname: str, roles: list) -> str:
+    def create_token(self, user, firewallname: str, roles: list = None) -> str:
+        """
+        Create a JWT token for the authenticated user.
+
+        Args:
+            user: The authenticated user object
+            firewallname: The name of the firewall
+            roles: List of user roles
+
+        Returns:
+            str: The JWT token
+        """
+        # Gestion des utilisateurs virtuels OAuth
+        if hasattr(user, 'is_virtual') and user.is_virtual:
+            user_id = user.id  # ID virtuel déjà généré
+            self.logger.debug(f"Creating token for virtual OAuth user: {user.email}")
+        else:
+            user_id = user.id
+            self.logger.debug(f"Creating token for database user: {user.email}")
 
         payload = {
-            "sub": str(user.id),
+            "sub": str(user_id),
             "email": user.email,
+            "roles": roles or [],
             "firewallname": firewallname,
-            "roles": roles,
-            "exp": datetime.now() + timedelta(hours=1),
+            "iat": int(time.time()),
+            "exp": int(time.time()) + self.expiration,
         }
-        token = jwt.encode(payload, self.settings.session_secret_key, algorithm=self.algorithm)
-        return token
+
+        return jwt.encode(payload, self.secret_key, algorithm="HS256")
 
     def decode_token(self, token: str) -> dict:
         try:

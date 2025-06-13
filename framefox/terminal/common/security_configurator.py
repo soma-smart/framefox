@@ -107,3 +107,138 @@ class SecurityConfigurator:
             with open(self.yaml_path, "w") as file:
                 self.yaml.dump(config, file)
             print(f"Firewall '{firewall_name}' added successfully.")
+
+    def add_oauth_firewall(
+        self, 
+        firewall_name: str, 
+        authenticator_import_path: str, 
+        provider_key: str = None,
+        oauth_type: str = "oauth_google"
+    ):
+        """Add OAuth firewall configuration with OAuth-specific settings"""
+        
+        # Charger la configuration existante
+        with open(self.yaml_path, "r") as file:
+            config = self.yaml.load(file)
+
+        if "security" not in config:
+            config["security"] = {}
+
+        if (
+            "firewalls" not in config["security"]
+            or config["security"]["firewalls"] is None
+        ):
+            config["security"]["firewalls"] = {}
+
+        # Vérifier si le firewall existe déjà
+        if firewall_name in config["security"]["firewalls"]:
+            print(f"Firewall '{firewall_name}' already exists in the configuration.")
+            return
+
+        # Déterminer les variables d'environnement selon le type OAuth
+        if oauth_type == "oauth_google":
+            client_id_var = "GOOGLE_CLIENT_ID"
+            client_secret_var = "GOOGLE_CLIENT_SECRET"
+            callback_path = f"/auth/{firewall_name}/callback"
+            firewall_config = {
+                "authenticator": authenticator_import_path,
+                "login_path": f"/auth/{firewall_name}",
+                "logout_path": "/logout",
+                "denied_redirect": "/",
+                "oauth": {
+                    "client_id": f"${{{client_id_var}}}",
+                    "client_secret": f"${{{client_secret_var}}}",
+                    "callback_path": callback_path,
+                    "redirect_uri": f"${{APP_URL}}{callback_path}"
+                }
+            }
+        elif oauth_type == "oauth_microsoft":
+            client_id_var = "MICROSOFT_CLIENT_ID" 
+            client_secret_var = "MICROSOFT_CLIENT_SECRET"
+            tenant_id_var = "MICROSOFT_TENANT_ID"
+            callback_path = "/microsoft-callback"  # URL générique
+            firewall_config = {
+                "authenticator": authenticator_import_path,
+                "login_path": f"/auth/{firewall_name}",
+                "logout_path": "/logout",
+                "denied_redirect": "/",
+                "oauth": {
+                    "client_id": f"${{{client_id_var}}}",
+                    "client_secret": f"${{{client_secret_var}}}",
+                    "tenant_id": f"${{{tenant_id_var}}}",
+                    "callback_path": callback_path,
+                    "redirect_uri": f"${{APP_URL}}{callback_path}"
+                }
+            }
+        else:
+            client_id_var = "OAUTH_CLIENT_ID"
+            client_secret_var = "OAUTH_CLIENT_SECRET"
+            callback_path = f"/auth/{firewall_name}/callback"
+            firewall_config = {
+                "authenticator": authenticator_import_path,
+                "login_path": f"/auth/{firewall_name}",
+                "logout_path": "/logout",
+                "denied_redirect": "/",
+                "oauth": {
+                    "client_id": f"${{{client_id_var}}}",
+                    "client_secret": f"${{{client_secret_var}}}",
+                    "callback_path": callback_path,
+                    "redirect_uri": f"${{APP_URL}}{callback_path}"
+                }
+            }
+        
+        if provider_key:
+            firewall_config["provider"] = provider_key
+
+        # Ajouter le firewall à la configuration
+        config["security"]["firewalls"][firewall_name] = firewall_config
+        
+        # Sauvegarder la configuration
+        with open(self.yaml_path, "w") as file:
+            self.yaml.dump(config, file)
+            
+        print(f"OAuth firewall '{firewall_name}' added successfully.")
+    def add_jwt_firewall(
+        self, 
+        firewall_name: str, 
+        authenticator_import_path: str, 
+        provider_key: str = None,
+    ):
+        """Add JWT firewall configuration with JWT-specific settings"""
+        
+        # Charger la configuration existante
+        with open(self.yaml_path, "r") as file:
+            config = self.yaml.load(file)
+
+        if "security" not in config:
+            config["security"] = {}
+
+        if (
+            "firewalls" not in config["security"]
+            or config["security"]["firewalls"] is None
+        ):
+            config["security"]["firewalls"] = {}
+
+        # Vérifier si le firewall existe déjà
+        if firewall_name in config["security"]["firewalls"]:
+            print(f"Firewall '{firewall_name}' already exists in the configuration.")
+            return
+
+        # Configuration JWT avec pattern pour exclure les routes publiques
+        firewall_config = {
+            "authenticator": authenticator_import_path,
+            "pattern": "^/api/(users|products|auth/me|admin)",  # Pattern excluant login/refresh
+            "logout_path": "/api/auth/logout",
+        }
+        
+        if provider_key:
+            firewall_config["provider"] = provider_key
+
+        # Ajouter le firewall à la configuration
+        config["security"]["firewalls"][firewall_name] = firewall_config
+        
+        # Sauvegarder la configuration
+        with open(self.yaml_path, "w") as file:
+            self.yaml.dump(config, file)
+            
+        print(f"JWT firewall '{firewall_name}' added successfully.")
