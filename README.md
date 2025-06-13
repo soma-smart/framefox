@@ -10,6 +10,8 @@
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
+[![SQLModel](https://img.shields.io/badge/SQLModel-0F172A?style=flat&logo=sqlite)](https://sqlmodel.tiangolo.com)
+[![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat&logo=pydantic&logoColor=white)](https://docs.pydantic.dev)
 [![GitHub Stars](https://img.shields.io/github/stars/soma-smart/framefox?style=social)](https://github.com/soma-smart/framefox)
 [![GitHub Forks](https://img.shields.io/github/forks/soma-smart/framefox?style=social)](https://github.com/soma-smart/framefox)
 
@@ -25,15 +27,15 @@
 
 ## 🌟 **Why Framefox?**
 
-> **"Finally, a Python framework that doesn't make me want to pull my hair out!"** - *Satisfied Developer*
-
-**Framefox** combines the **speed of FastAPI** with **clean MVC architecture** and **developer-friendly tooling**. Built for developers who want to ship fast without sacrificing code quality.
+**Framefox** combines the **speed of FastAPI** with **clean MVC architecture**, **type-safe SQLModel**, **robust Pydantic validation**, and **developer-friendly tooling**. Built for developers who want to ship fast without sacrificing code quality.
 
 ### ✨ **What makes it special?**
 
 🎯 **MVC Architecture** - Clean separation with Controllers, Templates, and Repositories  
 🏗️ **Interactive CLI** - Generate components instantly with `framefox create`  
 ⚡ **FastAPI Foundation** - Built on FastAPI with async support out of the box  
+🗄️ **SQLModel Integration** - Type-safe database models with automatic validation  
+📋 **Pydantic Validation** - Robust data validation and serialization everywhere  
 🔒 **Security First** - CSRF protection, XSS prevention, and secure authentication  
 🧠 **Developer Friendly** - Jinja2 templates, hot reload, and comprehensive debugging  
 📱 **Modern Stack** - Python 3.9+, async/await, dependency injection everywhere  
@@ -114,10 +116,11 @@ class UserController(AbstractController):
 
 ```
 my-project/
-├── 🎮 src/controllers/     # Handle HTTP requests and business logic
-├── 🏛️ src/entity/          # Database models and entities  
-├── 📝 src/form/           # Form types and validation
-├── 🗄️ src/repository/     # Data access layer
+├── src/
+│   ├── 🎮 controllers/     # Handle HTTP requests and business logic
+│   ├── 🏛️ entity/          # Database models and entities  
+│   ├── 📝 form/           # Form types and validation
+│   └── 🗄️ repository/     # Data access layer
 ├── 🎨 templates/          # Jinja2 templates with template inheritance
 ├── ⚙️ config/             # YAML configuration files
 ├── 🌐 public/            # Static assets (CSS, JS, images)
@@ -159,6 +162,8 @@ my-project/
 - Built-in profiler and debugger
 
 ### 🗃️ **Database & ORM**
+- SQLModel integration for type safety
+- Pydantic validation everywhere
 - Entity-Repository pattern
 - Database migrations with Alembic
 - Relationship mapping
@@ -255,14 +260,14 @@ class UserController(AbstractController):
 
 ## 📚 **Learn More**
 
-| 📖 **Resource** | 🎯 **Perfect For** |
-|-----------------|-------------------|
-| [📋 Installation Guide](https://soma-smart.github.io/doc-framefox/docs/installation) | Getting up and running |
-| [🎮 Controllers Guide](https://soma-smart.github.io/doc-framefox/docs/controllers) | Building your application logic |
-| [🎨 Templates Guide](https://soma-smart.github.io/doc-framefox/docs/templates) | Creating beautiful views |
-| [🔐 Security Guide](https://soma-smart.github.io/doc-framefox/docs/security) | Securing your application |
-| [🧪 Testing Guide](https://soma-smart.github.io/doc-framefox/docs/testing) | Writing comprehensive tests |
-| [🚀 Deployment Guide](https://soma-smart.github.io/doc-framefox/docs/deployment) | Going to production |
+| 📖 **Resource**                                                                      | 🎯 **Perfect For**               |
+| ----------------------------------------------------------------------------------- | ------------------------------- |
+| [📋 Installation Guide](https://soma-smart.github.io/doc-framefox/docs/installation) | Getting up and running          |
+| [🎮 Controllers Guide](https://soma-smart.github.io/doc-framefox/docs/controllers)   | Building your application logic |
+| [🎨 Templates Guide](https://soma-smart.github.io/doc-framefox/docs/templates)       | Creating beautiful views        |
+| [🔐 Security Guide](https://soma-smart.github.io/doc-framefox/docs/security)         | Securing your application       |
+| [🧪 Testing Guide](https://soma-smart.github.io/doc-framefox/docs/testing)           | Writing comprehensive tests     |
+| [🚀 Deployment Guide](https://soma-smart.github.io/doc-framefox/docs/deployment)     | Going to production             |
 
 
 
@@ -302,6 +307,8 @@ We ❤️ contributors! Here's how you can help:
 - ✨ Add examples
 - 🧪 Write tests
 
+**Example**: [Add comprehensive logging documentation with examples](https://github.com/soma-smart/framefox/issues/161)
+
 [**View Good First Issues →**](https://github.com/soma-smart/framefox/labels/good%20first%20issue)
 
 ---
@@ -336,10 +343,10 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 *Framefox is proudly backed by **SOMA Smart**, a technology company focused on data transformation and building innovative development tools.*
 
 | ![Rayen](https://github.com/RayenBou.png?size=100) | ![Raphaël](https://github.com/Vasulvius.png?size=100) |
-|:---:|:---:|
-| **[Rayen BOUMAZA](https://github.com/RayenBou)** | **[Raphaël LEUROND](https://github.com/Vasulvius)** |
-| *Framework Architect* | *Core Developer* |
-| 🏗️ Architecture & Performance | 🔧 Features & DevX |
+| :------------------------------------------------: | :---------------------------------------------------: |
+|  **[Rayen BOUMAZA](https://github.com/RayenBou)**  |  **[Raphaël LEUROND](https://github.com/Vasulvius)**  |
+|               *Framework Architect*                |                   *Core Developer*                    |
+|            🏗️ Architecture & Performance            |                   🔧 Features & DevX                   |
 
 ---
 
