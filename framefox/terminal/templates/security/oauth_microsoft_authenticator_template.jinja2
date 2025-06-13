@@ -1,0 +1,84 @@
+import httpx
+import secrets
+from typing import Dict, Any, Optional
+from fastapi import Request
+from fastapi.responses import RedirectResponse
+
+from framefox.core.security.authenticator.abstract_oauth_authenticator import AbstractOAuthAuthenticator
+from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+from framefox.core.security.passport.passport import Passport
+
+class OauthAuthenticator(AbstractOAuthAuthenticator, AuthenticatorInterface):
+    """
+    Microsoft OAuth authenticator implementation.
+    
+    Handles Microsoft OAuth 2.0 authentication flow including authorization,
+    token exchange, and user data retrieval from Microsoft Graph API.
+    """
+    
+    oauth_provider_name = "microsoft"
+    authorization_endpoint = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize"
+    token_endpoint = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token" 
+    userinfo_endpoint = "https://graph.microsoft.com/v1.0/me"
+    scopes = ["openid", "email", "profile"]
+    
+    async def authenticate(self, request: Request) -> Optional[Passport]:
+        if "code" in request.query_params:
+            return await self.handle_oauth_callback(request)
+        return None
+    
+    def on_auth_success(self, token: str) -> RedirectResponse:
+        return RedirectResponse(url="/home", status_code=303)
+    
+    def on_auth_failure(self, request: Request, reason: str = None) -> RedirectResponse:
+        if "code" in request.query_params:
+            self.logger.error(f"OAuth authentication failed after callback: {reason}")
+            return RedirectResponse(url="/oauth?error=auth_failed", status_code=303)
+        else:
+            state = secrets.token_urlsafe(32)
+            auth_url = self.get_authorization_url(state)
+            return RedirectResponse(url=auth_url, status_code=302)
+    
+    async def get_user_data_from_provider(self, access_token: str) -> Dict[str, Any]:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                self.userinfo_endpoint,
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            return {
+                "email": data["mail"] or data["userPrincipalName"],
+                "name": data["displayName"],
+                "provider": "microsoft", 
+                "provider_id": data["id"]
+            }
+    
+    # async def create_oauth_user(self, user_data: Dict[str, Any], repository) -> Optional[Any]:
+    #     try:
+    #         from framefox.core.security.password.password_hasher import PasswordHasher
+    #         from framefox.core.orm.entity_manager import EntityManager
+    #         from src.entity.user import User
+    #         import secrets
+            
+    #         random_password = secrets.token_urlsafe(32)
+    #         hashed_password = PasswordHasher().hash(random_password)
+            
+    #         entity_manager = EntityManager()
+            
+    #         user_entity = User()
+    #         user_entity.email = user_data["email"]
+    #         user_entity.password = hashed_password
+    #         user_entity.name = user_data["name"]
+    #         user_entity.roles = self.default_roles
+    #         await entity_manager.persist(user_entity)
+    #         await entity_manager.commit()
+            
+    #         await entity_manager.refresh(user_entity)
+            
+    #         return user_entity
+            
+    #     except Exception as e:
+    #         self.logger.error(f"EntityManager creation failed: {e}")
+    #         return None

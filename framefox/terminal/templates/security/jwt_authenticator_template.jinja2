@@ -1,0 +1,111 @@
+import jwt
+import logging
+from typing import Optional, Dict, Any
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+from framefox.core.security.authenticator.abstract_authenticator import AbstractAuthenticator
+from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+from framefox.core.security.passport.passport import Passport
+from framefox.core.security.passport.user_badge import UserBadge
+
+class JwtAuthenticator(AbstractAuthenticator, AuthenticatorInterface):
+    """
+    JWT-based authenticator for API authentication.
+    
+    This authenticator validates JWT tokens from Authorization headers and creates
+    virtual token users similar to Symfony's JWT authentication system.
+    """
+    
+    def __init__(self):
+        super().__init__()
+        self.logger = logging.getLogger("JWT_AUTHENTICATOR")
+    
+    async def authenticate(self, request: Request) -> Optional[Passport]:
+        token = self._extract_token(request)
+        if not token:
+            return None
+            
+        user_data = await self._validate_token_and_get_user_data(token)
+        if not user_data:
+            return None
+        
+        passport = Passport(user_badge=UserBadge(user_data["email"]))
+        passport.user = self._create_token_user(user_data)
+        
+        return passport
+    
+    def _extract_token(self, request: Request) -> Optional[str]:
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return None
+        return auth_header[7:]
+    
+    def _create_token_user(self, user_data: Dict[str, Any]):
+        from types import SimpleNamespace
+        
+        token_user = SimpleNamespace()
+        token_user.id = user_data["user_id"]
+        token_user.email = user_data["email"]
+        token_user.roles = user_data.get("roles", ["ROLE_USER"])
+        token_user.is_token_user = True
+        
+        return token_user
+    
+    def on_auth_success(self, token: str) -> JSONResponse:
+        return JSONResponse({
+            "success": True, 
+            "message": "Authentication successful"
+        }, status_code=200)
+    
+    def on_auth_failure(self, request: Request, reason: str = None) -> JSONResponse:
+        error_details = {
+            "error": "Unauthorized",
+            "message": reason or "Invalid or missing token",
+            "code": 401
+        }
+        
+        if "expired" in (reason or "").lower():
+            error_details["code"] = 401
+            error_details["type"] = "expired_token"
+        elif "invalid" in (reason or "").lower():
+            error_details["code"] = 401
+            error_details["type"] = "invalid_token"
+        else:
+            error_details["type"] = "missing_token"
+        
+        return JSONResponse(error_details, status_code=401)
+    
+    async def _validate_token_and_get_user_data(self, token: str) -> Optional[Dict[str, Any]]:
+        try:
+            secret_key = self.settings.get_param("jwt.secret_key")
+            if not secret_key:
+                self.logger.debug("JWT secret key not configured")
+                return None
+            
+            payload = jwt.decode(
+                token, 
+                secret_key,
+                algorithms=["HS256"]
+            )
+            
+            required_fields = ["email", "user_id", "roles", "sub"]
+            for field in required_fields:
+                if field not in payload:
+                    return None
+            
+            return {
+                "email": payload["email"],
+                "user_id": payload["user_id"],
+                "roles": payload.get("roles", ["ROLE_USER"]),
+                "exp": payload.get("exp"),
+                "sub": payload.get("sub"),
+                "firewallname": payload.get("firewallname", "jwt")
+            }
+            
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
+        except Exception:
+            return None

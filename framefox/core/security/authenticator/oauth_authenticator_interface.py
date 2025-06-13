@@ -15,26 +15,21 @@ Github: https://github.com/RayenBou
 
 
 class OAuthAuthenticatorInterface(AuthenticatorInterface, ABC):
-    """Interface for OAuth authenticators"""
+    """
+    Interface for OAuth authenticators.
+    
+    This interface extends the base AuthenticatorInterface to provide
+    OAuth-specific functionality for user authentication via external providers.
+    """
 
     is_oauth_authenticator = True
 
     @abstractmethod
-    async def get_oauth_user_data(self, access_token: str) -> Dict[str, Any]:
-        """Retrieves user data from the provider's API"""
-        pass
-
-    @abstractmethod
-    def map_oauth_data_to_user(self, oauth_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Maps OAuth data to the application's user fields"""
+    async def get_user_data_from_provider(self, access_token: str) -> Dict[str, Any]:
+        """Retrieves and formats user data from the OAuth provider"""
         pass
 
     @abstractmethod
     def get_authorization_url(self, state: str) -> str:
         """Builds the authorization URL with the necessary parameters"""
-        pass
-
-    @abstractmethod
-    async def exchange_code_for_token(self, code: str) -> Dict[str, Any]:
-        """Exchanges the authorization code for an access token"""
         pass
