@@ -37,77 +37,6 @@ class SecurityConfigurator:
                 self.yaml.dump(config, file)
             print(f"Provider '{provider_key}' added successfully.")
 
-    def add_firewall(self, provider_name: str, authenticator_import_path: str):
-        with open(self.yaml_path, "r") as file:
-            config = self.yaml.load(file)
-
-        if "security" not in config:
-            config["security"] = {}
-
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
-            config["security"]["firewalls"] = {}
-
-        firewall_key = "main"
-        main_firewall = {
-            "provider": f"app_{provider_name}_provider",
-            "authenticator": authenticator_import_path,
-            "login_path": "/login",
-            "logout_path": "/logout",
-            "denied_redirect": "/"
-        }
-
-        if firewall_key in config["security"]["firewalls"]:
-            print(
-                f"Firewall '{
-                  firewall_key}' already exists in the configuration."
-            )
-        else:
-            config["security"]["firewalls"][firewall_key] = main_firewall
-            with open(self.yaml_path, "w") as file:
-                self.yaml.dump(config, file)
-            print(f"Firewall '{firewall_key}' added successfully.")
-
-    def add_named_firewall(
-        self,
-        firewall_name: str,
-        authenticator_import_path: str,
-        provider_key: str = None,
-    ):
-        with open(self.yaml_path, "r") as file:
-            config = self.yaml.load(file)
-
-        if "security" not in config:
-            config["security"] = {}
-
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
-            config["security"]["firewalls"] = {}
-
-        if firewall_name in config["security"]["firewalls"]:
-            print(
-                f"Firewall '{
-                  firewall_name}' already exists in the configuration."
-            )
-        else:
-            new_firewall = {
-                "authenticator": authenticator_import_path,
-                "login_path": "/login",
-                "logout_path": "/logout",
-                "denied_redirect": "/"
-            }
-            if provider_key:
-                new_firewall["provider"] = provider_key
-
-            config["security"]["firewalls"][firewall_name] = new_firewall
-            with open(self.yaml_path, "w") as file:
-                self.yaml.dump(config, file)
-            print(f"Firewall '{firewall_name}' added successfully.")
-
     def add_oauth_firewall(
         self, 
         firewall_name: str, 
@@ -139,56 +68,53 @@ class SecurityConfigurator:
         if oauth_type == "oauth_google":
             client_id_var = "GOOGLE_CLIENT_ID"
             client_secret_var = "GOOGLE_CLIENT_SECRET"
-            callback_path = f"/auth/{firewall_name}/callback"
-            firewall_config = {
-                "authenticator": authenticator_import_path,
-                "login_path": f"/auth/{firewall_name}",
-                "logout_path": "/logout",
-                "denied_redirect": "/",
-                "oauth": {
-                    "client_id": f"${{{client_id_var}}}",
-                    "client_secret": f"${{{client_secret_var}}}",
-                    "callback_path": callback_path,
-                    "redirect_uri": f"${{APP_URL}}{callback_path}"
-                }
+            callback_path = "/google-callback"
+            oauth_config = {
+                "client_id": f"${{{client_id_var}}}",
+                "client_secret": f"${{{client_secret_var}}}",
+                "callback_path": callback_path,
+                "redirect_uri": f"${{APP_URL}}{callback_path}"
             }
         elif oauth_type == "oauth_microsoft":
             client_id_var = "MICROSOFT_CLIENT_ID" 
             client_secret_var = "MICROSOFT_CLIENT_SECRET"
             tenant_id_var = "MICROSOFT_TENANT_ID"
-            callback_path = "/microsoft-callback"  # URL générique
-            firewall_config = {
-                "authenticator": authenticator_import_path,
-                "login_path": f"/auth/{firewall_name}",
-                "logout_path": "/logout",
-                "denied_redirect": "/",
-                "oauth": {
-                    "client_id": f"${{{client_id_var}}}",
-                    "client_secret": f"${{{client_secret_var}}}",
-                    "tenant_id": f"${{{tenant_id_var}}}",
-                    "callback_path": callback_path,
-                    "redirect_uri": f"${{APP_URL}}{callback_path}"
-                }
+            callback_path = "/microsoft-callback"
+            oauth_config = {
+                "client_id": f"${{{client_id_var}}}",
+                "client_secret": f"${{{client_secret_var}}}",
+                "tenant_id": f"${{{tenant_id_var}}}",
+                "callback_path": callback_path,
+                "redirect_uri": f"${{APP_URL}}{callback_path}"
             }
         else:
             client_id_var = "OAUTH_CLIENT_ID"
             client_secret_var = "OAUTH_CLIENT_SECRET"
-            callback_path = f"/auth/{firewall_name}/callback"
-            firewall_config = {
-                "authenticator": authenticator_import_path,
-                "login_path": f"/auth/{firewall_name}",
-                "logout_path": "/logout",
-                "denied_redirect": "/",
-                "oauth": {
-                    "client_id": f"${{{client_id_var}}}",
-                    "client_secret": f"${{{client_secret_var}}}",
-                    "callback_path": callback_path,
-                    "redirect_uri": f"${{APP_URL}}{callback_path}"
-                }
+            callback_path = "/oauth-callback"
+            oauth_config = {
+                "client_id": f"${{{client_id_var}}}",
+                "client_secret": f"${{{client_secret_var}}}",
+                "callback_path": callback_path,
+                "redirect_uri": f"${{APP_URL}}{callback_path}"
             }
         
+        # CORRECTION: Ordre des clés - provider en premier
+        firewall_config = {}
+        
+        # 1. Provider en premier (si défini)
         if provider_key:
             firewall_config["provider"] = provider_key
+            
+        # 2. Authenticator
+        firewall_config["authenticator"] = authenticator_import_path
+        
+        # 3. Paths
+        firewall_config["login_path"] = "/auth/oauth"
+        firewall_config["logout_path"] = "/logout"
+        firewall_config["denied_redirect"] = "/"
+        
+        # 4. Configuration OAuth en dernier
+        firewall_config["oauth"] = oauth_config
 
         # Ajouter le firewall à la configuration
         config["security"]["firewalls"][firewall_name] = firewall_config
@@ -198,6 +124,7 @@ class SecurityConfigurator:
             self.yaml.dump(config, file)
             
         print(f"OAuth firewall '{firewall_name}' added successfully.")
+
     def add_jwt_firewall(
         self, 
         firewall_name: str, 
@@ -224,15 +151,19 @@ class SecurityConfigurator:
             print(f"Firewall '{firewall_name}' already exists in the configuration.")
             return
 
-        # Configuration JWT avec pattern pour exclure les routes publiques
-        firewall_config = {
-            "authenticator": authenticator_import_path,
-            "pattern": "^/api/(users|products|auth/me|admin)",  # Pattern excluant login/refresh
-            "logout_path": "/api/auth/logout",
-        }
+        # CORRECTION: Ordre des clés - provider en premier pour JWT aussi
+        firewall_config = {}
         
+        # 1. Provider en premier (si défini)
         if provider_key:
             firewall_config["provider"] = provider_key
+            
+        # 2. Authenticator
+        firewall_config["authenticator"] = authenticator_import_path
+        
+        # 3. Pattern et logout_path
+        firewall_config["pattern"] = "^/api/(users|products|auth/me|admin)"
+        firewall_config["logout_path"] = "/api/auth/logout"
 
         # Ajouter le firewall à la configuration
         config["security"]["firewalls"][firewall_name] = firewall_config
@@ -242,3 +173,78 @@ class SecurityConfigurator:
             self.yaml.dump(config, file)
             
         print(f"JWT firewall '{firewall_name}' added successfully.")
+
+    def add_named_firewall(
+        self,
+        firewall_name: str,
+        authenticator_import_path: str,
+        provider_key: str = None,
+    ):
+        """Add named firewall with provider first if defined"""
+        
+        with open(self.yaml_path, "r") as file:
+            config = self.yaml.load(file)
+
+        if "security" not in config:
+            config["security"] = {}
+
+        if (
+            "firewalls" not in config["security"]
+            or config["security"]["firewalls"] is None
+        ):
+            config["security"]["firewalls"] = {}
+
+        if firewall_name in config["security"]["firewalls"]:
+            print(f"Firewall '{firewall_name}' already exists in the configuration.")
+        else:
+            # CORRECTION: Ordre des clés - provider en premier
+            new_firewall = {}
+            
+            # 1. Provider en premier (si défini)
+            if provider_key:
+                new_firewall["provider"] = provider_key
+                
+            # 2. Authenticator et autres configs
+            new_firewall["authenticator"] = authenticator_import_path
+            new_firewall["login_path"] = "/login"
+            new_firewall["logout_path"] = "/logout"
+            new_firewall["denied_redirect"] = "/"
+
+            config["security"]["firewalls"][firewall_name] = new_firewall
+            with open(self.yaml_path, "w") as file:
+                self.yaml.dump(config, file)
+            print(f"Firewall '{firewall_name}' added successfully.")
+
+    def add_firewall(self, provider_name: str, authenticator_import_path: str):
+        """Add main firewall with provider first"""
+        
+        with open(self.yaml_path, "r") as file:
+            config = self.yaml.load(file)
+
+        if "security" not in config:
+            config["security"] = {}
+
+        if (
+            "firewalls" not in config["security"]
+            or config["security"]["firewalls"] is None
+        ):
+            config["security"]["firewalls"] = {}
+
+        firewall_key = "main"
+        
+        # CORRECTION: Ordre des clés - provider en premier
+        main_firewall = {
+            "provider": f"app_{provider_name}_provider",  # En premier
+            "authenticator": authenticator_import_path,
+            "login_path": "/login",
+            "logout_path": "/logout",
+            "denied_redirect": "/"
+        }
+
+        if firewall_key in config["security"]["firewalls"]:
+            print(f"Firewall '{firewall_key}' already exists in the configuration.")
+        else:
+            config["security"]["firewalls"][firewall_key] = main_firewall
+            with open(self.yaml_path, "w") as file:
+                self.yaml.dump(config, file)
+            print(f"Firewall '{firewall_key}' added successfully.")
