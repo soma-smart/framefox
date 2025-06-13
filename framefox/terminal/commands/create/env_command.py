@@ -20,7 +20,12 @@ class CreateEnvCommand(AbstractCommand):
         super().__init__("env")
 
     def execute(self):
-        """Generate a new .env file with secure default values"""
+        """
+        Generate a new .env file with secure default values.\n
+        This command checks if a .env file already exists, and if not,\n
+        creates one with a secure session secret key.\n
+        If a .env file already exists, it prompts the user to remove it first.\n
+        """
         try:
             # Check if .env file already exists
             env_file_path = ".env"

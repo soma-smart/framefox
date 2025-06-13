@@ -29,18 +29,20 @@ class WorkerCommand(AbstractCommand):
         self.settings = Settings()
 
     def execute(self) -> None:
-        """Start the worker process to consume tasks from the queue."""
+        """
+        Start the worker process to consume tasks from the queue.\n
+        This command initializes the worker manager with the configured queues,\n
+        concurrency, and polling interval. It also sets up cleanup configurations\n
+        for task retention and cleanup intervals. The worker manager is then started\n
+        to begin processing tasks asynchronously.\n
+        """
 
         queues = self.settings.task_default_queues
         concurrency = self.settings.task_worker_concurrency
         interval = self.settings.task_polling_interval
 
-        self.printer.print_msg(
-            f"Starting workers (queues: {', '.join(queues)})", "info"
-        )
-        self.printer.print_msg(
-            f"Concurrency: {concurrency}, interval: {interval}s", "info"
-        )
+        self.printer.print_msg(f"Starting workers (queues: {', '.join(queues)})", "info")
+        self.printer.print_msg(f"Concurrency: {concurrency}, interval: {interval}s", "info")
 
         worker_manager = self.service_container.get(WorkerManager)
         worker_manager.set_queues(queues)

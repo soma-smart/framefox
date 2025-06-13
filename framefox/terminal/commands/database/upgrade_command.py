@@ -18,7 +18,13 @@ class UpgradeCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self):
-        """Apply all migrations to the database"""
+        """
+        Apply all migrations to the database.\n
+        This command checks if the database exists, then applies all pending migrations.\n
+        If the database does not exist, it prompts the user to create it first.\n
+        If the database is already up to date, it informs the user.\n
+        If an error occurs during the migration process, it displays an error message.\n
+        """
         try:
             # Vérifier si la base de données existe
             if not self.driver.database_exists(self.connection_manager.config.database):
@@ -35,9 +41,7 @@ class UpgradeCommand(AbstractDatabaseCommand):
 
             if success:
                 if migrations_applied:
-                    self.printer.print_msg(
-                        "Migrations appliquées avec succès.", theme="success"
-                    )
+                    self.printer.print_msg("Migrations appliquées avec succès.", theme="success")
                 else:
                     self.printer.print_msg(
                         "La base de données est déjà à jour, aucune migration à appliquer.",
@@ -49,9 +53,7 @@ class UpgradeCommand(AbstractDatabaseCommand):
                     linebefore=True,
                 )
             else:
-                self.printer.print_msg(
-                    "L'application des migrations a échoué.", theme="error"
-                )
+                self.printer.print_msg("L'application des migrations a échoué.", theme="error")
 
         except Exception as e:
             self.printer.print_msg(

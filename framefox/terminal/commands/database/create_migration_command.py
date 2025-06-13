@@ -12,7 +12,12 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
         self.alembic_manager = AlembicManager()
 
     def execute(self):
-        """Create a new migration file with Alembic"""
+        """
+        Create a new migration file with Alembic.\n
+        This command checks if the database exists, then creates a new migration file\n
+        with a timestamp in the filename. If the database does not exist, it prompts the user\n
+        to create it first. If no changes are detected, it deletes the migration file and informs the user.\n
+        """
         try:
 
             if not self.driver.database_exists(self.connection_manager.config.database):
@@ -28,9 +33,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             migration_message = f"{timestamp}_migration"
 
-            created_file = self.alembic_manager.create_migration(
-                migration_message, autogenerate=True
-            )
+            created_file = self.alembic_manager.create_migration(migration_message, autogenerate=True)
 
             if not created_file:
                 self.printer.print_msg("No migration generated.", theme="warning")

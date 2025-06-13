@@ -37,7 +37,7 @@ class FramefoxMessages:
     # Help messages
     HELP_COMMAND_DETAILS = "Run 'framefox COMMAND --help' for specific command group details"
     HELP_INIT_DETAILS = "Run 'framefox init --help' for command details"
-    HELP_EXAMPLE = "Example: 'framefox server start' or 'framefox create controller'"
+    HELP_EXAMPLE = "Example: 'framefox run' or 'framefox create controller'"
 
     # Namespace descriptions
     NAMESPACE_DESCRIPTIONS = {

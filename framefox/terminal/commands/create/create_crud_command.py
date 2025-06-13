@@ -25,30 +25,6 @@ class CreateCrudCommand(AbstractCommand):
         self.input_choices = ["api", "templated"]
         self.templates_path = r"templates"
 
-    def _create_view_templates(self, entity_name: str):
-        template_dir = os.path.join(self.templates_path, entity_name)
-        os.makedirs(template_dir, exist_ok=True)
-        properties = ModelChecker().get_entity_properties(entity_name)
-
-        templates = {
-            "create": "create_template.jinja2",
-            "read": "read_template.jinja2",
-            "update": "update_template.jinja2",
-            "index": "read_all_template.jinja2",
-        }
-
-        data = {"entity_name": entity_name, "properties": properties}
-
-        file_creator = FileCreator()
-        for output_name, template_file in templates.items():
-            file_creator.create_file(
-                template=f"crud/{template_file}",
-                path=template_dir,
-                name=output_name + ".html",
-                data=data,
-                format="html",
-            )
-
     def execute(self, entity_name: str = None):
         """
         Create a CRUD controller for the given entity name.
@@ -151,6 +127,30 @@ class CreateCrudCommand(AbstractCommand):
             theme="success",
             linebefore=True,
         )
+
+    def _create_view_templates(self, entity_name: str):
+        template_dir = os.path.join(self.templates_path, entity_name)
+        os.makedirs(template_dir, exist_ok=True)
+        properties = ModelChecker().get_entity_properties(entity_name)
+
+        templates = {
+            "create": "create_template.jinja2",
+            "read": "read_template.jinja2",
+            "update": "update_template.jinja2",
+            "index": "read_all_template.jinja2",
+        }
+
+        data = {"entity_name": entity_name, "properties": properties}
+
+        file_creator = FileCreator()
+        for output_name, template_file in templates.items():
+            file_creator.create_file(
+                template=f"crud/{template_file}",
+                path=template_dir,
+                name=output_name + ".html",
+                data=data,
+                format="html",
+            )
 
     def _create_form_type(self, entity_name: str):
         """Génère un FormType pour l'entité spécifiée."""

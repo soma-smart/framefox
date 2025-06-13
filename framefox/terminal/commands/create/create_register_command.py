@@ -26,7 +26,14 @@ class CreateRegisterCommand(AbstractCommand):
 
     def execute(self):
         """
-        Create the register controller and view
+        Create the register controller and view.\n
+        This command will create a register controller and view for the provider entity.\n
+        It will ask the user for the provider name, validate it, and create the files if they do not already exist.\n
+        The provider name must be in snake_case and must have 'password' and 'email' properties.\n
+        If the provider entity already exists, it will not create the files and will raise an error.\n
+        If the files already exist, it will not create them and will inform the user.\n
+        If the provider name is not valid, it will raise an error.\n
+        If the provider name is valid, it will create the register controller and view files.\n
         """
         self.printer.print_msg(
             "What is the name of the entity that will be used as the provider?",
@@ -41,7 +48,7 @@ class CreateRegisterCommand(AbstractCommand):
                 linebefore=True,
             )
             raise Exception("Provider name cannot be empty.")
-        
+
         if not self._validate_provider(provider_name):
             self.printer.print_msg(
                 "Provider validation failed. It should be in snake_case, and must have 'password' and 'email' properties.",
@@ -71,9 +78,7 @@ class CreateRegisterCommand(AbstractCommand):
             )
             return False
 
-        if not ModelChecker().check_entity_properties(
-            provider_name, ["password", "email"]
-        ):
+        if not ModelChecker().check_entity_properties(provider_name, ["password", "email"]):
             self.printer.print_msg(
                 "Provider entity must have 'password' and 'email' properties.",
                 theme="error",

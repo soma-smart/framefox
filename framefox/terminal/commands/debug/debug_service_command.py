@@ -1,12 +1,9 @@
-import inspect
-
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
 from framefox.application import Application
-from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
 """
@@ -36,15 +33,24 @@ class DebugServiceCommand(AbstractCommand):
 
     def execute(self):
         """
-        Displays a formatted list of all registered services grouped by their modules.
-        Shows service status, instance IDs, and associated tags.
+        Displays a formatted list of all registered services grouped by their modules.\n
+        Shows service status, instance IDs, and associated tags.\n
+        This method performs the following steps:\n
+        1. Checks if the service definitions have been scanned.\n
+        2. Forces a complete scan if not already done.\n
+        3. Displays general statistics about the service container.\n
+        4. Groups services by their module namespace.\n
+        5. Displays the total number of registered services.\n
+        6. Displays each service group with its details in a formatted table.\n
+        7. Optionally displays detailed information about each service.\n
+        8. Provides a summary of the scan status and filtering information.\n
         """
         console = Console()
         print("")
 
         # ✅ AJOUTER : Option pour forcer le scan complet
         scan_status = self.container.get_scan_status()
-        if not scan_status['src_scanned']:
+        if not scan_status["src_scanned"]:
             console.print("🔄 [yellow]Src services not yet scanned. Forcing complete scan...[/yellow]")
             self.container.force_complete_scan()
             console.print("✅ [green]Complete scan finished[/green]")
@@ -87,8 +93,11 @@ class DebugServiceCommand(AbstractCommand):
         # ✅ AJOUTER : État du scan lazy
         scan_status = self.container.get_scan_status()
         stats_text.append("\nLazy Scan Status:\n", style="bold yellow")
-        stats_text.append(f"• Src scanned: {scan_status['src_scanned']}\n", style="green" if scan_status['src_scanned'] else "red")
-        stats_text.append(f"• Src scan in progress: {scan_status['src_scan_in_progress']}\n", style="yellow" if scan_status['src_scan_in_progress'] else "white")
+        stats_text.append(f"• Src scanned: {scan_status['src_scanned']}\n", style="green" if scan_status["src_scanned"] else "red")
+        stats_text.append(
+            f"• Src scan in progress: {scan_status['src_scan_in_progress']}\n",
+            style="yellow" if scan_status["src_scan_in_progress"] else "white",
+        )
         stats_text.append(f"• Scanned modules: {scan_status['scanned_modules_count']}\n", style="cyan")
         stats_text.append(f"• Cached modules: {scan_status['cached_modules_count']}\n", style="cyan")
         stats_text.append(f"• Src paths found: {scan_status['src_paths_count']}\n", style="cyan")
@@ -96,9 +105,9 @@ class DebugServiceCommand(AbstractCommand):
 
         # Ajouter des informations sur le filtrage
         stats_text.append("\nFiltering Info:\n", style="bold yellow")
-        stats_text.append(f"• Framework services only\n", style="cyan")
-        stats_text.append(f"• External libraries excluded\n", style="cyan")
-        stats_text.append(f"• Built-in modules excluded", style="cyan")
+        stats_text.append("• Framework services only\n", style="cyan")
+        stats_text.append("• External libraries excluded\n", style="cyan")
+        stats_text.append("• Built-in modules excluded", style="cyan")
 
         panel = Panel(stats_text, title="Container Overview", border_style="cyan")
         console.print(panel)
@@ -126,9 +135,7 @@ class DebugServiceCommand(AbstractCommand):
             instance = self.container._instances.get(service_class)
 
             # Préparer les tags
-            tags_str = (
-                ", ".join(sorted(definition.tags)) if definition.tags else "No tags"
-            )
+            tags_str = ", ".join(sorted(definition.tags)) if definition.tags else "No tags"
 
             grouped_services[group].append(
                 {
@@ -170,13 +177,9 @@ class DebugServiceCommand(AbstractCommand):
 
         return "other"
 
-    def _display_service_group(
-        self, console: Console, group: str, services: list
-    ) -> None:
+    def _display_service_group(self, console: Console, group: str, services: list) -> None:
         """Affiche un groupe de services."""
-        console.print(
-            f"Services in group: [bold cyan]{group}[/bold cyan] ({len(services)} services)"
-        )
+        console.print(f"Services in group: [bold cyan]{group}[/bold cyan] ({len(services)} services)")
 
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Service", style="bold orange3", no_wrap=True)
@@ -243,9 +246,7 @@ class DebugServiceCommand(AbstractCommand):
         }
         return status_styles.get(status, "white")
 
-    def _display_detailed_service_info(
-        self, console: Console, service_class, definition, instance
-    ) -> None:
+    def _display_detailed_service_info(self, console: Console, service_class, definition, instance) -> None:
         """Affiche des informations détaillées sur un service (optionnel)."""
         details = Text()
         details.append(f"Service: {service_class.__name__}\n", style="bold cyan")
@@ -263,9 +264,7 @@ class DebugServiceCommand(AbstractCommand):
             details.append(f"Arguments: {definition.arguments}\n", style="purple")
 
         if definition.method_calls:
-            details.append(
-                f"Method calls: {definition.method_calls}\n", style="dark_orange"
-            )
+            details.append(f"Method calls: {definition.method_calls}\n", style="dark_orange")
 
         if instance:
             details.append(f"Instance ID: {id(instance)}\n", style="cyan")

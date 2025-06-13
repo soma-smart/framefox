@@ -46,7 +46,19 @@ class RunCommand(AbstractCommand):
         no_browser: Annotated[bool, typer.Option("--no-browser", help="Don't open browser automatically")] = False,
     ):
         """
-        Execute the run command to start the development server.
+        Execute the run command to start the development server.\n
+        This method performs the following steps:\n
+        1. Set environment variables for development mode and caching.\n
+        2. Find an available port starting from the specified port.\n
+        3. Prewarm the service container to optimize startup performance.\n
+        4. Print a success message with the server URL.\n
+        5. Optionally set up background workers for asynchronous tasks.\n
+        6. Handle browser opening based on user preference.\n
+        7. Start the uvicorn server with the specified port and options.\n
+        Args:
+            port (int): The port to run the server on. Defaults to 8000.
+            with_workers (bool): Whether to start background workers. Defaults to False.
+            no_browser (bool): Whether to skip opening the browser automatically. Defaults to False.
         """
         os.environ["FRAMEFOX_DEV_MODE"] = "true"
         os.environ["FRAMEFOX_CACHE_ENABLED"] = "true"

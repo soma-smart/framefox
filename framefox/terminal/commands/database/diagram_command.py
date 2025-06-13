@@ -38,7 +38,11 @@ class DiagramCommand(AbstractDatabaseCommand):
 
     def execute(self, no_browser: bool = False):
         """
-        Generate a Mermaid diagram of the database schema
+        Generate a Mermaid diagram of the database schema.\n
+        This method performs the following steps:\n
+        1. Analyze the database structure to retrieve table information.\n
+        2. Generate Mermaid code based on the analyzed schema.\n
+        If no_browser is True, copy the Mermaid code to clipboard instead of opening a browser.
 
         Args:
             no_browser: If True, copy code to clipboard instead of opening browser

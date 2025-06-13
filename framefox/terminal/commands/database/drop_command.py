@@ -10,7 +10,9 @@ class DropCommand(AbstractDatabaseCommand):
         super().__init__("drop")
 
     def execute(self):
-        """Deletes the configured database"""
+        """
+        Deletes the configured database.
+        """
         self.printer.print_msg("drop")
 
         try:

@@ -29,7 +29,12 @@ class CopyCommand(AbstractCommand):
 
     def execute(self):
         """
-        Copy database tables from the entity directory to the database without using migrations.
+        Copy database tables from the entity directory to the database without using migrations.\n
+        This command will create SQLModel tables based on the Python files in the specified directory.\n
+        It will check if the database exists, and if not, it will inform the user to create it first.\n
+        If the database exists, it will create the tables based on the SQLModel classes found in the directory.\n
+        If the directory does not contain any SQLModel classes, it will inform the user.\n
+        If the database already exists, it will create the tables without checking for existing tables.\n
         """
         if not CopyCommand.database_exists(self.database_url):
             self.printer.print_msg(
@@ -136,9 +141,7 @@ class CopyCommand(AbstractCommand):
             for file in files:
                 if file.endswith(".py"):
                     filepath = os.path.join(root, file)
-                    classes = CopyCommand.find_sqlmodel_classes_in_file(
-                        filepath, base_model
-                    )
+                    classes = CopyCommand.find_sqlmodel_classes_in_file(filepath, base_model)
 
                     if classes:
                         sqlmodel_classes_found[filepath] = classes
@@ -161,9 +164,7 @@ class CopyCommand(AbstractCommand):
         Raises:
             None
         """
-        sqlmodel_classes = CopyCommand.find_sqlmodel_classes_in_directory(
-            directory, base_model
-        )
+        sqlmodel_classes = CopyCommand.find_sqlmodel_classes_in_directory(directory, base_model)
 
         if sqlmodel_classes:
             engine = create_engine(database_url, echo=True)
@@ -205,9 +206,7 @@ class CopyCommand(AbstractCommand):
                 )
                 connection.autocommit = True
                 cursor = connection.cursor()
-                cursor.execute(
-                    f"SELECT 1 FROM pg_database WHERE datname = '{database}'"
-                )
+                cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{database}'")
                 exists = cursor.fetchone() is not None
 
                 cursor.close()

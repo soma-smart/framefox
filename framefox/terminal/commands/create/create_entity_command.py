@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from framefox.terminal.commands.abstract_command import AbstractCommand
@@ -25,15 +24,18 @@ class CreateEntityCommand(AbstractCommand):
     def __init__(self):
         super().__init__("entity")
         self.property_manager = PropertyManager(InputManager(), Printer())
-        self.relation_manager = RelationManager(
-            InputManager(), Printer(), FileCreator(), ImportManager(Printer())
-        )
+        self.relation_manager = RelationManager(InputManager(), Printer(), FileCreator(), ImportManager(Printer()))
         self.import_manager = ImportManager(Printer())
         self.file_creator = FileCreator()
 
     def execute(self, name: Optional[str] = None):
         """
-        Create a new entity
+        Create a new entity.\n
+        This command will prompt the user for the entity name in snake_case,\n
+        validate it, and create the entity and its repository if they do not already exist.\n
+        If the entity already exists, it will update it by adding properties and relations.\n
+        Args:
+            name (Optional[str]): The name of the entity in snake_case. If not provided, it will prompt the user.
         """
         self.printer.print_msg(
             "What is the name of the Entity ?(snake_case)",
@@ -54,9 +56,7 @@ class CreateEntityCommand(AbstractCommand):
             name = InputManager().wait_input("Entity name")
 
         if not name or not ClassNameManager.is_snake_case(name):
-            self.printer.print_msg(
-                "Invalid name. Must be in snake_case.", theme="error"
-            )
+            self.printer.print_msg("Invalid name. Must be in snake_case.", theme="error")
             return None
         return name
 
@@ -87,9 +87,7 @@ class CreateEntityCommand(AbstractCommand):
             if property_details is False:
                 break
             if property_details.type == "relation":
-                self.relation_manager.create_relation(
-                    entity_name, property_details.name, property_details.optional
-                )
+                self.relation_manager.create_relation(entity_name, property_details.name, property_details.optional)
             else:
                 self.property_manager.add_property(entity_name, property_details)
 
@@ -97,10 +95,6 @@ class CreateEntityCommand(AbstractCommand):
         """Crée l'entité et le dépôt associé"""
         entity_class = ClassNameManager.snake_to_pascal(entity_name)
         repository_class = f"{entity_class}Repository"
-        entity_file_path = os.path.join("src/entity", f"{entity_name}.py")
-        repository_file_path = os.path.join(
-            "src/repository", f"{entity_name}_repository.py"
-        )
 
         self.file_creator.create_file(
             template="entity_template.jinja2",
