@@ -87,6 +87,13 @@ class AppConfigurator:
 
         for namespace, commands in command_groups.items():
             if namespace == "main":
+                # Add main commands directly to the main app
+                for command_name, command_class in commands.items():
+                    # Avoid duplicates with built-in commands
+                    if command_name not in ["init", "list"]:
+                        instance = self.command_builder.instantiate_command(command_class)
+                        if instance:
+                            self.app.command(name=command_name)(instance.execute)
                 continue
 
             subapp = self.command_builder.create_subapp(namespace, commands)

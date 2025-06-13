@@ -35,9 +35,7 @@ class FramefoxMessages:
     HEADER_SUBTITLE = "Swift, smart, and a bit foxy"
 
     # Help messages
-    HELP_COMMAND_DETAILS = (
-        "Run 'framefox COMMAND --help' for specific command group details"
-    )
+    HELP_COMMAND_DETAILS = "Run 'framefox COMMAND --help' for specific command group details"
     HELP_INIT_DETAILS = "Run 'framefox init --help' for command details"
     HELP_EXAMPLE = "Example: 'framefox server start' or 'framefox create controller'"
 
@@ -49,6 +47,4 @@ class FramefoxMessages:
         "debug": "Debug operations like checking routes or testing security.",
         "cache": "Cache operations like clearing cache files and directories.",
         "mock": "Mock operations like generating or loading mock data.",
-        "orm": "ORM operations for entity management.",
-        "fixtures": "Fixture operations for test data management.",
     }
