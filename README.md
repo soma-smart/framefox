@@ -55,7 +55,7 @@ pip install framefox
 framefox init
 
 # Start developing
-framefox server start
+framefox run
 ```
 
 **That's it!** 🎉 Your app is running on `http://localhost:8000`
