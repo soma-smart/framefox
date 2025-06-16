@@ -1,12 +1,12 @@
 ---
-title: Terminal and Workers
-description: Use the interactive terminal and create custom commands in Framefox
+title: Terminal and CLI Commands
+description: Use the interactive terminal and CLI commands to manage your Framefox application
 ---
 
 import { Steps, Card } from '@astrojs/starlight/components';
 import ProjectStructure from '../miscellaneous/_project_structure.mdx';
 
-Framefox integrates an interactive terminal that allows you to perform common operations and automate tasks.
+Framefox integrates an interactive terminal that allows you to perform common operations and automate development tasks.
 
 ## Interactive Terminal
 
@@ -95,8 +95,6 @@ This command will build the initial project structure and create the necessary c
 
 <Card title="Server Configuration">
 - `--port`: Specify the port (8000 by default)
-- `--with-workers`: Start background workers
-- `--no-browser`: Don't open the browser automatically
 - `--help`: Show help message
 </Card>
 
@@ -170,266 +168,40 @@ framefox create register     # Create the register controller and view
 framefox create user         # Create a user entity for authentication
 ```
 
-## Task Scheduling
+## Database Commands
 
-### Setting Up Scheduled Tasks
+The CLI provides comprehensive database management commands:
 
-<Steps>
-
-1. **Configure tasks in your configuration**
-
-   ```yaml
-   # config/tasks.yaml
-   tasks:
-     # Executed daily at midnight
-     daily_cleanup:
-       command: "app:cleanup-old-data"
-       schedule: "0 0 * * *"
-       
-     # Executed every 5 minutes
-     sync_data:
-       command: "app:sync-external-data"
-       schedule: "*/5 * * * *"
-       
-     # Executed every Monday at 9 AM
-     weekly_report:
-       command: "app:generate-report --type=weekly"
-       schedule: "0 9 * * 1"
-   ```
-
-2. **Start the task scheduler**
-
-   ```bash
-   framefox server worker
-   ```
-
-3. **Monitor task execution**
-
-   Tasks will run automatically according to their schedules.
-
-</Steps>
-
-## Background Workers
-
-### Introduction to Workers
-
-Workers in Framefox allow you to execute tasks in the background asynchronously. They are essential for:
-
-- **Heavy processing**: Avoid blocking the user interface during expensive operations
-- **Email sending**: Process bulk emails without slowing down the application
-- **Image processing**: Resizing, compression, thumbnail generation
-- **Report generation**: PDF creation, Excel exports
-- **External integrations**: API calls, data synchronization
-- **Cleanup tasks**: Temporary file deletion, log purging
-
-Workers decouple these tasks from the main HTTP request, improving performance and user experience.
-
-### Creating and Running Workers
-
-<Steps>
-
-1. **Create a worker class**
-
-   ```python
-   # src/workers/email_worker.py
-   from framefox.core.task.decorator.async_task import async_task
-   import asyncio
-
-   class EmailWorker:
-       
-       @async_task(queue='emails')
-       async def send_welcome_email(self, user_email: str, user_name: str):
-           """Send a welcome email to a new user"""
-           print(f"Sending welcome email to {user_email}")
-           # Email sending logic here
-           await asyncio.sleep(2)  # Simulate processing
-           print(f"Email sent successfully to {user_email}")
-       
-       @async_task(queue='images')
-       def process_image(self, image_path: str, sizes: list):
-           """Process an image and generate multiple sizes"""
-           print(f"Processing image {image_path}")
-           # Image processing logic
-           for size in sizes:
-               print(f"Generating {size}px size")
-           print(f"Image {image_path} processed successfully")
-   ```
-
-2. **Configure task brokers**
-
-   ```yaml
-   # config/tasks.yaml
-   # Configuration of the asynchronous task system
-   tasks:
-     # Worker configuration
-     type: database # Worker type (can be 'database', 'rabbitmq')
-     # Transport URL for RabbitMQ (used when type is 'rabbitmq')
-     task_transport_url: ${RABBITMQ_URL}
-
-     worker:
-       concurrency: 5 # Number of simultaneous tasks
-       polling_interval: 5 # Polling interval (seconds)
-       default_queues: # Default queues
-         - default
-         - emails
-         - images
-
-     # Automatic cleanup configuration
-     cleanup:
-       interval_hours: 24 # Cleanup interval (hours)
-       retention_days: 7 # Retention period for failed tasks (days)
-
-     # Default parameters for tasks
-     defaults:
-       queue: default # Default queue
-       priority: 0 # Default priority (0 = normal)
-       max_retries: 3 # Maximum number of retries
-       retry_delay: 300 # Delay between retries (seconds)
-   ```
-
-   For RabbitMQ configuration, set the environment variable:
-
-   ```bash
-   # .env
-   RABBITMQ_URL=amqp://guest:guest@localhost:5672/
-   ```
-
-3. **Register workers in your service provider**
-
-   ```python
-   # src/providers/app_service_provider.py
-   from framefox.core.di.service_provider import ServiceProvider
-   from framefox.core.task.worker_service_provider import WorkerServiceProvider
-   from src.workers.email_worker import EmailWorker
-
-   class AppServiceProvider(ServiceProvider):
-       def register(self, container):
-           # Register worker provider
-           worker_provider = WorkerServiceProvider()
-           worker_provider.register(container)
-           
-           # Register your workers
-           container.bind(EmailWorker, EmailWorker)
-   ```
-
-4. **Dispatch tasks from your controller**
-
-   ```python
-   # src/controllers/user_controller.py
-   from framefox.core.controller.controller import Controller
-   from framefox.core.task.task_manager import TaskManager
-   from src.workers.email_worker import EmailWorker
-
-   class UserController(Controller):
-       def __init__(self, task_manager: TaskManager):
-           self.task_manager = task_manager
-       
-       async def register(self, request):
-           # User registration logic
-           user_data = request.json()
-           user = await self.create_user(user_data)
-           
-           # Dispatch email task
-           email_worker = EmailWorker()
-           await self.task_manager.dispatch(
-               email_worker.send_welcome_email,
-               user.email,
-               user.name
-           )
-           
-           # Dispatch image processing if avatar provided
-           if 'avatar_path' in user_data:
-               await self.task_manager.dispatch(
-                   email_worker.process_image,
-                   user_data['avatar_path'],
-                   [128, 256, 512]
-               )
-           
-           return self.json({'message': 'User created successfully'})
-   ```
-
-5. **Start the worker**
-
-   ```bash
-   framefox server worker
-   ```
-
-   Or create a custom worker script:
-
-   ```python
-   # scripts/worker.py
-   import asyncio
-   from framefox.application import Application
-   from framefox.core.task.worker_manager import WorkerManager
-
-   async def main():
-       # Initialize application
-       app = Application()
-       await app.boot()
-       
-       # Get WorkerManager from container
-       worker_manager = app.container.make(WorkerManager)
-       
-       # Configure and start worker
-       await worker_manager.start([
-           'default',
-           'emails', 
-           'images'
-       ])
-
-   if __name__ == "__main__":
-       print("Starting worker...")
-       asyncio.run(main())
-   ```
-
-</Steps>
-
-### Worker Configuration Options
-
-<Card title="Worker Configuration">
-- **Queues**: Specify which queues to process
-- **Concurrency**: Number of simultaneous tasks
-- **Polling interval**: How often to check for new tasks
-- **Retry attempts**: Number of retries for failed tasks
-- **Cleanup**: Automatic cleanup of old completed tasks
-</Card>
-
-### Monitoring Workers
-
-Create an admin controller to monitor worker status:
-
-```python
-# src/controllers/admin/worker_status.py
-from framefox.core.controller.controller import Controller
-from framefox.core.task.task_manager import TaskManager
-
-class WorkerStatusController(Controller):
-    def __init__(self, task_manager: TaskManager):
-        self.task_manager = task_manager
-    
-    async def status(self, request):
-        """Display worker status"""
-        pending_tasks = await self.task_manager.get_pending_count()
-        failed_tasks = await self.task_manager.get_failed_count()
-        
-        return self.json({
-            'pending': pending_tasks,
-            'failed': failed_tasks,
-            'queues': ['default', 'emails', 'images']
-        })
+```bash
+framefox database create-migration    # Create new migration file
+framefox database upgrade            # Apply pending migrations
+framefox database downgrade          # Rollback migrations
 ```
 
-### Best Practices
+## Cache Management
 
-<Card title="💡 Worker Best Practices">
-- **Error handling**: Always use try/catch in your workers
-- **Logging**: Log the start and end of each task
-- **Idempotence**: Tasks should be safely re-runnable
-- **Timeouts**: Define timeouts to avoid infinite tasks
-- **Monitoring**: Monitor queues and failed tasks
-- **Scalability**: Run multiple workers on different machines if needed
-</Card>
+Clear application cache when needed:
 
----
+```bash
+framefox cache clear                 # Clear all cache
+framefox cache clear --type=routes   # Clear specific cache type
+```
 
-The Framefox terminal and workers provide a good way to automate recurring tasks, perform maintenance operations, and quickly scaffold components for your application.
+## Debug Commands
+
+Development debugging utilities:
+
+```bash
+framefox debug router               # List all registered routes
+framefox debug config               # Display configuration values
+```
+
+## Mock Data Generation
+
+Generate test data for development:
+
+```bash
+framefox mock generate              # Generate sample data
+framefox mock load                  # Load predefined fixtures
+```
+

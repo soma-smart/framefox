@@ -2,9 +2,23 @@ from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.printer import Printer
-
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
 
 class EntityPropertyManager(object):
+    """
+    Manages entity properties for the framework.
+    
+    This class handles the creation, validation, and insertion of properties
+    into entity files. It supports various property types including basic types
+    and relations between entities.
+    """
+    
     def __init__(self):
         self.entity_folder = r"src/entity"
         self.printer = Printer()
@@ -29,7 +43,6 @@ class EntityPropertyManager(object):
         )
 
         if property_type == "relation":
-            # Indiquer à CreateEntityCommand de gérer la relation
             return self.handle_relation(entity_name, property_name, optional)
         else:
             property_prompt = self.build_property(
@@ -37,15 +50,13 @@ class EntityPropertyManager(object):
             )
             file_path = self.insert_property(entity_name, property_prompt)
             self.printer.print_full_text(
-                f"[bold green]Propriété '{
-                    property_name}' ajoutée à[/bold green] {file_path}",
+                f"[bold green]Property '{property_name}' added to[/bold green] {file_path}",
                 linebefore=True,
                 newline=True,
             )
             return True
 
     def handle_relation(self, entity_name, property_name):
-        # Retourner des informations pour gérer la relation dans CreateEntityCommand
         return ("relation", entity_name, property_name)
 
     def request_property(self, entity_name=None):
@@ -78,8 +89,7 @@ class EntityPropertyManager(object):
             params = []
             if property_constraint:
                 params.append(
-                    f"{property_constraint[0]}={
-                        property_constraint[1]}"
+                    f"{property_constraint[0]}={property_constraint[1]}"
                 )
             if optional == "yes":
                 params.append("nullable=True")
@@ -104,7 +114,6 @@ class EntityPropertyManager(object):
             if "Field" in line:
                 last_line = i
         if class_found:
-            # Insert property_prompt
             content.insert(last_line + 1, property_prompt)
 
         with open(file_path, "w") as file:
@@ -140,7 +149,6 @@ class EntityPropertyManager(object):
             or "str"
         )
 
-        # Si le type est 'date', le mapper à 'datetime'
         if property_type == "date":
             property_type = "datetime"
 

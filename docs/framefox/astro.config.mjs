@@ -8,13 +8,13 @@ export default defineConfig({
   base: "/",
   integrations: [
     starlight({
-      title: "Framefox Documentation",
+      title: "Framefox",
       description:
         "Modern Python web framework for rapidly developing robust applications",
-      //   logo: {
-      //     // src: "./src/assets/framefox-logo.svg",
-      //     // replacesTitle: true,
-      //   },
+      logo: {
+        src: "./public/orangefox.png",
+        // replacesTitle: true,
+      },
       social: [
         {
           icon: "github",
@@ -30,7 +30,7 @@ export default defineConfig({
         {
           label: "Getting Started",
           items: [
-            { label: 'Introduction', slug: 'introduction' },
+            { label: "Introduction", slug: "introduction" },
             { label: "Quick Start Guide", slug: "quick_start" },
             { label: "Installation", slug: "installation" },
           ],
@@ -44,13 +44,17 @@ export default defineConfig({
             { label: "Database and ORM", slug: "core/database" },
             { label: "Forms and Validation", slug: "core/forms" },
             { label: "Authentication and Security", slug: "core/security" },
+            { label: "Web Profiler", slug: "core/profiler" },
           ],
         },
         {
           label: "Advanced Features",
           items: [
-            { label: "Terminal and Workers", slug: "advanced_features/terminal" },
-            { label: "Web Profiler", slug: "advanced_features/profiler" },
+            {
+              label: "Terminal",
+              slug: "advanced_features/terminal",
+            },
+
             { label: "Deployment", slug: "advanced_features/deployment" },
           ],
         },

@@ -9,7 +9,7 @@ import CodeBlock from "../components/CodeBlock.astro";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Framefox - Swift, smart, and a bit foxy!</title>
-    <link rel="icon" href="/docs/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/docs/orangfox.png" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -25,8 +25,10 @@ import CodeBlock from "../components/CodeBlock.astro";
 
     <style>
       :root {
-        --fox-orange: #f4bf5f;
-        --fox-dark-orange: #e8a93c;
+        /* Orange plus clair - synchronisé avec le reste de la doc */
+        --fox-orange: #f39c12;
+        --fox-orange-light: #f4bf5f;
+        --fox-orange-dark: #e67e22;
         --dark-bg: #181818;
         --darker-bg: #121212;
         --light-text: #ffffff;
@@ -85,6 +87,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-size: 28px;
         font-weight: 800;
         color: var(--fox-orange);
+        font-family: "Poppins", sans-serif;
       }
 
       .logo-text span {
@@ -106,6 +109,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-weight: 500;
         font-size: 16px;
         transition: color 0.3s;
+        font-family: "Poppins", sans-serif;
       }
 
       nav ul li a:hover {
@@ -121,6 +125,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         text-decoration: none;
         transition: all 0.3s;
         border: 2px solid var(--fox-orange);
+        font-family: "Poppins", sans-serif;
       }
 
       .button:hover {
@@ -149,7 +154,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         height: 200%;
         background: radial-gradient(
           circle,
-          rgba(244, 191, 95, 0.1) 0%,
+          rgba(243, 156, 18, 0.1) 0%,
           rgba(0, 0, 0, 0) 70%
         );
         top: -50%;
@@ -178,6 +183,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-weight: 800;
         margin-bottom: 20px;
         line-height: 1.1;
+        font-family: "Poppins", sans-serif;
       }
 
       .hero-title-highlight {
@@ -190,6 +196,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         margin-bottom: 40px;
         max-width: 600px;
         opacity: 0.9;
+        font-family: "Poppins", sans-serif;
       }
 
       .buttons {
@@ -237,6 +244,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-weight: 700;
         margin-bottom: 20px;
         text-align: center;
+        font-family: "Poppins", sans-serif;
       }
 
       .section-subtitle {
@@ -247,6 +255,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         margin-left: auto;
         margin-right: auto;
         opacity: 0.7;
+        font-family: "Poppins", sans-serif;
       }
 
       .features {
@@ -267,13 +276,13 @@ import CodeBlock from "../components/CodeBlock.astro";
 
       .feature-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 10px 30px rgba(244, 191, 95, 0.1);
+        box-shadow: 0 10px 30px rgba(243, 156, 18, 0.1);
       }
 
       .feature-icon {
         width: 60px;
         height: 60px;
-        background-color: rgba(244, 191, 95, 0.15);
+        background-color: rgba(243, 156, 18, 0.15);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -290,6 +299,11 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-size: 22px;
         margin-bottom: 15px;
         font-weight: 600;
+        font-family: "Poppins", sans-serif;
+      }
+
+      .feature-card p {
+        font-family: "Poppins", sans-serif;
       }
 
       /* Code Showcase */
@@ -314,7 +328,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         line-height: 1.5;
         overflow-x: auto;
         position: relative;
-        margin-top: 15px; /* Ajoute de l'espace en haut pour le badge */
+        margin-top: 15px;
       }
 
       .code-example pre {
@@ -332,7 +346,8 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-weight: 600;
         padding: 3px 12px;
         border-radius: 20px;
-        z-index: 10; /* Assure que le badge est au-dessus des autres éléments */
+        z-index: 10;
+        font-family: "Poppins", sans-serif;
       }
 
       .keyword {
@@ -359,12 +374,14 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-size: 32px;
         margin-bottom: 20px;
         font-weight: 700;
+        font-family: "Poppins", sans-serif;
       }
 
       .code-explanation p {
         font-size: 16px;
         margin-bottom: 20px;
         opacity: 0.9;
+        font-family: "Poppins", sans-serif;
       }
 
       .code-explanation ul {
@@ -374,6 +391,7 @@ import CodeBlock from "../components/CodeBlock.astro";
 
       .code-explanation li {
         margin-bottom: 10px;
+        font-family: "Poppins", sans-serif;
       }
 
       /* Profiler Showcase */
@@ -465,6 +483,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         font-style: italic;
         margin-bottom: 20px;
         position: relative;
+        font-family: "Poppins", sans-serif;
       }
 
       .quote::before,
@@ -480,6 +499,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         display: flex;
         align-items: center;
         justify-content: center;
+        font-family: "Poppins", sans-serif;
       }
 
       .author-avatar {
@@ -487,7 +507,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         height: 40px;
         border-radius: 50%;
         margin-right: 10px;
-        background-color: rgba(244, 191, 95, 0.2);
+        background-color: rgba(243, 156, 18, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -501,8 +521,8 @@ import CodeBlock from "../components/CodeBlock.astro";
       .cta {
         background: linear-gradient(
           45deg,
-          rgba(244, 191, 95, 0.15),
-          rgba(244, 191, 95, 0.05)
+          rgba(243, 156, 18, 0.15),
+          rgba(243, 156, 18, 0.05)
         );
         text-align: center;
         padding: 100px 0;
@@ -515,15 +535,20 @@ import CodeBlock from "../components/CodeBlock.astro";
         position: absolute;
         width: 100%;
         height: 100%;
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="%23f4bf5f" opacity="0.2"/></svg>');
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="%23f39c12" opacity="0.2"/></svg>');
         top: 0;
         left: 0;
         opacity: 0.5;
+        z-index: 1; /* Ajout du z-index */
+        pointer-events: none; /* Empêche l'overlay de bloquer les clics */
       }
 
       .cta h2 {
         font-size: 48px;
         margin-bottom: 20px;
+        font-family: "Poppins", sans-serif;
+        position: relative;
+        z-index: 2; /* Assure que le titre soit au-dessus */
       }
 
       .cta p {
@@ -531,6 +556,21 @@ import CodeBlock from "../components/CodeBlock.astro";
         max-width: 600px;
         margin: 0 auto 40px;
         opacity: 0.9;
+        font-family: "Poppins", sans-serif;
+        position: relative;
+        z-index: 2; /* Assure que le paragraphe soit au-dessus */
+      }
+
+      /* Assure que les boutons soient cliquables */
+      .cta .buttons {
+        position: relative;
+        z-index: 3; /* Z-index le plus élevé pour les boutons */
+      }
+
+      .cta .button {
+        position: relative;
+        z-index: 3;
+        pointer-events: auto; /* Force les boutons à être cliquables */
       }
 
       /* Footer */
@@ -555,10 +595,15 @@ import CodeBlock from "../components/CodeBlock.astro";
         max-width: 400px;
       }
 
+      .footer-info p {
+        font-family: "Poppins", sans-serif;
+      }
+
       .footer-links h4 {
         color: var(--fox-orange);
         margin-bottom: 20px;
         font-size: 18px;
+        font-family: "Poppins", sans-serif;
       }
 
       .footer-links ul {
@@ -574,6 +619,7 @@ import CodeBlock from "../components/CodeBlock.astro";
         text-decoration: none;
         opacity: 0.7;
         transition: opacity 0.3s;
+        font-family: "Poppins", sans-serif;
       }
 
       .footer-links a:hover {
@@ -614,6 +660,12 @@ import CodeBlock from "../components/CodeBlock.astro";
         border-top: 1px solid rgba(255, 255, 255, 0.05);
         font-size: 14px;
         opacity: 0.7;
+        font-family: "Poppins", sans-serif;
+      }
+
+      .copyright a {
+        color: var(--fox-orange);
+        text-decoration: none;
       }
 
       /* Responsive Design */
@@ -690,7 +742,11 @@ import CodeBlock from "../components/CodeBlock.astro";
             alt="Framefox Logo"
             class="logo"
           /> -->
-          <div class="logo-text">FRAMEF<span>✖</span></div>
+          <div class="logo-text">
+            FRAMEF
+            <img src="./orangefox.png" alt="" width="25" />
+            <span>X</span>
+          </div>
         </div>
         <nav>
           <ul>
@@ -707,24 +763,20 @@ import CodeBlock from "../components/CodeBlock.astro";
 
     <section class="hero">
       <div class="container hero-content">
-      <h1>
-        The <span class="hero-title-highlight">swift</span>,
-        <span class="hero-title-highlight">smart</span>, and a bit
-        <span class="hero-title-highlight">foxy</span> Python framework!
-      </h1>
-      <p>
-        Develop powerful web applications with a modern, elegant, and
-        high-performance framework. Framefox gives you the tools you need to
-        create quickly.
-      </p>
-      <div class="buttons">
-        <a
-        href="https://github.com/soma-smart/dev-framefox"
-        target="_blank"
-        class="button">Get Started</a
-        >
-        <a href="#features" class="button button-secondary">Discover</a>
-      </div>
+        <h1>
+          The <span class="hero-title-highlight">swift</span>,
+          <span class="hero-title-highlight">smart</span>, and a bit
+          <span class="hero-title-highlight">foxy</span> Python framework!
+        </h1>
+        <p>
+          Develop powerful web applications with a modern, elegant, and
+          high-performance framework. Framefox gives you the tools you need to
+          create quickly.
+        </p>
+        <div class="buttons">
+          <a href="quick_start/" class="button">Get Started</a>
+          <a href="#features" class="button button-secondary">Discover</a>
+        </div>
       </div>
       <!-- <img
       src="/docs/orange_fox.png"
@@ -735,101 +787,99 @@ import CodeBlock from "../components/CodeBlock.astro";
 
     <section class="section" id="features">
       <div class="container">
-      <h2 class="section-title">
-        <span style="color: var(--fox-orange)">Exceptional</span> Features
-      </h2>
-      <p class="section-subtitle">
-        Framefox combines elegance, performance, and simplicity to provide you
-        with an unparalleled development experience.
-      </p>
-
-      <div class="features">
-        <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-tachometer-alt"></i>
-        </div>
-        <h3>Advanced Profiler</h3>
-        <p>
-          Analyze the performance of your applications with our integrated
-          profiler. Execution time, SQL queries, memory consumption—everything
-          is accessible with one click.
+        <h2 class="section-title">
+          <span style="color: var(--fox-orange)">Exceptional</span> Features
+        </h2>
+        <p class="section-subtitle">
+          Framefox combines elegance, performance, and simplicity to provide you
+          with an unparalleled development experience.
         </p>
-        </div>
 
-        <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-route"></i>
-        </div>
-        <h3>Intelligent Routing</h3>
-        <p>
-          Define your routes with simple and intuitive decorators. Framefox
-          takes care of the rest to provide you with efficient and flexible
-          routing.
-        </p>
-        </div>
+        <div class="features">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <h3>Advanced Profiler</h3>
+            <p>
+              Analyze the performance of your applications with our integrated
+              profiler. Execution time, SQL queries, memory
+              consumption—everything is accessible with one click.
+            </p>
+          </div>
 
-        <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-shield-alt"></i>
-        </div>
-        <h3>Integrated Security</h3>
-        <p>
-          CSRF protection, authentication, firewall, and more. Your
-          application is secure from the start without complex configuration.
-        </p>
-        </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-route"></i>
+            </div>
+            <h3>Intelligent Routing</h3>
+            <p>
+              Define your routes with simple and intuitive decorators. Framefox
+              takes care of the rest to provide you with efficient and flexible
+              routing.
+            </p>
+          </div>
 
-        <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-layer-group"></i>
-        </div>
-        <h3>MVC Architecture</h3>
-        <p>
-          A clear and organized structure for your projects with the MVC
-          model. Develop faster and maintain your code more easily.
-        </p>
-        </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Integrated Security</h3>
+            <p>
+              CSRF protection, authentication, firewall, and more. Your
+              application is secure from the start without complex
+              configuration.
+            </p>
+          </div>
 
-        <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-database"></i>
-        </div>
-        <h3>Powerful ORM</h3>
-        <p>
-          Manipulate your data with an intuitive and efficient ORM. Create,
-          read, update, and delete data without writing SQL.
-        </p>
-        </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <h3>MVC Architecture</h3>
+            <p>
+              A clear and organized structure for your projects with the MVC
+              model. Develop faster and maintain your code more easily.
+            </p>
+          </div>
 
-        <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-magic"></i>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-database"></i>
+            </div>
+            <h3>Powerful ORM</h3>
+            <p>
+              Manipulate your data with an intuitive and efficient ORM. Create,
+              read, update, and delete data without writing SQL.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-magic"></i>
+            </div>
+            <h3>Intuitive CLI</h3>
+            <p>
+              Generate code, create controllers, entities, and more with our
+              simple and powerful command-line interface.
+            </p>
+          </div>
         </div>
-        <h3>Intuitive CLI</h3>
-        <p>
-          Generate code, create controllers, entities, and more with our
-          simple and powerful command-line interface.
-        </p>
-        </div>
-      </div>
       </div>
     </section>
 
     <section class="section code-section" id="code">
       <div class="container">
         <h2 class="section-title">
-            Elegant <span style="color: var(--fox-orange)">Code</span>
+          Elegant <span style="color: var(--fox-orange)">Code</span>
         </h2>
         <p class="section-subtitle">
-            A framework designed for developers who value clarity and
-            simplicity.
+          A framework designed for developers who value clarity and simplicity.
         </p>
 
         <div class="code-grid">
-          <div class="code-example">
-            <span class="code-tag">Controller</span>
-            <CodeBlock
-              code={`from framefox.core.routing.decorator.route import Route
+          <CodeBlock
+            code={`from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
 from src.repository.product_repository import ProductRepository
 
@@ -852,11 +902,10 @@ class HomeController(AbstractController):
         return self.render("product/show.html", {
             "product": product
         })`}
-              lang="python"
-            />
-          </div>
+            lang="python"
+          />
 
-            <div class="code-explanation">
+          <div class="code-explanation">
             <h3>Simple and Powerful Controllers</h3>
             <p>
               In Framefox, you can create routes and controllers with a clear
@@ -870,13 +919,13 @@ class HomeController(AbstractController):
               <li>Easy access to repositories</li>
             </ul>
             <a href="/installation" class="button">Explore the Documentation</a>
-            </div>
+          </div>
 
-            <div class="code-explanation">
+          <div class="code-explanation">
             <h3>Integrated Entities and ORM</h3>
             <p>
-              Define your data models and let Framefox manage your database.
-              Our ORM handles relationships, migrations, and queries for you.
+              Define your data models and let Framefox manage your database. Our
+              ORM handles relationships, migrations, and queries for you.
             </p>
             <ul>
               <li>Entity definition with annotations</li>
@@ -884,16 +933,13 @@ class HomeController(AbstractController):
               <li>Automatic migrations</li>
               <li>Repository pattern for queries</li>
             </ul>
-            <a
-              href="https://github.com/soma-smart/dev-framefox"
-              class="button">See on GitHub</a
+            <a href="https://github.com/soma-smart/dev-framefox" class="button"
+              >See on GitHub</a
             >
-            </div>
+          </div>
 
-          <div class="code-example">
-            <span class="code-tag">Entity</span>
-            <CodeBlock
-              code={`from framefox.core.orm.abstract_entity import AbstractEntity
+          <CodeBlock
+            code={`from framefox.core.orm.abstract_entity import AbstractEntity
 from sqlmodel import Field, Relationship
 
 # Define your data model
@@ -907,20 +953,20 @@ class Product(AbstractEntity):
 
     # Define relationships
     categories: Category | None = Relationship(back_populates='product', uselist=False)`}
-              lang="python"
-            />
-          </div>
+            lang="python"
+          />
         </div>
         <div class="profiler-showcase" id="profiler">
           <h2 class="section-title">
-            A Powerful Integrated <span style="color: var(--fox-orange)">Profiler</span>
+            A Powerful Integrated <span style="color: var(--fox-orange)"
+              >Profiler</span
+            >
           </h2>
           <p class="section-subtitle">
-            Debugging and analyzing your applications has never been easier.
-            Our integrated profiler provides you with detailed information on
-            your application's performance.
+            Debugging and analyzing your applications has never been easier. Our
+            integrated profiler provides you with detailed information on your
+            application's performance.
           </p>
-          
 
           <div class="browser-mockup">
             <div class="browser-header">
@@ -932,10 +978,10 @@ class Product(AbstractEntity):
               <div class="browser-address">http://localhost:8000/_profiler</div>
             </div>
             <img
-                  src="/profiler-screenshot.png"
-                  alt="Profiler Icon"
-                  style="width: 100%; height: auto; border-radius: 10px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);"
-                />
+              src="/profiler-screenshot.png"
+              alt="Profiler Icon"
+              style="width: 100%; height: auto; border-radius: 10px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);"
+            />
           </div>
 
           <div class="buttons" style="margin-top: 30px">
@@ -951,86 +997,88 @@ class Product(AbstractEntity):
 
     <section class="cta">
       <div class="container">
-      <h2>
-        Ready to get started with
-        <span style="color: var(--fox-orange)">Framefox</span>?
-      </h2>
-      <p>
-        Join thousands of developers already using Framefox to build modern,
-        high-performance web applications.
-      </p>
-      <div class="buttons" style="justify-content: center">
-        <a href="https://github.com/soma-smart/dev-framefox" class="button"
-        >Start now</a
-        >
-        <a href="/installation" class="button button-secondary"
-        >Read the documentation</a
-        >
-      </div>
+        <h2>
+          Ready to get started with
+          <span style="color: var(--fox-orange)">Framefox</span>?
+        </h2>
+        <p>
+          Join thousands of developers already using Framefox to build modern,
+          high-performance web applications.
+        </p>
+        <div class="buttons" style="justify-content: center">
+          <a href="quick_start/" class="button">Start now</a>
+          <a href="/installation" class="button button-secondary"
+            >Read the documentation</a
+          >
+        </div>
       </div>
     </section>
 
     <footer>
       <div class="container">
-      <div class="footer-content">
-        <div class="footer-info">
-        <div class="logo-container footer-logo">
-          <!-- <img
+        <div class="footer-content">
+          <div class="footer-info">
+            <div class="logo-container footer-logo">
+              <!-- <img
           src="/docs/orange_fox.png"
           alt="Framefox Logo"
           class="logo"
           /> -->
-          <div class="logo-text">FRAMEF<span>✖</span></div>
-        </div>
-        <p>
-          A modern and efficient Python framework for web development, created
-          by SOMA. Swift, smart, and a bit foxy!
-        </p>
-        <div class="social-icons">
-          <a
-          href="https://github.com/soma-smart/dev-framefox"
-          class="social-icon"
-          target="_blank"
-          >
-          <i class="fab fa-github"></i>
-          </a>
-          <a href="https://www.linkedin.com/company/soma-smart/posts/?feedView=all" class="social-icon" target="_blank">
-          <i class="fab fa-linkedin-in"></i>
-          </a>
-        </div>
-        </div>
+              <div class="logo-text">FRAMEF<span>✖</span></div>
+            </div>
+            <p>
+              A modern and efficient Python framework for web development,
+              created by SOMA. Swift, smart, and a bit foxy!
+            </p>
+            <div class="social-icons">
+              <a
+                href="https://github.com/soma-smart/dev-framefox"
+                class="social-icon"
+                target="_blank"
+              >
+                <i class="fab fa-github"></i>
+              </a>
+              <a
+                href="https://www.linkedin.com/company/soma-smart/posts/?feedView=all"
+                class="social-icon"
+                target="_blank"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
 
-        <div class="footer-links">
-        <h4>Documentation</h4>
-        <ul>
-          <li><a href="/installation">Getting Started Guide</a></li>
-          <li><a href="/guides">Tutorials</a></li>
-          <li><a href="/controllers">Examples</a></li>
-        </ul>
-        </div>
+          <div class="footer-links">
+            <h4>Documentation</h4>
+            <ul>
+              <li><a href="/installation">Getting Started Guide</a></li>
+              <li><a href="/guides">Tutorials</a></li>
+              <li><a href="/controllers">Examples</a></li>
+            </ul>
+          </div>
 
-        <div class="footer-links">
-        <h4>Community</h4>
-        <ul>
-          <li>
-          <a href="https://github.com/soma-smart/dev-framefox">GitHub</a>
-          </li>
-          <li>
-          <a
-            href="https://github.com/soma-smart/dev-framefox/blob/main/CONTRIBUTING.md"
-            >Contribute</a
-          >
-          </li>
-          <li>
-          <a href="https://github.com/soma-smart/dev-framefox/issues"
-            >Report a Bug</a
-          >
-          </li>
-          <li><a href="#">Discord</a></li>
-        </ul>
-        </div>
+          <div class="footer-links">
+            <h4>Community</h4>
+            <ul>
+              <li>
+                <a href="https://github.com/soma-smart/dev-framefox">GitHub</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/soma-smart/dev-framefox/blob/main/CONTRIBUTING.md"
+                  >Contribute</a
+                >
+              </li>
+              <li>
+                <a href="https://github.com/soma-smart/dev-framefox/issues"
+                  >Report a Bug</a
+                >
+              </li>
+              <li><a href="#">Discord</a></li>
+            </ul>
+          </div>
 
-        <!-- <div class="footer-links">
+          <!-- <div class="footer-links">
         <h4>More</h4>
         <ul>
           <li><a href="#">About</a></li>
@@ -1041,11 +1089,18 @@ class Product(AbstractEntity):
 
       <div class="copyright">
         &copy; {new Date().getFullYear()} Framefox. Developed with 💛 by
-        <a href="https://github.com/RayenBou" style="color: var(--fox-orange); text-decoration: none">BOUMAZA Rayen</a>
+        <a
+          href="https://github.com/RayenBou"
+          style="color: var(--fox-orange); text-decoration: none"
+          >BOUMAZA Rayen</a
+        >
         and
-        <a href="https://github.com/Vasulvius" style="color: var(--fox-orange); text-decoration: none">LEUROND Raphaël</a>
+        <a
+          href="https://github.com/Vasulvius"
+          style="color: var(--fox-orange); text-decoration: none"
+          >LEUROND Raphaël</a
+        >
         and the SOMA team.
-      </div>
       </div>
     </footer>
 

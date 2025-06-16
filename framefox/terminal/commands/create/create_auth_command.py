@@ -22,22 +22,18 @@ Github: https://github.com/Vasulvius
 class CreateAuthCommand(AbstractCommand):
     def __init__(self):
         super().__init__("auth")
-        # Templates existants
         self.default_template_name = r"security/default_authenticator_template.jinja2"
         self.custom_template_name = r"security/custom_authenticator_template.jinja2"
         self.login_controller_template_name = r"security/login_controller_template.jinja2"
         self.login_view_template_name = r"security/login_view_template.jinja2"
 
-        # Templates OAuth et JWT
         self.jwt_template_name = r"security/jwt_authenticator_template.jinja2"
         self.oauth_google_template_name = r"security/oauth_google_authenticator_template.jinja2"
         self.oauth_microsoft_template_name = r"security/oauth_microsoft_authenticator_template.jinja2"
 
-        # Templates controllers
         self.oauth_controller_template_name = r"security/oauth_controller_template.jinja2"
         self.jwt_controller_template_name = r"security/jwt_controller_template.jinja2"
 
-        # Gestionnaire d'environnement
         self.env_manager = EnvManager()
 
         self.authenticator_path = r"src/security"
@@ -59,7 +55,6 @@ class CreateAuthCommand(AbstractCommand):
         auth_name = self._ask_authenticator_name(auth_type)
         provider_name = None
         
-        # MODIFICATION: Provider optionnel pour OAuth, obligatoire pour les autres
         if auth_type == "custom":
             use_provider = InputManager().wait_input(
                 "Do you want to add a provider to this custom authenticator?",
@@ -71,10 +66,8 @@ class CreateAuthCommand(AbstractCommand):
                 if not provider_name:
                     return
         elif auth_type in ["oauth_google", "oauth_microsoft"]:
-            # NOUVEAU: Provider optionnel pour OAuth
             provider_name = self._get_optional_oauth_provider()
         elif auth_type in ["form", "jwt_api"]:
-            # Provider obligatoire pour form et JWT
             provider_name = self._get_and_validate_provider()
             if not provider_name:
                 return
@@ -155,7 +148,6 @@ class CreateAuthCommand(AbstractCommand):
                 continue
 
     def _validate_provider(self, provider_name: str) -> bool:
-        """Valide le provider avec des messages colorés"""
         
         if not ClassNameManager.is_snake_case(provider_name):
             self.printer.print_msg(
@@ -195,7 +187,6 @@ class CreateAuthCommand(AbstractCommand):
         file_name = f"{auth_name.lower()}_authenticator"
         auth_path = os.path.join("src/security", f"{file_name}.py")
 
-        # Vérifier l'existence de l'authenticator dans tous les cas
         if os.path.exists(auth_path):
             self.printer.print_full_text(
                 "[bold red]Cannot create authenticator. File already exists:[/bold red]",
@@ -203,7 +194,6 @@ class CreateAuthCommand(AbstractCommand):
             )
             self.printer.print_msg(f"• [bold orange1]Authenticator[/bold orange1] ({auth_path})", theme="error")
             
-            # CONSEIL: Proposer une solution
             self.printer.print_msg(
                 f"[bold orange1]Tip:[/bold orange1] Use a different name or delete the existing file",
                 theme="normal",
@@ -211,7 +201,6 @@ class CreateAuthCommand(AbstractCommand):
             )
             return None
 
-        # Gestion selon le type d'authenticator - PASSER auth_name
         if auth_type == "form":
             return self._create_form_auth_files(class_name, file_name)
         elif auth_type == "jwt_api":
@@ -224,8 +213,6 @@ class CreateAuthCommand(AbstractCommand):
             return self._create_custom_auth_files(class_name, file_name)
 
     def _create_form_auth_files(self, class_name: str, file_name: str) -> str:
-        """Crée les fichiers pour l'authentification par formulaire (existant)"""
-        # Vérifier l'existence des fichiers supplémentaires pour form
         controller_path = os.path.join("src/controller", "login_controller.py")
         view_path = os.path.join("templates/security", "login.html")
 
@@ -244,7 +231,6 @@ class CreateAuthCommand(AbstractCommand):
                 self.printer.print_msg(f"• {file}", theme="error")
             return None
 
-        # Créer controller
         file_path = FileCreator().create_file(
             self.login_controller_template_name,
             self.controller_path,
@@ -256,7 +242,6 @@ class CreateAuthCommand(AbstractCommand):
             linebefore=True,
         )
 
-        # Créer view
         file_path = FileCreator().create_file(
             self.login_view_template_name,
             self.view_path,
@@ -268,7 +253,6 @@ class CreateAuthCommand(AbstractCommand):
             f"[bold orange1]Login view created successfully:[/bold orange1] {file_path}",
         )
 
-        # Créer authenticator
         file_path = FileCreator().create_file(
             self.default_template_name,
             self.authenticator_path,
@@ -283,7 +267,6 @@ class CreateAuthCommand(AbstractCommand):
         return f"src.security.{file_name}.{class_name}Authenticator"
 
     def _create_jwt_auth_files(self, class_name: str, file_name: str, auth_name: str) -> str:
-        """Crée l'authenticator JWT API et propose de créer un controller"""
         file_path = FileCreator().create_file(
             self.jwt_template_name,
             self.authenticator_path,
@@ -295,13 +278,10 @@ class CreateAuthCommand(AbstractCommand):
             linebefore=True,
         )
 
-        # Ajouter les variables d'environnement JWT
         self._add_env_variables("jwt_api")
         
-        # CHANGEMENT: Passer auth_name
         self._propose_jwt_controller_creation(auth_name)
 
-        # Afficher message d'information pour JWT
         self.printer.print_full_text(
             "[bold yellow]📋 JWT Configuration:[/bold yellow]",
             linebefore=True,
@@ -313,7 +293,6 @@ class CreateAuthCommand(AbstractCommand):
         return f"src.security.{file_name}.{class_name}Authenticator"
 
     def _create_oauth_google_auth_files(self, class_name: str, file_name: str, auth_name: str) -> str:
-        """Crée l'authenticator OAuth Google et propose de créer un controller"""
         file_path = FileCreator().create_file(
             self.oauth_google_template_name,
             self.authenticator_path,
@@ -325,13 +304,10 @@ class CreateAuthCommand(AbstractCommand):
             linebefore=True,
         )
         
-        # Ajouter les variables d'environnement Google OAuth
         self._add_env_variables("oauth_google")
         
-        # CHANGEMENT: Passer auth_name au lieu de "google"
         self._propose_oauth_controller_creation("google", auth_name)
         
-        # Afficher message d'information pour OAuth Google
         self.printer.print_full_text(
             "[bold yellow]📋 Google OAuth Configuration:[/bold yellow]",
             linebefore=True,
@@ -343,7 +319,6 @@ class CreateAuthCommand(AbstractCommand):
         return f"src.security.{file_name}.{class_name}Authenticator"
 
     def _create_oauth_microsoft_auth_files(self, class_name: str, file_name: str, auth_name: str) -> str:
-        """Crée l'authenticator OAuth Microsoft et propose de créer un controller"""
         file_path = FileCreator().create_file(
             self.oauth_microsoft_template_name,
             self.authenticator_path,
@@ -355,11 +330,8 @@ class CreateAuthCommand(AbstractCommand):
             linebefore=True,
         )
 
-        # Ajouter les variables d'environnement Microsoft OAuth
         self._add_env_variables("oauth_microsoft")
-        # CHANGEMENT: Passer auth_name au lieu de "microsoft"
         self._propose_oauth_controller_creation("microsoft", auth_name)
-        # Afficher message d'information pour OAuth Microsoft
         self.printer.print_full_text(
             "[bold yellow]📋 Microsoft OAuth Configuration:[/bold yellow]",
             linebefore=True,
@@ -372,7 +344,6 @@ class CreateAuthCommand(AbstractCommand):
 
 
     def _create_custom_auth_files(self, class_name: str, file_name: str) -> str:
-        """Crée l'authenticator custom (existant)"""
         file_path = FileCreator().create_file(
             self.custom_template_name,
             self.authenticator_path,
@@ -394,12 +365,10 @@ class CreateAuthCommand(AbstractCommand):
         auth_name: str,
     ):
         if auth_type == "form":
-            # Configuration pour form (existant)
             provider_class = ClassNameManager.snake_to_pascal(provider_name)
             SecurityConfigurator().add_provider(provider_name, provider_class)
             SecurityConfigurator().add_firewall(provider_name, authenticator_import_path)
         elif auth_type in ["oauth_google", "oauth_microsoft"]:
-            # Configuration spéciale pour OAuth
             provider_class = ClassNameManager.snake_to_pascal(provider_name) if provider_name else None
             if provider_name:
                 SecurityConfigurator().add_provider(provider_name, provider_class)
@@ -407,7 +376,6 @@ class CreateAuthCommand(AbstractCommand):
             else:
                 provider_key = None
 
-            # Créer firewall avec config OAuth
             SecurityConfigurator().add_oauth_firewall(
                 firewall_name=auth_name.lower(),
                 authenticator_import_path=authenticator_import_path,
@@ -415,7 +383,6 @@ class CreateAuthCommand(AbstractCommand):
                 oauth_type=auth_type,
             )
         elif auth_type == "jwt_api":
-            # NOUVEAU: Configuration spéciale pour JWT avec pattern
             provider_class = ClassNameManager.snake_to_pascal(provider_name) if provider_name else None
             if provider_name:
                 SecurityConfigurator().add_provider(provider_name, provider_class)
@@ -423,14 +390,12 @@ class CreateAuthCommand(AbstractCommand):
             else:
                 provider_key = None
 
-            # Créer firewall JWT avec pattern
             SecurityConfigurator().add_jwt_firewall(
                 firewall_name=auth_name.lower(),
                 authenticator_import_path=authenticator_import_path,
                 provider_key=provider_key,
             )
         else:
-            # Configuration pour custom
             provider_key = None
             if provider_name:
                 provider_class = ClassNameManager.snake_to_pascal(provider_name)
@@ -442,7 +407,6 @@ class CreateAuthCommand(AbstractCommand):
                 provider_key=provider_key,
             )
 
-        # NOUVEAU: Ajouter la configuration JWT aux paramètres
         if auth_type == "jwt_api":
             self._add_jwt_parameters()
 
@@ -452,25 +416,20 @@ class CreateAuthCommand(AbstractCommand):
         )
 
     def _add_jwt_parameters(self):
-        """Ajoute la configuration JWT aux paramètres"""
         try:
-            # Ajouter la configuration JWT dans parameter.yaml
             parameter_path = "config/parameter.yaml"
 
             jwt_config = """
   jwt:
     secret_key: ${JWT_SECRET_KEY}
-    expiration: 3600 # 1 heure
+    expiration: 3600 # 1 Hour in seconds
     algorithm: HS256"""
 
-            # Lire le fichier existant
             if os.path.exists(parameter_path):
                 with open(parameter_path, "r") as f:
                     content = f.read()
 
-                # Vérifier si la config JWT existe déjà
                 if "jwt:" not in content:
-                    # Ajouter la config JWT
                     with open(parameter_path, "a") as f:
                         f.write(jwt_config)
 
@@ -478,7 +437,6 @@ class CreateAuthCommand(AbstractCommand):
                 else:
                     self.printer.print_full_text("[bold yellow]ℹ JWT configuration already exists in config/parameter.yaml[/bold yellow]")
             else:
-                # Créer le fichier parameter.yaml avec la config JWT
                 with open(parameter_path, "w") as f:
                     f.write("parameters:")
                     f.write(jwt_config)
@@ -496,12 +454,10 @@ class CreateAuthCommand(AbstractCommand):
             auth_type: Type d'authentification (oauth_google, oauth_microsoft, jwt_api)
         """
         try:
-            # Obtenir les variables nécessaires
             variables = self.env_manager.get_section_variables(auth_type)
             section_title = self.env_manager.get_section_title(auth_type)
 
             if variables:
-                # Vérifier quelles variables existent déjà
                 new_variables = {}
                 existing_variables = []
 
@@ -511,7 +467,6 @@ class CreateAuthCommand(AbstractCommand):
                     else:
                         new_variables[key] = value
 
-                # Ajouter seulement les nouvelles variables
                 if new_variables:
                     self.env_manager.add_variables(new_variables, section_title)
                     self.printer.print_full_text(
@@ -519,11 +474,9 @@ class CreateAuthCommand(AbstractCommand):
                         linebefore=True,
                     )
 
-                    # Afficher les variables ajoutées
                     for key in new_variables.keys():
                         self.printer.print_msg(f"  • {key}", theme="normal")
 
-                # Informer sur les variables existantes
                 if existing_variables:
                     self.printer.print_full_text(
                         f"[bold yellow]ℹ {len(existing_variables)} environment variable(s) already exist(s) in .env:[/bold yellow]"
@@ -574,12 +527,10 @@ class CreateAuthCommand(AbstractCommand):
             provider_type: Type de provider OAuth (google, microsoft)
             auth_name: Nom de l'authenticator (ex: "oauth", "google_auth", etc.)
         """
-        # CHANGEMENT: Utiliser le nom de l'authenticator au lieu de "oauth"
         controller_name = auth_name
         controller_file = f"{controller_name}_controller"
         controller_path = os.path.join("src/controller", f"{controller_file}.py")
 
-        # Vérifier si le controller existe déjà
         if os.path.exists(controller_path):
             self.printer.print_msg(
                 f"Controller {controller_name} already exists! Skipping creation.",
@@ -588,7 +539,6 @@ class CreateAuthCommand(AbstractCommand):
             )
             return
 
-        # Déterminer les paths selon le provider
         callback_paths = {
             "google": "/google-callback",
             "microsoft": "/microsoft-callback"
@@ -599,10 +549,8 @@ class CreateAuthCommand(AbstractCommand):
             "microsoft": "Microsoft"
         }
         
-        # CHANGEMENT: Nom de classe basé sur l'authenticator
         class_name = ClassNameManager.snake_to_pascal(auth_name) + "Controller"
         
-        # Préparer les données pour le template
         data = {
             "controller_class_name": class_name,
             "provider_type": provider_type,
@@ -611,7 +559,6 @@ class CreateAuthCommand(AbstractCommand):
             "callback_path": callback_paths[provider_type],
         }
 
-        # Créer le controller minimal
         try:
             file_path = FileCreator().create_file(
                 self.oauth_controller_template_name,
@@ -625,7 +572,6 @@ class CreateAuthCommand(AbstractCommand):
                 linebefore=True,
             )
 
-            # Afficher les informations de routes
             self._display_oauth_routes_info(data)
 
         except Exception as e:
@@ -636,7 +582,6 @@ class CreateAuthCommand(AbstractCommand):
             )
 
     def _display_oauth_routes_info(self, data: Dict):
-        """Affiche les informations sur les routes créées"""
         self.printer.print_full_text(
             "[bold yellow]📋 Created Routes:[/bold yellow]",
             linebefore=True,
@@ -691,12 +636,10 @@ class CreateAuthCommand(AbstractCommand):
         Args:
             auth_name: Nom de l'authenticator (ex: "jwt", "api_auth", etc.)
         """
-        # CHANGEMENT: Utiliser le nom de l'authenticator
         controller_name = auth_name
         controller_file = f"{controller_name}_controller"
         controller_path = os.path.join("src/controller", f"{controller_file}.py")
 
-        # Vérifier si le controller existe déjà
         if os.path.exists(controller_path):
             self.printer.print_msg(
                 f"Controller {controller_name} already exists! Skipping creation.",
@@ -704,15 +647,13 @@ class CreateAuthCommand(AbstractCommand):
                 linebefore=True,
             )
             return
-        # CHANGEMENT: Nom de classe basé sur l'authenticator
+
         class_name = ClassNameManager.snake_to_pascal(auth_name) + "Controller"
         
-        # Préparer les données pour le template
         data = {
             "controller_class_name": class_name,
         }
 
-        # Créer le controller minimal
         try:
             file_path = FileCreator().create_file(
                 self.jwt_controller_template_name,
@@ -726,7 +667,6 @@ class CreateAuthCommand(AbstractCommand):
                 linebefore=True,
             )
 
-            # Afficher les informations de routeserver starts
             self._display_jwt_routes_info()
 
         except Exception as e:
@@ -737,7 +677,6 @@ class CreateAuthCommand(AbstractCommand):
             )
 
     def _display_jwt_routes_info(self):
-        """Affiche les informations sur les routes JWT créées"""
         self.printer.print_full_text(
             "[bold yellow]📋 Created JWT Routes:[/bold yellow]",
             linebefore=True,
@@ -759,10 +698,6 @@ class CreateAuthCommand(AbstractCommand):
         )
 
     def _get_optional_oauth_provider(self) -> str:
-        """
-        Demande optionnellement un provider pour OAuth.
-        Si l'utilisateur ne saisit rien, retourne None.
-        """
         self.printer.print_msg(
             "Do you want to use a user provider for OAuth authentication?",
             theme="bold_normal",
@@ -792,7 +727,6 @@ class CreateAuthCommand(AbstractCommand):
             )
             return None
         
-        # CORRECTION: Si oui, le provider name devient OBLIGATOIRE (pas de default)
         while True:
             self.printer.print_msg(
                 "What is the name of the entity that will be used as the OAuth provider?",
@@ -800,10 +734,8 @@ class CreateAuthCommand(AbstractCommand):
                 linebefore=True,
             )
             
-            # IMPORTANT: Pas de default, l'utilisateur DOIT saisir quelque chose
             provider_name = InputManager().wait_input("Provider name")
             
-            # Vérifier que l'utilisateur a saisi quelque chose
             if not provider_name or not provider_name.strip():
                 self.printer.print_msg(
                     "[bold red]Provider name is required when using a provider![/bold red]",
@@ -818,4 +750,3 @@ class CreateAuthCommand(AbstractCommand):
                 return provider_name
             else:
                 continue
-

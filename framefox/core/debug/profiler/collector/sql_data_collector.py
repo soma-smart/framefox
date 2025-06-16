@@ -1,6 +1,7 @@
 import datetime
 from typing import Any, Dict, Optional
 from fastapi import Request, Response
+from framefox.core.config.settings import Settings
 
 from framefox.core.debug.profiler.collector.data_collector import DataCollector
 
@@ -31,6 +32,7 @@ class SQLDataCollector(DataCollector):
         super().__init__("database", "fa-database")
         self.request_active = False
         self.queries = []
+        self.settings= Settings()
         
         self._setup_sql_logging()
 

@@ -1,5 +1,12 @@
 import re
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphael
+Github: https://github.com/Vasulvius 
+"""
 
 class ClassNameManager:
     @staticmethod

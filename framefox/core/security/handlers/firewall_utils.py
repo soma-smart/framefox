@@ -1,5 +1,5 @@
 import logging
-import re
+import re,hmac
 from typing import Dict, List, Optional
 
 from fastapi import Request
@@ -182,11 +182,58 @@ class FirewallUtils:
         oauth_config = firewall_config.get("oauth", {})
         return oauth_config.get("callback_path") if oauth_config else None
 
-    def validate_oauth_state(self, request: Request) -> bool:
-        state = request.query_params.get("state")
-        if not state:
-            self.logger.warning("OAuth callback without state parameter")
+    def validate_oauth_callback(self, request: Request) -> bool:
+        """
+        Complete OAuth callback validation
+        
+        Args:
+            request: Request containing callback parameters
+            
+        Returns:
+            bool: True if callback is valid
+        """
+        if not self.validate_oauth_state(request):
             return False
+        
+        code = request.query_params.get("code")
+        if not code:
+            self.logger.warning("OAuth callback without authorization code")
+            return False
+        
+        error = request.query_params.get("error")
+        if error:
+            error_description = request.query_params.get("error_description", "")
+            self.logger.warning(f"OAuth provider returned error: {error} - {error_description}")
+            return False
+        
+        self.logger.debug("OAuth callback validation successful")
+        return True
+
+    def validate_oauth_state(self, request: Request) -> bool:
+        """OAuth state validation with enhanced logging"""
+        received_state = request.query_params.get("state")
+        if not received_state:
+            self.logger.warning("OAuth callback without state parameter - potential CSRF attack")
+            return False
+            
+        from framefox.core.request.session.session import Session
+        session = Session()
+        
+        stored_state = session.get("oauth_state")
+        
+        if not stored_state:
+            self.logger.warning("No stored OAuth state found - session may have expired")
+            return False
+            
+        if not hmac.compare_digest(received_state, stored_state):
+            self.logger.warning("OAuth state mismatch - potential CSRF attack")
+            self.logger.debug(f"Expected state: {stored_state[:8]}..., Received: {received_state[:8]}...")
+            return False
+            
+        session.remove("oauth_state")
+        session.save()
+        
+        self.logger.debug("OAuth state validation successful")
         return True
 
     def log_oauth_event(self, event_type: str, firewall_name: str, additional_info: str = ""):

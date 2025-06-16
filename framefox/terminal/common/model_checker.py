@@ -1,10 +1,16 @@
-import importlib
 import os
 from typing import Any, Dict, List
 
 from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.printer import Printer
 
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphael
+Github: https://github.com/Vasulvius 
+"""
 
 class ModelChecker:
     def __init__(self):

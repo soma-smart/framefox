@@ -60,8 +60,8 @@ class OAuthCallbackHandler:
     ) -> Response:
         self.logger.debug(f"Processing OAuth callback for firewall '{firewall_name}'")
         
-        if not self.utils.validate_oauth_state(request):
-            return authenticator.on_auth_failure(request, "Invalid OAuth state")
+        if not self.utils.validate_oauth_callback(request):
+            return authenticator.on_auth_failure(request, "Invalid OAuth callback parameters")
         
         try:
             passport = await self.timing_protector.protected_authentication(

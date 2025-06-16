@@ -57,111 +57,6 @@ Never commit database credentials to version control:
 - Use database user accounts with minimal required permissions
 :::
 
-### Advanced Configuration File
-
-For complex deployments, use the detailed configuration in `config/orm.yaml`:
-
-```yaml
-database 
-  # Environment variable takes precedence
-  url: "${DATABASE_URL}"
-  
-  # Fallback detailed configuration
-  # driver: "${DATABASE_DRIVER:-postgresql}"
-  # host: "${DATABASE_HOST:-localhost}"
-  # port: "${DATABASE_PORT:-5432}"
-  # username: "${DATABASE_USER:-framefox}"
-  # password: "${DATABASE_PASSWORD}"
-  # database  "${DATABASE_NAME:-framefoxdb}"
-  # charset: "utf8mb4"
-
-  # Production-optimized connection pooling
-  pool_size: 20                    # Number of persistent connections
-  max_overflow: 10                 # Additional connections when pool is full
-  pool_timeout: 30                 # Seconds to wait for available connection
-  pool_recycle: 1800              # Seconds before connection refresh
-  pool_pre_ping: true             # Validate connections before use
-  autocommit: false               # Manual transaction control
-  autoflush: false                # Manual session flushing
-```
-
-:::note[Connection Pooling Explained]
-Framefox's connection pooling optimizes database performance:
-- **pool_size**: Core connections kept alive (recommended: 10-50)
-- **max_overflow**: Extra connections during peak load
-- **pool_timeout**: Prevents hanging requests during high load
-- **pool_recycle**: Refreshes stale connections automatically
-- **pool_pre_ping**: Detects and handles dropped connections
-:::
-
-### Database Driver Installation
-
-Install the appropriate database driver for your chosen database engine:
-
-```bash
-# SQLite (included with Python - no installation needed)
-# Ideal for development and small applications
-
-# PostgreSQL (recommended for production)
-pip install psycopg2-binary
-# Alternative: pip install asyncpg  # For async operations
-
-# MySQL/MariaDB
-pip install pymysql
-# Alternative: pip install aiomysql  # For async operations
-
-# Microsoft SQL Server
-pip install pyodbc
-
-# Oracle Database
-pip install cx_Oracle
-```
-
-:::tip[Database Selection Guide]
-Choose your database based on your needs:
-- **SQLite**: Development, testing, small applications (< 100 concurrent users)
-- **PostgreSQL**: Production applications, complex queries, JSON data, full-text search
-- **MySQL**: Web applications, high read workloads, replication needs
-- **SQL Server**: Enterprise environments, .NET integration, Windows ecosystems
-:::
-
-### Multi-Environment Setup
-
-Configure different databases for different environments:
-
-```bash
-# .env.development
-DATABASE_URL=sqlite:///dev.db
-
-# .env.testing  
-DATABASE_URL=sqlite:///:memory:
-
-# .env.production
-DATABASE_URL=postgresql://prod_user:secure_pass@db-cluster:5432/prod_db?sslmode=require
-```
-
-**Kubernetes/Docker Configuration:**
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  app:
-    environment:
-      - DATABASE_URL=postgresql://app:${DB_PASSWORD}@postgres:5432/appdb
-  
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-```
-
 ## Entity Management
 
 ### What is an entity ?
@@ -169,57 +64,6 @@ volumes:
 An entity represents a **data model** in your application - a Python class that maps directly to a database table. In the MVC (Model-View-Controller) architectural pattern, entities serve as the **Model layer**, encapsulating the structure, validation rules, and relationships of your data without containing business logic.
 
 Think of an entity as a **blueprint** for your data. When you create a `Product` entity, you're defining what a product looks like in your database  it has a name, price, description, and relationships to other entities like categories or orders. The entity class describes these properties using Python type hints and SQLModel field definitions.
-
-#### Core Characteristics of Entities
-
-**Data Structure Definition**: Entities define the schema of your database tables using Python classes. Each property corresponds to a database column, with type hints providing both Python and database type information.
-
-**Validation and Constraints**: Entities include field-level validation rules such as required fields, length constraints, numeric ranges, and custom validation logic. This ensures data integrity at both the application and database levels.
-
-**Relationship Mapping**: Entities define how different data models relate to each other - whether a product belongs to a category, an order contains multiple items, or a user has a profile. These relationships are automatically translated into foreign keys and JOIN operations.
-
-**Framework Integration**: Framefox entities extend `AbstractEntity`, providing automatic generation of API models, form validation classes, and repository integration without additional configuration.
-
-#### Entity vs Business Logic Separation
-
-In Framefox's clean architecture approach, entities are **data-focused only**. They don't contain business operations like "calculate discount" or "send notification" - these belong in service classes. This separation makes your code more maintainable, testable, and follows the single responsibility principle from SOLID principles.
-
-```python
-# ✅ Good: Entity focuses on data structure
-class Product(AbstractEntity, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(min_length=1, max_length=255)
-    price: float = Field(gt=0)
-    is_active: bool = Field(default=True)
-    
-    # Relationships only - no business logic
-    category: "Category" = Relationship(back_populates="products")
-
-# ✅ Good: Business logic in service classes
-class ProductService:
-    def calculate_discounted_price(self, product: Product, discount: float) -> float:
-        return product.price * (1 - discount)
-```
-
-#### Automatic Model Generation
-
-One of Framefox's most powerful features is automatic model generation from entities. Each entity automatically provides:
-
-- **CreateModel**: For API endpoints that create new records (excludes ID)
-- **FindModel**: For lookup operations using primary keys
-- **PatchModel**: For partial updates with all fields optional
-
-This eliminates boilerplate code while ensuring type safety across your entire application stack.
-
-#### Entity Lifecycle in MVC
-
-In the MVC pattern, entities flow through your application layers:
-1. **Controller**: Receives HTTP requests and validates input against entity models
-2. **Service**: Applies business logic using entities retrieved from repositories
-3. **Repository**: Handles entity persistence, queries, and database operations
-4. **Entity**: Provides the data structure and validation rules throughout this flow
-
-This clear separation ensures that each layer has a single responsibility while maintaining type safety and data integrity.
 
 :::note[Entity Design Philosophy]
 Framefox entities follow the **data model** approach:
@@ -243,14 +87,6 @@ framefox create entity product
 ```
 
 This command creates a new entity file in `src/entity/product.py` with basic structure and common fields.
-
-:::tip[Entity Generation Benefits]
-The entity generator provides:
-- **Consistent Structure**: Standard file organization and naming conventions
-- **Boilerplate Code**: Pre-configured imports and basic methods
-- **Best Practices**: Following framework conventions out of the box
-- **Time Saving**: Rapid entity creation for faster development
-:::
 
 #### Entity Structure Example
 
@@ -279,133 +115,27 @@ class Product(AbstractEntity, table=True):
     orders: List["OrderItem"] = Relationship(back_populates="product")
 ```
 
-:::note[Entity Design Philosophy]
-Framefox entities follow these principles:
-- **Data Only**: Entities contain only data structure and basic validation
-- **No Business Logic**: Business operations are handled by repositories and services
-- **SQLModel Integration**: Uses SQLModel for type safety and Pydantic validation
-- **Automatic Models**: Generate create/find models automatically for API endpoints
-:::
+### Basic Entity Relationships
 
-:::caution[Data Security]
-Never store sensitive information in plain text:
-- Always hash passwords using secure algorithms (bcrypt, Argon2)
-- Use encryption for personal data
-- Consider implementing data validation requirements
-- Implement secure data handling mechanisms
-:::
+Entity relationships define how different data models connect in your database. Framefox uses SQLModel to automatically handle foreign keys, joins, and data consistency.
 
-### Column Types and Configuration
+#### One-to-Many Relationships
 
-Framefox supports SQLModel field types with comprehensive validation and configuration options:
-
-```python
-from sqlmodel import Field, Column, JSON
-from datetime import datetime
-import uuid
-
-class Product(AbstractEntity, table=True):
-    """Product entity demonstrating various field types"""
-    
-    id: int | None = Field(default=None, primary_key=True)
-    
-    # Text fields with validation
-    name: str = Field(min_length=1, max_length=255)
-    description: str | None = Field(default=None)
-    slug: str = Field(unique=True, max_length=255)
-    
-    # Numeric fields with constraints
-    price: float = Field(gt=0)  # Greater than 0
-    stock: int = Field(ge=0, default=0)  # Greater or equal to 0
-    weight: float | None = Field(default=None, gt=0)
-    
-    # JSON data for structured information
-    metadata: dict = Field(default_factory=dict, sa_column=Column(JSON))
-    specifications: list = Field(default_factory=list, sa_column=Column(JSON))
-    
-    # Boolean flags
-    is_featured: bool = Field(default=False)
-    is_digital: bool = Field(default=False)
-    
-    # Timestamps
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime | None = Field(default=None)
-    
-    # UUID for external references
-    external_id: uuid.UUID = Field(default_factory=uuid.uuid4)
-```
-
-:::note[Field Type Selection Guide]
-Choose appropriate field types based on your data:
-- **str**: Text data with length constraints using `min_length`/`max_length`
-- **int/float**: Numeric data with validation using `gt`, `ge`, `lt`, `le`
-- **bool**: True/false flags with clear defaults
-- **datetime**: Timestamps with automatic generation using `default_factory`
-- **JSON**: Structured data that needs querying capabilities
-- **UUID**: Unique identifiers for external system integration
-:::
-
-### Advanced Field Configuration
-
-```python
-class AdvancedEntity(AbstractEntity, table=True):
-    # Field with multiple constraints and validation
-    email: str = Field(
-        regex=r'^[^@]+@[^@]+\.[^@]+$',  # Email validation
-        unique=True,
-        max_length=255
-    )
-    
-    # Optional field with custom default
-    status: str = Field(
-        default="active",
-        regex=r'^(active|inactive|pending)$'  # Enum-like validation
-    )
-    
-    # Foreign key with cascade behavior
-    category_id: int = Field(foreign_key="category.id")
-    
-    # Soft delete support
-    deleted_at: datetime | None = Field(default=None)
-```
-
-## Entity Relationships
-
-Entity relationships are one of the most powerful aspects of Framefox ORM. They allow you to model logical connections between your data in an intuitive and type-safe manner. Framefox uses SQLModel to automatically handle foreign keys, joins, and data consistency.
-
-### What is a Relationship?
-
-A relationship defines how two or more entities are connected in your database. For example, a product belongs to a category, an order contains multiple items, or a profile belongs to a user. These connections are essential for structuring your data logically and avoiding duplication.
-
-### The Three Types of Relationships
-
-**One-to-Many (One to Many)**: One entity can have multiple related entities. This is the most common type of relationship - for example, a category can have multiple products.
-
-**Many-to-Many (Many to Many)**: Entities can have multiple bidirectional relationships, requiring a junction table - for example, a product can belong to multiple collections and a collection can contain multiple products.
-
-**One-to-One (One to One)**: Each entity is linked to exactly one other entity - for example, a product can have a single detailed profile.
-
-### One-to-Many Relationships
-
-The One-to-Many relationship is fundamental in data modeling. It uses a foreign key to establish the connection and SQLModel's Relationship for automatic navigation.
-
-#### Category-Products Example
+The most common relationship type - one entity can have multiple related entities:
 
 ```python
 # Category entity (the "one" side)
 class Category(AbstractEntity, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(nullable=False)
-    description: str | None = Field(default=None)
     
     # Relationship to products
     products: List["Product"] = Relationship(back_populates="category")
 
-# Product entity (the "many" side)
+# Product entity (the "many" side)  
 class Product(AbstractEntity, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(nullable=False)
-    price: float = Field(gt=0)
     
     # Foreign key to Category
     category_id: int = Field(foreign_key="category.id")
@@ -414,94 +144,200 @@ class Product(AbstractEntity, table=True):
     category: Category = Relationship(back_populates="products")
 ```
 
-**How it works:**
-- The `foreign_key="category.id"` establishes the database constraint
-- `back_populates` ensures bidirectional consistency
-- Framefox automatically generates the necessary JOINs
-- Navigation is type-safe: `product.category.name` works automatically
+## Repositories
 
-:::tip[Relationship Best Practices]
-When implementing relationships:
-- **Use back_populates**: Ensures bidirectional relationship consistency
-- **Foreign key naming**: Follow `{table}_id` convention for clarity
-- **Nullable considerations**: Use `nullable=False` for required relationships
-- **Index foreign keys**: Improves query performance automatically
-:::
+All repositories extend the base `Repository` class, which provides fundamental CRUD operations and query capabilities. Repositories follow the Data Access Object (DAO) pattern to encapsulate database operations.
 
-### Many-to-Many Relationships
-
-Many-to-Many relationships are more complex as they require a junction table (intermediate table) to manage the connections. This table contains the foreign keys of the two main entities and can include additional metadata.
-
-#### Product-Tag Relationship Example
+### Basic Repository Usage
 
 ```python
-# Junction table for Product-Tag
-class ProductTag(AbstractEntity, table=True):
-    product_id: int = Field(foreign_key="product.id", primary_key=True)
-    tag_id: int = Field(foreign_key="tag.id", primary_key=True)
-    
-    # Additional metadata
-    assigned_at: datetime = Field(default_factory=datetime.now)
-    is_primary: bool = Field(default=False)
+from framefox.core.orm.repository import Repository
+from src.entity.product import Product
+from typing import List, Optional
 
-# Tag entity
-class Tag(AbstractEntity, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(unique=True, nullable=False)
+class ProductRepository(Repository):
+    """Product repository for data access operations"""
     
-    # Relationship to products via junction table
-    products: List["Product"] = Relationship(
-        back_populates="tags",
-        link_table=ProductTag
-    )
-
-# Product entity with tags
-class Product(AbstractEntity, table=True):
-    # ...existing fields...
+    def __init__(self):
+        super().__init__(Product)
     
-    # Relationship to tags via junction table
-    tags: List[Tag] = Relationship(
-        back_populates="products",
-        link_table=ProductTag
-    )
+    def find_by_name(self, name: str) -> Optional[Product]:
+        """Find a product by its name"""
+        return self.find_one_by({"name": name})
+    
+    def find_active_products(self) -> List[Product]:
+        """Retrieve all active products"""
+        return self.find_by({"is_active": True})
+    
+    def find_by_category(self, category_id: int) -> List[Product]:
+        """Get products in a specific category"""
+        return self.find_by({"category_id": category_id})
 ```
 
-### One-to-One Relationships
+:::tip[Repository Best Practices]
+- **Single Responsibility**: Each repository handles one entity type
+- **Descriptive Method Names**: Use clear, action-oriented names
+- **Type Hints**: Include type hints for better IDE support
+- **Error Handling**: Provide meaningful error messages
+:::
 
-One-to-One relationships link exactly one entity to another, often used for profile extensions or detailed information separation.
+## Database Commands
+
+Framefox provides essential CLI commands for database management:
+
+```bash
+# Create the database
+framefox database create
+
+# Apply migrations
+framefox database upgrade
+
+# Check migration status
+framefox database status
+
+# Create new migration
+framefox database create-migration
+
+# Rollback migration
+framefox database downgrade
+```
+
+## Entity Manager & Transactions
+
+The EntityManager provides the central coordination for database operations and entity lifecycle management. It implements the Unit of Work pattern to track entity changes and manage transactions efficiently.
+
+### Basic EntityManager Usage
 
 ```python
-# Product entity
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
+from src.entity.product import Product
+
+class ProductService:
+    def __init__(self, entity_manager: EntityManagerInterface):
+        self.em = entity_manager
+
+    def create_product(self, product_data: dict) -> Product:
+        """Create a new product with transaction management"""
+        try:
+            with self.em.transaction():
+                product = Product(**product_data)
+                self.em.persist(product)
+                return product
+        except Exception as e:
+            raise RuntimeError(f"Failed to create product: {str(e)}") from e
+```
+
+:::tip[EntityManager Best Practices]
+- **Always use EntityManagerInterface** for dependency injection
+- **Use explicit transactions** for multi-entity operations
+- **Handle exceptions properly** with try-except blocks
+- **Keep transactions short** to minimize lock time
+:::
+
+## Core Database Concepts
+
+Understanding these fundamental concepts will help you work effectively with Framefox's database layer:
+
+### **Entity Manager & Transactions**
+The EntityManager coordinates database operations and manages entity lifecycles using the Unit of Work pattern.
+
+### **Repository Pattern**
+Repositories provide a clean interface for data access, encapsulating complex queries and business logic.
+
+### **Migration System**
+Database migrations provide version control for your schema, enabling safe database evolution.
+
+### **Query Builder**
+A fluent interface for building complex queries programmatically without writing raw SQL.
+
+
+## Entity Management
+
+### What is an entity ?
+
+An entity represents a **data model** in your application - a Python class that maps directly to a database table. In the MVC (Model-View-Controller) architectural pattern, entities serve as the **Model layer**, encapsulating the structure, validation rules, and relationships of your data without containing business logic.
+
+Think of an entity as a **blueprint** for your data. When you create a `Product` entity, you're defining what a product looks like in your database  it has a name, price, description, and relationships to other entities like categories or orders. The entity class describes these properties using Python type hints and SQLModel field definitions.
+
+:::note[Entity Design Philosophy]
+Framefox entities follow the **data model** approach:
+- **Structure First**: Define your data schema clearly and explicitly
+- **Validation Built-in**: Use type hints and Field constraints for data integrity
+- **Relationship Aware**: Model real-world data connections naturally
+- **Framework Integrated**: Automatic API model generation and ORM integration
+- **Business Logic Free**: Keep entities focused on data, not operations
+:::
+
+### Creating Entities
+
+Entity creation in Framefox can be done through the command-line interface or manually. Entities represent your database tables as Python classes, following the clean architecture principle where entities contain only data structure and validation logic.
+
+#### Using the Command Line Generator
+
+Generate a new entity with the built-in command:
+
+```bash
+framefox create entity product
+```
+
+This command creates a new entity file in `src/entity/product.py` with basic structure and common fields.
+
+#### Entity Structure Example
+
+Entities in Framefox follow a clean approach focused on data structure. Here's the actual structure used in the framework:
+
+```python
+from framefox.core.orm.abstract_entity import AbstractEntity
+from sqlmodel import Field, Relationship
+from datetime import datetime
+from typing import List
+import uuid
+
+class Product(AbstractEntity, table=True):
+    """Product entity representing store products"""
+    
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(nullable=False)
+    description: str | None = Field(default=None)
+    price: float = Field(gt=0)
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    category_id: int | None = Field(foreign_key="category.id", nullable=True)
+
+    # Relations (handled by SQLModel Relationship)
+    category: "Category" = Relationship(back_populates="products")
+    orders: List["OrderItem"] = Relationship(back_populates="product")
+```
+
+### Basic Entity Relationships
+
+Entity relationships define how different data models connect in your database. Framefox uses SQLModel to automatically handle foreign keys, joins, and data consistency.
+
+#### One-to-Many Relationships
+
+The most common relationship type - one entity can have multiple related entities:
+
+```python
+# Category entity (the "one" side)
+class Category(AbstractEntity, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(nullable=False)
+    
+    # Relationship to products
+    products: List["Product"] = Relationship(back_populates="category")
+
+# Product entity (the "many" side)  
 class Product(AbstractEntity, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(nullable=False)
     
-    # One-to-one relationship
-    details: "ProductDetails" = Relationship(back_populates="product")
-
-# ProductDetails entity
-class ProductDetails(AbstractEntity, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    specifications: str | None = Field(default=None)
-    warranty_info: str | None = Field(default=None)
+    # Foreign key to Category
+    category_id: int = Field(foreign_key="category.id")
     
-    # Foreign key to Product (unique for one-to-one)
-    product_id: int = Field(foreign_key="product.id", unique=True)
-    
-    # Relationship back to product
-    product: Product = Relationship(back_populates="details")
+    # Back relationship to category
+    category: Category = Relationship(back_populates="products")
 ```
-:::note[Relationship Benefits]
-SQLModel relationships provide automatic loading, type safety, query optimization, and foreign key management with Pydantic validation.
-:::
 
-:::caution[Many-to-Many Best Practices]
-Use meaningful junction table names, add relevant metadata (timestamps), implement proper indexes on foreign keys, and handle cascade deletes carefully for data integrity.
-:::
-
-:::tip[Performance Optimization]
-Use eager loading for known related data, implement repository methods for common queries, add indexes on foreign keys, and consider caching for expensive relationship operations.
-:::
 ## Repository Pattern
 
 The Repository pattern in Framefox provides a clean abstraction layer between your application logic and data persistence. Repositories encapsulate the logic needed to access data sources, centralizing common data access functionality for better maintainability and testability.
@@ -518,7 +354,6 @@ from typing import List, Optional, Dict, Any
 class ProductRepository(Repository):
     """
     Product repository providing specialized product data access methods
-    Extends base repository with product-specific functionality
     """
     
     def __init__(self):
@@ -535,68 +370,6 @@ class ProductRepository(Repository):
     def find_by_category(self, category_id: int) -> List[Product]:
         """Get all products in a specific category"""
         return self.find_by({"category_id": category_id})
-    
-    def search_products(self, query: str, limit: int = 50) -> List[Product]:
-        """
-        Search products by name or description
-        Uses the Query Builder for flexible text matching
-        """
-        if not query or len(query.strip()) < 2:
-            return []
-        
-        # Using Query Builder instead of raw SQL
-        return self.query_builder()\
-            .where("name", "LIKE", f"%{query}%")\
-            .or_where("description", "LIKE", f"%{query}%")\
-            .where("is_active", "=", True)\
-            .order_by("name")\
-            .limit(limit)\
-            .get()
-    
-    def get_featured_products(self, limit: int = 10) -> List[Product]:
-        """Get featured products for homepage display"""
-        return self.query_builder()\
-            .where("is_featured", "=", True)\
-            .where("is_active", "=", True)\
-            .order_by("created_at", "DESC")\
-            .limit(limit)\
-            .get()
-    
-    def update_last_updated(self, product_id: int) -> bool:
-        """Update product's last updated timestamp"""
-        from datetime import datetime
-        return self.update(product_id, {"updated_at": datetime.now()})
-    
-    def get_recently_created(self, days: int = 7, limit: int = 20) -> List[Product]:
-        """Get products created within the specified number of days using Query Builder"""
-        qb = QueryBuilder(self.db)
-        from datetime import datetime, timedelta
-        
-        cutoff_date = datetime.now() - timedelta(days=days)
-        return (qb.select(['p.*'])
-                 .from_table('products p')
-                 .where('p.created_at', '>=', cutoff_date)
-                 .where('p.is_active', '=', True)
-                 .order_by('p.created_at', 'DESC')
-                 .limit(limit)
-                 .get())
-    
-    def get_product_statistics(self) -> Dict[str, int]:
-        """Get comprehensive product statistics using Query Builder aggregations"""
-        qb = QueryBuilder(self.db)
-        
-        # Using Query Builder for complex aggregations
-        result = (qb.select([
-                    'COUNT(*) as total_products',
-                    'COUNT(CASE WHEN is_active = true THEN 1 END) as active_products',
-                    'COUNT(CASE WHEN is_featured = true THEN 1 END) as featured_products',
-                    'COUNT(CASE WHEN stock_quantity > 0 THEN 1 END) as in_stock_products',
-                    'AVG(price) as average_price'
-                  ])
-                  .from_table('products')
-                  .first())
-        
-        return result if result else {}
 ```
 
 :::tip[Repository Best Practices]
@@ -609,119 +382,158 @@ Follow these patterns for effective repository design:
 - **Type Hints**: Use type hints for better IDE support and documentation
 :::
 
-### Advanced Query Builder Repository
+## Basic Database Commands
 
-The Query Builder allows building complex queries programmatically:
+Framefox provides essential database commands through the CLI to manage your database lifecycle:
 
+### Core Database Commands
+
+```bash
+# Create the database if it doesn't exist
+framefox database create
+
+# Apply pending migrations to update schema
+framefox database upgrade
+
+# Check migration status and history
+framefox database status
+
+# Create a new migration file
+framefox database create-migration
+
+# Rollback to previous migration
+framefox database downgrade
+```
+
+## Entity Manager & Transactions
+
+The EntityManager provides the central coordination for database operations and entity lifecycle management. It implements the Unit of Work pattern to track entity changes and manage transactions efficiently.
+
+### Basic EntityManager Usage
+
+```python
+from framefox.core.orm.entity_manager_interface import EntityManagerInterface
+from src.entity.product import Product
+
+class ProductService:
+    def __init__(self, entity_manager: EntityManagerInterface):
+        self.em = entity_manager
+
+    def create_product(self, product_data: dict) -> Product:
+        """Create a new product with transaction management"""
+        try:
+            with self.em.transaction():
+                product = Product(**product_data)
+                self.em.persist(product)
+                return product
+        except Exception as e:
+            raise RuntimeError(f"Failed to create product: {str(e)}") from e
+```
+
+:::tip[EntityManager Best Practices]
+- **Always use EntityManagerInterface** for dependency injection
+- **Use explicit transactions** for multi-entity operations
+- **Handle exceptions properly** with try-except blocks
+- **Keep transactions short** to minimize lock time
+:::
+
+## Advanced Topics
+
+Ready to dive deeper into database management? Explore these specialized guides:
+
+### **Need production-ready configuration?**
+→ [Advanced Database Configuration](/database/advanced-configuration) - Production optimization, environment setup, connection pooling, and security configurations for high-traffic applications.
+
+### **Working with complex data relationships?**
+→ [Advanced Relationships & Entity Patterns](/database/advanced-relationships) - Self-referencing relationships, polymorphic associations, audit trails, versioning patterns, and sophisticated entity modeling.
+
+### **Building complex queries and repositories?**
+→ [Query Builder & Advanced Patterns](/database/query-builder-patterns) - Master the Query Builder, specification pattern, caching strategies, and batch operations for high-performance applications.
+
+### **Managing transactions and performance?**
+→ [Entity Manager & Transaction Management](/database/entity-manager-transactions) - Advanced EntityManager usage, transaction patterns, connection pool management, and performance optimization techniques.
+
+### **Handling migrations and database commands?**
+→ [Database Migrations & Commands](/database/migrations-commands) - Complex migration strategies, production deployment patterns, custom maintenance commands, and automation integration.
+
+## Repositories
+
+All repositories extend the base `Repository` class, which provides fundamental CRUD operations and query capabilities. Repositories follow the Data Access Object (DAO) pattern to encapsulate database operations.
+
+### Basic Repository Usage
 
 ```python
 from framefox.core.orm.repository import Repository
-from framefox.core.orm.query_builder import QueryBuilder
 from src.entity.product import Product
-from typing import List, Dict, Optional, Any
-from datetime import datetime, timedelta
+from typing import List, Optional
 
 class ProductRepository(Repository):
-    """
-    Product repository demonstrating Query Builder usage
-    Shows how to avoid raw SQL with fluent query construction
-    """
+    """Product repository for data access operations"""
     
     def __init__(self):
         super().__init__(Product)
     
-    def find_active_products(self, limit: int = None) -> List[Product]:
-        """
-        Get all active products with category information
-        Using Query Builder instead of raw SQL for maintainability
-        """
-        qb = QueryBuilder(self.db)
-        query = (qb.select(['p.*', 'c.name as category_name'])
-                  .from_table('products p')
-                  .join('categories c', 'p.category_id = c.id')
-                  .where('p.is_active', '=', True)
-                  .where('p.created_at', '<=', 'CURRENT_TIMESTAMP')
-                  .order_by('p.created_at', 'DESC'))
-        
-        if limit:
-            query = query.limit(limit)
-        
-        return query.execute()
+    def find_by_name(self, name: str) -> Optional[Product]:
+        """Find a product by its name"""
+        return self.find_one_by({"name": name})
     
-    def find_products_by_tag(self, tag: str, limit: int = 20) -> List[Product]:
-        """
-        Find products by tag using Query Builder
-        Demonstrates JOIN operations without raw SQL
-        """
-        return (QueryBuilder(self.db)
-                .select(['DISTINCT p.*', 't.name as tag_name'])
-                .from_table('products p')
-                .join('product_tags pt', 'p.id = pt.product_id')
-                .join('tags t', 'pt.tag_id = t.id')
-                .where('t.name', '=', tag)
-                .where('p.is_active', '=', True)
-                .order_by('p.created_at', 'DESC')
-                .limit(limit)
-                .execute())
+    def find_active_products(self) -> List[Product]:
+        """Retrieve all active products"""
+        return self.find_by({"is_active": True})
     
-    def get_popular_products(self, days: int = 30, limit: int = 10) -> List[Dict[str, Any]]:
-        """
-        Get most popular products based on views and ratings
-        Using Query Builder for analytics instead of complex raw SQL
-        """
-        return (QueryBuilder(self.db)
-                .select([
-                    'p.*',
-                    'c.name as category_name',
-                    'COUNT(pr.id) as ratings_count',
-                    'AVG(pr.rating) as avg_rating'
-                ])
-                .from_table('products p')
-                .join('categories c', 'p.category_id = c.id')
-                .left_join('product_ratings pr', 'p.id = pr.product_id')
-                .where('p.is_active', '=', True)
-                .where('p.created_at', '>=', f"DATE('now', '-{days} days')")
-                .group_by('p.id')
-                .order_by('p.view_count', 'DESC')
-                .limit(limit)
-                .execute())
-    
+    def find_by_category(self, category_id: int) -> List[Product]:
+        """Get products in a specific category"""
+        return self.find_by({"category_id": category_id})
 ```
 
-:::tip[Query Builder vs Raw SQL]
-The Query Builder offers several advantages over raw SQL:
-- **Readability**: Cleaner and more maintainable code
-- **Security**: Automatic protection against SQL injection  
-- **Reusability**: Chainable and composable methods
-- **Flexibility**: Dynamic query construction
-- **Portability**: Compatible with different database engines
-- **Debugging**: More explicit error messages
+:::tip[Repository Best Practices]
+- **Single Responsibility**: Each repository handles one entity type
+- **Descriptive Method Names**: Use clear, action-oriented names
+- **Type Hints**: Include type hints for better IDE support
+- **Error Handling**: Provide meaningful error messages
 :::
 
+## Database Commands
 
-## Entity Manager & Transactions
+Framefox provides essential CLI commands for database management:
 
-The EntityManager is the central component for managing entity lifecycles, transactions, and database operations in Framefox. It provides fine-grained control over when and how data is persisted to the database.
+```bash
+# Create the database
+framefox database create
 
-### Understanding the EntityManager
+# Apply migrations
+framefox database upgrade
 
-The EntityManager is the cornerstone of Framefox's ORM architecture, serving as the central coordinator for all database operations and entity lifecycle management. Acting as an implementation of the Unit of Work pattern, it tracks changes to entities throughout their lifecycle and ensures that database operations are executed efficiently and safely within transactional boundaries.
+# Check migration status
+framefox database status
 
-#### What is the EntityManager?
+# Create new migration
+framefox database create-migration
 
-Think of the EntityManager as your application's database session manager and transaction coordinator. It maintains an internal state of all entities you're working with, tracks their changes, and provides intelligent batching of database operations. When you retrieve an entity from the database, modify it, and then commit your changes, the EntityManager handles all the complex SQL generation, change detection, and database synchronization behind the scenes.
+# Rollback migration
+framefox database downgrade
+```
 
-The EntityManager operates on the principle of **dirty checking** - it knows exactly which properties of which entities have been modified since they were loaded from the database. This allows it to generate optimal UPDATE statements that only modify the changed fields, rather than updating entire records unnecessarily.
+## Core Database Concepts
 
-#### Transaction Management and Data Consistency
+Understanding these fundamental concepts will help you work effectively with Framefox's database layer:
 
-One of the most critical responsibilities of the EntityManager is managing database transactions. Transactions ensure that your database operations are atomic - either all changes are successfully applied, or none are applied at all. This is crucial for maintaining data consistency, especially when multiple related entities need to be updated together.
+### **Entity Manager & Transactions**
+The EntityManager coordinates database operations and manages entity lifecycles using the Unit of Work pattern.
 
-The EntityManager automatically manages transaction boundaries in most cases, but it also provides explicit transaction control when you need fine-grained control over when changes are committed or rolled back. This is particularly important in complex business operations where multiple entities must be updated consistently.
+### **Repository Pattern**
+Repositories provide a clean interface for data access, encapsulating complex queries and business logic.
 
-#### Identity Map and Object Caching
+### **Migration System**
+Database migrations provide version control for your schema, enabling safe database evolution.
 
-The EntityManager maintains an identity map - an internal cache that ensures that within a single session, you always get the same object instance when you request the same entity by its primary key. This prevents data inconsistencies and improves performance by avoiding redundant database queries for entities you've already loaded.
+### **Query Builder**
+A fluent interface for building complex queries programmatically without writing raw SQL.
+
+Ready to explore advanced database features? Check out our specialized guides above for in-depth coverage of complex scenarios and optimization techniques.
+
+### **Handling migrations and database commands?**
+→ [Database Migrations & Commands](/database/migrations-commands) - Complex migration strategies, production deployment patterns, custom maintenance commands, and automation integration.
 
 For example, if you load a Product with ID 123 twice within the same EntityManager session, you'll receive the exact same object instance both times. Any changes made to this object will be visible immediately throughout your application code within that session.
 
@@ -1083,7 +895,46 @@ Migrations provide:
 
 ### Creating Migrations
 
+#### Generate Migration Command
+
+Use the Framefox CLI to automatically detect entity changes and create migrations:
+
+```bash
+# Create a new migration based on entity changes
+framefox database create-migration
+
+# Output example:
+# ✓ Migration created: migrations/versions/20240603_152345_migration.py
+# ✓ You can now run 'framefox database upgrade' to apply the updates
+```
+
+This command:
+- **Analyzes your entities** in the `src/entity/` directory
+- **Compares with current database schema** to detect differences
+- **Creates a timestamped migration file** in `migrations/versions/`
+- **Auto-generates upgrade/downgrade operations** based on detected changes
+
+#### Typical Migration Workflow
+
+**Most of the time, everything works perfectly** and you simply need to:
+
+1. **Modify your entities** (add fields, change types, etc.)
+2. **Generate the migration**: `framefox database create-migration`
+3. **Apply the migration**: `framefox database upgrade`
+
+The framework handles the complexity automatically, generating proper SQL operations for your changes.
+
+#### When Manual Adjustments Are Needed
+
+**Sometimes you need to customize the generated migration** for:
+- **Data transformations** during schema changes
+- **Complex constraint modifications** that require specific ordering
+- **Custom SQL operations** not detectable by auto-generation
+- **Performance optimizations** like adding specific indexes
+
 #### Basic Migration Example
+
+The generated migration file in `migrations/versions/` follows this structure:
 
 ```python
 # migrations/versions/20240115_001_create_products_table.py
@@ -1166,170 +1017,25 @@ def downgrade():
     op.drop_table('products')
 ```
 
-### Query Builder Pattern
+#### Migration Recovery
 
-The Query Builder provides a fluent interface for building complex queries programmatically, eliminating the need to write raw SQL:
+:::note
+If you encounter problems during migration (corrupted migration files, failed migrations, or inconsistent state):
 
-```python
-from framefox.core.orm.query_builder import QueryBuilder
-from framefox.core.orm.repository import Repository
-from src.entity.product import Product
-from typing import List, Dict, Any
+1. **Delete the problematic migration file(s)** from `migrations/versions/`
+2. **Remove the migration reference** from the `alembic_version` table in your database:
+   ```sql
+   DELETE FROM alembic_version WHERE version_num = 'problematic_revision_id';
+   ```
+3. **Start fresh** by creating a new migration with `framefox database create-migration`
 
-class AdvancedProductRepository(Repository):
-    """
-    Repository demonstrating advanced querying techniques  
-    with the Query Builder - no raw SQL needed
-    """
-    
-    def __init__(self):
-        super().__init__(Product)
-    
-    def advanced_product_search(self, filters: Dict[str, Any]) -> List[Product]:
-        """
-        Complex product search with dynamic filtering using Query Builder
-        Demonstrates flexible query construction without raw SQL
-        """
-        qb = QueryBuilder(self.entity_class)
-        
-        # Text search with multiple fields using Query Builder
-        if filters.get('search'):
-            search_term = f"%{filters['search']}%"
-            qb.where_group(
-                qb.where('name', 'LIKE', search_term)
-                .or_where('description', 'LIKE', search_term)
-                .or_where('sku', 'LIKE', search_term)
-            )
-        
-        # Exact matches using fluent interface
-        if filters.get('category_id'):
-            qb.where('category_id', '=', filters['category_id'])
-        
-        if filters.get('sku'):
-            qb.where('sku', '=', filters['sku'])
-        
-        # Boolean filters with Query Builder
-        if filters.get('is_active') is not None:
-            qb.where('is_active', '=', filters['is_active'])
-        
-        if filters.get('is_featured') is not None:
-            qb.where('is_featured', '=', filters['is_featured'])
-        
-        if filters.get('in_stock') is not None:
-            if filters['in_stock']:
-                qb.where('stock_quantity', '>', 0)
-            else:
-                qb.where('stock_quantity', '=', 0)
-        
-        # Price range filtering
-        if filters.get('min_price'):
-            qb.where('price', '>=', filters['min_price'])
-        
-        if filters.get('max_price'):
-            qb.where('price', '<=', filters['max_price'])
-        
-        # Date range filters using Query Builder
-        if filters.get('created_after'):
-            qb.where('created_at', '>=', filters['created_after'])
-        
-        if filters.get('created_before'):
-            qb.where('created_at', '<=', filters['created_before'])
-        
-        # Category-based filtering with JOIN
-        if filters.get('category_name'):
-            qb.join('categories', 'products.category_id', '=', 'categories.id')
-            qb.where('categories.name', '=', filters['category_name'])
-        
-        # Tag-based filtering with complex JOINs
-        if filters.get('tags'):
-            tag_list = filters['tags'] if isinstance(filters['tags'], list) else [filters['tags']]
-            qb.join('product_tags', 'products.id', '=', 'product_tags.product_id')
-            qb.join('tags', 'product_tags.tag_id', '=', 'tags.id')
-            qb.where_in('tags.name', tag_list)
-            qb.distinct()
-        
-        # Stock level filtering
-        if filters.get('min_stock'):
-            qb.where('stock_quantity', '>=', filters['min_stock'])
-        
-        # Sorting options with Query Builder
-        sort_field = filters.get('sort_by', 'created_at')
-        sort_order = filters.get('sort_order', 'DESC')
-        
-        if sort_field == 'popularity':
-            qb.order_by('view_count', sort_order)
-        elif sort_field == 'price_asc':
-            qb.order_by('price', 'ASC')
-        elif sort_field == 'price_desc':
-            qb.order_by('price', 'DESC')
-        else:
-            qb.order_by(sort_field, sort_order)
-        
-        # Pagination support
-        if filters.get('limit'):
-            qb.limit(filters['limit'])
-        
-        if filters.get('offset'):
-            qb.offset(filters['offset'])
-        
-        return qb.get()
-    
-    def get_product_analytics_summary(self, date_from: str = None, date_to: str = None) -> Dict[str, Any]:
-        """
-        Product analytics using Query Builder aggregation methods
-        Replaces complex raw SQL with maintainable Query Builder calls
-        """
-        qb = QueryBuilder(self.db)
-        
-        # Base query with aggregations
-        qb.select([
-            'COUNT(*) as total_products',
-            'AVG(price) as average_price',
-            'SUM(stock_quantity) as total_stock',
-            'COUNT(CASE WHEN is_active = 1 THEN 1 END) as active_products',
-            'COUNT(CASE WHEN is_featured = 1 THEN 1 END) as featured_products'
-        ]).from_table('products')
-        
-        # Date filtering if provided
-        if date_from:
-            qb.where('created_at', '>=', date_from)
-        
-        if date_to:
-            qb.where('created_at', '<=', date_to)
-        
-        result = qb.execute()
-        return result[0] if result else {}
-    
-    def get_category_performance(self, limit: int = 10) -> List[Dict[str, Any]]:
-        """
-        Category performance analysis using Query Builder
-        Shows how to replace complex analytics SQL with Query Builder
-        """
-        return (QueryBuilder(self.db)
-                .select([
-                    'c.name as category_name',
-                    'COUNT(p.id) as products_count',
-                    'AVG(p.price) as avg_price',
-                    'SUM(p.view_count) as total_views',
-                    'SUM(p.stock_quantity) as total_stock'
-                ])
-                .from_table('categories c')
-                .left_join('products p', 'c.id = p.category_id')
-                .where('p.is_active', '=', True)
-                .group_by('c.id', 'c.name')
-                .order_by('total_views', 'DESC')
-                .limit(limit)
-                .execute())
-```
-
-:::tip[Query Optimization Strategies]
-Optimize your queries for better performance:
-- **Use indexes** on frequently queried columns
-- **Limit result sets** with LIMIT clauses
-- **Use EXISTS instead of IN** for subqueries when possible
-- **Avoid SELECT *** in production code
-- **Use JOINs instead of separate queries** to prevent N+1 problems
-- **Profile queries** with EXPLAIN to understand execution plans
+This approach allows you to recover from migration issues and restart the migration process cleanly. Always backup your database before attempting migration recovery in production.
 :::
 
+## Related Topics
 
+**[🔧 How to configure database for production environments?](/core/database/advanced-configuration)**  
+**[🔗 How to create complex entity relationships and patterns?](/core/database/advanced-relationships)**  
+**[🔍 How to build advanced queries and repository patterns?](/core/database/query-builder-patterns)**  
+**[⚡ How to manage transactions and optimize performance?](/core/database/entity-manager-transactions)**  
+**[📦 How to handle database migrations and commands?](/core/database/migrations-commands)**

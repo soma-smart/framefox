@@ -1,37 +1,24 @@
-/* 
- * Styles personnalisés pour la documentation Framefox
- * Ce fichier contient les personnalisations spécifiques pour s'assurer que
- * la documentation Starlight corresponde au style original de Framefox
- */
-
-/* Variables de couleurs personnalisées de Framefox */
 :root {
-  /* Couleurs de marque */
   --fox-orange: #f4bf5f;
   --fox-orange-light: #f4bf5f;
   --fox-gray: #333333;
   --fox-dark: #121212;
   --fox-darker: #0a0a0a;
 
-  /* Couleurs de fond et de texte */
   --sl-color-bg: var(--fox-dark);
   --sl-color-bg-nav: var(--fox-darker);
   --sl-color-text: #e6e6e6;
   --sl-color-text-accent: var(--fox-orange);
 
-  /* Couleurs d'accentuation et liens */
   --sl-color-accent: var(--fox-orange);
   --sl-color-accent-high: var(--fox-orange-light);
 
-  /* Entête et composants */
   --sl-color-text-invert: var(--fox-darker);
   --sl-color-bg-sidebar: rgba(10, 10, 10, 0.95);
 
-  /* Couleurs pour les blocs de code */
   --code-bg: rgba(0, 0, 0, 0.5);
   --darker-bg: #121212;
 
-  /* Autres personnalisations */
   --sl-font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
     Arial, sans-serif;
   --sl-font-mono: "Courier New", monospace;
@@ -39,14 +26,33 @@
   --sl-sidebar-width: 18rem;
 }
 
-/* Styles du corps de la documentation */
-body {
-  font-family: var(--sl-font);
-  background-color: var(--fox-dark);
-  color: var(--sl-color-text);
+:root[data-theme="light"] {
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #f8f9fa;
+  --sl-color-text: #2c3e50;
+  --sl-color-text-accent: var(--fox-orange);
+
+  --sl-color-accent: var(--fox-orange);
+  --sl-color-accent-high: #e3b341;
+
+  --sl-color-text-invert: #ffffff;
+  --sl-color-bg-sidebar: rgba(248, 249, 250, 0.95);
+
+  --code-bg: rgba(248, 249, 250, 0.8);
+  --darker-bg: #f8f9fa;
+
+  --sl-color-bg-inline-code: rgba(244, 191, 95, 0.1);
+  --sl-color-hairline: rgba(44, 62, 80, 0.1);
+  --sl-color-hairline-light: rgba(44, 62, 80, 0.05);
 }
 
-/* Styles des titres */
+body {
+  font-family: var(--sl-font);
+  background-color: var(--sl-color-bg);
+  color: var(--sl-color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 h1,
 h2,
 h3,
@@ -69,13 +75,16 @@ h2 {
   padding-bottom: 0.5rem;
 }
 
+:root[data-theme="light"] h2 {
+  border-bottom: 1px solid rgba(44, 62, 80, 0.1);
+}
+
 h3 {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--fox-orange);
 }
 
-/* Styles des liens */
 a {
   color: var(--fox-orange);
   text-decoration: none;
@@ -87,10 +96,13 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Personnalisation de la barre latérale */
 .sidebar {
   background-color: var(--sl-color-bg-sidebar);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="light"] .sidebar {
+  border-right: 1px solid rgba(44, 62, 80, 0.1);
 }
 
 .sidebar a {
@@ -102,7 +114,6 @@ a:hover {
   font-weight: 600;
 }
 
-/* Styles pour les boutons et actions */
 .action {
   background-color: var(--fox-orange);
   color: var(--fox-darker);
@@ -125,7 +136,6 @@ a:hover {
   background-color: rgba(244, 191, 95, 0.1);
 }
 
-/* Styles pour les infoboxes et notes */
 .content :is(.tip, .caution, .danger) {
   border-inline-start: 4px solid var(--fox-orange);
   background-color: rgba(244, 191, 95, 0.1);
@@ -147,12 +157,15 @@ a:hover {
   background-color: rgba(255, 87, 87, 0.1);
 }
 
-/* Styles pour les tableaux */
 table {
   width: 100%;
   border-collapse: collapse;
   margin: 1.5rem 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="light"] table {
+  border: 1px solid rgba(44, 62, 80, 0.1);
 }
 
 th {
@@ -163,16 +176,31 @@ th {
   padding: 0.75rem 1rem;
 }
 
+:root[data-theme="light"] th {
+  background-color: rgba(248, 249, 250, 0.8);
+}
+
 td {
   padding: 0.75rem 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="light"] td {
+  border-top: 1px solid rgba(44, 62, 80, 0.1);
 }
 
 tr:nth-child(even) {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Personnalisation de la page d'accueil */
+:root[data-theme="light"] tr:nth-child(even) {
+  background-color: rgba(248, 249, 250, 0.5);
+}
+
+:root[data-theme="light"] tr:hover {
+  background-color: rgba(244, 191, 95, 0.1);
+}
+
 .hero {
   margin-bottom: 3rem;
 }
@@ -186,12 +214,23 @@ tr:nth-child(even) {
   -webkit-text-fill-color: transparent;
 }
 
-/* Styles pour les cards */
+:root[data-theme="light"] .hero h1 {
+  background: linear-gradient(to right, #2c3e50, var(--fox-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .card {
   background-color: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+:root[data-theme="light"] .card {
+  background-color: #ffffff;
+  border: 1px solid rgba(44, 62, 80, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card:hover {
@@ -200,18 +239,25 @@ tr:nth-child(even) {
   border-color: rgba(244, 191, 95, 0.3);
 }
 
+:root[data-theme="light"] .card:hover {
+  box-shadow: 0 8px 25px rgba(244, 191, 95, 0.15);
+  border-color: var(--fox-orange);
+}
+
 .card h3 {
   color: var(--fox-orange);
 }
 
-/* Images et médias */
 img {
   max-width: 100%;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Animation du logo */
+:root[data-theme="light"] img {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .site-title img {
   transition: transform 0.3s ease;
 }
@@ -220,13 +266,16 @@ img {
   transform: rotate(10deg);
 }
 
-/* Style pour l'en-tête de navigation */
 .site-header {
   background-color: var(--fox-darker);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Style pour les textes de pagination */
+:root[data-theme="light"] .site-header {
+  background-color: var(--sl-color-bg-nav);
+  border-bottom: 1px solid rgba(44, 62, 80, 0.1);
+}
+
 .pagination a {
   color: var(--sl-color-text);
   transition: all 0.3s ease;
@@ -237,8 +286,42 @@ img {
   transform: translateX(3px);
 }
 
-/* Style du footer */
 .site-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.6);
+}
+
+:root[data-theme="light"] .site-footer {
+  border-top: 1px solid rgba(44, 62, 80, 0.1);
+  color: rgba(44, 62, 80, 0.7);
+  background-color: var(--sl-color-bg-nav);
+}
+
+:root[data-theme="light"] pre {
+  background-color: var(--code-bg) !important;
+  border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+:root[data-theme="light"] code {
+  background-color: var(--sl-color-bg-inline-code);
+}
+
+:root[data-theme="light"] input,
+:root[data-theme="light"] textarea,
+:root[data-theme="light"] select {
+  background-color: #ffffff;
+  border: 1px solid rgba(44, 62, 80, 0.2);
+  color: var(--sl-color-text);
+}
+
+:root[data-theme="light"] input:focus,
+:root[data-theme="light"] textarea:focus,
+:root[data-theme="light"] select:focus {
+  border-color: var(--fox-orange);
+  box-shadow: 0 0 0 3px rgba(244, 191, 95, 0.1);
+}
+
+:root[data-theme="light"] :focus-visible {
+  outline: 2px solid var(--fox-orange);
+  outline-offset: 2px;
 }

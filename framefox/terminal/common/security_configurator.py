@@ -1,4 +1,11 @@
 from ruamel.yaml import YAML
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: LEUROND Raphael
+Github: https://github.com/Vasulvius 
+"""
 
 
 class SecurityConfigurator:
@@ -46,7 +53,6 @@ class SecurityConfigurator:
     ):
         """Add OAuth firewall configuration with OAuth-specific settings"""
         
-        # Charger la configuration existante
         with open(self.yaml_path, "r") as file:
             config = self.yaml.load(file)
 
@@ -59,12 +65,10 @@ class SecurityConfigurator:
         ):
             config["security"]["firewalls"] = {}
 
-        # Vérifier si le firewall existe déjà
         if firewall_name in config["security"]["firewalls"]:
             print(f"Firewall '{firewall_name}' already exists in the configuration.")
             return
 
-        # Déterminer les variables d'environnement selon le type OAuth
         if oauth_type == "oauth_google":
             client_id_var = "GOOGLE_CLIENT_ID"
             client_secret_var = "GOOGLE_CLIENT_SECRET"
@@ -98,28 +102,19 @@ class SecurityConfigurator:
                 "redirect_uri": f"${{APP_URL}}{callback_path}"
             }
         
-        # CORRECTION: Ordre des clés - provider en premier
         firewall_config = {}
         
-        # 1. Provider en premier (si défini)
         if provider_key:
             firewall_config["provider"] = provider_key
             
-        # 2. Authenticator
         firewall_config["authenticator"] = authenticator_import_path
-        
-        # 3. Paths
         firewall_config["login_path"] = "/auth/oauth"
         firewall_config["logout_path"] = "/logout"
         firewall_config["denied_redirect"] = "/"
-        
-        # 4. Configuration OAuth en dernier
         firewall_config["oauth"] = oauth_config
 
-        # Ajouter le firewall à la configuration
         config["security"]["firewalls"][firewall_name] = firewall_config
         
-        # Sauvegarder la configuration
         with open(self.yaml_path, "w") as file:
             self.yaml.dump(config, file)
             
@@ -133,7 +128,6 @@ class SecurityConfigurator:
     ):
         """Add JWT firewall configuration with JWT-specific settings"""
         
-        # Charger la configuration existante
         with open(self.yaml_path, "r") as file:
             config = self.yaml.load(file)
 
@@ -146,29 +140,21 @@ class SecurityConfigurator:
         ):
             config["security"]["firewalls"] = {}
 
-        # Vérifier si le firewall existe déjà
         if firewall_name in config["security"]["firewalls"]:
             print(f"Firewall '{firewall_name}' already exists in the configuration.")
             return
 
-        # CORRECTION: Ordre des clés - provider en premier pour JWT aussi
         firewall_config = {}
         
-        # 1. Provider en premier (si défini)
         if provider_key:
             firewall_config["provider"] = provider_key
             
-        # 2. Authenticator
         firewall_config["authenticator"] = authenticator_import_path
-        
-        # 3. Pattern et logout_path
         firewall_config["pattern"] = "^/api/(users|products|auth/me|admin)"
         firewall_config["logout_path"] = "/api/auth/logout"
 
-        # Ajouter le firewall à la configuration
         config["security"]["firewalls"][firewall_name] = firewall_config
         
-        # Sauvegarder la configuration
         with open(self.yaml_path, "w") as file:
             self.yaml.dump(config, file)
             
@@ -197,14 +183,11 @@ class SecurityConfigurator:
         if firewall_name in config["security"]["firewalls"]:
             print(f"Firewall '{firewall_name}' already exists in the configuration.")
         else:
-            # CORRECTION: Ordre des clés - provider en premier
             new_firewall = {}
             
-            # 1. Provider en premier (si défini)
             if provider_key:
                 new_firewall["provider"] = provider_key
                 
-            # 2. Authenticator et autres configs
             new_firewall["authenticator"] = authenticator_import_path
             new_firewall["login_path"] = "/login"
             new_firewall["logout_path"] = "/logout"
@@ -232,9 +215,8 @@ class SecurityConfigurator:
 
         firewall_key = "main"
         
-        # CORRECTION: Ordre des clés - provider en premier
         main_firewall = {
-            "provider": f"app_{provider_name}_provider",  # En premier
+            "provider": f"app_{provider_name}_provider",
             "authenticator": authenticator_import_path,
             "login_path": "/login",
             "logout_path": "/logout",
