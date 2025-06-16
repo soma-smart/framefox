@@ -7,18 +7,16 @@
 
 **The Python web framework that makes development enjoyable and productive**
 
-[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![SQLModel](https://img.shields.io/badge/SQLModel-0F172A?style=flat&logo=sqlite)](https://sqlmodel.tiangolo.com)
 [![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat&logo=pydantic&logoColor=white)](https://docs.pydantic.dev)
-[![GitHub Stars](https://img.shields.io/github/stars/soma-smart/framefox?style=social)](https://github.com/soma-smart/framefox)
-[![GitHub Forks](https://img.shields.io/github/forks/soma-smart/framefox?style=social)](https://github.com/soma-smart/framefox)
 
 [🚀 Quick Start](#-quick-start) • 
-[📖 Documentation](https://soma-smart.github.io/doc-framefox/) • 
+[📖 Documentation](https://soma-smart.github.io/framefox/) • 
 [🎯 Examples](#-examples) • 
-[💬 Community](#-community) • 
+[💬 Contact](#-contact) • 
 [🤝 Contributing](#-contributing)
 
 </div>
@@ -38,7 +36,12 @@
 📋 **Pydantic Validation** - Robust data validation and serialization everywhere  
 🔒 **Security First** - CSRF protection, XSS prevention, and secure authentication  
 🧠 **Developer Friendly** - Jinja2 templates, hot reload, and comprehensive debugging  
-📱 **Modern Stack** - Python 3.9+, async/await, dependency injection everywhere  
+📱 **Modern Stack** - Python 3.12+, async/await, dependency injection everywhere  
+
+### Un petit mot en français 
+
+**Framefox est bien un outils de l'hexagone 🇫🇷 N'hesitez pas à communiquer avec nous directement en français pour toute questions (de préférence sur linkedin).
+Une version de la documentation en français est également prévu !**
 
 ---
 ![Demo](./docs/images/demo.gif)
@@ -101,12 +104,6 @@ class UserController(AbstractController):
             <a href="{{ url_for('user.show', id=user.id) }}">View Profile</a>
         </div>
     {% endfor %}
-    
-    <!-- CSRF Protection -->
-    <form method="POST">
-        {{ csrf_token() }}
-        <button type="submit">Action</button>
-    </form>
 </body>
 </html>
 ```
@@ -236,57 +233,35 @@ Framefox uses **Jinja2** with powerful built-in functions:
 
 ---
 
-## 🔧 **Dependency Injection**
 
-Framefox features a powerful dependency injection system:
-
-```yaml
-# config/services.yaml
-services:
-  user_manager:
-    class: src.service.user.user_manager.UserManager
-    arguments:
-      - "@entity_manager"
-      - "@mailer"
-      - "@security.password_encoder"
-```
-
-```python
-# Automatic injection in controllers
-class UserController(AbstractController):
-    def __init__(self, user_manager: UserManager):
-        self.user_manager = user_manager
-```
 
 ## 📚 **Learn More**
 
 | 📖 **Resource**                                                                      | 🎯 **Perfect For**               |
 | ----------------------------------------------------------------------------------- | ------------------------------- |
-| [📋 Installation Guide](https://soma-smart.github.io/doc-framefox/docs/installation) | Getting up and running          |
-| [🎮 Controllers Guide](https://soma-smart.github.io/doc-framefox/docs/controllers)   | Building your application logic |
-| [🎨 Templates Guide](https://soma-smart.github.io/doc-framefox/docs/templates)       | Creating beautiful views        |
-| [🔐 Security Guide](https://soma-smart.github.io/doc-framefox/docs/security)         | Securing your application       |
-| [🧪 Testing Guide](https://soma-smart.github.io/doc-framefox/docs/testing)           | Writing comprehensive tests     |
-| [🚀 Deployment Guide](https://soma-smart.github.io/doc-framefox/docs/deployment)     | Going to production             |
+| [📋 Installation Guide](https://soma-smart.github.io/framefox/docs/installation) | Getting up and running          |
+| [🎮 Controllers Guide](https://soma-smart.github.io/framefox/docs/controllers)   | Building your application logic |
+| [🎨 Templates Guide](https://soma-smart.github.io/framefox/docs/templates)       | Creating beautiful views        |
+| [🔐 Security Guide](https://soma-smart.github.io/framefox/docs/security)         | Securing your application       |
+| [🧪 Testing Guide](https://soma-smart.github.io/framefox/docs/testing)           | Writing comprehensive tests     |
+| [🚀 Deployment Guide](https://soma-smart.github.io/framefox/docs/deployment)     | Going to production             |
 
 
 
-## 💬 **Community**
+## 💬 **Contact**
 
 <div align="center">
 
-[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/framefox)
-[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/framefox_py)
-[![Stack Overflow](https://img.shields.io/badge/Stack_Overflow-FE7A16?style=for-the-badge&logo=stack-overflow&logoColor=white)](https://stackoverflow.com/questions/tagged/framefox)
+[![LinkedIn SOMA](https://img.shields.io/badge/SOMA_Smart-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/soma-smart)
 
-**Join developers building amazing applications with Framefox**
+**Need help or have questions? Contact us directly!**
 
 </div>
 
-- 💬 **Get help** on [Discord](https://discord.gg/framefox)
-- 🐦 **Follow updates** on [Twitter](https://twitter.com/framefox_py)  
-- 🔧 **Report issues** on [GitHub Issues](https://github.com/soma-smart/framefox/issues)
-- 📖 **Read the docs** at [soma-smart.github.io](https://soma-smart.github.io/doc-framefox/)
+- 💼 **Company LinkedIn**: [SOMA Smart](https://www.linkedin.com/company/soma-smart)
+- 👤 **Rayen BOUMAZA**: [LinkedIn](https://www.linkedin.com/in/rayen-boumaza)
+- 👤 **Raphaël LEUROND**: [LinkedIn](https://www.linkedin.com/in/raphael-leurond)
+- 📖 **Documentation**: [soma-smart.github.io](https://soma-smart.github.io/framefox/)
 
 ---
 
@@ -307,9 +282,7 @@ We ❤️ contributors! Here's how you can help:
 - ✨ Add examples
 - 🧪 Write tests
 
-**Example**: [Add comprehensive logging documentation with examples](https://github.com/soma-smart/framefox/issues/161)
-
-[**View Good First Issues →**](https://github.com/soma-smart/framefox/labels/good%20first%20issue)
+For any questions about contributing, feel free to contact us directly on LinkedIn!
 
 ---
 
@@ -318,19 +291,62 @@ We ❤️ contributors! Here's how you can help:
 If Framefox helps you build amazing things:
 
 ⭐ **Star this repository**  
-🐦 **Tweet about it**  
+🐦 **Share on social media**  
 📝 **Write a blog post**  
 🔗 **Share with friends**  
 
 Your support means the world to us! 🙏
+---
+
+## 🛣️ **Roadmap**
+
+<div align="center">
+
+### 🚧 **What's Coming Next**
+
+*Framefox is actively developed with exciting features on the horizon!*
+
+</div>
+
+### **In Progress**
+- **Advanced Testing Suite** - Built-in testing utilities and fixtures (we know Framefox lack of more tests)
+- **Internationalization (i18n)** - Multi-language support with automatic translation management
+- **WebSocket Support** - Real-time features with integrated WebSocket handling
+- **Enhanced Profiler** - Advanced performance monitoring and optimization tools
+- **Better Security control** - Role Hierachy, rate limiting, Security Header configuration
+- **Functional Worker** - Background task with a command to generation task
+
+
+### 🚀 **Future Vision**
+- ☁️ **Cloud Deploy Tools** - Built-in deployment to AWS, GCP, and Azure
+- 🎨 **Visual Admin Panel** - Auto-generated admin interface for your models
+- 📱 **Mobile API Generator** - Automatic REST API generation for mobile apps
+
+
+### 🇫🇷 **Documentation française**
+
+- 📚 **Documentation complète en français** - Guide complet et tutoriels
+- 🎥 **Tutoriels vidéo** - Série de vidéos explicatives
 
 ---
 
-## 📄 **License**
+### 📢 **Want to Influence the Roadmap?**
 
-This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+<div align="center">
 
----
+Your feedback shapes Framefox's future! Contact us on LinkedIn to:
+
+- 💡 **Suggest** new ideas  
+- 🤝 **Collaborate** on development
+- 🧪 **Beta test** upcoming features
+- 🗳️ **Vote** on priority features (maybe!)
+
+[![Contact Us](https://img.shields.io/badge/Shape_the_Future-Contact_Us-f4bf5f?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/company/soma-smart)
+
+</div>
+
+
+
 
 ## 👥 **Core Team**
 
@@ -344,7 +360,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 
 | ![Rayen](https://github.com/RayenBou.png?size=100) | ![Raphaël](https://github.com/Vasulvius.png?size=100) |
 | :------------------------------------------------: | :---------------------------------------------------: |
-|  **[Rayen BOUMAZA](https://github.com/RayenBou)**  |  **[Raphaël LEUROND](https://github.com/Vasulvius)**  |
+|  **[Rayen BOUMAZA](https://www.linkedin.com/in/rayen-boumaza)**  |  **[Raphaël LEUROND](https://www.linkedin.com/in/raphael-leurond)**  |
 |               *Framework Architect*                |                   *Core Developer*                    |
 |            🏗️ Architecture & Performance            |                   🔧 Features & DevX                   |
 
@@ -373,3 +389,8 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 ⭐ **[Star us on GitHub](https://github.com/soma-smart/framefox)** ⭐
 
 </div>
+
+## 📄 **License**
+
+This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+
