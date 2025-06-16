@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - Page Not Found | Framefox</title>
+    <link rel="icon" href="/static/images/orange_fox.png" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Variables de couleurs Framefox */
+      :root {
+        --fox-orange: #f4bf5f;
+        --fox-orange-light: #f4bf5f;
+        --fox-gray: #333333;
+        --fox-dark: #121212;
+        --fox-darker: #0a0a0a;
+        --fox-anthracite: rgb(24, 24, 24);
+        --fox-text: #e6e6e6;
+        --fox-text-muted: rgba(230, 230, 230, 0.6);
+        --fox-border: rgba(255, 255, 255, 0.1);
+        --fox-shadow: rgba(0, 0, 0, 0.3);
+        --fox-error: #ff6b6b;
+      }
+
+      /* Reset et styles de base */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: var(--fox-anthracite);
+        color: var(--fox-text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      /* Container principal */
+      .main-container {
+        text-align: center;
+        max-width: 800px;
+        padding: 2rem;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      /* Logo 404 SVG */
+      .logo-container {
+        margin-bottom: 2rem;
+        animation: logoFloat 3s ease-in-out infinite;
+      }
+
+      .logo-svg {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        filter: drop-shadow(0 5px 15px var(--fox-shadow));
+      }
+
+      .logo-text {
+        fill: var(--fox-orange);
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+        transition: fill 0.3s ease;
+      }
+
+      .logo-svg:hover .logo-text {
+        fill: var(--fox-error);
+      }
+
+      /* Code d'erreur */
+      .error-code {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--fox-error);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        animation: slideInDown 0.8s ease-out 0.1s both;
+      }
+
+      /* Slogan */
+      .slogan {
+        font-size: 1.5rem;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--fox-orange);
+        margin-bottom: 3rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        animation: slideInDown 0.8s ease-out 0.2s both;
+      }
+
+      /* Boîte d'information */
+      .info-box {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--fox-border);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px var(--fox-shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: slideInUp 0.8s ease-out 0.4s both;
+      }
+
+      .info-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px var(--fox-shadow);
+        border-color: rgba(255, 107, 107, 0.3);
+      }
+
+      .info-box p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        color: var(--fox-text-muted);
+      }
+
+      .info-box p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Conteneur des boutons */
+      .buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: slideInUp 0.8s ease-out 0.6s both;
+      }
+
+      /* Styles des boutons */
+      .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .button:hover::before {
+        left: 100%;
+      }
+
+      /* Bouton Retour */
+      .button-home {
+        background: linear-gradient(135deg, var(--fox-orange) 0%, #e3b341 100%);
+        color: var(--fox-darker);
+        box-shadow: 0 5px 15px rgba(244, 191, 95, 0.4);
+      }
+
+      .button-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(244, 191, 95, 0.6);
+        color: var(--fox-darker);
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes slideInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes logoFloat {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .main-container {
+          padding: 1rem;
+        }
+
+        .logo-svg {
+          max-width: 400px;
+        }
+
+        .error-code {
+          font-size: 1rem;
+        }
+
+        .slogan {
+          font-size: 1.2rem;
+          margin-bottom: 2rem;
+        }
+
+        .info-box {
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .info-box p {
+          font-size: 1rem;
+        }
+
+        .buttons {
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .button {
+          width: 100%;
+          max-width: 300px;
+          justify-content: center;
+          padding: 0.8rem 1.5rem;
+          font-size: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .logo-svg {
+          max-width: 300px;
+        }
+
+        .slogan {
+          font-size: 1rem;
+        }
+
+        .info-box p {
+          font-size: 0.9rem;
+        }
+
+        .button {
+          font-size: 0.9rem;
+        }
+      }
+
+      /* Amélioration de l'accessibilité */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      /* Focus states pour l'accessibilité */
+      .button:focus {
+        outline: 2px solid var(--fox-orange);
+        outline-offset: 2px;
+      }
+
+      /* Sélection de texte personnalisée */
+      ::selection {
+        background: rgba(255, 107, 107, 0.3);
+        color: var(--fox-text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="error-code">Error 404</div>
+
+      <div class="logo-container">
+        <svg
+          class="logo-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1200 300"
+        >
+          <text
+            class="logo-text"
+            x="45%"
+            y="50%"
+            dominant-baseline="middle"
+            text-anchor="end"
+            font-family="'Poppins', sans-serif"
+            font-size="150"
+            font-weight="800"
+            font-style="italic"
+          >
+            4
+          </text>
+          <image
+            href="/static/images/orange_fox.png"
+            x="530"
+            y="65"
+            width="150"
+            height="150"
+          />
+          <text
+            class="logo-text"
+            x="680"
+            y="50%"
+            dominant-baseline="middle"
+            text-anchor="start"
+            font-family="'Poppins', sans-serif"
+            font-size="150"
+            font-weight="800"
+            font-style="italic"
+          >
+            4
+          </text>
+        </svg>
+      </div>
+
+      <p class="slogan">The fox is lost in the woods!</p>
+
+      <div class="info-box">
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        <p>Let's help you find your way back!</p>
+      </div>
+
+      <div class="buttons">
+        <a href="/" class="button button-home"> 🏠 Back to Home </a>
+      </div>
+    </div>
+  </body>
+</html>

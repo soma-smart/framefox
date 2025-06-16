@@ -1,0 +1,356 @@
+---
+title: Installation and Configuration
+description: Complete guide to install and configure Framefox
+template: doc
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
+import ProjectStructure from './miscellaneous/_project_structure.mdx';
+
+## Prerequisites
+
+Before installing Framefox, make sure you have:
+
+<CardGrid>
+    <Card title="Python 3.12+" icon="seti:python">
+        Latest Python version installed on your system
+    </Card>
+    <Card title="Python package manager" icon="setting">
+        pip or uv installed
+    </Card>
+    <Card title="Code Editor" icon="laptop">
+        VS Code, Vim, or your preferred editor
+    </Card>
+</CardGrid>
+
+## Installation
+
+<Steps>
+
+1. **Install Framefox via pip**
+
+   The simplest way to install Framefox:
+
+   ```bash
+   pip install framefox
+   ```
+
+2. **Installation in a virtual environment (recommended)**
+
+   ```bash
+   # Create a virtual environment
+   python -m venv venv
+
+   # Activate the virtual environment
+   # On Linux/macOS:
+   source venv/bin/activate
+   # On Windows:
+   venv\Scripts\activate
+
+   # Install Framefox
+   pip install framefox
+   ```
+
+3. **Installation with uv (faster)**
+
+   If you have [uv](https://docs.astral.sh/uv/) installed, you can use it for faster installation:
+
+   ```bash
+   # In a virtual environment
+   uv init
+   source .venv/bin/activate  # Linux/macOS
+   # .venv\Scripts\activate   # Windows
+   uv add framefox
+   ```
+
+</Steps>
+
+## Create a new project
+
+<Steps>
+
+1. **Create the project folder**
+
+   ```bash
+   mkdir my-project
+   cd my-project
+   ```
+
+2. **Initialize the Framefox project**
+
+   ```bash
+   framefox init
+   ```
+
+3. **Explore the generated structure**
+
+   This command will automatically create the basic structure:
+
+   <ProjectStructure />
+</Steps>
+
+## Configuration
+
+### Application configuration
+
+```yaml
+# config/application.yaml
+application:
+  env: "${APP_ENV}"
+  template_dir: "templates"
+  openapi_url: /openapi.json #empty value to disable openapi swagger ui
+  redoc_url: /redoc
+
+  controllers:
+    dir: "src/controllers/"
+  profiler:
+    enabled: true # Set to false in production
+  cors:
+    allow_origins:
+      - "http://localhost"
+      - "http://localhost:8000"
+    allow_credentials: true
+    allow_methods:
+      - "*"
+    allow_headers:
+      - "*"
+
+  session:
+    name: "session_id"
+    file_path: var/session/sessions.db
+    secret_key: "${SESSION_SECRET_KEY}"
+
+  cookie:
+    max_age: 3600 # 1 hour
+    secure: true
+    http_only: true
+    same_site: "strict" # "strict", "lax", "none"
+    path: "/"
+```
+
+<CardGrid>
+    <Card title="Runtime Settings" icon="setting">
+        **env**: Runtime environment (dev, prod, test)  
+        **template_dir**: Jinja2 templates directory  
+        **openapi_url** / **redoc_url**: URLs for automatic API documentation
+    </Card>
+    <Card title="Performance" icon="rocket">
+        **profiler.enabled**: Enable/disable performance profiler  
+        **cors**: CORS configuration for APIs  
+        **controllers.dir**: Application controllers directory
+    </Card>
+    <Card title="Security" icon="seti:lock">
+        **session**: User session management parameters  
+        **cookie**: Security cookie configuration  
+        **secret_key**: Session encryption key
+    </Card>
+</CardGrid>
+
+### ORM Configuration
+
+```yaml
+# config/services.yaml
+database:
+  # You can use either the URL format or the detailed configuration
+  # If both are provided, DATABASE_URL environment variable takes precedence,
+  # followed by the url field here, and finally the detailed configuration.
+  
+  # Option 1: Database URL 
+  url: "${DATABASE_URL}" 
+  
+  # Option 2: Detailed configuration (useful for Docker/Kubernetes)
+  # Uncomment and adjust these settings if needed, they will be used
+  # only if no url is specified above or in environment variables
+  # driver: "${DATABASE_DRIVER:-postgresql}"
+  # host: "${DATABASE_HOST:-localhost}"
+  # port: "${DATABASE_PORT:-5432}"
+  # username: "${DATABASE_USER:-framefox}"
+  # password: "${DATABASE_PASSWORD}"
+  # database: "${DATABASE_NAME:-framefoxdb}"
+  # charset: "utf8mb4"
+  
+  # Connection pooling settings (important for production)
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 1800
+  pool_pre_ping: true
+  autocommit: false
+  autoflush: false
+```
+
+<CardGrid>
+    <Card title="Connection" icon="star">
+        **url**: Database connection URL  
+        **pool_size**: Number of connections in the pool  
+        **max_overflow**: Additional connections allowed
+    </Card>
+    <Card title="Performance" icon="rocket">
+        **pool_timeout**: Timeout to obtain a connection  
+        **pool_recycle**: Connection lifetime (seconds)  
+        **pool_pre_ping**: Connection verification before use
+    </Card>
+    <Card title="Transaction Management" icon="setting">
+        **autocommit/autoflush**: Automatic transaction management  
+        Recommended to keep false for better control
+    </Card>
+</CardGrid>
+
+### Environment Variables Setup
+
+<Steps>
+
+1. **Configure your .env file**
+
+   ```txt
+   # .env
+   #==============================
+   # App environment
+   #==============================
+
+   APP_ENV=dev # can be dev or prod
+   SESSION_SECRET_KEY=your-very-secret-key
+
+   #==============================
+   # Database
+   #==============================
+
+   # uncomment the line you want below, to use the database you want
+   DATABASE_URL=sqlite:///app.db
+   # DATABASE_URL=postgresql://root:password@localhost:5432/dbname
+   # DATABASE_URL=mysql://root:password@localhost:3306/dbname
+
+   #==============================
+   # Mail
+   #==============================
+   # MAIL_URL=smtp://username:password@host:port?tls=true
+
+   #==============================
+   # Task transport
+   #==============================
+   # RABBITMQ_URL=amqp://guest:guest@localhost:5672/%2F
+   ```
+
+2. **Choose your database**
+
+   For **MySQL**:
+   ```txt
+   DATABASE_URL=mysql://root:password@localhost:3306/dbname
+   ```
+
+   For **PostgreSQL**:
+   ```txt
+   DATABASE_URL=postgresql://root:password@localhost:5432/dbname
+   ```
+
+   For **SQLite** (default):
+   ```txt
+   DATABASE_URL=sqlite:///app.db
+   ```
+
+</Steps>
+
+### Additional Configuration Files
+
+<CardGrid>
+    <Card title="Debug Configuration" icon="laptop">
+        **config/debug.yaml** - Profiler settings, logging configuration, retention policies
+    </Card>
+    <Card title="Email Configuration" icon="email">
+        **config/mail.yaml** - SMTP settings, templates directory, queue configuration
+    </Card>
+    <Card title="Security Configuration" icon="seti:lock">
+        **config/security.yaml** - Authentication providers, firewalls, access control rules
+    </Card>
+    <Card title="Services Configuration" icon="setting">
+        **config/services.yaml** - Dependency injection, service autowiring
+    </Card>
+    <Card title="Tasks Configuration" icon="star">
+        **config/tasks.yaml** - Background tasks, worker settings, queue management
+    </Card>
+    <Card title="Parameters Configuration" icon="document">
+        **config/parameter.yaml** - Custom application parameters and variables
+    </Card>
+</CardGrid>
+
+## Installation Verification
+
+<Steps>
+
+1. **Start the development server**
+
+   ```bash
+   framefox run
+   ```
+
+2. **Check the output**
+
+   You should see something like:
+
+   ```bash
+   Starting the server on port 8000
+   INFO:     Will watch for changes in these directories: ['/my_project']
+   INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+   INFO:     Started reloader process [16768] using StatReload
+   ```
+
+3. **Visit your application**
+
+   Open `http://localhost:8000` in your browser. You should see the default Framefox homepage! 🎉
+
+</Steps>
+
+## Useful Commands
+
+Once your project is configured, here are the main commands:
+
+<CardGrid>
+    <Card title="Development Server" icon="rocket">
+        ```bash
+        # Start the development server
+        framefox run
+
+        # Start without auto-opening browser
+        framefox run --no-browser
+        ```
+    </Card>
+    <Card title="Code Generation" icon="laptop">
+        ```bash
+        # Create an entity
+        framefox create entity
+
+        # Create a controller
+        framefox create controller
+        ```
+    </Card>
+    <Card title="Database Management" icon="star">
+        ```bash
+        # Create database
+        framefox database create
+
+        # Create migration
+        framefox database create-migration
+
+        # Apply migrations
+        framefox database upgrade
+        ```
+    </Card>
+    <Card title="Debugging" icon="setting">
+        ```bash
+        # List all routes
+        framefox debug router
+
+        # Clear cache
+        framefox cache clear
+        ```
+    </Card>
+</CardGrid>
+
+## Ready to build something?
+
+Now that Framefox is installed, here's what you can do next:
+
+1. **[How do I handle web requests?](/core/controllers)** - Create your first controller  
+2. **[How do I store and manage data?](/core/database)** - Set up your database  
+3. **[How do I organize my URLs?](/core/routing)** - Define URL patterns and app structure  

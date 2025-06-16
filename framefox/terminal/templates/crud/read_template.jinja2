@@ -1,0 +1,28 @@
+{% raw %}{% extends "base.html" %}
+
+{% block title %}{% endraw %}{{ entity_name|title }}{% raw %} Details{% endblock %}
+
+{% block content %}{% endraw %}
+<div class="container mt-5">
+    <h1>{{ entity_name|title }} Details</h1>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            {%- for property in properties -%}
+            <div class="mb-3">
+                <strong>{{ property.name|title }}:</strong>
+                <span>{{ '{{' }} item.{{ property.name }} {{ '}}' }}</span>
+            </div>
+            {%- endfor -%}
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ '{{' }} url_for('{{ entity_name }}.update', id=item.id) {{ '}}' }}" class="btn btn-primary">Edit</a>
+        <a href="{{ '{{' }} url_for('{{ entity_name }}.read_all') {{ '}}' }}" class="btn btn-secondary">Back</a>
+        <form method="POST" action="{{ '{{' }} url_for('{{ entity_name }}.delete', id=item.id) {{ '}}' }}" class="d-inline">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+        </form>
+    </div>
+</div>
+{% raw %}{% endblock %}{% endraw %}

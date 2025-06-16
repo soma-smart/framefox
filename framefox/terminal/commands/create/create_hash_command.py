@@ -1,0 +1,45 @@
+from framefox.core.security.password.password_hasher import PasswordHasher
+from framefox.terminal.commands.abstract_command import AbstractCommand
+from framefox.terminal.common.input_manager import InputManager
+
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen
+Github: https://github.com/RayenBou
+"""
+
+
+class CreateHashCommand(AbstractCommand):
+    def __init__(self):
+        super().__init__("hash")
+
+        self.password_hasher = PasswordHasher()
+
+    def execute(self):
+        """
+        Create a hashed password and display the result.
+        """
+        self.printer.print_msg(
+            "Enter the password to hash:",
+            theme="bold_normal",
+            linebefore=True,
+        )
+        password = InputManager().wait_input("Password")
+
+        if not password:
+            self.printer.print_msg(
+                "Password cannot be empty",
+                theme="error",
+                linebefore=True,
+            )
+            return
+
+        hashed_password = self.password_hasher.hash(password)
+
+        self.printer.print_full_text(
+            f"[bold orange1]Hashed password:[/bold orange1] {hashed_password}",
+            linebefore=True,
+        )
+        print("")

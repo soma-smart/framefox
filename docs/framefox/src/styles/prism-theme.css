@@ -1,0 +1,274 @@
+code[class*="language-"],
+pre[class*="language-"],
+.astro-code,
+[data-rehype-pretty-code-fragment] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #e6e6e6;
+  text-shadow: none;
+  font-family: "Courier New", Consolas, Monaco, monospace;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.5;
+  tab-size: 4;
+  hyphens: none;
+  font-size: 15px;
+}
+
+pre[class*="language-"] {
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  border-radius: 0;
+  border: none;
+  background: transparent !important;
+}
+
+.token.keyword {
+  color: #ff79c6;
+  font-weight: 600;
+}
+
+.token.string,
+.token.attr-value {
+  color: #f1fa8c;
+}
+
+.token.function,
+.token.class-name {
+  color: #8be9fd;
+  font-weight: 500;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6272a4;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.token.punctuation,
+.token.operator {
+  color: #e6e6e6;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted,
+.token.boolean,
+.token.number {
+  color: #ff79c6;
+  font-weight: 500;
+}
+
+.token.selector,
+.token.attr-name,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #f1fa8c;
+}
+
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #e6e6e6;
+}
+
+.token.atrule {
+  color: #f1fa8c;
+  font-weight: 500;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #ffb86c;
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+:root[data-theme="light"] code[class*="language-"],
+:root[data-theme="light"] pre[class*="language-"] {
+  color: #2c3e50;
+}
+
+:root[data-theme="light"] .token.keyword {
+  color: #f39c12;
+  font-weight: 600;
+}
+
+:root[data-theme="light"] .token.string,
+:root[data-theme="light"] .token.attr-value {
+  color: #27ae60;
+}
+
+:root[data-theme="light"] .token.function,
+:root[data-theme="light"] .token.class-name {
+  color: #3498db;
+  font-weight: 500;
+}
+
+:root[data-theme="light"] .token.comment,
+:root[data-theme="light"] .token.prolog,
+:root[data-theme="light"] .token.doctype,
+:root[data-theme="light"] .token.cdata {
+  color: #95a5a6;
+  font-style: italic;
+}
+
+:root[data-theme="light"] .token.punctuation,
+:root[data-theme="light"] .token.operator {
+  color: #2c3e50;
+}
+
+:root[data-theme="light"] .token.property,
+:root[data-theme="light"] .token.tag,
+:root[data-theme="light"] .token.constant,
+:root[data-theme="light"] .token.symbol,
+:root[data-theme="light"] .token.deleted,
+:root[data-theme="light"] .token.boolean,
+:root[data-theme="light"] .token.number {
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+:root[data-theme="light"] .token.selector,
+:root[data-theme="light"] .token.attr-name,
+:root[data-theme="light"] .token.char,
+:root[data-theme="light"] .token.builtin,
+:root[data-theme="light"] .token.inserted {
+  color: #27ae60;
+}
+
+:root[data-theme="light"] .token.entity,
+:root[data-theme="light"] .token.url,
+:root[data-theme="light"] .language-css .token.string,
+:root[data-theme="light"] .style .token.string {
+  color: #2c3e50;
+}
+
+:root[data-theme="light"] .token.atrule {
+  color: #9b59b6;
+  font-weight: 500;
+}
+
+:root[data-theme="light"] .token.regex,
+:root[data-theme="light"] .token.important,
+:root[data-theme="light"] .token.variable {
+  color: #f4bf5f;
+}
+
+:root[data-theme="light"] .token.important,
+:root[data-theme="light"] .token.bold {
+  font-weight: bold;
+}
+
+:root[data-theme="light"] .token.italic {
+  font-style: italic;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"],
+.astro-code,
+[data-rehype-pretty-code-fragment],
+.expressive-code,
+.frame {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+:not(pre) > code {
+  color: var(--fox-orange) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none !important;
+}
+
+:root[data-theme="light"] :not(pre) > code {
+  background-color: rgba(243, 156, 18, 0.1) !important;
+  color: #e67e22 !important;
+}
+
+.token.module,
+.token.namespace {
+  color: #bd93f9;
+  font-weight: 500;
+}
+
+:root[data-theme="light"] .token.module,
+:root[data-theme="light"] .token.namespace {
+  color: #8e44ad;
+  font-weight: 500;
+}
+
+.token.template-string .token.string {
+  color: #f1fa8c;
+}
+
+:root[data-theme="light"] .token.template-string .token.string {
+  color: #27ae60;
+}
+
+.highlight-line {
+  background-color: rgba(243, 156, 18, 0.1);
+  display: block;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-left: 3px solid var(--fox-orange);
+}
+
+:root[data-theme="light"] .highlight-line {
+  background-color: rgba(243, 156, 18, 0.1);
+  border-left: 3px solid var(--fox-orange);
+}
+
+pre[class*="language-"]:hover {
+  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.line-numbers .line-numbers-rows {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.line-numbers .line-numbers-rows > span:before {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+:root[data-theme="light"] .line-numbers .line-numbers-rows {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="light"] .line-numbers .line-numbers-rows > span:before {
+  color: rgba(0, 0, 0, 0.4);
+}

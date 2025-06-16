@@ -1,0 +1,10 @@
+from sqlmodel import Field, JSON, Column, Relationship
+
+from framefox.core.orm.abstract_entity import AbstractEntity
+
+
+class {{ class_name }}(AbstractEntity, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+{% for prop in properties %}
+    {{ prop }}
+{% endfor %}

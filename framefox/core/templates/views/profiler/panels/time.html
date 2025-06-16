@@ -1,0 +1,64 @@
+<div class="profiler-panel">
+  <h2>Performance</h2>
+
+  <div class="panel-section">
+    <h3>Execution Time</h3>
+    <div class="time-info">
+      <div class="time-metric">
+        <span class="metric-label">Total Time</span>
+        <span class="metric-value">{{ data.duration | time }}</span>
+      </div>
+      <div class="time-metric">
+        <span class="metric-label">Start</span>
+        <span class="metric-value"
+          >{{ data.start_time | date("%Y-%m-%d %H:%M:%S") }}</span
+        >
+      </div>
+      <div class="time-metric">
+        <span class="metric-label">End</span>
+        <span class="metric-value"
+          >{{ data.end_time | date("%Y-%m-%d %H:%M:%S") }}</span
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .profiler-panel {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .panel-section {
+    margin-bottom: 30px;
+  }
+
+  .time-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .time-metric {
+    background-color: #f8f8f8;
+    padding: 15px;
+    border-radius: 5px;
+    min-width: 150px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .metric-label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+
+  .metric-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+  }
+</style>

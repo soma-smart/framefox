@@ -1,0 +1,26 @@
+from typing import Optional
+from fastapi import Request
+from fastapi.responses import Response
+from framefox.core.security.passport.passport import Passport
+from framefox.core.security.passport.user_badge import UserBadge
+
+from framefox.core.security.authenticator.abstract_authenticator import (
+    AbstractAuthenticator,
+)
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface
+)
+
+
+
+class {{ authenticator_name }}Authenticator(AbstractAuthenticator, AuthenticatorInterface):
+    async def authenticate(self, request: Request) -> Optional[Passport]:
+        passport = Passport()
+        # to authenticate user you can implemement your own logic here
+        # the only thing you need to do is to return Passport object 
+
+        return passport
+
+    def on_auth_success(self, token: str) -> Response:
+
+        return Response()

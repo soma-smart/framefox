@@ -1,0 +1,123 @@
+<style>
+  #framefox-profiler {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #222;
+    color: #fff;
+    z-index: 99999;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.3);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+  }
+
+  #framefox-profiler .profiler-logo {
+    padding: 4px 8px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  #framefox-profiler .profiler-logo:hover {
+    background-color: #ffa726;
+  }
+
+  #framefox-profiler .profiler-logo img {
+    height: 24px;
+    width: auto;
+  }
+
+  #framefox-profiler .profiler-item {
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-right: 1px solid #444;
+    cursor: pointer;
+  }
+
+  #framefox-profiler .profiler-item:hover {
+    background-color: #333;
+  }
+
+  #framefox-profiler .profiler-label {
+    margin-right: 6px;
+    color: #aaa;
+  }
+
+  #framefox-profiler .profiler-value {
+    font-weight: bold;
+  }
+
+  #framefox-profiler .success {
+    color: #72d172;
+  }
+
+  #framefox-profiler .warning {
+    color: #f5c842;
+  }
+
+  #framefox-profiler .error {
+    color: #e05d5d;
+  }
+</style>
+
+<div id="framefox-profiler" data-token="{{ token }}">
+  <a
+    href="/_profiler/{{ token }}"
+    target="_blank"
+    class="profiler-logo"
+    title="See detailed profiling information"
+  >
+    <img src="/static/images/orange_fox.png" alt="Framefox Profiler" />
+  </a>
+
+  <div class="profiler-item" data-panel="time">
+    <span class="profiler-label">TIME</span>
+    <span
+      class="profiler-value {{ 'error' if duration > 1000 else 'warning' if duration > 500 else 'success' }}"
+    >
+      {{ duration | time }}
+    </span>
+  </div>
+
+  <div class="profiler-item" data-panel="memory">
+    <span class="profiler-label">MEM</span>
+    <span class="profiler-value"
+      >{{ "%.1f"|format(memory) if memory else "N/A" }} MB</span
+    >
+  </div>
+
+  <div class="profiler-item" data-panel="request">
+    <span class="profiler-label">STATUS</span>
+    <span
+      class="profiler-value {{ 'error' if status_code >= 400 else 'warning' if status_code >= 300 else 'success' }}"
+    >
+      {{ status_code }}
+    </span>
+  </div>
+  <div class="profiler-item" data-panel="user">
+    <span class="profiler-label">USER</span>
+    <span
+      class="profiler-value {{ 'success' if profile.user.is_authenticated else 'warning' }}"
+    >
+      {% if profile.user and profile.user.is_authenticated %} {{
+      profile.user.email[:10] + '...' if profile.user.email and
+      profile.user.email|length > 10 else profile.user.email or 'AUTH' }} {%
+      else %} ANON {% endif %}
+    </span>
+  </div>
+  <div class="profiler-item" data-panel="route">
+    <span class="profiler-label">ROUTE</span>
+    <span class="profiler-value">{{ route }}</span>
+  </div>
+</div>
+
+<script src="/static/profiler/js/profiler.js"></script>

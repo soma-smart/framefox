@@ -1,0 +1,196 @@
+<div class="profiler-panel">
+  <h2>Memory Usage Analysis</h2>
+
+  <div class="panel-section">
+    <h3>Memory Status</h3>
+    <div class="memory-status-info">
+      <span class="status-badge {{ data.status }}">
+        {% if data.status == "high" %}⚠️ High Memory Usage{% elif data.status ==
+        "error" %}❌ Error{% else %}✅ Normal{% endif %}
+      </span>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <h3>System Memory</h3>
+    <div class="memory-summary">
+      <div class="memory-metric">
+        <span class="metric-label">Process Memory (RSS)</span>
+        <span
+          class="metric-value {{ 'high' if data.memory_usage_mb > 500 else 'normal' }}"
+        >
+          {{ data.memory_usage_mb }} MB
+        </span>
+      </div>
+
+      <div class="memory-metric">
+        <span class="metric-label">System Usage</span>
+        <span class="metric-value">{{ data.memory_percent }}%</span>
+      </div>
+
+      <div class="memory-metric">
+        <span class="metric-label">Python Current</span>
+        <span class="metric-value">{{ data.python_current_mb }} MB</span>
+      </div>
+
+      <div class="memory-metric">
+        <span class="metric-label">Python Peak</span>
+        <span class="metric-value">{{ data.python_peak_mb }} MB</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <h3>Template Rendering</h3>
+    <div class="memory-summary">
+      <div class="memory-metric">
+        <span class="metric-label">Template Memory</span>
+        <span
+          class="metric-value {{ 'high' if data.template_memory_mb > 10 else 'normal' }}"
+        >
+          {{ data.template_memory_mb }} MB
+        </span>
+      </div>
+
+      <div class="memory-metric">
+        <span class="metric-label">Render Time</span>
+        <span
+          class="metric-value {{ 'slow' if data.template_render_time_ms > 100 else 'normal' }}"
+        >
+          {{ data.template_render_time_ms }} ms
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {% if data.status == "high" or data.template_memory_mb > 10 %}
+  <div class="panel-section">
+    <h3>💡 Recommendations</h3>
+    {% if data.memory_usage_mb > 500 %}
+    <div class="warning">
+      <strong>High Memory Usage:</strong> Consider implementing memory cleanup
+      or reducing data loading.
+    </div>
+    {% endif %} {% if data.template_memory_mb > 10 %}
+    <div class="warning">
+      <strong>Template Memory:</strong> Template rendering used {{
+      data.template_memory_mb }}MB. Consider reducing context size.
+    </div>
+    {% endif %} {% if data.template_render_time_ms > 100 %}
+    <div class="warning">
+      <strong>Template Performance:</strong> Rendering took {{
+      data.template_render_time_ms }}ms. Consider template optimization.
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .profiler-panel {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .panel-section {
+    margin-bottom: 30px;
+  }
+
+  .panel-section h3 {
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  /* Status badge */
+  .memory-status-info {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .status-badge.normal {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .status-badge.high {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+  }
+
+  .status-badge.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  /* Memory summary */
+  .memory-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .memory-metric {
+    background-color: #f8f8f8;
+    padding: 15px;
+    border-radius: 5px;
+    min-width: 150px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #f4bf5f;
+  }
+
+  .metric-label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+
+  .metric-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .metric-value.normal {
+    color: #28a745;
+  }
+
+  .metric-value.high {
+    color: #ffc107;
+  }
+
+  .metric-value.slow {
+    color: #fd7e14;
+  }
+
+  /* Warning messages */
+  .warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0;
+  }
+
+  .warning strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+</style>

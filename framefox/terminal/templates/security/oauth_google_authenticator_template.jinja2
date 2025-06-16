@@ -1,0 +1,52 @@
+import httpx
+import secrets
+from typing import Dict, Any, Optional
+from fastapi import Request
+from fastapi.responses import RedirectResponse
+
+from framefox.core.security.authenticator.abstract_oauth_authenticator import AbstractOAuthAuthenticator
+from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+from framefox.core.security.passport.passport import Passport
+
+class {{ authenticator_name }}Authenticator(AbstractOAuthAuthenticator, AuthenticatorInterface):
+    oauth_provider_name = "google"
+    authorization_endpoint = "https://accounts.google.com/o/oauth2/v2/auth"
+    token_endpoint = "https://oauth2.googleapis.com/token"
+    userinfo_endpoint = "https://www.googleapis.com/oauth2/v2/userinfo"
+    scopes = ["openid", "email", "profile"]
+    
+    async def authenticate(self, request: Request) -> Optional[Passport]:
+        """Gère l'authentification OAuth Google"""
+        # Si c'est un callback avec code, traiter l'authentification
+        if "code" in request.query_params:
+            return await self.handle_oauth_callback(request)
+        return None
+    
+    def on_auth_success(self, token: str) -> RedirectResponse:
+        """Redirige vers le dashboard après succès"""
+        return RedirectResponse(url="/dashboard", status_code=303)
+    
+    def on_auth_failure(self, request: Request, reason: str = None) -> RedirectResponse:
+        """Redirige vers Google OAuth pour authentification"""
+        state = secrets.token_urlsafe(32)
+        # TODO: Stocker state en session pour validation
+        
+        auth_url = self.get_authorization_url(state)
+        return RedirectResponse(url=auth_url, status_code=302)
+    
+    async def get_user_data_from_provider(self, access_token: str) -> Dict[str, Any]:
+        """Récupère les données utilisateur depuis Google"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                self.userinfo_endpoint,
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            return {
+                "email": data["email"],
+                "name": data["name"],
+                "provider": "google",
+                "provider_id": data["id"]
+            }

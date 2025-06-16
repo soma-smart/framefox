@@ -1,0 +1,23 @@
+{% raw %}{% extends "base.html" %}
+
+{% block title %}{% endraw %}Create {{ entity_name|title }}{% raw %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Create {% endraw %}{{ entity_name|title }}{% raw %}</h1>
+    
+    {{ form_start(form, {'action': url_for('{% endraw %}{{ entity_name }}{% raw %}.create')}) }}
+        {% endraw %}
+        {%- for prop in properties %}
+        {%- if prop.name != 'id' %}
+        {% raw %}{{ form_row(form, '{% endraw %}{{ prop.name }}{% raw %}') }}{% endraw %}
+        {% endif %}
+        {%- endfor %}
+        {% raw %}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a href="{{ url_for('{% endraw %}{{ entity_name }}{% raw %}.read_all') }}" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}{% endraw %}

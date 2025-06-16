@@ -1,0 +1,17 @@
+* @RayenBou
+
+# Documentation
+*.md @RayenBou
+
+# Project configuration
+*.toml @RayenBou
+
+*.yml @RayenBou
+
+*.yaml @RayenBou
+
+# Main source code
+/framefox/ @RayenBou
+
+# Tests
+/tests/ @RayenBou

@@ -1,0 +1,296 @@
+<div class="profiler-panel">
+  <h2>User Information</h2>
+
+  {% if data.error %}
+  <div class="error-message"><strong>Error:</strong> {{ data.error }}</div>
+  {% endif %}
+
+  <div class="panel-section">
+    <h3>Authentication Status</h3>
+    <div class="auth-status">
+      {% if data.is_authenticated %}
+      <span class="status-badge authenticated">
+        <i class="fa fa-check-circle"></i> Authenticated
+      </span>
+      {% else %}
+      <span class="status-badge anonymous">
+        <i class="fa fa-user-times"></i> Anonymous User
+      </span>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if data.is_authenticated %}
+  <div class="panel-section">
+    <h3>User Details</h3>
+    <table class="panel-table">
+      <tr>
+        <th>User ID</th>
+        <td>{{ data.user_id or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td>
+          {% if data.email %}
+          <span class="user-email">{{ data.email }}</span>
+          {% else %}
+          <em>Email not available</em>
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>User Class</th>
+        <td>{{ data.user_class or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Authentication Method</th>
+        <td>
+          <span class="auth-method"
+            >{{ data.authentication_method or 'Unknown' }}</span
+          >
+        </td>
+      </tr>
+      {% if data.firewall %}
+      <tr>
+        <th>Firewall</th>
+        <td>{{ data.firewall }}</td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+
+  <div class="panel-section">
+    <h3>User Roles</h3>
+    {% if data.roles and data.roles|length > 0 %}
+    <div class="roles-container">
+      {% for role in data.roles %}
+      <span class="role-badge">{{ role }}</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-roles">
+      <p>No roles assigned to this user.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if data.session_data %}
+  <div class="panel-section">
+    <h3>Session Information</h3>
+    <table class="panel-table">
+      {% for key, value in data.session_data.items() %}
+      <tr>
+        <th>{{ key|title|replace('_', ' ') }}</th>
+        <td>
+          {% if value is boolean %}
+          <span class="boolean-value {{ 'true' if value else 'false' }}">
+            {{ 'Yes' if value else 'No' }}
+          </span>
+          {% else %} {{ value }} {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %} {% else %}
+  <div class="panel-section">
+    <div class="anonymous-info">
+      <div class="anonymous-icon">
+        <i class="fa fa-user-o"></i>
+      </div>
+      <h3>No Authentication</h3>
+      <p>The current request was made by an anonymous user.</p>
+
+      {% if data.authentication_method %}
+      <div class="auth-details">
+        <strong>Method:</strong> {{ data.authentication_method }}
+      </div>
+      {% endif %}
+
+      <div class="auth-suggestions">
+        <h4>💡 Authentication Methods</h4>
+        <ul>
+          <li>JWT Token authentication</li>
+          <li>Session-based authentication</li>
+          <li>API key authentication</li>
+          <li>OAuth integration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .profiler-panel {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .panel-section {
+    margin-bottom: 30px;
+  }
+
+  .panel-section h3 {
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  .auth-status {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .status-badge.authenticated {
+    background-color: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+  }
+
+  .status-badge.anonymous {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 2px solid #f5c6cb;
+  }
+
+  .status-badge i {
+    margin-right: 8px;
+  }
+
+  .panel-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .panel-table th,
+  .panel-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .panel-table th {
+    background-color: #f0f0f0;
+    width: 30%;
+    font-weight: bold;
+  }
+
+  .user-email {
+    color: #007bff;
+    font-weight: bold;
+  }
+
+  .auth-method {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    background-color: #e9ecef;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .roles-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .role-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .no-roles {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 2px dashed #dee2e6;
+    color: #6c757d;
+  }
+
+  .boolean-value.true {
+    color: #28a745;
+    font-weight: bold;
+  }
+
+  .boolean-value.false {
+    color: #dc3545;
+    font-weight: bold;
+  }
+
+  .anonymous-info {
+    text-align: center;
+    padding: 30px;
+  }
+
+  .anonymous-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .anonymous-info h3 {
+    color: #6c757d;
+    margin-bottom: 10px;
+  }
+
+  .anonymous-info p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .auth-details {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 15px 0;
+  }
+
+  .auth-suggestions {
+    background-color: #fff3cd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    text-align: left;
+  }
+
+  .auth-suggestions h4 {
+    margin-top: 0;
+    color: #856404;
+  }
+
+  .auth-suggestions ul {
+    margin-bottom: 0;
+    color: #856404;
+  }
+
+  .error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 4px solid #dc3545;
+  }
+</style>

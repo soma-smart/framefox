@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/static/images/orange_fox.png" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Framefox Profiler</title>
+    <style>
+      /* Base styles - harmonized with details.html */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+
+      header {
+        background-color: #222;
+        color: #fff;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .logo {
+        background-color: #f4bf5f;
+        color: #333;
+        padding: 5px 10px;
+        font-weight: bold;
+        margin-right: 20px;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo img {
+        height: 24px;
+        margin-right: 5px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      /* Profiler panel style */
+      .profiler-panel {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .profiler-panel h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+
+      /* Search bar */
+      .search-container {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .search-input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+        max-width: 500px;
+      }
+
+      .search-input:focus {
+        border-color: #f4bf5f;
+        outline: none;
+      }
+
+      .search-input::placeholder {
+        color: #999;
+      }
+
+      /* Table styles */
+      .profiles-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        margin-bottom: 20px;
+      }
+
+      .profiles-table th,
+      .profiles-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      .profiles-table th {
+        background-color: #f8f8f8;
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      /* Clickable row styles */
+      .profiles-table tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .profiles-table tbody tr:hover {
+        background-color: #f4f4f4;
+      }
+
+      .token-cell a {
+        color: #f4bf5f;
+        text-decoration: none;
+        font-family: monospace;
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      .token-cell a:hover {
+        text-decoration: underline;
+      }
+
+      /* Status and duration */
+      .status-success {
+        color: #28a745;
+        font-weight: bold;
+      }
+
+      .status-redirect {
+        color: #fd7e14;
+        font-weight: bold;
+      }
+
+      .status-error {
+        color: #dc3545;
+        font-weight: bold;
+      }
+
+      .duration {
+        font-weight: bold;
+      }
+
+      .duration-fast {
+        color: #28a745;
+      }
+
+      .duration-medium {
+        color: #fd7e14;
+      }
+
+      .duration-slow {
+        color: #dc3545;
+      }
+
+      /* Pagination */
+      .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .pagination a,
+      .pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        margin: 0 4px;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        color: #333;
+        text-decoration: none;
+      }
+
+      .pagination a:hover {
+        background-color: #f4bf5f;
+        border-color: #f4bf5f;
+      }
+
+      .pagination .active {
+        background-color: #f4bf5f;
+        border-color: #f4bf5f;
+        font-weight: bold;
+      }
+
+      .pagination .disabled {
+        color: #ccc;
+        pointer-events: none;
+      }
+
+      /* Total info */
+      .total-info {
+        text-align: right;
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+
+      /* HTTP method badge */
+      .http-method {
+        display: inline-block;
+        padding: 3px 6px;
+        border-radius: 3px;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        background-color: #6c757d;
+      }
+
+      .http-method.GET {
+        background-color: #28a745;
+      }
+      .http-method.POST {
+        background-color: #007bff;
+      }
+      .http-method.PUT {
+        background-color: #fd7e14;
+      }
+      .http-method.DELETE {
+        background-color: #dc3545;
+      }
+      .http-method.PATCH {
+        background-color: #6f42c1;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img src="/static/images/orange_fox.png" alt="Framefox" />
+        PROFILER
+      </div>
+      <h1>Profiles</h1>
+    </header>
+
+    <div class="container">
+      <div class="profiler-panel">
+        <h2>Profiled Requests</h2>
+
+        <div class="search-container">
+          <input
+            type="text"
+            id="profileSearchInput"
+            class="search-input"
+            placeholder="Search by URL, token, method, status code..."
+            autocomplete="off"
+          />
+          <div class="total-info">
+            Showing {{ profiles|length }} of {{ total }} profiles
+          </div>
+        </div>
+
+        <table class="profiles-table">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>URL</th>
+              <th>Method</th>
+              <th>Code</th>
+              <th>Date/Time</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for profile in profiles %}
+            <tr class="profile-row" data-token="{{ profile.token }}">
+              <td class="token-cell">
+                <a href="/_profiler/{{ profile.token }}"
+                  >{{ profile.token|slice(0, 8) }}...</a
+                >
+              </td>
+              <td>
+                <span title="{{ profile.url }}">
+                  {{ profile.url|slice(0, 60) }}{{ '...' if profile.url|length >
+                  60 }}
+                </span>
+              </td>
+              <td>
+                <span class="http-method {{ profile.method }}"
+                  >{{ profile.method }}</span
+                >
+              </td>
+              <td
+                class="status-{{ 'success' if profile.status_code < 300 else 'redirect' if profile.status_code < 400 else 'error' }}"
+              >
+                {{ profile.status_code }}
+              </td>
+              <td>{{ profile.time|date("%b %d, %Y %H:%M:%S") }}</td>
+              <td
+                class="duration {{ 'duration-fast' if profile.duration < 500 else 'duration-medium' if profile.duration < 1000 else 'duration-slow' }}"
+              >
+                {{ profile.duration }} ms
+              </td>
+            </tr>
+            {% endfor %} {% if not profiles %}
+            <tr>
+              <td colspan="6" class="empty-state">No profiles found.</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          {% if page > 1 %}
+          <a href="/_profiler?page={{ page - 1 }}&limit={{ limit }}">&laquo;</a>
+          {% else %}
+          <a class="disabled">&laquo;</a>
+          {% endif %} {% set start_page = [1, page - 2]|max %} {% set end_page =
+          [page_count, page + 2]|min %} {% if start_page > 1 %}
+          <a href="/_profiler?page=1&limit={{ limit }}">1</a>
+          {% if start_page > 2 %}<span>...</span>{% endif %} {% endif %} {% for
+          i in range(start_page, end_page + 1) %} {% if i == page %}
+          <a class="active">{{ i }}</a>
+          {% else %}
+          <a href="/_profiler?page={{ i }}&limit={{ limit }}">{{ i }}</a>
+          {% endif %} {% endfor %} {% if end_page < page_count %} {% if end_page
+          < page_count - 1 %}<span>...</span>{% endif %}
+          <a href="/_profiler?page={{ page_count }}&limit={{ limit }}"
+            >{{ page_count }}</a
+          >
+          {% endif %} {% if page < page_count %}
+          <a href="/_profiler?page={{ page + 1 }}&limit={{ limit }}">&raquo;</a>
+          {% else %}
+          <a class="disabled">&raquo;</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Make rows clickable
+      document.addEventListener("DOMContentLoaded", function () {
+        // Get all profile rows
+        const profileRows = document.querySelectorAll(".profile-row");
+
+        // Add click event to each row
+        profileRows.forEach((row) => {
+          row.addEventListener("click", function (e) {
+            // Prevent the click if the user clicked on the token link
+            if (
+              e.target.tagName === "A" ||
+              e.target.parentNode.tagName === "A"
+            ) {
+              return;
+            }
+
+            // Get the token of the profile
+            const token = this.getAttribute("data-token");
+
+            // Redirect to the profile details page
+            window.location.href = `/_profiler/${token}`;
+          });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById("profileSearchInput");
+        if (searchInput) {
+          searchInput.addEventListener("input", function () {
+            const searchTerm = this.value.toLowerCase();
+
+            // Filter the table rows
+            profileRows.forEach((row) => {
+              const rowText = row.textContent.toLowerCase();
+
+              if (rowText.includes(searchTerm)) {
+                row.style.display = "";
+              } else {
+                row.style.display = "none";
+              }
+            });
+
+            // Update the display count
+            const visibleRows = document.querySelectorAll(
+              '.profile-row[style=""]'
+            ).length;
+            const totalInfo = document.querySelector(".total-info");
+
+            if (totalInfo) {
+              if (searchTerm) {
+                totalInfo.textContent = `Found ${visibleRows} of {{ total }} profiles`;
+              } else {
+                totalInfo.textContent = `Showing {{ profiles|length }} of {{ total }} profiles`;
+              }
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+---
+title: Terminal and CLI Commands
+description: Use the interactive terminal and CLI commands to manage your Framefox application
+---
+
+import { Steps, Card } from '@astrojs/starlight/components';
+import ProjectStructure from '../miscellaneous/_project_structure.mdx';
+
+Framefox integrates an interactive terminal that allows you to perform common operations and automate development tasks.
+
+## Interactive Terminal
+
+The Framefox interactive terminal gives you access to a set of commands to manage your application:
+
+```bash
+framefox
+```
+
+This opens the interactive terminal which displays the list of available commands:
+
+```
+🦊 Framefox Framework CLI                                                                                                                               
+Swift, smart, and a bit foxy                                                                                                                            
+
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Options              ┃ Description                              ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ --install-completion │ Install completion for the current shell │
+│ --show-completion    │ Show completion for the current shell    │
+│ -a, --all, list      │ Show detailed list of all commands       │
+│ -h, -help            │ Show command help message                │
+└──────────────────────┴──────────────────────────────────────────┘
+
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Command Group ┃ Description                                                 ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ cache         │ Cache operations like clearing cache files and directories. │
+│ create        │ Create various resources like entities or CRUD operations.  │
+│ database      │ Database operations like creating or migrating databases.   │
+│ debug         │ Debug operations like checking routes or testing security.  │
+│ mock          │ Mock operations like generating or loading mock data.       │
+│ server        │ Server operations like starting or stopping the server.     │
+└───────────────┴─────────────────────────────────────────────────────────────┘
+
+Run 'framefox COMMAND --help' for specific command group details
+
+Example: 'framefox run' or 'framefox create controller'
+```
+
+## Getting Started
+
+### Project Initialization
+
+<Steps>
+
+1. **Create a new Framefox project**
+
+   ```bash
+   framefox init
+   ```
+
+2. **Let the command run**
+
+   The command builds the initial project structure and creates the necessary configuration files.
+
+3. **Navigate to your project**
+
+   ```bash
+   cd my-project
+   ```
+
+</Steps>
+
+This command will build the initial project structure and create the necessary configuration files:
+
+<ProjectStructure />
+
+### Starting the Development Server
+
+<Steps>
+
+1. **Start the server**
+
+   ```bash
+   framefox run
+   ```
+
+2. **Access your application**
+
+   Open your browser and navigate to `http://localhost:8000`
+
+</Steps>
+
+**Available server options:**
+
+<Card title="Server Configuration">
+- `--port`: Specify the port (8000 by default)
+- `--help`: Show help message
+</Card>
+
+## Component Creation
+
+### Quick Start Guide
+
+<Steps>
+
+1. **List available commands**
+
+   ```bash
+   framefox create
+   ```
+
+   This displays the available creation commands:
+
+   ```
+   🦊 Framefox Framework CLI                                                                                                               
+   Swift, smart, and a bit foxy                                                                                                            
+
+   CREATE COMMANDS
+
+   Create various resources like entities or CRUD operations.
+
+   ┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃ Command    ┃ Description                                         ┃
+   ┡━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+   │ auth       │ Create a new authenticator                          │
+   │ controller │ Create a simple controller and view.                │
+   │ crud       │ Create a CRUD controller for the given entity name. │
+   │ entity     │ Create a new entity                                 │
+   │ env        │ Generate a new .env file with secure default values │
+   │ hash       │ Create a hashed password and display the result     │
+   │ register   │ Create the register controller and view             │
+   │ user       │ Create a user entity for the authentication.        │
+   └────────────┴─────────────────────────────────────────────────────┘
+
+   Run 'framefox create COMMAND --help' for specific command details
+   ```
+
+2. **Create your first controller**
+
+   ```bash
+   framefox create controller
+   ```
+
+3. **Follow the interactive prompt**
+
+   ```
+   What is the name of the controller ?(snake_case)
+
+   Controller name: home
+
+   Controller created successfully: src/controller/home_controller.py
+   View created successfully: templates/home/index.html
+   ```
+
+</Steps>
+
+### Available Create Commands
+
+```bash
+framefox create auth         # Create a new authenticator
+framefox create controller   # Create a simple controller and view
+framefox create crud         # Create a CRUD controller for an entity
+framefox create entity       # Create a new entity
+framefox create env          # Generate a new .env file with secure defaults
+framefox create hash         # Create a hashed password
+framefox create register     # Create the register controller and view
+framefox create user         # Create a user entity for authentication
+```
+
+## Database Commands
+
+The CLI provides comprehensive database management commands:
+
+```bash
+framefox database create-migration    # Create new migration file
+framefox database upgrade            # Apply pending migrations
+framefox database downgrade          # Rollback migrations
+```
+
+## Cache Management
+
+Clear application cache when needed:
+
+```bash
+framefox cache clear                 # Clear all cache
+framefox cache clear --type=routes   # Clear specific cache type
+```
+
+## Debug Commands
+
+Development debugging utilities:
+
+```bash
+framefox debug router               # List all registered routes
+framefox debug config               # Display configuration values
+```
+
+## Mock Data Generation
+
+Generate test data for development:
+
+```bash
+framefox mock generate              # Generate sample data
+framefox mock load                  # Load predefined fixtures
+```
+

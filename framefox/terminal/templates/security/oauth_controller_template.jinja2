@@ -1,0 +1,30 @@
+from framefox.core.routing.decorator.route import Route
+from framefox.core.controller.abstract_controller import AbstractController
+from starlette.responses import JSONResponse
+
+"""
+{{ provider_name }} OAuth Controller
+Auto-generated minimal OAuth controller for {{ provider_name }} authentication.
+
+This controller contains only the essential routes for OAuth flow:
+- {{ login_path }}: OAuth login trigger (handled by security middleware)
+- {{ callback_path }}: OAuth callback (handled by security middleware)
+Security middleware handles all OAuth processing automatically.
+"""
+
+
+class {{ controller_class_name }}(AbstractController):
+
+    @Route("{{ login_path }}", "oauth.login", methods=["GET"])
+    async def oauth_login(self) -> JSONResponse:
+        return JSONResponse({
+            "message": "OAuth login initiated", 
+            "provider": "{{ provider_name }}"
+        })
+    
+    @Route("{{ callback_path }}", "oauth.callback", methods=["GET"])
+    async def oauth_callback(self) -> JSONResponse:
+        return JSONResponse({
+            "message": "OAuth authentication successful",
+            "provider": "{{ provider_name }}"
+        })

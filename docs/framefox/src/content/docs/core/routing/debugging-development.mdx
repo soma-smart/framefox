@@ -1,0 +1,180 @@
+---
+title: Debugging and Development Tools
+description: Learn how to debug routes, inspect routing behavior, and use development tools in Framefox applications.
+---
+import { Image } from 'astro:assets';
+import profiler from '../../../../assets/profiler-routing.png';
+
+
+This guide covers debugging techniques and development tools for troubleshooting routing issues in Framefox applications.
+
+## Route Inspection
+
+### CLI Route Debugging
+
+List all registered routes in your application for debugging:
+
+```bash
+framefox debug router
+```
+
+This command displays a formatted table with:
+- **Path**: Route URL patterns (e.g., `/users/{id}`)
+- **Route name**: Unique route identifiers (e.g., `user.show`)  
+- **HTTP Methods**: Accepted methods (e.g., `GET, POST`)
+
+The command automatically filters out internal routes (profiler, static assets, OpenAPI docs) and shows only your application routes sorted by path.
+
+**Example output:**
+```
+┌─────────────────────┬─────────────────┬──────────────┐
+│ Path                │ Route name      │ HTTP Methods │
+├─────────────────────┼─────────────────┼──────────────┤
+│ /                   │ home.index      │ GET          │
+│ /users              │ user.index      │ GET          │
+│ /users/{id}         │ user.show       │ GET          │
+│ /posts/{slug}       │ post.show       │ GET          │
+│ /api/v1/users       │ api.user.index  │ GET, POST    │
+└─────────────────────┴─────────────────┴──────────────┘
+```
+
+## Web Profiler for Routing
+
+### Accessing the Profiler
+
+In development mode, access the web profiler at `/_profiler` to analyze routing behavior:
+
+<Image src={profiler} alt="Profiler Interface" />
+
+
+
+### Route Panel Features
+
+The profiler's Route panel provides detailed routing information for each request:
+
+**Route Information:**
+- **Route Name**: The unique identifier used in your `@Route` decorator
+- **Route Pattern**: The URL pattern with parameter placeholders
+- **Controller Method**: Class and method that handled the request
+- **HTTP Methods**: Allowed methods for this route
+
+
+## Common Debugging Scenarios
+
+### Route Not Found (404 Errors)
+
+**Problem:** Route returns 404 even though the URL seems correct.
+
+**Debugging steps:**
+
+1. **Check route registration:**
+```bash
+framefox debug router | grep "user"
+```
+
+2. **Verify parameter types:**
+```python
+# If your route expects int but URL has string
+@Route("/users/{id:int}", "user.show", methods=["GET"])  # Only matches numbers
+# vs
+@Route("/users/{id}", "user.show", methods=["GET"])      # Matches any string
+```
+
+3. **Check HTTP method:**
+```python
+# Route only accepts GET
+@Route("/users", "user.index", methods=["GET"])
+# But you're making a POST request - will return 405 Method Not Allowed
+```
+
+### Parameter Type Errors
+
+**Problem:** FastAPI returns 422 validation errors.
+
+**Solution:** Ensure route parameters match method signatures:
+
+```python
+# ❌ Wrong: Route expects string but method expects int
+@Route("/users/{id}", "user.show", methods=["GET"])
+async def show(self, id: int):  # Will fail type conversion
+    pass
+
+# ✅ Correct: Types match
+@Route("/users/{id:int}", "user.show", methods=["GET"])
+async def show(self, id: int):
+    pass
+```
+
+### Route Name Conflicts
+
+**Problem:** Duplicate route names causing errors.
+
+**Debugging:**
+```bash
+framefox debug router | sort -k2  # Sort by route name to find duplicates
+```
+
+**Solution:**
+```python
+# ❌ Wrong: Duplicate names
+@Route("/web/users", "user.index", methods=["GET"])
+@Route("/api/users", "user.index", methods=["GET"])  # Conflict!
+
+# ✅ Correct: Unique names
+@Route("/web/users", "web.user.index", methods=["GET"])
+@Route("/api/users", "api.user.index", methods=["GET"])
+```
+
+## Best Practices for Debugging
+
+### 1. Comprehensive Logging
+
+Implement structured logging for better debugging:
+
+```python
+import structlog
+
+logger = structlog.get_logger()
+
+@Route("/api/users/{id}", "api.user.show", methods=["GET"])
+async def show_user(self, id: int):
+    logger.info("user_request_started", user_id=id, route="api.user.show")
+    
+    try:
+        user = await self.user_service.get_by_id(id)
+        if not user:
+            logger.warning("user_not_found", user_id=id)
+            return self.json({"error": "User not found"}, status=404)
+        
+        logger.info("user_request_completed", user_id=id, user_name=user.name)
+        return self.json({"user": user.dict()})
+        
+    except Exception as e:
+        logger.error("user_request_failed", user_id=id, error=str(e))
+        return self.json({"error": "Internal error"}, status=500)
+```
+
+### 2. Development vs Production
+
+Use different debugging levels:
+
+```python
+@Route("/api/data", "api.data", methods=["GET"])
+async def get_data(self):
+    try:
+        data = await self.data_service.get_all()
+        return self.json({"data": data})
+    except Exception as e:
+        if self.settings.debug:
+            # Development: Full error details
+            return self.json({
+                "error": str(e),
+                "traceback": traceback.format_exc(),
+                "request_id": self.request_id
+            }, status=500)
+        else:
+            # Production: Generic error message
+            logger.error(f"API error: {e}", extra={"request_id": self.request_id})
+            return self.json({"error": "Internal server error"}, status=500)
+```
+

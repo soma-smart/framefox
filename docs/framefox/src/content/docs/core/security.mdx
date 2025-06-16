@@ -1,0 +1,720 @@
+---
+title: Authentication and Security
+description: Implement comprehensive authentication and security mechanisms in your Framefox application with multiple authentication strategies
+---
+
+Framefox provides a comprehensive security system that handles authentication, authorization, and protection mechanisms automatically. The framework's security architecture is designed around intelligent CLI commands that generate production-ready authentication flows with industry-standard security practices built-in.
+
+The framework supports multiple authentication strategies including traditional form-based login, modern JWT tokens for APIs, and OAuth 2.0 integration with major providers. Each method is optimized for specific use cases while maintaining consistent security standards across your application.
+
+:::note[Security Standards]
+Framefox follows established security practices as outlined in the [OWASP Application Security Verification Standard](https://owasp.org/www-project-application-security-verification-standard/). The framework automatically handles CSRF protection, secure session management, password hashing, timing attack protection, and role-based access control.
+:::
+
+## Authentication Strategies Overview
+
+Framefox implements a multi-layered authentication architecture that supports different authentication methods depending on your application's requirements:
+
+### 🔐 Form-Based Authentication (Traditional Web Login)
+**Perfect for:** Web applications, admin panels, traditional server-rendered sites, session-based authentication
+
+Form-based authentication provides the traditional username/password login experience with server-side session management. This method includes automatic CSRF protection, secure password hashing with bcrypt, and security logging.
+
+**Key Features:**
+- Server-side session storage with SQLite backend
+- Automatic CSRF token generation and validation
+- bcrypt password hashing with configurable cost factors
+- Remember me functionality with secure token storage
+- Security event logging
+
+### 🎫 JWT API Authentication (Stateless Token-Based)
+**Perfect for:** REST APIs, mobile applications, microservices, SPA backends, distributed systems
+
+JWT authentication enables stateless applications where authentication information is encoded directly into cryptographically signed tokens. This approach eliminates the need for centralized session storage, making it ideal for horizontally scaled applications and cross-domain authentication scenarios.
+
+**[📖 Complete JWT Documentation →](/core/security/jwt/)**
+
+**Key Features:**
+- Stateless token-based authentication
+- Virtual token users without database queries
+- Automatic token validation and expiration handling
+- Bearer token authentication with Authorization headers
+- Role-based access control embedded in tokens
+- Refresh token mechanisms for security
+
+### 🔑 OAuth 2.0 Integration (Third-Party Authentication)
+**Perfect for:** Social login, SSO, multi-tenant applications, Google/Microsoft integration
+
+OAuth 2.0 authentication provides secure delegation of access through trusted third-party providers. Framefox's OAuth implementation includes advanced security features like PKCE (Proof Key for Code Exchange), state validation, and protection against modern attack vectors.
+
+**[📖 Complete OAuth Documentation →](/core/security/oauth/)**
+
+**Key Features:**
+- PKCE protection against authorization code interception
+- State parameter validation for CSRF prevention
+- OpenID Connect support for enhanced user information
+- Virtual OAuth users for simplified user management
+- Automatic token refresh and lifecycle management
+- Support for Google, Microsoft, and custom OAuth providers
+
+## Universal Setup Process
+
+All authentication methods in Framefox follow the same streamlined setup process, ensuring consistency across different authentication strategies:
+
+### Step 1: Create User Entity Foundation
+
+Every authentication method begins with creating a user entity that will serve as the foundation for user management:
+
+```bash
+framefox create user
+```
+
+This command initiates an interactive setup process:
+
+```
+What is the name of the user entity ?(snake_case)
+Entity name [user]: user
+```
+
+The command generates a user management system:
+
+**User Entity:** `src/entity/user.py`
+```python
+from framefox.core.orm.entity import Entity
+from sqlalchemy import Column, JSON
+
+class User(Entity):
+    email: str = Field(nullable=False)
+    password: str = Field(nullable=False)
+    roles: list[str] = Field(default_factory=lambda: ['ROLE_USER'], sa_column=Column(JSON))
+```
+
+**User Repository:** `src/repository/user_repository.py`
+```python
+from framefox.core.orm.repository.abstract_repository import AbstractRepository
+from src.entity.user import User
+
+class UserRepository(AbstractRepository[User]):
+    def __init__(self):
+        super().__init__(User)
+```
+
+The user entity includes built-in support for role-based access control through JSON-stored roles, secure password storage with automatic hashing, and email-based user identification for authentication flows.
+
+### Step 2: Configure Authentication Method
+
+The authentication configuration process is unified across all methods through the `create auth` command:
+
+```bash
+framefox create auth
+```
+
+This command presents an authentication type selection interface:
+
+```
+Choose an authenticator type
+
+1. Form Login (email/password web forms)
+2. JWT API (stateless API authentication)
+3. OAuth Google (Google Sign-In)
+4. OAuth Microsoft (Microsoft/Azure AD)
+5. Custom (advanced cases)
+
+Authenticator type [1]: 
+```
+
+Each option generates method-specific files while maintaining consistent patterns:
+- **Authenticator classes** that implement the authentication logic
+- **Security configuration** updates in `config/security.yaml`
+- **Environment setup** for sensitive credentials
+- **Optional controllers** for API endpoints or login forms
+- **Template files** for web-based authentication methods
+
+### Step 3: Method-Specific Configuration
+
+Depending on your chosen authentication method, the setup process branches into specialized configuration:
+
+#### For Form Login (Option 1):
+- Generates login and logout controllers
+- Creates secure login templates with CSRF protection
+- Configures session-based firewall rules
+- Sets up password verification workflows
+
+#### For JWT API (Option 2):
+- Creates stateless API authenticators
+- Configures token validation middleware  
+- Sets up JWT parameter configuration
+- Optionally generates API authentication controllers
+
+**[📖 Detailed JWT Setup Guide →](/core/jwt/)**
+
+#### For OAuth (Options 3 & 4):
+- Generates OAuth flow handlers
+- Configures provider-specific endpoints
+- Sets up callback URL processing
+- Manages OAuth state validation
+
+**[📖 Detailed OAuth Setup Guide →](/core/oauth/)**
+
+## Form-Based Authentication Deep Dive
+
+Form-based authentication represents the traditional web application login experience, enhanced with modern security practices and automatic protection mechanisms.
+
+### Complete CLI Workflow
+
+The form-based authentication setup process:
+
+```bash
+framefox create auth
+# Choose an authenticator type
+Authenticator type [1]: 1
+
+# Choose an authenticator name
+Choose a name for your form authenticator [default: default]
+Authenticator name (snake_case) [default]: login
+
+# Choose a user provider (entity)
+What is the name of the entity that will be used as the provider?
+Provider name [user]: user
+```
+
+### Generated File Architecture
+
+The CLI command creates an authentication system with multiple interconnected components:
+
+#### 1. Form Authenticator Implementation
+**File:** `src/security/login_authenticator.py`
+
+```python
+from typing import Optional
+from fastapi import Request
+from fastapi.responses import RedirectResponse
+from framefox.core.security.passport.passport import Passport
+from framefox.core.security.passport.user_badge import UserBadge
+from framefox.core.security.passport.password_credentials import PasswordCredentials
+from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
+from framefox.core.security.authenticator.abstract_authenticator import AbstractAuthenticator
+from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+
+class LoginAuthenticator(AbstractAuthenticator, AuthenticatorInterface):
+    """
+    Form-based authenticator for traditional web applications.
+    
+    This authenticator handles email/password authentication with security
+    features including CSRF protection, secure session management,
+    and automatic password verification using bcrypt hashing.
+    """
+    
+    async def authenticate(self, request: Request) -> Optional[Passport]:
+        form = await request.form()
+        email = form.get("email")
+        
+        passport = Passport( 
+            user_badge=UserBadge(email),
+            password_credentials=PasswordCredentials(form.get("password")),
+            csrf_token_badge=CsrfTokenBadge(form.get("csrf_token")),
+        )
+        return passport
+
+    def on_auth_success(self, token: str) -> RedirectResponse:
+        return RedirectResponse(url="/dashboard", status_code=303)
+        
+    def on_auth_failure(self, request: Request, reason: str = None) -> RedirectResponse:
+        return RedirectResponse(url="/login", status_code=303)
+```
+
+#### 2. Login Controller with Security Integration
+**File:** `src/controller/login_controller.py`
+
+```python
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
+from framefox.core.security.handlers.security_context_handler import SecurityContextHandler
+
+class LoginController(AbstractController):
+    def __init__(self):
+        self.security_context = SecurityContextHandler()
+        
+    @Route("/login", "security.login", methods=["GET", "POST"])
+    async def login(self):
+        auth_error = self.security_context.get_last_authentication_error()
+        if auth_error:
+            self.flash("error", auth_error)
+            
+        last_username = self.security_context.get_last_username()
+        
+        return self.render("security/login.html", {
+            "last_username": last_username
+        })
+
+    @Route("/logout", "security.logout", methods=["GET"])
+    async def logout(self):
+        return self.redirect("/")
+```
+
+#### 3. Secure Login Template with CSRF Protection
+**File:** `templates/security/login.html`
+
+```html
+{% extends "base.html" %} 
+{% block title %}Login{% endblock %} 
+{% block content %}
+
+<div class="login-container">
+    <h1>Login to Your Account</h1>
+    
+    {% if get_flashed_messages('error') %}
+        <div class="alert alert-error">
+            {% for message in get_flashed_messages('error') %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <form action="/login" method="post" class="login-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input 
+                type="email" 
+                id="email"
+                name="email" 
+                value="{{ last_username or '' }}" 
+                required 
+                autocomplete="email"
+                class="form-control"
+            />
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+                type="password" 
+                id="password"
+                name="password" 
+                required 
+                autocomplete="current-password"
+                class="form-control"
+            />
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Login</button>
+            <a href="/register" class="btn btn-link">Create Account</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+```
+
+#### 4. Security Configuration Integration
+**File:** `config/security.yaml` (automatically updated)
+
+```yaml
+security:
+  providers:
+    app_user_provider:
+      entity:
+        class: src.entity.user.User
+        property: email
+
+  firewalls:
+    main:
+      provider: app_user_provider
+      authenticator: src.security.login_authenticator:LoginAuthenticator
+      login_path: /login
+      logout_path: /logout
+      denied_redirect: /
+      remember_me: true
+      session_lifetime: 3600
+
+  access_control:
+    - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/dashboard, roles: ROLE_USER }
+    - { path: ^/profile, roles: ROLE_USER }
+    - { path: ^/admin, roles: ROLE_ADMIN }
+```
+
+### Security Features
+
+Form-based authentication in Framefox includes security features that operate automatically:
+
+#### CSRF Protection Mechanism
+Cross-Site Request Forgery protection is automatically enabled for all forms:
+
+- **Automatic token generation** with cryptographically secure random values
+- **Double-submit cookie pattern** for enhanced security
+- **Token validation** on all state-changing requests
+- **Secure token comparison** using timing-attack-resistant methods
+
+#### Password Security Implementation
+Password handling follows industry best practices:
+
+- **bcrypt hashing** with automatic salt generation and configurable cost factors
+- **Timing attack protection** through constant-time comparison algorithms
+- **Password strength validation** with customizable policies
+
+## Role-Based Access Control (RBAC) System
+
+Framefox implements a Role-Based Access Control system that provides permission management through role assignment and path-based access rules.
+
+### RBAC Architecture Overview
+
+The RBAC system operates on the principle of assigning permissions to roles rather than individual users, then assigning users to appropriate roles. This approach provides better security, easier maintenance, and clearer permission structures throughout your application.
+
+**Core RBAC Components:**
+1. **Role Definition**: Roles stored as JSON arrays in user entities
+2. **Access Rules**: Path-based protection rules in security configuration
+3. **Automatic Enforcement**: Firewall middleware enforces role requirements
+4. **Programmatic Checks**: Controller methods can verify roles explicitly
+5. **Template Integration**: Conditional content display based on user roles
+
+### Role Definition and Storage
+
+Roles are stored as JSON arrays within the user entity:
+
+```python title="src/entity/user.py"
+class User(Entity):
+    id: int | None = Field(default=None, primary_key=True)
+    email: str = Field(nullable=False)
+    password: str = Field(nullable=False)
+    roles: list[str] = Field(
+        default_factory=lambda: ['ROLE_USER'], 
+        sa_column=Column(JSON)
+    )
+    created_at: datetime = Field(default_factory=datetime.now)
+    last_login: datetime | None = Field(default=None)
+```
+
+**Standard Roles:**
+- `ROLE_USER`: Basic authenticated user permissions
+- `ROLE_MODERATOR`: Content moderation capabilities
+- `ROLE_ADMIN`: Administrative access to system features
+- `ROLE_SUPER_ADMIN`: Full system access including user management
+
+### Access Control Rule Configuration
+
+Access control rules are defined in `config/security.yaml` and are evaluated in order from most specific to most general:
+
+```yaml title="config/security.yaml"
+security:
+  access_control:
+    # Public routes - accessible without authentication
+    - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/api/auth/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/api/auth/refresh, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    
+    # Specific admin routes
+    - { path: ^/admin/users/create, roles: ROLE_SUPER_ADMIN }
+    - { path: ^/admin/users, roles: [ROLE_ADMIN, ROLE_SUPER_ADMIN] }
+    - { path: ^/admin, roles: ROLE_ADMIN }
+    
+    # API access
+    - { path: ^/api/admin, roles: ROLE_ADMIN }
+    - { path: ^/api/users, roles: ROLE_USER }
+    
+    # User routes
+    - { path: ^/profile, roles: ROLE_USER }
+    - { path: ^/dashboard, roles: ROLE_USER }
+```
+
+### Programmatic Role Verification
+
+Controllers can perform explicit role checks for complex authorization logic:
+
+```python title="src/controllers/admin_controller.py"
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
+from framefox.core.di.service_container import ServiceContainer
+
+class AdminController(AbstractController):
+    @Route("/admin/dashboard", "admin.dashboard")
+    async def dashboard(self):
+        user = self.get_user()
+        if not user:
+            return self.redirect("/login")
+            
+        container = ServiceContainer()
+        access_manager = container.get("framefox.core.security.access_manager.AccessManager")
+        
+        if not access_manager.is_allowed(user.roles, ["ROLE_ADMIN"]):
+            return self.json({
+                "message": "Administrative privileges required"
+            }, status_code=403)
+        
+        user_count = await self.get_repository("User").count()
+        
+        return self.render("admin/dashboard.html", {
+            "user_count": user_count,
+            "user": user
+        })
+```
+
+### Template Integration with Role-Based Content
+
+Templates can display conditional content based on user authentication status and role assignments:
+
+```html title="templates/base.html"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Framefox Application{% endblock %}</title>
+</head>
+<body>
+    <nav class="main-navigation">
+        <div class="nav-brand">
+            <a href="/">Framefox App</a>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="/" class="nav-link">Home</a>
+            
+            {% if current_user() %}
+                <div class="user-menu">
+                    <span class="user-greeting">Welcome, {{ current_user.email }}!</span>
+                    
+                    <a href="{{ url_for('user.dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ url_for('user.profile') }}" class="nav-link">Profile</a>
+                    
+                    {% if is_granted('ROLE_MODERATOR') %}
+                        <a href="{{ url_for('moderate.reports') }}" class="nav-link">Review Reports</a>
+                    {% endif %}
+                    
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin Dashboard</a>
+                        <a href="{{ url_for('admin.users') }}" class="nav-link">Manage Users</a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('security.logout') }}" class="nav-link logout">Logout</a>
+                </div>
+            {% else %}
+                <div class="auth-links">
+                    <a href="{{ url_for('security.login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('security.register') }}" class="nav-link">Register</a>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+    
+    <main class="main-content">
+        {% if get_flashed_messages() %}
+            <div class="flash-messages">
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="main-footer">
+        <p>&copy; 2024 Framefox Application. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+```
+
+## Security Features and Protection Mechanisms
+
+Framefox implements a security architecture with multiple layers of protection that operate automatically.
+
+### Firewall Middleware Architecture
+
+The `FirewallMiddleware` serves as the central security enforcement point, providing protection for all application routes:
+
+**Automatic Protection Features:**
+- **Route-based authentication** enforcement according to firewall configurations
+- **Access control verification** using role-based rules
+- **CSRF token validation** for all state-changing requests
+- **Session management** with automatic lifecycle handling
+- **Security context management** for user state tracking
+- **Attack prevention** including timing attack protection
+
+**Security Processing Flow:**
+1. **Request Interception**: All incoming requests are processed by the firewall
+2. **Authentication Check**: Appropriate authenticator is invoked based on firewall configuration
+3. **Authorization Verification**: User roles are checked against access control rules
+4. **Security Context**: User information is injected into request context for controllers
+5. **Attack Prevention**: Various security checks and validations are performed
+
+### CSRF Protection Implementation
+
+Cross-Site Request Forgery protection operates through a multi-layered approach:
+
+```html title="templates/forms/secure_form.html"
+<form action="/secure-action" method="post" class="secure-form">
+    {{ csrf_token() }}
+    
+    <div class="form-group">
+        <label for="sensitive_data">Sensitive Information</label>
+        <input type="text" id="sensitive_data" name="sensitive_data" required />
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Submit Secure Action</button>
+</form>
+```
+
+**CSRF Protection Features:**
+- **Automatic token generation** using cryptographically secure random number generation
+- **Double-submit cookie pattern** for enhanced security validation
+- **Token validation** on all POST, PUT, PATCH, and DELETE requests
+- **Secure token comparison** using constant-time algorithms to prevent timing attacks
+- **Token rotation** on successful authentication to prevent token reuse attacks
+
+### Password Security and Hashing
+
+Password handling implements multiple security layers following industry best practices:
+
+```python title="src/security/password_management.py"
+from framefox.core.security.password.password_hasher import PasswordHasher
+from framefox.core.security.password.password_validator import PasswordValidator
+
+class PasswordManagement:
+    def __init__(self):
+        self.hasher = PasswordHasher()
+        self.validator = PasswordValidator()
+    
+    def hash_password(self, password: str) -> str:
+        return self.hasher.hash(password)
+    
+    def verify_password(self, password: str, hashed_password: str) -> bool:
+        return self.hasher.verify(password, hashed_password)
+    
+    def validate_password_strength(self, password: str) -> dict:
+        return self.validator.validate(password)
+```
+
+**Password Security Features:**
+- **bcrypt hashing** with automatic salt generation and configurable cost factors
+- **Timing attack protection** through constant-time comparison algorithms
+- **Password strength validation** with customizable policies and entropy analysis
+- **Common password detection** using password blacklists
+
+## Multi-Firewall Security Architecture
+
+Framefox supports multi-firewall configurations that allow different security rules for different application areas:
+
+```yaml title="config/security.yaml"
+security:
+  firewalls:
+    # API firewall with JWT token authentication
+    api:
+      authenticator: src.security.jwt_authenticator:JwtAuthenticator
+      provider: app_user_provider
+      
+    # Admin area with enhanced security requirements
+    admin:
+      authenticator: src.security.login_authenticator:LoginAuthenticator
+      provider: app_user_provider
+      login_path: /admin/login
+      logout_path: /admin/logout
+      remember_me: false
+      session_lifetime: 1800
+      
+    # OAuth authentication for external integrations
+    oauth:
+      authenticator: src.security.oauth_authenticator:OauthAuthenticator
+      login_path: /auth/oauth
+      logout_path: /logout
+      denied_redirect: /
+      oauth:
+        client_id: ${OAUTH_CLIENT_ID}
+        client_secret: ${OAUTH_CLIENT_SECRET}
+        callback_path: /oauth/callback
+        
+    # Main application with standard security
+    main:
+      authenticator: src.security.login_authenticator:LoginAuthenticator
+      provider: app_user_provider
+      login_path: /login
+      logout_path: /logout
+      remember_me: true
+      session_lifetime: 3600
+```
+
+This multi-firewall configuration enables:
+- **API authentication** using stateless JWT tokens for API endpoints
+- **Enhanced admin security** with shorter session timeouts and stricter policies
+- **OAuth integration** for external service authentication
+- **Standard web authentication** for regular application use
+
+## User Registration System
+
+User registration extends the authentication system with user lifecycle management:
+
+### Registration Setup
+
+```bash
+framefox create register
+# Choose user entity for registration:
+# > user
+```
+
+This command generates a registration system:
+
+**Registration Controller:** `src/controller/register_controller.py`
+```python
+from fastapi import Request
+from src.entity.user import User
+from framefox.core.routing.decorator.route import Route
+from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.security.password.password_hasher import PasswordHasher
+from framefox.core.controller.abstract_controller import AbstractController
+
+class RegisterController(AbstractController):
+    def __init__(self):
+        self.entity_manager = EntityManager()
+        self.password_hasher = PasswordHasher()
+
+    @Route("/register", "security.register", methods=["GET", "POST"])
+    async def register(self, request: Request):
+        if request.method == "POST":
+            return await self._process_registration(request)
+        
+        return self.render("security/register.html")
+    
+    async def _process_registration(self, request: Request):
+        form = await request.form()
+        email = form.get("email")
+        password = form.get("password")
+        
+        # Basic validation
+        if not email or not password:
+            self.flash("All fields are required.", "error")
+            return self.render("security/register.html")
+        
+        # Check if user already exists
+        existing_user = await self.get_repository("User").find_by({"email": email})
+        if existing_user:
+            self.flash("User with this email already exists.", "error")
+            return self.render("security/register.html")
+        
+        # Create new user
+        user = User()
+        user.email = email
+        user.password = self.password_hasher.hash(password)
+        user.roles = ["ROLE_USER"]
+        
+        await self.entity_manager.persist(user)
+        await self.entity_manager.commit()
+        
+        self.flash("Account created successfully! You can now log in.", "success")
+        return self.redirect("/login")
+```
+
+## External Resources and Further Reading
+
+- **[JWT Authentication Documentation →](/core/jwt/)** - Complete guide to stateless API authentication with JWT tokens
+- **[OAuth 2.0 Integration Documentation →](/core/oauth/)** - OAuth implementation with Google, Microsoft, and custom providers
+- [OWASP Application Security Verification Standard](https://owasp.org/www-project-application-security-verification-standard/) - Security standards and best practices
+- [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html) - Authentication implementation guidelines
+- [CSRF Prevention Guidelines](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) - CSRF protection best practices
+- [Session Management Guidelines](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) - Secure session handling practices
+- [Password Storage Guidelines](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) - Secure password hashing and storage

@@ -1,0 +1,13 @@
+debug:
+  profiler:
+    enabled: true # Enable the profiler
+    max_files: 1000 # Maximum number of profile files per day
+    retention_days: 7 # Number of days to retain profiles
+    sampling_rate: 1.0 # Percentage of requests to profile (0.0 to 1.0)
+    max_memory: 50 # Maximum profiles in memory
+  logging:
+    level: "DEBUG" # Log level when dev (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    file_path: "var/log/app.log"
+    max_size: 10 # Maximum file size
+    backup_count: 5 # Number of backup files
+

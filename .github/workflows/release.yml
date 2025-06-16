@@ -1,0 +1,130 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Requis pour l'authentification OIDC avec PyPI
+      contents: read   # Requis pour checkout du code
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Extract version from release tag
+        id: get_version
+        run: |
+          echo "DEBUG: GITHUB_REF complet = $GITHUB_REF"
+          
+          # Récupère la version depuis le tag
+          RAW_VERSION=$(echo "$GITHUB_REF" | sed 's/refs\/tags\///')
+          RAW_VERSION=$(echo "$RAW_VERSION" | sed 's/^v//')
+          
+          # Conversion vers PEP 440
+          case "$RAW_VERSION" in
+            *-*-rc*)
+              # 2.0.0-Fennec-rc1 → 2.0.0rc1
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-.*-rc([0-9]+)/\1rc\2/')
+              ;;
+            *-rc*)
+              # 2.0.0-rc1 → 2.0.0rc1
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-rc([0-9]+)/\1rc\2/')
+              ;;
+            *-alpha|*-beta|*-dev|*-*)
+              # 2.0.0-alpha → 2.0.0 (supprime tout après le premier tiret)
+              VERSION=$(echo "$RAW_VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)-.*/\1/')
+              ;;
+            *)
+              # Version normale
+              VERSION="$RAW_VERSION"
+              ;;
+          esac
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Tag original: $RAW_VERSION"
+          echo "📦 Version PEP440: $VERSION"
+
+
+      - name: Update version in pyproject.toml
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          echo "🔄 Mise à jour de la version vers: $VERSION"
+          
+          # Debug - vérifier les valeurs
+          echo "DEBUG: GITHUB_REF=$GITHUB_REF"
+          echo "DEBUG: VERSION extraite=$VERSION"
+          
+          # Remplace la version dans pyproject.toml
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+          
+          # Vérifie que la modification a été effectuée
+          echo "✅ Nouvelle version dans pyproject.toml:"
+          grep "^version = " pyproject.toml
+          
+          # Validation supplémentaire
+          if ! grep -q "^version = \"$VERSION\"" pyproject.toml; then
+            echo "❌ Erreur: La version n'a pas été mise à jour correctement"
+            exit 1
+          fi
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: |
+          echo "🔨 Construction du package..."
+          python -m build
+
+      - name: Check package
+        run: |
+          echo "🔍 Vérification du package..."
+          python -m twine check dist/*
+          echo "📋 Contenu du package:"
+          ls -la dist/
+
+      - name: Determine publication target
+        id: target
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          if [[ "$VERSION" == *"rc"* ]]; then
+            echo "target=testpypi" >> $GITHUB_OUTPUT
+            echo "🧪 Pre-release détectée ($VERSION) → Publication sur TestPyPI"
+          else
+            echo "target=pypi" >> $GITHUB_OUTPUT
+            echo "🚀 Version stable ($VERSION) → Publication sur PyPI"
+          fi
+
+      - name: Publish to TestPyPI (OIDC)
+        if: steps.target.outputs.target == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Publish to PyPI (OIDC)
+        if: steps.target.outputs.target == 'pypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create success comment
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          TARGET=${{ steps.target.outputs.target }}
+          
+          if [[ "$TARGET" == "pypi" ]]; then
+            echo "✅ Package framefox $VERSION publié avec succès sur PyPI!"
+            echo "🔗 Lien: https://pypi.org/project/framefox/$VERSION/"
+            echo "📦 Installation: pip install framefox==$VERSION"
+          else
+            echo "✅ Package framefox $VERSION publié avec succès sur TestPyPI!"
+            echo "🔗 Lien: https://test.pypi.org/project/framefox/$VERSION/"
+            echo "📦 Installation: pip install --index-url https://test.pypi.org/simple/ framefox==$VERSION"
+          fi

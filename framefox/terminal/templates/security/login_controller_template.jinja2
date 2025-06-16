@@ -1,0 +1,23 @@
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.routing.decorator.route import Route
+from framefox.core.security.handlers.security_context_handler import SecurityContextHandler
+
+class LoginController(AbstractController):
+    def __init__(self):
+        self.security_context = SecurityContextHandler()
+        
+    @Route("/login", "security.login", methods=["GET", "POST"])
+    async def login(self):
+
+        auth_error = self.security_context.get_last_authentication_error()
+        if auth_error:
+            self.flash("error", auth_error)
+        last_username = self.security_context.get_last_username()
+        
+        return self.render("security/login.html", {"last_username": last_username})
+   
+
+    @Route("/logout", "security.logout", methods=["GET"])
+    async def logout(self):
+        return self.redirect("/")
+{% raw %}{% endraw %}

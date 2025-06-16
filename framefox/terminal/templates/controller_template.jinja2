@@ -1,0 +1,10 @@
+from framefox.core.routing.decorator.route import Route
+from framefox.core.controller.abstract_controller import AbstractController
+from starlette.responses import HTMLResponse
+
+
+class {{ controller_class_name }}(AbstractController):
+    @Route("/{{ controller_file_name }}", "{{ controller_file_name }}.index", methods=["GET"])
+    async def index(self) -> HTMLResponse:
+        return self.render("{{ view_name }}", {"controller_name":"{{ controller_class_name }}"})
+{% raw %}{% endraw %}
