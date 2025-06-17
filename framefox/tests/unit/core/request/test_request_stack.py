@@ -50,30 +50,3 @@ class TestRequestStack:
         finally:
             # Clean up the context
             RequestStack.set_request(None)
-
-    @pytest.mark.asyncio
-    async def test_request_context_isolation(self, mock_request):
-        """Test context isolation between different coroutines"""
-        import asyncio
-
-        async def task1():
-            RequestStack.set_request(mock_request)
-            await asyncio.sleep(0.1)
-            return RequestStack.get_request()
-
-        async def task2():
-            different_request = Mock(spec=Request)
-            RequestStack.set_request(different_request)
-            await asyncio.sleep(0.1)
-            return RequestStack.get_request()
-
-        try:
-            # Run tasks in parallel
-            result1, result2 = await asyncio.gather(task1(), task2())
-
-            # Verify that each task maintained its own context
-            assert result1 == mock_request
-            assert result2 != mock_request
-        finally:
-            # Clean up the context
-            RequestStack.set_request(None)

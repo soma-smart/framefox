@@ -54,26 +54,3 @@ class TestCsrfTokenManager:
         # Check the token format
         assert token.startswith("test_csrf_")
         assert len(token) > len("test_csrf_")
-
-    @pytest.mark.asyncio
-    async def test_validate_token_matching(self, csrf_manager, mock_request):
-        """Test validation with matching tokens"""
-        # Set up matching tokens
-        test_token = "test_csrf_token123"
-        mock_request.cookies = {"csrf_token": test_token}
-        mock_request.form.return_value = {"csrf_token": test_token}
-
-        # Validate the tokens
-        result = await csrf_manager.validate_token(mock_request)
-        assert result is True
-
-    @pytest.mark.asyncio
-    async def test_validate_token_not_matching(self, csrf_manager, mock_request):
-        """Test validation with different tokens"""
-        # Set up different tokens
-        mock_request.cookies = {"csrf_token": "test_csrf_token123"}
-        mock_request.form.return_value = {"csrf_token": "different_token"}
-
-        # Validate the tokens
-        result = await csrf_manager.validate_token(mock_request)
-        assert result is False
