@@ -32,7 +32,7 @@ Form-based authentication provides the traditional username/password login exper
 
 JWT authentication enables stateless applications where authentication information is encoded directly into cryptographically signed tokens. This approach eliminates the need for centralized session storage, making it ideal for horizontally scaled applications and cross-domain authentication scenarios.
 
-**[📖 Complete JWT Documentation →](core/security/jwt/)**
+**[📖 Complete JWT Documentation →](jwt/)**
 
 **Key Features:**
 - Stateless token-based authentication
@@ -47,7 +47,7 @@ JWT authentication enables stateless applications where authentication informati
 
 OAuth 2.0 authentication provides secure delegation of access through trusted third-party providers. Framefox's OAuth implementation includes advanced security features like PKCE (Proof Key for Code Exchange), state validation, and protection against modern attack vectors.
 
-**[📖 Complete OAuth Documentation →](core/security/oauth/)**
+**[📖 Complete OAuth Documentation →](oauth/)**
 
 **Key Features:**
 - PKCE protection against authorization code interception
@@ -146,7 +146,7 @@ Depending on your chosen authentication method, the setup process branches into 
 - Sets up JWT parameter configuration
 - Optionally generates API authentication controllers
 
-**[📖 Detailed JWT Setup Guide →](core/jwt/)**
+**[📖 Detailed JWT Setup Guide →](jwt/)**
 
 #### For OAuth (Options 3 & 4):
 - Generates OAuth flow handlers
@@ -154,7 +154,7 @@ Depending on your chosen authentication method, the setup process branches into 
 - Sets up callback URL processing
 - Manages OAuth state validation
 
-**[📖 Detailed OAuth Setup Guide →](core/oauth/)**
+**[📖 Detailed OAuth Setup Guide →](oauth/)**
 
 ## Form-Based Authentication Deep Dive
 
@@ -711,8 +711,8 @@ class RegisterController(AbstractController):
 
 ## External Resources and Further Reading
 
-- **[JWT Authentication Documentation →](core/jwt/)** - Complete guide to stateless API authentication with JWT tokens
-- **[OAuth 2.0 Integration Documentation →](core/oauth/)** - OAuth implementation with Google, Microsoft, and custom providers
+- **[JWT Authentication Documentation →](jwt/)** - Complete guide to stateless API authentication with JWT tokens
+- **[OAuth 2.0 Integration Documentation →](oauth/)** - OAuth implementation with Google, Microsoft, and custom providers
 - [OWASP Application Security Verification Standard](https://owasp.org/www-project-application-security-verification-standard/) - Security standards and best practices
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html) - Authentication implementation guidelines
 - [CSRF Prevention Guidelines](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) - CSRF protection best practices
