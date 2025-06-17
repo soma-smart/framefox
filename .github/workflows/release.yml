@@ -75,6 +75,15 @@ jobs:
             exit 1
           fi
 
+      - name: Check if version exists
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          if pip index versions framefox 2>/dev/null | grep -q "$VERSION"; then
+            echo "❌ Version $VERSION already exists on PyPI"
+            exit 1
+          fi
+          echo "✅ Version $VERSION is available"
+
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
