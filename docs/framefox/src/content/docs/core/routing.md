@@ -112,6 +112,36 @@ async def health_check(self):
 - Add proper HTTP headers for static assets
 :::
 
+### Service Discovery
+
+Services are automatically discovered and registered through Framefox's comprehensive scanning system:
+
+**Discovery Process:**
+1. **Framework Core**: All modules in `framefox.core.*` are scanned immediately
+2. **Controllers**: Classes in `src/controller/` are always discovered during registration
+3. **Background Scan**: `src/service/` and `src/repository/` are scanned asynchronously
+4. **Caching**: Discovered services are cached for performance
+
+**Exclusions:**
+- Entity directories (`entity`, `entities`, `migration`, `migrations`)
+- Test directories (`test`, `tests`, `__pycache__`)
+- Static assets and templates
+
+### Error Types
+
+The injection system can raise several specific exceptions:
+
+```python
+# Service container errors
+- ServiceNotFoundError: Service not registered and cannot be auto-registered
+- ServiceInstantiationError: Failed to create service instance
+- CircularDependencyError: Circular dependency detected
+
+# Route-level errors  
+- RuntimeError: Generic injection failure with descriptive message
+```
+
+
 ### Parameterized Routes
 
 Parameterized routes capture dynamic segments from the URL and pass them as arguments to your controller methods. This enables you to build flexible, data-driven applications that can handle variable content based on URL parameters.
