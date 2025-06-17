@@ -71,7 +71,7 @@ export default defineConfig({
         //   ],
         // },
       ],
-      customCss: ["./framefox/src/styles/custom.css"],
+      customCss: ["./src/styles/custom.css"],
     }),
   ],
 });
