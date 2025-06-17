@@ -5,7 +5,7 @@ import starlight from "@astrojs/starlight";
 // https://astro.build/config
 export default defineConfig({
   site: "https://soma-smart.github.io",
-  base: "/framefox/",
+  base: "/framefox",
   integrations: [
     starlight({
       title: "Framefox",
