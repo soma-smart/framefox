@@ -411,7 +411,7 @@ If you discover a security vulnerability:
 
 ## Getting Help
 
-- **Documentation**: Check the [official documentation](https://soma-smart.github.io/doc-framefox/)
+- **Documentation**: Check the [official documentation](https://soma-smart.github.io/framefox/)
 - **Issues**: Search existing [issues](../../issues) for similar problems
 - **Discussions**: Use GitHub Discussions for questions and ideas
 

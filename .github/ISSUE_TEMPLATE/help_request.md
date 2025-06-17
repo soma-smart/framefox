@@ -21,7 +21,7 @@ Describe what you've already attempted.
 ```
 
 ## Documentation Checked
-- [ ] I've checked the [official documentation](https://soma-smart.github.io/doc-framefox/)
+- [ ] I've checked the [official documentation](https://soma-smart.github.io/framefox/)
 - [ ] I've searched existing [issues](../../issues) and discussions
 
 ## Environment
