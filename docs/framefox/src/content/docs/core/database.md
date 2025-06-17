@@ -1034,8 +1034,8 @@ This approach allows you to recover from migration issues and restart the migrat
 
 ## Related Topics
 
-**[🔧 How to configure database for production environments?](/core/database/advanced-configuration)**  
-**[🔗 How to create complex entity relationships and patterns?](/core/database/advanced-relationships)**  
-**[🔍 How to build advanced queries and repository patterns?](/core/database/query-builder-patterns)**  
-**[⚡ How to manage transactions and optimize performance?](/core/database/entity-manager-transactions)**  
-**[📦 How to handle database migrations and commands?](/core/database/migrations-commands)**
+**[🔧 How to configure database for production environments?](core/database/advanced-configuration/)**  
+**[🔗 How to create complex entity relationships and patterns?](core/database/advanced-relationships/)**  
+**[🔍 How to build advanced queries and repository patterns?](core/database/query-builder-patterns/)**  
+**[⚡ How to manage transactions and optimize performance?](core/database/entity-manager-transactions/)**  
+**[📦 How to handle database migrations and commands?](core/database/migrations-commands/)**
