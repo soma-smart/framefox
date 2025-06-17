@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    compatibility-score: 70
+    versioning-strategy: auto
+    reviewers:
+      - "RayenBou"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "python"
+    ignore:
+      - dependency-name: "fastapi"
+        update-types: ["version-update:semver-major"]
