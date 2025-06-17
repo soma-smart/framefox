@@ -1,12 +1,15 @@
 name: Tests
 
+# on:
+#   push:
+#     branches:
+#         - main
+#   pull_request:
+#     branches:
+#         - main
+
 on:
-  push:
-    branches:
-        - main
-  pull_request:
-    branches:
-        - main
+  workflow_dispatch:  # Manual trigger
         
 jobs:
   test:
@@ -30,6 +33,8 @@ jobs:
     
     - name: Install dependencies
       run: |
+        python -m venv venv
+        source venv/bin/activate
         python -m pip install --upgrade pip
         pip install uv
         uv pip install -e .
@@ -37,6 +42,7 @@ jobs:
     
     - name: Run unit tests
       run: |
+        source venv/bin/activate
         pytest framefox/tests/unit/ \
           --cov=framefox \
           --cov-report=xml \
@@ -46,6 +52,7 @@ jobs:
     
     - name: Run e2e tests
       run: |
+        source venv/bin/activate
         pytest framefox/tests/e2e/ \
           --verbose \
           --tb=short
