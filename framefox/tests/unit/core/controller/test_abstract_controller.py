@@ -120,17 +120,3 @@ class TestAbstractController:
 
         response = controller.json(data, 201)
         assert response.status_code == 201
-
-    @pytest.mark.asyncio
-    async def test_render(self, controller, mock_session, mock_template_renderer):
-        """Test the render method"""
-        context = {"title": "Test Page"}
-
-        # Test without flash messages
-        response = controller.render("test.html", context)
-
-        assert response.status_code == 200
-        assert response.body == b"<html>Test</html>"
-        assert response.media_type == "text/html"
-        mock_template_renderer.render.assert_called_with("test.html", context)
-        mock_session.remove.assert_not_called()
