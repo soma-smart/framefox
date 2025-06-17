@@ -715,6 +715,6 @@ async def show(self, id: int):
 
 ## Related Topics
 
-**[🔧 How to implement advanced routing patterns and middleware?](/core/routing/advanced-patterns)**  
-**[🌐 How to build complete RESTful APIs with CRUD operations?](/core/routing/restful-apis)**  
-**[🐛 How to debug routing issues and inspect route behavior?](/core/routing/debugging-development)**  
+**[🔧 How to implement advanced routing patterns and middleware?](core/routing/advanced-patterns/)**  
+**[🌐 How to build complete RESTful APIs with CRUD operations?](core/routing/restful-apis/)**  
+**[🐛 How to debug routing issues and inspect route behavior?](core/routing/debugging-development/)**  

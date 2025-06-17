@@ -764,5 +764,5 @@ The generated controllers include comprehensive error handling, proper HTTP stat
 
 ## Related Topics
 
-**[❓ How to validate request data in Framefox controllers?](/core/controllers/request-validation)**  
-**[📁 How to upload files using Framefox services?](/core/controllers/file-upload)**  
+**[❓ How to validate request data in Framefox controllers?](core/controllers/request-validation/)**  
+**[📁 How to upload files using Framefox services?](core/controllers/file-upload/)**  
