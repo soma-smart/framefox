@@ -23,28 +23,28 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: "https://github.com/soma-smart/framefox/edit/main/docs/",
+        baseUrl: "https://github.com/soma-smart/framefox/edit/main/docs/framefox/src/content/docs/",
       },
       lastUpdated: true,
       sidebar: [
         {
           label: "Getting Started",
           items: [
-            { label: "Introduction", slug: "introduction" },
-            { label: "Quick Start Guide", slug: "quick_start" },
-            { label: "Installation", slug: "installation" },
+            { label: "Introduction", slug: "framefox/introduction" },
+            { label: "Quick Start Guide", slug: "framefox/quick_start" },
+            { label: "Installation", slug: "framefox/installation" },
           ],
         },
         {
           label: "Core Documentation",
           items: [
-            { label: "Controllers", slug: "core/controllers" },
-            { label: "Routing System", slug: "core/routing" },
-            { label: "Templates and Views", slug: "core/templates" },
-            { label: "Database and ORM", slug: "core/database" },
-            { label: "Forms and Validation", slug: "core/forms" },
-            { label: "Authentication and Security", slug: "core/security" },
-            { label: "Web Profiler", slug: "core/profiler" },
+            { label: "Controllers", slug: "framefox/core/controllers" },
+            { label: "Routing System", slug: "framefox/core/routing" },
+            { label: "Templates and Views", slug: "framefox/core/templates" },
+            { label: "Database and ORM", slug: "framefox/core/database" },
+            { label: "Forms and Validation", slug: "framefox/core/forms" },
+            { label: "Authentication and Security", slug: "framefox/core/security" },
+            { label: "Web Profiler", slug: "framefox/core/profiler" },
           ],
         },
         {
@@ -52,10 +52,10 @@ export default defineConfig({
           items: [
             {
               label: "Terminal",
-              slug: "advanced_features/terminal",
+              slug: "framefox/advanced_features/terminal",
             },
 
-            { label: "Deployment", slug: "advanced_features/deployment" },
+            { label: "Deployment", slug: "framefox/advanced_features/deployment" },
           ],
         },
         // {
@@ -65,9 +65,9 @@ export default defineConfig({
         // {
         //   label: "Examples",
         //   items: [
-        //     // { label: "Blog Application", slug: "examples/blog" },
-        //     // { label: "REST API", slug: "examples/api" },
-        //     // { label: "Complete Authentication", slug: "examples/auth" },
+        //     // { label: "Blog Application", slug: "framefox/examples/blog" },
+        //     // { label: "REST API", slug: "framefox/examples/api" },
+        //     // { label: "Complete Authentication", slug: "framefox/examples/auth" },
         //   ],
         // },
       ],
