@@ -352,6 +352,150 @@ async def profile(self):
         "auth_method": "oauth" if hasattr(current_user, 'provider') else "standard"
     })
 ```
+## Dependency Injection
+
+Dependency injection is a design pattern that enables loose coupling between components by automatically providing required dependencies rather than having objects create their own dependencies. In Framefox controllers, this pattern eliminates manual service instantiation and promotes testable, maintainable code architecture.
+
+The framework implements constructor injection through Python's type hint system, analyzing method signatures at runtime to resolve and inject appropriate service instances. This approach follows the Inversion of Control principle, where the framework manages object creation and lifetime rather than your application code.
+
+:::tip[Design Pattern Benefits]
+Dependency injection promotes the SOLID principles by reducing coupling between classes, making your code more modular and easier to test. Services can be easily mocked or replaced without modifying controller code.
+:::
+
+:::note[Framework Integration]
+Framefox's dependency injection integrates seamlessly with FastAPI's parameter resolution system, automatically distinguishing between injectable services and framework-native types like Request objects and path parameters.
+:::
+
+### Automatic Service Injection
+
+Controller methods automatically receive injected services based on type hints, eliminating the need for manual service instantiation and configuration. The injection mechanism analyzes your method signatures during route registration, examining each parameter's type annotation to determine injection eligibility.
+
+The framework intelligently differentiates between injectable services and framework-native types, ensuring that only registered services are injected while preserving FastAPI's natural parameter binding for requests, responses, and path variables. This smart filtering maintains clean separation between dependency injection and HTTP parameter handling.
+
+**Service Resolution Process:**
+1. **Type Analysis**: Framework examines method parameter type hints
+2. **Service Lookup**: Container searches for registered service implementations
+3. **Instance Resolution**: Framework creates or retrieves service instances
+4. **Dependency Injection**: Services are automatically provided to method parameters
+
+```python
+from src.service.user_service import UserService
+from src.repository.user_repository import UserRepository
+
+class UserController(AbstractController):
+    
+    @Route("/users", "user.index", methods=["GET"])
+    async def index(self, 
+                   user_service: UserService,        # ✅ Resolved from DI container
+                   user_repository: UserRepository,  # ✅ Auto-injected based on type hint
+                   request: Request):                # ✅ FastAPI native - bypassed by injection
+        
+        # Services are ready to use without manual instantiation
+        users = await user_service.get_paginated(page=1)
+        return self.render("users/index.html", {"users": users})
+```
+
+**Parameter Type Resolution:**
+- **✅ Injectable Types**: Custom services, repositories, framework components
+- **⚠️ Bypassed Types**: FastAPI Request/Response, Pydantic models, primitive types
+- **🔄 Optional Types**: Services with default values gracefully handle missing dependencies
+
+
+**Discovery Locations and Patterns:**
+
+- **Framework Components**: Built-in Framefox services like template renderers, form builders, and security providers
+- **User Extensions**: Custom classes implementing service interfaces or marked with service annotations
+
+The framework respects inheritance hierarchies and interface implementations, enabling powerful architectural patterns like strategy injection and polymorphic service resolution. Abstract base classes and protocols can define service contracts while concrete implementations are automatically wired based on type hints.
+
+### Manual Service Access
+
+While automatic injection handles most dependency resolution scenarios elegantly, the framework provides direct access to the dependency injection container for advanced use cases requiring dynamic service resolution or conditional dependency selection.
+
+Manual access patterns are particularly valuable for factory implementations, runtime service selection based on configuration or request parameters, and scenarios where services require complex initialization logic that cannot be expressed through simple type hints.
+
+The container API maintains service instances and handles circular dependency detection automatically, providing a robust foundation for complex dependency graphs while maintaining performance and reliability.
+
+**Dynamic Service Resolution:**
+```python
+class UserController(AbstractController):
+    
+    @Route("/users/export", "user.export", methods=["GET"])
+    async def export(self, request: Request):
+        # Conditional service resolution based on request parameters
+        export_format = request.query_params.get("format", "csv")
+        user_service = self._container.get(UserService)
+        
+        # Factory pattern for format-specific exporters
+        if export_format == "pdf":
+            export_service = self._container.get(PdfExportService)
+            media_type = "application/pdf"
+        elif export_format == "excel":
+            export_service = self._container.get(ExcelExportService)
+            media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        else:
+            export_service = self._container.get(CsvExportService)
+            media_type = "text/csv"
+        
+        users = await user_service.get_all()
+        export_data = await export_service.export(users)
+        
+        return Response(
+            content=export_data, 
+            media_type=media_type,
+            headers={"Content-Disposition": f"attachment; filename=users.{export_format}"}
+        )
+```
+
+**Container Interface Methods:**
+- **`container.get(ServiceType)`** - Retrieve service instance by type
+- **`container.has(ServiceType)`** - Check if service is registered
+- **`container.set_instance(ServiceType, instance)`** - Manually set service instance
+- **`container.get_by_tag(tag)`** - Get first service with tag
+- **`container.get_all_by_tag(tag)`** - Get all services with tag
+- **`container.register_factory(factory)`** - Register service factory
+
+**Discovery Locations and Patterns:**
+- **Framework Core**: All modules in `framefox.core.*` 
+- **Controllers**: Classes in `src/controller/` directory (always scanned)
+- **Services**: Classes in `src/service/` directory (background scan)
+- **Repositories**: Classes in `src/repository/` directory (background scan)
+- **Factory Support**: Services created via registered factories
+
+**Error Handling:**
+The container raises specific exceptions:
+- **`ServiceNotFoundError`**: When service is not registered and cannot be auto-registered
+- **`ServiceInstantiationError`**: When service creation fails
+- **`CircularDependencyError`**: When circular dependencies are detected
+
+
+**Graceful Degradation Patterns:**
+```python
+@Route("/dashboard", "dashboard.index", methods=["GET"])
+async def dashboard(self, 
+                   analytics_service: AnalyticsService,      # Required service
+                   cache_service: CacheService = None,       # Optional with fallback
+                   notification_service: Optional[NotificationService] = None):
+    
+    # Required service - injection failure raises RuntimeError
+    stats = await analytics_service.get_daily_stats()
+    
+    # Optional service with graceful fallback
+    if cache_service:
+        cached_data = await cache_service.get("dashboard_data")
+    else:
+        cached_data = None  # Fallback to direct computation
+    
+    # Optional service using typing.Optional
+    if notification_service:
+        await notification_service.mark_dashboard_viewed()
+```
+
+**Error Handling Strategies:**
+1. **Required Dependencies**: Missing services raise `RuntimeError` with descriptive messages
+2. **Optional Dependencies**: Default values provide graceful fallback behavior
+3. **Logging Integration**: Service resolution failures are logged for debugging
+4. **Development Mode**: Enhanced error messages include service registration hints
 ## Request Handling
 
 Framefox controllers use FastAPI's `Request` object to access all request data. The `Request` object provides comprehensive access to form data, JSON payloads, query parameters, headers, and path variables through standard FastAPI patterns. This approach leverages FastAPI's powerful request handling capabilities while maintaining Framefox's controller architecture.
