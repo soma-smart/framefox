@@ -23,7 +23,7 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: "https://github.com/soma-smart/framefox/edit/main/docs/",
+        baseUrl: "https://github.com/soma-smart/framefox/edit/main/docs/framefox/src/content/docs/",
       },
       lastUpdated: true,
       sidebar: [
