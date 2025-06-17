@@ -39,6 +39,7 @@ jobs:
     
     - name: Run unit tests
       run: |
+        source venv/bin/activate
         pytest framefox/tests/unit/ \
           --cov=framefox \
           --cov-report=xml \
@@ -48,6 +49,7 @@ jobs:
     
     - name: Run e2e tests
       run: |
+        source venv/bin/activate
         pytest framefox/tests/e2e/ \
           --verbose \
           --tb=short
