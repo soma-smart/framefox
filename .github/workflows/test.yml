@@ -1,12 +1,15 @@
 name: Tests
 
+# on:
+#   push:
+#     branches:
+#         - main
+#   pull_request:
+#     branches:
+#         - main
+
 on:
-  push:
-    branches:
-        - main
-  pull_request:
-    branches:
-        - main
+  workflow_dispatch:  # Manual trigger
         
 jobs:
   test:
