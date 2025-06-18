@@ -1017,19 +1017,31 @@ def downgrade():
     op.drop_table('products')
 ```
 
-#### Migration Recovery
+#### Troubleshooting Migration Issues
 
 :::note
-If you encounter problems during migration (corrupted migration files, failed migrations, or inconsistent state):
+If you encounter problems during migrations (corrupted files, failed migrations, or inconsistent state), follow these steps:
 
+### Option 1: Manual Cleanup
 1. **Delete the problematic migration file(s)** from `migrations/versions/`
-2. **Remove the migration reference** from the `alembic_version` table in your database:
+2. **Remove the database reference**:
    ```sql
    DELETE FROM alembic_version WHERE version_num = 'problematic_revision_id';
    ```
-3. **Start fresh** by creating a new migration with `framefox database create-migration`
 
-This approach allows you to recover from migration issues and restart the migration process cleanly. Always backup your database before attempting migration recovery in production.
+### Option 2: Automatic Cleanup (Recommended)
+Use the dedicated command that automatically performs steps 1 and 2:
+```bash
+framefox database clear-migration
+```
+
+### Recovery
+After cleanup, create a fresh migration:
+```bash
+framefox database create-migration
+```
+
+> ⚠️ **Important**: Always backup your database before attempting migration recovery in production environments.
 :::
 
 ## Related Topics
