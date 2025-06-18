@@ -1,4 +1,5 @@
 from fastapi.middleware.cors import CORSMiddleware
+from framefox.core.config.settings import Settings
 
 """
 Framefox Framework developed by SOMA
@@ -25,11 +26,12 @@ class CustomCORSMiddleware(CORSMiddleware):
         app (ASGIApp): The ASGI application instance to wrap with the middleware.
     """
 
-    def __init__(self, app, settings):
+    def __init__(self, app):
+        self.settings = Settings()
         super().__init__(
             app,
-            allow_origins=settings.cors_config.get("allow_origins", ["*"]),
-            allow_credentials=settings.cors_config.get("allow_credentials", True),
-            allow_methods=settings.cors_config.get("allow_methods", ["*"]),
-            allow_headers=settings.cors_config.get("allow_headers", ["*"]),
+            allow_origins=self.settings.cors_config.get("allow_origins", ["*"]),
+            allow_credentials=self.settings.cors_config.get("allow_credentials", True),
+            allow_methods=self.settings.cors_config.get("allow_methods", ["*"]),
+            allow_headers=self.settings.cors_config.get("allow_headers", ["*"]),
         )

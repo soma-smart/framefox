@@ -19,8 +19,8 @@ class TokenStorage:
     """
 
     def __init__(self):
-        self._container = ServiceContainer()
-        self.session = self._container.get_by_name("Session")
+        self.container = ServiceContainer()
+        self.session = self.container.get_by_name("Session")
         self.logger = logging.getLogger("TOKEN_STORAGE")
 
     def get_token(self) -> Optional[str]:
@@ -42,12 +42,8 @@ class TokenStorage:
 
     def get_payload(self) -> Optional[Dict[str, Any]]:
         """Retrieves the decoded data from the token."""
-        from framefox.core.di.service_container import ServiceContainer
-        from framefox.core.security.token_manager import TokenManager
-
         token = self.get_token()
         if not token:
             return None
-
-        token_manager = ServiceContainer().get(TokenManager)
+        token_manager = self.container.get_by_name("TokenManager")
         return token_manager.decode_token(token)

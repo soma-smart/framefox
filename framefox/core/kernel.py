@@ -11,14 +11,7 @@ from framefox.core.debug.handler.debug_handler import DebugHandler
 from framefox.core.events.event_dispatcher import dispatcher
 from framefox.core.logging.logger import Logger
 from framefox.core.middleware.middleware_manager import MiddlewareManager
-from framefox.core.orm.entity_manager_interface import EntityManagerInterface
 from framefox.core.routing.router import Router
-from framefox.core.security.handlers.security_context_handler import (
-    SecurityContextHandler,
-)
-from framefox.core.security.token_storage import TokenStorage
-from framefox.core.security.user.entity_user_provider import EntityUserProvider
-from framefox.core.security.user.user_provider import UserProvider
 
 """
 Framefox Framework developed by SOMA
@@ -66,17 +59,13 @@ class Kernel:
         self._app.add_exception_handler(
             DebugException, DebugHandler.debug_exception_handler
         )
-        self._setup_middlewares()
+        MiddlewareManager(self._app).setup_middlewares()
         self._setup_routing()
         self._setup_static_files()
         self._bundle_manager.boot_bundles(self._container)
         dispatcher.load_listeners()
         self._container.freeze_registry()
         self._logger.debug("Application configuration complete - registry frozen")
-
-    def _setup_middlewares(self) -> None:
-        middleware_manager = MiddlewareManager(self._app, self._settings)
-        middleware_manager.setup_middlewares()
 
     def _setup_routing(self) -> None:
         router = Router(self._app)

@@ -1,15 +1,12 @@
-import logging
-import uuid
+import logging, uuid
 from datetime import datetime, timedelta, timezone
-
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-
 from framefox.core.di.service_container import ServiceContainer
-from framefox.core.request.cookie_manager import CookieManager
 from framefox.core.request.request_stack import RequestStack
 from framefox.core.request.session.session_interface import SessionInterface
-from framefox.core.request.session.session_manager import SessionManager
+from framefox.core.config.settings import Settings
+from framefox.core.request.session.session import Session
 
 """
 Framefox Framework developed by SOMA
@@ -21,20 +18,15 @@ Github: https://github.com/RayenBou
 
 
 class SessionMiddleware(BaseHTTPMiddleware):
-    def __init__(
-        self,
-        app,
-        settings,
-    ):
-        super().__init__(app)
-        self.settings = settings
-
-        self.cookie_name = settings.session_name
-        container = ServiceContainer()
-        self.cookie_manager = container.get(CookieManager)
-        self.session_manager = container.get(SessionManager)
+    def __init__(self,app):
+        super().__init__(app)   
         self.logger = logging.getLogger("SESSION")
-        self.session_service = container.get(SessionInterface)
+        self.settings = Settings()
+        self.container = ServiceContainer()
+        self.cookie_name = self.settings.session_name
+        self.cookie_manager = self.container.get_by_tag("core.request.cookie_manager")
+        self.session_manager = self.container.get_by_tag("core.request.session.session_manager")
+        self.session_service = self.container.get_by_tag("core.request.session.session_service")
 
     async def dispatch(self, request: Request, call_next):
         """
@@ -59,10 +51,6 @@ class SessionMiddleware(BaseHTTPMiddleware):
         request.state.session_data = session["data"] if session else {}
 
         RequestStack.set_request(request)
-
-        from framefox.core.di.service_container import ServiceContainer
-        from framefox.core.request.session.session import Session
-
         if not self.session_service:
             try:
                 session_instance = Session()
@@ -73,8 +61,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
             session_instance = self.session_service
 
         if session_instance:
-            container = ServiceContainer()
-            container.set_instance(SessionInterface, session_instance)
+            self.container.set_instance(SessionInterface, session_instance)
 
         response = await call_next(request)
 

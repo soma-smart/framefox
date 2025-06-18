@@ -1,6 +1,5 @@
 import os
 from typing import Any, Dict
-
 from fastapi import UploadFile
 
 from framefox.core.file.file_manager import FileManager
@@ -20,6 +19,7 @@ class FileType(AbstractFormType):
 
     def __init__(self, options: Dict[str, Any] = None):
         super().__init__(options or {})
+
 
         self.options.setdefault("attr", {})
         self.options.setdefault("multiple", False)
@@ -58,16 +58,7 @@ class FileType(AbstractFormType):
                 f"File type not allowed. Allowed extensions: {', '.join(allowed_extensions)}"
             )
 
-        from framefox.core.di.service_container import ServiceContainer
-
-        container = ServiceContainer()
-
-        try:
-            file_manager = container.get(FileManager)
-
-        except Exception as e:
-
-            file_manager = FileManager()
+        file_manager = FileManager()
 
         storage_path = self.options.get("storage_path")
 

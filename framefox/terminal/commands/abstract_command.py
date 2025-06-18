@@ -1,5 +1,5 @@
 from framefox.terminal.common.printer import Printer
-
+from framefox.core.di.service_container import ServiceContainer
 
 class AbstractCommand:
     """
@@ -34,7 +34,5 @@ class AbstractCommand:
     def get_container(self):
         """Obtient le container de services (lazy loading)"""
         if self._container is None:
-            from framefox.core.di.service_container import ServiceContainer
-
             self._container = ServiceContainer()
         return self._container
