@@ -1,7 +1,10 @@
 import os
+from datetime import datetime
+from importlib.metadata import metadata, version
 from typing import Any, Dict
 
 from rich.console import Console as RichConsole
+from rich.text import Text
 
 from framefox.terminal.ui.table_builder import TableBuilder
 from framefox.terminal.ui.themes import FramefoxMessages, FramefoxTheme
@@ -24,10 +27,30 @@ class DisplayManager:
     def print_header(self):
         """Print the application header"""
         self.console.print("")
-        self.console.print(
-            f"[{FramefoxTheme.HEADER_STYLE}]{FramefoxMessages.HEADER_TITLE}[/{FramefoxTheme.HEADER_STYLE}]",
-            justify="left",
-        )
+
+        # Retrieve package metadata
+        try:
+            pkg_metadata = metadata("framefox")
+            # The date can be in different fields depending on the packaging
+            pkg_date = None
+
+            # Try to retrieve the date from the metadata
+            if "Date" in pkg_metadata:
+                pkg_date = pkg_metadata["Date"]
+            elif "Release-Date" in pkg_metadata:
+                pkg_date = pkg_metadata["Release-Date"]
+            else:
+                # Fallback: use the current date or a default date
+                pkg_date = datetime.now().strftime("%d-%m-%Y")
+
+        except Exception:
+            pkg_date = datetime.now().strftime("%d-%m-%Y")
+
+        title_text = Text("🦊 Framefox Framework CLI ")
+        title_text.append(f"v{version('framefox')}", style=FramefoxTheme.VERSION)
+        title_text.append(f" ({pkg_date})", style=FramefoxTheme.DIM_TEXT)
+        self.console.print(title_text, style=FramefoxTheme.HEADER_STYLE)
+
         self.console.print(
             f"[{FramefoxTheme.DIM_STYLE}]{FramefoxMessages.HEADER_SUBTITLE}[/{FramefoxTheme.DIM_STYLE}]",
             justify="left",
