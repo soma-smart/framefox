@@ -237,14 +237,13 @@ Framefox uses **Jinja2** with powerful built-in functions:
 
 ## 📚 **Learn More**
 
-| 📖 **Resource**                                                                      | 🎯 **Perfect For**               |
-| ----------------------------------------------------------------------------------- | ------------------------------- |
-| [📋 Installation Guide](https://soma-smart.github.io/framefox/docs/installation) | Getting up and running          |
-| [🎮 Controllers Guide](https://soma-smart.github.io/framefox/docs/controllers)   | Building your application logic |
-| [🎨 Templates Guide](https://soma-smart.github.io/framefox/docs/templates)       | Creating beautiful views        |
-| [🔐 Security Guide](https://soma-smart.github.io/framefox/docs/security)         | Securing your application       |
-| [🧪 Testing Guide](https://soma-smart.github.io/framefox/docs/testing)           | Writing comprehensive tests     |
-| [🚀 Deployment Guide](https://soma-smart.github.io/framefox/docs/deployment)     | Going to production             |
+| 📖 **Resource**                                                                           | 🎯 **Perfect For**               |
+| ---------------------------------------------------------------------------------------- | ------------------------------- |
+| [📋 Installation Guide](https://soma-smart.github.io/framefox/installation)               | Getting up and running          |
+| [🎮 Controllers Guide](https://soma-smart.github.io/framefox/core/controllers)            | Building your application logic |
+| [🎨 Templates Guide](https://soma-smart.github.io/framefox/core/templates)                | Creating beautiful views        |
+| [🔐 Security Guide](https://soma-smart.github.io/framefox/core/security)                  | Securing your application       |
+| [🚀 Deployment Guide](https://soma-smart.github.io/framefox/advanced_features/deployment) | Going to production             |
 
 
 
@@ -358,11 +357,11 @@ Your feedback shapes Framefox's future! Contact us on LinkedIn to:
 
 *Framefox is proudly backed by **SOMA Smart**, a technology company focused on data transformation and building innovative development tools.*
 
-| ![Rayen](https://github.com/RayenBou.png?size=100) | ![Raphaël](https://github.com/Vasulvius.png?size=100) |
-| :------------------------------------------------: | :---------------------------------------------------: |
-|  **[Rayen BOUMAZA](https://www.linkedin.com/in/rayen-boumaza)**  |  **[Raphaël LEUROND](https://www.linkedin.com/in/raphael-leurond)**  |
-|               *Framework Architect*                |                   *Core Developer*                    |
-|            🏗️ Architecture & Performance            |                   🔧 Features & DevX                   |
+|       ![Rayen](https://github.com/RayenBou.png?size=100)       |       ![Raphaël](https://github.com/Vasulvius.png?size=100)        |
+| :------------------------------------------------------------: | :----------------------------------------------------------------: |
+| **[Rayen BOUMAZA](https://www.linkedin.com/in/rayen-boumaza)** | **[Raphaël LEUROND](https://www.linkedin.com/in/raphael-leurond)** |
+|                     *Framework Architect*                      |                          *Core Developer*                          |
+|                  🏗️ Architecture & Performance                  |                         🔧 Features & DevX                          |
 
 ---
 

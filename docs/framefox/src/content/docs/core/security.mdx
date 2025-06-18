@@ -80,13 +80,16 @@ The command generates a user management system:
 
 **User Entity:** `src/entity/user.py`
 ```python
-from framefox.core.orm.entity import Entity
-from sqlalchemy import Column, JSON
+from sqlmodel import Field, JSON, Column, Relationship
+from framefox.core.orm.abstract_entity import AbstractEntity
 
-class User(Entity):
-    email: str = Field(nullable=False)
+
+class User(AbstractEntity, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     password: str = Field(nullable=False)
+    email: str = Field(nullable=False)
     roles: list[str] = Field(default_factory=lambda: ['ROLE_USER'], sa_column=Column(JSON))
+
 ```
 
 **User Repository:** `src/repository/user_repository.py`
