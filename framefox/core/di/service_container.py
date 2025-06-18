@@ -6,7 +6,7 @@ import os
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Type, get_type_hints
 
@@ -103,7 +103,6 @@ class ServiceContainer:
         self._excluded_modules: List[str] = []
 
         # Background scanning
-        self._executor: Optional[ThreadPoolExecutor] = None
         self._background_scan_enabled: bool = True
 
         # Initialization
@@ -885,7 +884,3 @@ class ServiceContainer:
             **registry_stats,
         }
 
-    def __del__(self):
-        """Cleanup resources."""
-        if hasattr(self, "_executor") and self._executor:
-            self._executor.shutdown(wait=False)
