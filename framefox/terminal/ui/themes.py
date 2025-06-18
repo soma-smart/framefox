@@ -18,6 +18,7 @@ class FramefoxTheme:
     DIM_TEXT = "dim white"
     SUCCESS = "green"
     ERROR = "bold red"
+    VERSION = "magenta"
 
     # Styles
     HEADER_STYLE = f"bold {PRIMARY}"
