@@ -425,38 +425,6 @@ security:
     - { path: ^/dashboard, roles: ROLE_USER }
 ```
 
-### Programmatic Role Verification
-
-Controllers can perform explicit role checks for complex authorization logic:
-
-```python title="src/controllers/admin_controller.py"
-from framefox.core.controller.abstract_controller import AbstractController
-from framefox.core.routing.decorator.route import Route
-from framefox.core.di.service_container import ServiceContainer
-
-class AdminController(AbstractController):
-    @Route("/admin/dashboard", "admin.dashboard")
-    async def dashboard(self):
-        user = self.get_user()
-        if not user:
-            return self.redirect("/login")
-            
-        container = ServiceContainer()
-        access_manager = container.get("framefox.core.security.access_manager.AccessManager")
-        
-        if not access_manager.is_allowed(user.roles, ["ROLE_ADMIN"]):
-            return self.json({
-                "message": "Administrative privileges required"
-            }, status_code=403)
-        
-        user_count = await self.get_repository("User").count()
-        
-        return self.render("admin/dashboard.html", {
-            "user_count": user_count,
-            "user": user
-        })
-```
-
 ### Template Integration with Role-Based Content
 
 Templates can display conditional content based on user authentication status and role assignments:
