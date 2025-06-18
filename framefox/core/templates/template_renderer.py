@@ -1,13 +1,12 @@
-import hashlib, json, logging, os, time,pprint
+import hashlib, json, logging, os, time
 from pathlib import Path
-from datetime import datetime
+
 from fastapi.exceptions import HTTPException
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.form.extension.form_extension import FormExtension
-from framefox.core.config.settings import Settings
 from framefox.core.request.request_stack import RequestStack
-from framefox.core.debug.profiler.profiler import Profiler
 
 """
 Framefox Framework developed by SOMA
@@ -29,8 +28,8 @@ class TemplateRenderer:
     
     def __init__(self):
         self.container = ServiceContainer()
-        self.logger = logging.getLogger("TEMPLATE_RENDERER")
-        self.settings = Settings()
+        self.logging = logging.getLogger("TEMPLATE_RENDERER")
+        self.settings = self.container.get_by_name("Settings")
         self.user_template_dir = self.settings.template_dir
         self.framework_template_dir = Path(__file__).parent / "views"
         self.public_path = (
@@ -117,16 +116,16 @@ class TemplateRenderer:
         
         memory_collector = None
         try:
-
+            from framefox.core.debug.profiler.profiler import Profiler
             profiler = Profiler()
             if profiler.is_enabled():
                 memory_collector = profiler.get_collector("memory")
                 if memory_collector:
                     if hasattr(memory_collector, 'start_template_measurement'):
                         memory_collector.start_template_measurement()
-                        self.logger.debug(f"Started memory measurement for template: {template_name}")
+                        self.logging.debug(f"Started memory measurement for template: {template_name}")
         except Exception as e:
-            self.logger.debug(f"Could not start memory measurement: {e}")
+            self.logging.debug(f"Could not start memory measurement: {e}")
 
         try:
             template = self.env.get_template(template_name)
@@ -140,7 +139,7 @@ class TemplateRenderer:
                 
                 if hasattr(memory_collector, 'add_template_metrics'):
                     memory_collector.add_template_metrics(template_memory, render_time_ms)
-                    self.logger.debug(f"Template {template_name}: {template_memory:.2f}MB, {render_time_ms:.2f}ms")
+                    self.logging.debug(f"Template {template_name}: {template_memory:.2f}MB, {render_time_ms:.2f}ms")
                 
             return result
             
@@ -148,7 +147,7 @@ class TemplateRenderer:
             if memory_collector and hasattr(memory_collector, 'end_template_measurement'):
                 memory_collector.end_template_measurement()
                 
-            self.logger.error(f"Template rendering error: {str(e)}")
+            self.logging.error(f"Template rendering error: {str(e)}")
             if self.settings.is_debug:
                 raise HTTPException(
                     status_code=500,
@@ -243,12 +242,16 @@ class TemplateRenderer:
 
         if isinstance(value, (int, float)):
             try:
+                from datetime import datetime
+
                 value = datetime.fromtimestamp(value)
             except (ValueError, TypeError, OverflowError):
                 return str(value)
 
         if isinstance(value, str):
             try:
+                from datetime import datetime
+
                 value = datetime.fromisoformat(value.replace("Z", "+00:00"))
             except (ValueError, TypeError):
                 return value
@@ -288,6 +291,8 @@ class TemplateRenderer:
         return asset_url
 
     def _dump_function(self, obj):
+        import pprint
+
         return pprint.pformat(obj, depth=3)
 
     def _format_number_filter(

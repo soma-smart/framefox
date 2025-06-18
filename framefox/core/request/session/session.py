@@ -23,7 +23,7 @@ class Session(SessionInterface):
     def __init__(self):
         self._flash_bag = FlashBag()
         self.container = ServiceContainer()
-        self.settings = Settings()
+
 
     def get_request(self) -> Request:
         """Retrieve the current request via the RequestStack"""
@@ -105,13 +105,11 @@ class Session(SessionInterface):
         """Save all session data"""
         if self.has("_flash_initialized"):
             self._flash_bag.save_to_session(self)
-
         request = self.get_request()
         session_id = self.get_id()
-
         if session_id and hasattr(request.state, "session_data"):
             session_manager = self.container.get_by_name("SessionManager")
             if session_manager:
                 session_manager.update_session(
-                    session_id, request.state.session_data, self.settings.cookie_max_age
+                    session_id, request.state.session_data, Settings().cookie_max_age
                 )
