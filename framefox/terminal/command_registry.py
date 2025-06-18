@@ -132,8 +132,8 @@ class CommandRegistry:
         try:
             from framefox.core.bundle.bundle_manager import BundleManager
 
-            service_container = ServiceContainer()
-            bundle_manager = service_container.get(BundleManager)
+            service_container = ServiceContainer().get(BundleManager)
+            bundle_manager = service_container
             if bundle_manager:
                 bundle_manager.register_bundle_commands(self)
         except ImportError:

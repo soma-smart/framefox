@@ -2,17 +2,19 @@ from fastapi import Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import traceback
 import logging
+from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.templates.template_renderer import TemplateRenderer
 
 class DebugExceptionMiddleware:
     """Middleware to capture all exceptions and display them with Framefox style."""
     
-    def __init__(self, app, settings):
+    def __init__(self, app ):
         self.app = app
         self.container = ServiceContainer()
-        self.settings = settings
+        self.settings = Settings()
         self.logger = logging.getLogger("Application")
+        self.template_renderer = self.container.get(TemplateRenderer)
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -67,9 +69,6 @@ class DebugExceptionMiddleware:
             )
         
         if self.settings.is_debug:
-            container = ServiceContainer()
-            template_renderer = container.get(TemplateRenderer)
-            
             profiler_token = getattr(request.state, 'profiler_token', None)
             
             traceback_str = self._format_traceback(exc)
@@ -86,12 +85,10 @@ class DebugExceptionMiddleware:
                 "source_info": source_info
             }
             
-            html_content = template_renderer.render("debug_error.html", error_context)
+            html_content = self.template_renderer.render("debug_error.html", error_context)
             return HTMLResponse(content=html_content, status_code=500)
         else:
-            container = ServiceContainer()
-            template_renderer = container.get(TemplateRenderer)
-            html_content = template_renderer.render("500.html", {"request": request})
+            html_content = self.template_renderer.render("500.html", {"request": request})
             return HTMLResponse(content=html_content, status_code=500)
 
     def _format_traceback(self, exc: Exception) -> str:

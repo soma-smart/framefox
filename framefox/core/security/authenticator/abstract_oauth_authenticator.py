@@ -1,11 +1,8 @@
-
+import httpx, base64, hashlib, secrets, jwt
 from abc import abstractmethod
 from typing import Any, Dict, Optional
 from urllib.parse import urlencode
-import httpx
-import base64
-import hashlib
-import secrets
+
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.passport.user_badge import UserBadge
 
@@ -16,7 +13,7 @@ from framefox.core.security.authenticator.abstract_authenticator import (
 from framefox.core.security.authenticator.oauth_authenticator_interface import (
     OAuthAuthenticatorInterface,
 )
-
+from framefox.core.request.session.session import Session
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -52,8 +49,9 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
     userinfo_endpoint = None
     scopes = ["email"]
     
-    def __init__(self):
+    def __init__(self,session:Session):
         super().__init__()
+        self.session = session
         self.is_oauth_authenticator = True
         self._load_oauth_config()
     
@@ -121,11 +119,8 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
     async def _exchange_code_for_token(self, code: str) -> Dict[str, Any]:
         """Exchange authorization code for access token with PKCE"""
         token_url = self._build_endpoint_url(self.token_endpoint)
-        
-        from framefox.core.request.session.session import Session
-        session = Session()
-        
-        code_verifier = session.get("oauth_code_verifier")
+ 
+        code_verifier = self.session.get("oauth_code_verifier")
         
         data = {
             "client_id": self.client_id,
@@ -137,8 +132,8 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
         
         if code_verifier:
             data["code_verifier"] = code_verifier
-            session.remove("oauth_code_verifier")
-            session.save()
+            self.session.remove("oauth_code_verifier")
+            self.session.save()
         
         async with httpx.AsyncClient() as client:
             response = await client.post(token_url, data=data)
@@ -153,12 +148,11 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
         
         nonce = secrets.token_urlsafe(32)
         
-        from framefox.core.request.session.session import Session
-        session = Session()
+  
         
-        session.set("oauth_code_verifier", code_verifier)
-        session.set("oauth_nonce", nonce)
-        session.save()
+        self.session.set("oauth_code_verifier", code_verifier)
+        self.session.set("oauth_nonce", nonce)
+        self.session.save()
         
         params = {
             "client_id": self.client_id,
@@ -210,13 +204,8 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
         """
         Validate nonce in JWT ID token (for OpenID Connect)
         """
-        try:
-            import jwt
-            
-            from framefox.core.request.session.session import Session
-            session = Session()
-            
-            stored_nonce = session.get("oauth_nonce")
+        try:  
+            stored_nonce = self.session.get("oauth_nonce")
             
             if not stored_nonce:
                 self.logger.warning("No stored nonce found for ID token validation")
@@ -237,8 +226,8 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
                 self.logger.warning("ID token nonce mismatch - potential replay attack")
                 return False
             
-            session.remove("oauth_nonce")
-            session.save()
+            self.session.remove("oauth_nonce")
+            self.session.save()
             
             self.logger.debug("ID token nonce validation successful")
             return True

@@ -28,6 +28,7 @@ class CacheClearCommand(AbstractCommand):
     def __init__(self):
         super().__init__("clear")
         self.cache_dir = Path("var/cache")
+        self.container=self.get_container()
 
     def execute(self):
         """
@@ -56,20 +57,20 @@ class CacheClearCommand(AbstractCommand):
             f"{cache_files_cleared} files removed",
         )
 
-        container = ServiceContainer()
-        memory_stats = self._clear_memory_caches(container)
+    
+        memory_stats = self._clear_memory_caches(self.container)
         table.add_row(
             "Memory Caches", "[green]Cleared[/green]", f"Resolution: {memory_stats['resolution']}, Modules: {memory_stats['modules']}"
         )
 
-        instances_cleared = self._clear_service_instances(container)
+        instances_cleared = self._clear_service_instances(self.container)
         table.add_row(
             "Service Instances",
             "[green]Cleared[/green]" if instances_cleared > 0 else "[yellow]Empty[/yellow]",
             f"{instances_cleared} instances removed",
         )
 
-        scan_status = self._reset_scan_status(container)
+        scan_status = self._reset_scan_status(self.container)
         table.add_row("Scan Status", "[green]Reset[/green]", f"Modules: {scan_status['modules']}, Sources: {scan_status['sources']}")
 
         total_time = time.time() - start_time

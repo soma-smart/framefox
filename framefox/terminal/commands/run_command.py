@@ -115,7 +115,7 @@ class RunCommand(AbstractCommand):
     def _prewarm_container(self) -> None:
         """Prewarm the service container for better startup performance."""
         try:
-            container = ServiceContainer()
+            container= self.get_container()
             container.force_complete_scan()
 
             cache_data = container._create_cache_snapshot()
@@ -175,7 +175,7 @@ class RunCommand(AbstractCommand):
             from framefox.core.task.worker_manager import WorkerManager
 
             # Get the worker manager from the service container
-            worker_manager = ServiceContainer().get(WorkerManager)
+            worker_manager = self.get_container.get(WorkerManager)
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 

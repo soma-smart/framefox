@@ -1,4 +1,3 @@
-import logging
 import uuid
 from typing import Any, Dict, Optional
 
@@ -7,6 +6,8 @@ from fastapi import Request
 from framefox.core.request.request_stack import RequestStack
 from framefox.core.request.session.flash_bag import FlashBag
 from framefox.core.request.session.session_interface import SessionInterface
+from framefox.core.di.service_container import ServiceContainer
+from framefox.core.config.settings import Settings
 
 """
 Framefox Framework developed by SOMA
@@ -21,6 +22,8 @@ class Session(SessionInterface):
 
     def __init__(self):
         self._flash_bag = FlashBag()
+        self.container = ServiceContainer()
+
 
     def get_request(self) -> Request:
         """Retrieve the current request via the RequestStack"""
@@ -75,11 +78,7 @@ class Session(SessionInterface):
         request.state.session_id = new_id
 
         if destroy and old_id:
-            from framefox.core.di.service_container import ServiceContainer
-            from framefox.core.request.session.session_manager import SessionManager
-
-            container = ServiceContainer()
-            session_manager = container.get(SessionManager)
+            session_manager = self.container.get_by_name("SessionManager")
             if session_manager:
                 session_manager.delete_session(old_id)
 
@@ -106,20 +105,11 @@ class Session(SessionInterface):
         """Save all session data"""
         if self.has("_flash_initialized"):
             self._flash_bag.save_to_session(self)
-
         request = self.get_request()
         session_id = self.get_id()
-
         if session_id and hasattr(request.state, "session_data"):
-            from framefox.core.config.settings import Settings
-            from framefox.core.di.service_container import ServiceContainer
-            from framefox.core.request.session.session_manager import SessionManager
-
-            container = ServiceContainer()
-            session_manager = container.get(SessionManager)
-            settings = container.get(Settings)
-
+            session_manager = self.container.get_by_name("SessionManager")
             if session_manager:
                 session_manager.update_session(
-                    session_id, request.state.session_data, settings.cookie_max_age
+                    session_id, request.state.session_data, Settings().cookie_max_age
                 )

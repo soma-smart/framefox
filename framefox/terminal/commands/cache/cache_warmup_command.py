@@ -26,7 +26,8 @@ class CacheWarmupCommand(AbstractCommand):
 
     def __init__(self):
         super().__init__("warmup")
-
+        self.console = Console()
+        self.container = self.get_container()
     def execute(self):
         """
         Execute the cache warmup command to prepare the ServiceContainer cache.\n
@@ -38,7 +39,7 @@ class CacheWarmupCommand(AbstractCommand):
         5. Display the results in a formatted table.\n
         6. Print container statistics for debugging and performance insights.\n
         """
-        console = Console()
+
         print("")
         start_time = time.time()
 
@@ -47,27 +48,27 @@ class CacheWarmupCommand(AbstractCommand):
         table.add_column("Status", style="white")
         table.add_column("Details", style="cyan")
 
-        container = ServiceContainer()
+
 
         discovery_start = time.time()
-        discovery_stats = self._force_service_discovery(container)
+        discovery_stats = self._force_service_discovery(self.container)
         discovery_time = time.time() - discovery_start
         table.add_row("Service Discovery", "[green]Completed[/green]", f"{discovery_stats['total']} services in {discovery_time:.2f}s")
 
         preload_start = time.time()
-        preload_stats = self._preload_essential_services(container)
+        preload_stats = self._preload_essential_services(self.container)
         preload_time = time.time() - preload_start
         table.add_row(
             "Essential Services", "[green]Pre-loaded[/green]", f"{preload_stats['loaded']}/{preload_stats['total']} in {preload_time:.2f}s"
         )
 
         cache_start = time.time()
-        cache_stats = self._generate_cache(container)
+        cache_stats = self._generate_cache(self.container)
         cache_time = time.time() - cache_start
         table.add_row("Cache Generation", "[green]Saved[/green]", f"{cache_stats['services']} services cached in {cache_time:.2f}s")
 
         validation_start = time.time()
-        validation_stats = self._validate_cache(container)
+        validation_stats = self._validate_cache(self.container)
         validation_time = time.time() - validation_start
         table.add_row(
             "Cache Validation",
@@ -77,10 +78,10 @@ class CacheWarmupCommand(AbstractCommand):
 
         total_time = time.time() - start_time
 
-        console.print(table)
+        self.console.print(table)
         print("")
 
-        self._display_container_stats(container)
+        self._display_container_stats(self.container)
 
         self.printer.print_msg(
             f"✓ ServiceContainer cache warmed up in {total_time:.2f} seconds",
@@ -182,7 +183,7 @@ class CacheWarmupCommand(AbstractCommand):
         stats_table.add_row("Total Aliases", str(stats.get("total_aliases", 0)))
         stats_table.add_row("Total Tags", str(stats.get("total_tags", 0)))
 
-        console = Console()
+
         print("")
-        console.print("📊 Container Statistics:", style="bold blue")
-        console.print(stats_table)
+        self.console.print("📊 Container Statistics:", style="bold blue")
+        self.console.print(stats_table)

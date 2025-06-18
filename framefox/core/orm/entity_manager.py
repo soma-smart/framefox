@@ -179,8 +179,7 @@ class EntityManager:
         Retrieve the repository instance associated with the given entity class.
 
         """
-        container = ServiceContainer()
-        repositories = container.get_by_tag_prefix("repository.")
+        repositories = ServiceContainer().get_by_tag_prefix("repository.")
 
         for repo in repositories:
             if getattr(repo, "model", None) == entity_class:

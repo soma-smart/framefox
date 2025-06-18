@@ -9,7 +9,6 @@ from framefox.core.middleware.middlewares.entity_manager_middleware import (
 from framefox.core.middleware.middlewares.firewall_middleware import FirewallMiddleware
 from framefox.core.middleware.middlewares.profiler_middleware import ProfilerMiddleware
 from framefox.core.middleware.middlewares.request_middleware import RequestMiddleware
-
 from framefox.core.middleware.middlewares.session_middleware import SessionMiddleware
 from framefox.core.middleware.middlewares.debug_exception_middleware import DebugExceptionMiddleware
 """
@@ -34,20 +33,19 @@ class MiddlewareManager:
             Adds the necessary middlewares to the application instance.
     """
 
-    def __init__(self, app, settings: Settings):
+    def __init__(self, app):
         self.app = app
-        self.settings = settings
+
 
     def setup_middlewares(self):
 
         self.app.add_middleware(ProfilerMiddleware)
-
         # self.app.add_middleware(HTTPSRedirectMiddleware)
         self.app.add_middleware(RequestMiddleware)
         self.app.add_middleware(EntityManagerMiddleware)
         self.app.add_middleware(CsrfMiddleware)
-        self.app.add_middleware(FirewallMiddleware, settings=self.settings)
-        self.app.add_middleware(SessionMiddleware, settings=self.settings)
-        self.app.add_middleware(CustomCORSMiddleware, settings=self.settings)
-        self.app.add_middleware(DebugExceptionMiddleware, settings=self.settings)
+        self.app.add_middleware(FirewallMiddleware)
+        self.app.add_middleware(SessionMiddleware)
+        self.app.add_middleware(CustomCORSMiddleware)
+        self.app.add_middleware(DebugExceptionMiddleware)
 

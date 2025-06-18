@@ -22,10 +22,10 @@ class UserProvider:
     """
 
     def __init__(self):
-        self._container = ServiceContainer()
-        self.token_storage = self._container.get_by_name("TokenStorage")
-        self.session = self._container.get_by_name("Session")
-        self.entity_user_provider = self._container.get_by_name("EntityUserProvider")
+        self.container = ServiceContainer()
+        self.token_storage = self.container.get_by_name("TokenStorage")
+        self.session = self.container.get_by_name("Session")
+        self.entity_user_provider = self.container.get_by_name("EntityUserProvider")
         self.logger = logging.getLogger("USER_PROVIDER")
 
     def get_current_user(self, user_class: Type[T] = None) -> Optional[T]:
