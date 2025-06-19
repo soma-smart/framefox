@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>
+			{% block title %}My Application
+			{% endblock %}
+		</title>
+
+		<link rel="icon" href="/static/images/orange_fox.png"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.3/lux/bootstrap.min.css" integrity="sha512-RI2S7J+KOTIVVh6JxrBRNIxJjIioHORVNow+SSz2OMKsDLG5y/YT6iXEK+R0LlKBo/Uwr1O063yT198V6AZh4w==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+	</head>
+	<body>
+	
+		
+		<div class="container mt-3">
+			{% set flash_messages = get_flash_messages() %}
+			{% for flash in flash_messages %}
+				<div class="alert alert-{{ flash.category }}">{{ flash.message }}</div>
+			{% endfor %}
+		</div>
+		{% block content %}{% endblock %}
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	</body>
+</html>

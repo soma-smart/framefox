@@ -1,0 +1,8 @@
+parameters:
+# create your own parameters here by creating as many key as you want.
+# to refer to the parameter in your application, use the Settings class and call the get_param method
+# custom_variables:
+#   api_key: "${API_KEY}"
+#   base_url: "${BASE_URL}"
+#   max_retries: "${MAX_RETRIES}"
+#   timeout: "${TIMEOUT}"
