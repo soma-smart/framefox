@@ -17,7 +17,8 @@ Github: https://github.com/Vasulvius
 class CreateControllerCommand(AbstractCommand):
     def __init__(self):
         super().__init__("controller")
-        self.controller_path = r"src/controller"
+
+        self.controller_path = self.get_settings().controller_dir
         self.view_path = r"templates"
         self.controller_template = r"controller_template.jinja2"
         self.view_template = r"view_template.jinja2"

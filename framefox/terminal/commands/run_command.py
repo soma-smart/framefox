@@ -195,11 +195,10 @@ class RunCommand(AbstractCommand):
                 worker_manager.running = False
                 loop.stop()
 
-            # Start both coroutines
+
             loop.create_task(run_worker())
             loop.create_task(monitor_stop_event())
 
-            # Run the event loop until stopped
             loop.run_forever()
 
         except Exception as e:

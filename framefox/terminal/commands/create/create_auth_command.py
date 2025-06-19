@@ -37,7 +37,7 @@ class CreateAuthCommand(AbstractCommand):
         self.env_manager = EnvManager()
 
         self.authenticator_path = r"src/security"
-        self.controller_path = r"src/controller"
+        self.controller_path = self.get_settings().controller_dir
         self.view_path = r"templates/security"
         os.makedirs(self.view_path, exist_ok=True)
 
@@ -213,7 +213,7 @@ class CreateAuthCommand(AbstractCommand):
             return self._create_custom_auth_files(class_name, file_name)
 
     def _create_form_auth_files(self, class_name: str, file_name: str) -> str:
-        controller_path = os.path.join("src/controller", "login_controller.py")
+        controller_path = os.path.join(self.controller_path, "login_controller.py")
         view_path = os.path.join("templates/security", "login.html")
 
         existing_files = []
@@ -529,7 +529,7 @@ class CreateAuthCommand(AbstractCommand):
         """
         controller_name = auth_name
         controller_file = f"{controller_name}_controller"
-        controller_path = os.path.join("src/controller", f"{controller_file}.py")
+        controller_path = os.path.join(self.controller_path, f"{controller_file}.py")
 
         if os.path.exists(controller_path):
             self.printer.print_msg(
@@ -638,7 +638,7 @@ class CreateAuthCommand(AbstractCommand):
         """
         controller_name = auth_name
         controller_file = f"{controller_name}_controller"
-        controller_path = os.path.join("src/controller", f"{controller_file}.py")
+        controller_path = os.path.join(self.controller_path, f"{controller_file}.py")
 
         if os.path.exists(controller_path):
             self.printer.print_msg(

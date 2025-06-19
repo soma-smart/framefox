@@ -1,18 +1,27 @@
 from framefox.terminal.common.printer import Printer
 from framefox.core.di.service_container import ServiceContainer
+from framefox.core.config.settings import Settings
+"""
+Framefox Framework developed by SOMA
+Github: https://github.com/soma-smart/framefox
+----------------------------
+Author: BOUMAZA Rayen & LEUROND Raphael
+Github: https://github.com/RayenBou
+Github: https://github.com/Vasulvius 
+"""
 
 class AbstractCommand:
     """
-    Classe abstraite de base pour toutes les commandes.
+    Abstract base class for all commands.
 
     """
 
     def __init__(self, name=None):
         """
-        Initialise la commande
+        Initializes the command
 
         Args:
-            name: Le nom de la commande (utilisé pour la convention namespace:name)
+            name: The command name (used for namespace:name convention)
         """
         self.name = name or self.__class__.__name__.replace("Command", "").lower()
         self.printer = Printer()
@@ -20,19 +29,23 @@ class AbstractCommand:
 
     def execute(self, *args, **kwargs):
         """
-        Exécute la commande. Doit être implémenté par les sous-classes.
+        Executes the command. Must be implemented by subclasses.
 
         Args:
-            *args: Arguments positionnels
-            **kwargs: Arguments nommés
+            *args: Positional arguments
+            **kwargs: Named arguments
 
         Returns:
-            int: Code de retour (0 = succès, autre = échec)
+            int: Return code (0 = success, other = failure)
         """
-        raise NotImplementedError("Les sous-classes doivent implémenter cette méthode")
+        raise NotImplementedError("Subclasses must implement this method")
 
     def get_container(self):
-        """Obtient le container de services (lazy loading)"""
+        """Gets the service container (lazy loading)"""
         if self._container is None:
             self._container = ServiceContainer()
         return self._container
+
+    def get_settings(self):
+        """Gets the application settings"""
+        return Settings()

@@ -21,7 +21,7 @@ class CreateCrudCommand(AbstractCommand):
         super().__init__("crud")
         self.api_controller_template = r"api_crud_controller_template.jinja2"
         self.templated_controller_template = r"templated_crud_controller_template.jinja2"
-        self.controller_path = r"src/controller"
+        self.controller_path = self.get_settings().controller_dir
         self.input_choices = ["api", "templated"]
         self.templates_path = r"templates"
 

@@ -3,6 +3,7 @@ import logging
 import time
 from pathlib import Path
 from typing import Any, Dict, Type
+from framefox.core.config.settings import Settings
 
 from framefox.core.di.service_definition import ServiceDefinition
 
@@ -21,9 +22,9 @@ class ServiceCacheManager:
     Separates cache logic from the main container.
     """
 
-    def __init__(self, settings=None):
+    def __init__(self):
         self._logger = logging.getLogger("SERVICE_CACHE")
-        self.settings = settings
+        self.settings = Settings()
         self._cache_dir = Path("var/cache")
         self._dev_cache_file = self._cache_dir / "dev_services.json"
         self._prod_cache_file = self._cache_dir / "services.json"
@@ -175,22 +176,36 @@ class ServiceCacheManager:
 
     def _are_source_files_modified(self, cache_timestamp: float) -> bool:
         try:
-            src_path = Path("src/controller")
-            if src_path.exists():
-                for py_file in src_path.rglob("*.py"):
-                    if py_file.stat().st_mtime > cache_timestamp:
-                        return True
+
+            watch_dirs = [
+                Path(self.settings.controller_dir),  
+                Path("src/entities") if Path("src/entities").exists() else None,
+                Path("src/services") if Path("src/services").exists() else None,
+            ]
+            
+            for watch_dir in filter(None, watch_dirs):
+                if watch_dir.exists():
+                    for py_file in watch_dir.rglob("*.py"):
+                        if py_file.stat().st_mtime > cache_timestamp:
+                            self._logger.debug(f"Source file modified: {py_file}")
+                            return True
 
             core_path = Path(__file__).parent.parent
-            critical_files = ["controller/abstract_controller.py", "routing/router.py", "di/service_container.py"]
+            critical_files = [
+                "controller/abstract_controller.py", 
+                "routing/router.py", 
+                "di/service_container.py"
+            ]
 
             for critical_file in critical_files:
                 file_path = core_path / critical_file
                 if file_path.exists() and file_path.stat().st_mtime > cache_timestamp:
+                    self._logger.debug(f"Framework file modified: {file_path}")
                     return True
 
             return False
-        except Exception:
+        except Exception as e:
+            self._logger.debug(f"Error checking source file modifications: {e}")
             return True
 
     def _import_service_class(self, service_path: str) -> Type[Any]:

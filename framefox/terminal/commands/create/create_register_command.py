@@ -20,7 +20,7 @@ class CreateRegisterCommand(AbstractCommand):
         super().__init__("register")
         self.register_controller_template_name = r"security/register_controller_template.jinja2"
         self.register_view_template_name = r"security/register_view_template.jinja2"
-        self.controller_path = r"src/controller"
+        self.controller_path = self.get_settings().controller_dir
         self.view_path = r"templates/security"
         os.makedirs(self.view_path, exist_ok=True)
 
@@ -90,7 +90,7 @@ class CreateRegisterCommand(AbstractCommand):
 
     def _create_register_files(self, provider_name: str):
 
-        controller_path = os.path.join("src/controller", "register_controller.py")
+        controller_path = os.path.join(self.controller_path, "register_controller.py")
         view_path = os.path.join("templates/security", "register.html")
 
         existing_files = []

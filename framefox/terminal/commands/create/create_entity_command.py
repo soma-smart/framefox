@@ -92,7 +92,7 @@ class CreateEntityCommand(AbstractCommand):
                 self.property_manager.add_property(entity_name, property_details)
 
     def create_entity_and_repository(self, entity_name: str):
-        """Crée l'entité et le dépôt associé"""
+        """Creates the entity and associated repository"""
         entity_class = ClassNameManager.snake_to_pascal(entity_name)
         repository_class = f"{entity_class}Repository"
 

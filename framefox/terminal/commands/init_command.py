@@ -24,8 +24,6 @@ Github: https://github.com/Vasulvius
 
 MIN_PYTHON_VERSION = (3, 12)
 MIN_DISK_SPACE = 100 * 1024 * 1024
-
-# Project structure to create
 PROJECT_DIRECTORIES = [
     "src",
     "src/controller",
@@ -86,12 +84,10 @@ class InitCommand(AbstractCommand):
         """Check which project files and directories already exist"""
         existing_items = []
 
-        # Check directories
         for directory in PROJECT_DIRECTORIES:
             if os.path.exists(directory):
                 existing_items.append(f"{directory}/ (directory)")
 
-        # Check files
         for file in PROJECT_FILES:
             if os.path.exists(file):
                 existing_items.append(f"{file} (file)")
@@ -156,14 +152,12 @@ class InitCommand(AbstractCommand):
     def _get_files_configuration(self):
         """Return the configuration of all files to create"""
         return [
-            # Main file
             {
                 "template": "init_files/main.jinja2",
                 "path": ".",
                 "name": "main",
                 "data": {},
             },
-            # Environment file
             {
                 "template": "init_files/env.jinja2",
                 "path": ".",
@@ -171,7 +165,6 @@ class InitCommand(AbstractCommand):
                 "data": {"session_secret_key": self._generate_secret_key()},
                 "format": "env",
             },
-            # Base HTML template
             {
                 "template": "init_files/base.jinja2",
                 "path": "./templates",
@@ -179,11 +172,8 @@ class InitCommand(AbstractCommand):
                 "data": {},
                 "format": "html",
             },
-            # YAML configuration files
             *self._get_yaml_config_files(),
-            # Migration files
             *self._get_migration_files(),
-            # Miscellaneous files
             *self._get_misc_files(),
         ]
 
@@ -287,7 +277,7 @@ class InitCommand(AbstractCommand):
         table.add_column("Required", style="white")
         table.add_column("Current", style="white")
 
-        # Python version check
+
         python_version = sys.version_info
         python_ok = python_version >= MIN_PYTHON_VERSION
         table.add_row(
@@ -296,8 +286,6 @@ class InitCommand(AbstractCommand):
             f"Python {'.'.join(map(str, MIN_PYTHON_VERSION))}+",
             f"Python {'.'.join(map(str, python_version[:3]))}",
         )
-
-        # Operating system check
         os_name = platform.system()
         os_ok = os_name in ["Linux", "Darwin", "Windows", "MacOS"]
         table.add_row(
@@ -307,7 +295,6 @@ class InitCommand(AbstractCommand):
             os_name,
         )
 
-        # Permissions check
         home = os.path.expanduser("~")
         can_write = os.access(home, os.W_OK)
         table.add_row(
@@ -316,8 +303,6 @@ class InitCommand(AbstractCommand):
             "Write in home",
             "OK" if can_write else "Denied",
         )
-
-        # Disk space check
         _, _, free = shutil.disk_usage(home)
         space_ok = free > MIN_DISK_SPACE
         table.add_row(
@@ -357,13 +342,6 @@ class InitCommand(AbstractCommand):
                 "[bold red]✗ Your system does not meet all the required conditions[/bold red]",
                 linebefore=True,
             )
-
-    # Static method kept for compatibility (if used elsewhere)
-    @staticmethod
-    def create_empty_project():
-        """Static method kept for compatibility - delegates to an instance"""
-        command = InitCommand()
-        command._create_project()
 
     @staticmethod
     def generate_secret_key():
