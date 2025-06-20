@@ -13,7 +13,7 @@ This guide covers advanced routing techniques for complex applications, includin
 Organize routes by functionality using separate controller classes:
 
 ```python
-# src/controllers/api/user_controller.py
+# src/controller/api/user_controller.py
 class UserApiController(AbstractController):
     @Route("/api/v1/users", "api.v1.user.index", methods=["GET"])
     async def index(self):
@@ -23,7 +23,7 @@ class UserApiController(AbstractController):
     async def show(self, id: int):
         return {"user": {}}
 
-# src/controllers/web/user_controller.py
+# src/controller/web/user_controller.py
 class UserWebController(AbstractController):
     @Route("/users", "user.index", methods=["GET"])
     async def index(self):

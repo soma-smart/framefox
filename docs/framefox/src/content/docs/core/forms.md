@@ -102,7 +102,7 @@ class ContactType(FormTypeInterface):
 
 Forms integrate seamlessly with Framefox controllers through the `create_form()` method:
 
-```python title="src/controllers/user_controller.py"
+```python title="src/controller/user_controller.py"
 from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
 from fastapi import Request
@@ -158,7 +158,7 @@ The form lifecycle in Framefox follows this pattern:
 
 Forms can be pre-populated with existing entity data for edit operations:
 
-```python title="src/controllers/user_controller.py"
+```python title="src/controller/user_controller.py"
 @Route("/user/{user_id}/edit", "user.edit", methods=["GET", "POST"])
 async def edit(self, request: Request, user_id: int):
     # Load existing user
@@ -190,7 +190,7 @@ async def edit(self, request: Request, user_id: int):
 
 Forms provide comprehensive error handling with field-level and form-level validation:
 
-```python title="src/controllers/contact_controller.py"
+```python title="src/controller/contact_controller.py"
 @Route("/contact", "contact.submit", methods=["GET", "POST"])
 async def contact(self, request: Request):
     form = self.create_form(ContactType)
@@ -586,7 +586,7 @@ class PasswordChangeType(FormTypeInterface):
 
 Handle uploaded files securely in your controllers:
 
-```python title="src/controllers/document_controller.py"
+```python title="src/controller/document_controller.py"
 from fastapi import UploadFile
 import os
 
@@ -735,7 +735,7 @@ class UserType(FormTypeInterface):
 
 The CRUD command also generates a complete controller with form handling:
 
-```python title="src/controllers/user_controller.py"
+```python title="src/controller/user_controller.py"
 from framefox.core.routing.decorator.route import Route
 from framefox.core.controller.abstract_controller import AbstractController
 from fastapi import Request

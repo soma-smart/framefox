@@ -24,7 +24,6 @@ Form-based authentication provides the traditional username/password login exper
 - Server-side session storage with SQLite backend
 - Automatic CSRF token generation and validation
 - bcrypt password hashing with configurable cost factors
-- Remember me functionality with secure token storage
 - Security event logging
 
 ### 🎫 JWT API Authentication (Stateless Token-Based)
@@ -330,7 +329,6 @@ security:
       login_path: /login
       logout_path: /logout
       denied_redirect: /
-      remember_me: true
       session_lifetime: 3600
 
   access_control:
@@ -586,9 +584,7 @@ security:
       provider: app_user_provider
       login_path: /admin/login
       logout_path: /admin/logout
-      remember_me: false
-      session_lifetime: 1800
-      
+
     # OAuth authentication for external integrations
     oauth:
       authenticator: src.security.oauth_authenticator:OauthAuthenticator
@@ -606,8 +602,6 @@ security:
       provider: app_user_provider
       login_path: /login
       logout_path: /logout
-      remember_me: true
-      session_lifetime: 3600
 ```
 
 This multi-firewall configuration enables:

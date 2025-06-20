@@ -54,7 +54,7 @@ class {{ controller_class_name }}(AbstractController):
 
         return self.render("{{ entity_name }}/update.html", {
             "form": form.create_view(),
-            "item": {{ entity_name }}  # Pour compatibilité avec les templates existants
+            "item": {{ entity_name }} 
         })
 
     @Route("/{{ entity_name }}/delete/{id}", "{{ entity_file_name }}.delete", methods=["POST"])
