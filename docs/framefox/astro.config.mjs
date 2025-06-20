@@ -23,7 +23,8 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: "https://github.com/soma-smart/framefox/edit/main/docs/framefox/src/content/docs/",
+        baseUrl:
+          "https://github.com/soma-smart/framefox/edit/main/docs/framefox/src/content/docs/",
       },
       lastUpdated: true,
       sidebar: [
@@ -57,6 +58,24 @@ export default defineConfig({
 
             { label: "Deployment", slug: "advanced_features/deployment" },
           ],
+        },
+        {
+          label: "🚀 Framefox QuickLaunch",
+          items: [
+            { label: "Introduction", slug: "quicklaunch/introduction" },
+            { label: "Project Setup", slug: "quicklaunch/project-setup" },
+            { label: "Database Design", slug: "quicklaunch/database-design" },
+            { label: "Authentication", slug: "quicklaunch/authentication" },
+            { label: "Game Management", slug: "quicklaunch/game-management" },
+            { label: "File Upload", slug: "quicklaunch/file-upload" },
+            { label: "CLI Reference", slug: "quicklaunch/cli-reference" },
+            { label: "Best Practices", slug: "quicklaunch/best-practices" },
+            { label: "What's Next?", slug: "quicklaunch/whats-next" },
+          ],
+        },
+        {
+          label: "Troubleshooting",
+          items: [{ label: "Common Issues", slug: "troubleshooting" }],
         },
         // {
         //   label: "API Reference",

@@ -188,7 +188,7 @@ framefox database create-migration
 framefox database upgrade
 
 # Development tools
-framefox server              # Start development server
+framefox run            # Start development server
 framefox debug router       # List all routes
 framefox cache clear        # Clear application cache
 

@@ -48,8 +48,6 @@ class CacheWarmupCommand(AbstractCommand):
         table.add_column("Status", style="white")
         table.add_column("Details", style="cyan")
 
-
-
         discovery_start = time.time()
         discovery_stats = self._force_service_discovery(self.container)
         discovery_time = time.time() - discovery_start
@@ -70,15 +68,27 @@ class CacheWarmupCommand(AbstractCommand):
         validation_start = time.time()
         validation_stats = self._validate_cache(self.container)
         validation_time = time.time() - validation_start
-        table.add_row(
-            "Cache Validation",
-            "[green]Valid[/green]" if validation_stats["valid"] else "[red]Invalid[/red]",
-            f"Validated in {validation_time:.2f}s",
-        )
+        
+        if validation_stats["valid"]:
+            validation_status = "[green]Valid[/green]"
+            validation_details = validation_stats.get("details", f"Validated in {validation_time:.2f}s")
+        else:
+            validation_status = "[red]Invalid[/red]"
+            validation_details = f"{validation_stats['reason']} | {validation_stats.get('details', '')}"
+        
+        table.add_row("Cache Validation", validation_status, validation_details)
 
         total_time = time.time() - start_time
 
         self.console.print(table)
+        
+        if not validation_stats["valid"]:
+            print("")
+            self.console.print("❌ [bold red]Cache Validation Issues:[/bold red]")
+            self.console.print(f"   • Reason: {validation_stats['reason']}")
+            if validation_stats.get('details'):
+                self.console.print(f"   • Details: {validation_stats['details']}")
+        
         print("")
 
         self._display_container_stats(self.container)
@@ -88,6 +98,12 @@ class CacheWarmupCommand(AbstractCommand):
             theme="success",
             linebefore=True,
         )
+        
+        if not validation_stats["valid"]:
+            self.printer.print_msg(
+                "⚠️  Cache validation failed - this may affect performance on next startup",
+                theme="warning",
+            )
 
     def _force_service_discovery(self, container: ServiceContainer) -> dict:
         container._src_scanned = False
@@ -145,8 +161,9 @@ class CacheWarmupCommand(AbstractCommand):
 
     def _generate_cache(self, container: ServiceContainer) -> dict:
         cache_data = container._create_cache_snapshot()
-
         container._save_service_cache(cache_data)
+
+        self._generated_cache_data = cache_data
 
         return {
             "services": len(cache_data.get("services", [])),
@@ -155,20 +172,76 @@ class CacheWarmupCommand(AbstractCommand):
         }
 
     def _validate_cache(self, container: ServiceContainer) -> dict:
-        cache_data = container._cache_manager.load_cache()
+        """Validate cache with detailed error reporting"""
+        try:
+            if hasattr(self, '_generated_cache_data') and self._generated_cache_data:
+                cache_data = self._generated_cache_data
+                self.console.print("[dim]Note: Validating freshly generated cache data[/dim]")
+            else:
+                cache_data = container._cache_manager.load_cache()
+                if not cache_data:
+                    cache_file = container._cache_manager._get_cache_file()
+                    file_exists = cache_file.exists() if cache_file else False
+                    file_size = cache_file.stat().st_size if file_exists else 0
+                    
+                    return {
+                        "valid": False, 
+                        "reason": "Cache file not found or empty", 
+                        "details": f"File: {cache_file}, Exists: {file_exists}, Size: {file_size}B"
+                    }
 
-        if not cache_data:
-            return {"valid": False, "reason": "Cache file not found or invalid"}
+            required_keys = ["version", "timestamp", "services"]
+            missing_keys = [key for key in required_keys if key not in cache_data]
+            
+            if missing_keys:
+                return {
+                    "valid": False, 
+                    "reason": f"Missing required keys: {', '.join(missing_keys)}", 
+                    "details": f"Found keys: {list(cache_data.keys())}"
+                }
 
-        required_keys = ["version", "timestamp", "services"]
-        for key in required_keys:
-            if key not in cache_data:
-                return {"valid": False, "reason": f"Missing key: {key}"}
+            if not isinstance(cache_data.get("services"), list):
+                return {
+                    "valid": False,
+                    "reason": "Invalid cache structure",
+                    "details": f"Services should be list, got {type(cache_data.get('services'))}"
+                }
 
-        if not container._cache_manager.is_cache_valid(cache_data):
-            return {"valid": False, "reason": "Cache is not valid or expired"}
 
-        return {"valid": True, "services": len(cache_data.get("services", []))}
+            services = cache_data.get("services", [])
+            if not services:
+                return {
+                    "valid": False,
+                    "reason": "No services in cache",
+                    "details": "Cache contains empty services list"
+                }
+
+            invalid_services = []
+            for i, service in enumerate(services[:5]):
+                required_service_keys = ["name", "class_path", "module"]
+                missing_service_keys = [key for key in required_service_keys if key not in service]
+                if missing_service_keys:
+                    invalid_services.append(f"Service {i}: missing {missing_service_keys}")
+
+            if invalid_services:
+                return {
+                    "valid": False,
+                    "reason": "Invalid service structure",
+                    "details": "; ".join(invalid_services)
+                }
+
+            return {
+                "valid": True, 
+                "services": len(services),
+                "details": f"Cache valid with {len(services)} services, version {cache_data.get('version')}"
+            }
+            
+        except Exception as e:
+            return {
+                "valid": False, 
+                "reason": f"Validation error: {str(e)}", 
+                "details": f"Exception during cache validation: {type(e).__name__}"
+            }
 
     def _display_container_stats(self, container: ServiceContainer):
         stats = container.get_stats()

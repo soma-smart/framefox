@@ -126,7 +126,18 @@ class FirewallHandler:
                     module_path, class_name = authenticator_path.rsplit(".", 1)
                     module = importlib.import_module(module_path)
                     AuthenticatorClass: Type[AuthenticatorInterface] = getattr(module, class_name)
-                    authenticator_instance = AuthenticatorClass()
+                    
+                    # ✅ Utiliser le conteneur de services pour l'autowiring
+                    from framefox.core.di.service_container import ServiceContainer
+                    container = ServiceContainer()
+                    
+                    try:
+                        authenticator_instance = container.get(AuthenticatorClass)
+                    except Exception as e:
+                        self.logger.warning(f"Could not autowire {class_name}, falling back to manual instantiation: {e}")
+                        # Fallback : instanciation manuelle si l'autowiring échoue
+                        authenticator_instance = AuthenticatorClass()
+                    
                     authenticators[firewall_name] = authenticator_instance
                 except (ImportError, AttributeError) as e:
                     self.logger.error(f"Error loading authenticator '{authenticator_path}' for firewall '{firewall_name}': {e}")
