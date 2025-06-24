@@ -29,34 +29,34 @@ class UpgradeCommand(AbstractDatabaseCommand):
             # Vérifier si la base de données existe
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(
-                    "La base de données n'existe pas. Veuillez la créer d'abord.",
+                    "The database does not exist. Please create it first.",
                     theme="error",
                 )
                 return
 
-            self.printer.print_msg("Application des migrations...", theme="info")
+            self.printer.print_msg("Applying migrations...", theme="info")
 
             # Utiliser le gestionnaire pour appliquer les migrations
             success, migrations_applied = self.alembic_manager.upgrade("head")
 
             if success:
                 if migrations_applied:
-                    self.printer.print_msg("Migrations appliquées avec succès.", theme="success")
+                    self.printer.print_msg("Migrations applied successfully.", theme="success")
                 else:
                     self.printer.print_msg(
-                        "La base de données est déjà à jour, aucune migration à appliquer.",
+                        "The database is already up to date, no migrations to apply.",
                         theme="info",
                     )
 
                 self.printer.print_full_text(
-                    "Vous pouvez utiliser [bold orange1]framefox database:downgrade[/bold orange1] pour annuler les migrations si nécessaire.",
+                    "You can use [bold orange1]framefox database downgrade[/bold orange1] to undo the migrations if necessary.",
                     linebefore=True,
                 )
             else:
-                self.printer.print_msg("L'application des migrations a échoué.", theme="error")
+                self.printer.print_msg("Failed to apply migrations.", theme="error")
 
         except Exception as e:
             self.printer.print_msg(
-                f"Une erreur s'est produite lors de l'application des migrations : {str(e)}",
+                f"An error occurred while applying migrations: {str(e)}",
                 theme="error",
             )
