@@ -1,9 +1,8 @@
-from sqlalchemy import text
-
 from framefox.core.config.settings import Settings
 from framefox.terminal.commands.database.abstract_database_command import (
     AbstractDatabaseCommand,
 )
+from sqlalchemy import text
 
 """
 Framefox Framework developed by SOMA
@@ -29,11 +28,15 @@ class CreateCommand(AbstractDatabaseCommand):
             database = self.connection_manager.config.database
 
             if self.driver.database_exists(database):
-                self.printer.print_msg(f"The database '{database}' already exists", theme="warning")
+                self.printer.print_msg(
+                    f"The database '{database}' already exists", theme="warning"
+                )
                 return
 
             self.driver.create_database(database)
-            self.printer.print_msg(f"Database '{database}' created successfully", theme="success")
+            self.printer.print_msg(
+                f"Database '{database}' created successfully", theme="success"
+            )
 
         except Exception as e:
             self.printer.print_msg(

@@ -2,6 +2,7 @@ from framefox.terminal.common.class_name_manager import ClassNameManager
 from framefox.terminal.common.input_manager import InputManager
 from framefox.terminal.common.model_checker import ModelChecker
 from framefox.terminal.common.printer import Printer
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -10,15 +11,16 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
+
 class EntityPropertyManager(object):
     """
     Manages entity properties for the framework.
-    
+
     This class handles the creation, validation, and insertion of properties
     into entity files. It supports various property types including basic types
     and relations between entities.
     """
-    
+
     def __init__(self):
         self.entity_folder = r"src/entity"
         self.printer = Printer()
@@ -88,9 +90,7 @@ class EntityPropertyManager(object):
             property_core = " = Field("
             params = []
             if property_constraint:
-                params.append(
-                    f"{property_constraint[0]}={property_constraint[1]}"
-                )
+                params.append(f"{property_constraint[0]}={property_constraint[1]}")
             if optional == "yes":
                 params.append("nullable=True")
             property_parameters = ", ".join(params)

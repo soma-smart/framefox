@@ -5,12 +5,11 @@ import shutil
 import sys
 from importlib.metadata import version
 
-from rich.console import Console
-from rich.table import Table
-
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
+from rich.console import Console
+from rich.table import Table
 
 """
 Framefox Framework developed by SOMA
@@ -64,6 +63,7 @@ PROJECT_FILES = [
 
 class InitCommand(AbstractCommand):
     """Command to initialize a new Framefox project"""
+
     def __init__(self):
         super().__init__("init")
 
@@ -98,7 +98,9 @@ class InitCommand(AbstractCommand):
         """Handle conflicts with existing files"""
         self._display_existing_files_warning(existing_items)
 
-        choice = InputManager().wait_input("Your choice", choices=["1", "2"], default="1")
+        choice = InputManager().wait_input(
+            "Your choice", choices=["1", "2"], default="1"
+        )
 
         if choice == "1":
             self.printer.print_msg(
@@ -130,7 +132,9 @@ class InitCommand(AbstractCommand):
         print("")
         self.printer.print_msg("What do you want to do?", theme="bold_normal")
         self.printer.print_msg("1. Cancel initialization", theme="normal")
-        self.printer.print_msg("2. Overwrite existing files/directories", theme="normal")
+        self.printer.print_msg(
+            "2. Overwrite existing files/directories", theme="normal"
+        )
 
     def _create_project(self):
         """Create the complete project structure"""
@@ -179,7 +183,16 @@ class InitCommand(AbstractCommand):
 
     def _get_yaml_config_files(self):
         """Return the configuration for YAML files"""
-        yaml_files = ["application", "orm", "security", "mail", "debug", "parameter", "services", "tasks"]
+        yaml_files = [
+            "application",
+            "orm",
+            "security",
+            "mail",
+            "debug",
+            "parameter",
+            "services",
+            "tasks",
+        ]
 
         return [
             {
@@ -276,7 +289,6 @@ class InitCommand(AbstractCommand):
         table.add_column("Status", style="white")
         table.add_column("Required", style="white")
         table.add_column("Current", style="white")
-
 
         python_version = sys.version_info
         python_ok = python_version >= MIN_PYTHON_VERSION

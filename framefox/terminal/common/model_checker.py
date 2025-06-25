@@ -12,6 +12,7 @@ Author: LEUROND Raphael
 Github: https://github.com/Vasulvius 
 """
 
+
 class ModelChecker:
     def __init__(self):
         self.entity_path = r"src/entity"

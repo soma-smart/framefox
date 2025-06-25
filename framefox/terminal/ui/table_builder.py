@@ -1,8 +1,7 @@
 from typing import List, Tuple
 
-from rich.table import Table
-
 from framefox.terminal.ui.themes import FramefoxTheme
+from rich.table import Table
 
 """
 Framefox Framework developed by SOMA

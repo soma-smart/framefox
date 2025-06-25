@@ -1,0 +1,119 @@
+{% raw %}{% extends "base.html" %}
+{% block title %}{% endraw %}{{ feature_name|title }} - Custom{% raw %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5>🛠️ {% endraw %}{{ feature_name|title }}{% raw %} - Custom Socket</h5>
+        </div>
+        <div class="card-body">
+            <div id="status" class="alert alert-secondary">
+                Status: <span id="status-text">Disconnected</span>
+            </div>
+
+            <div class="mb-3">
+                <select id="message-type" class="form-select">
+                    <option value="message">Message</option>
+                    <option value="echo">Echo</option>
+                    <option value="ping">Ping</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+
+            <div id="messages" class="border p-3 mb-3" style="height: 300px; overflow-y: auto; background: #f8f9fa;"></div>
+
+            <div class="mb-3">
+                <textarea id="message-input" class="form-control" rows="3" placeholder="Enter your message...">Hello Custom Socket!</textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" id="connect-btn">Connect</button>
+                <button class="btn btn-danger" id="disconnect-btn" disabled>Disconnect</button>
+                <button class="btn btn-warning" id="send-message" disabled>Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let websocket = null;
+
+function addMessage(message, type = 'received') {
+    const timestamp = new Date().toLocaleTimeString();
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'mb-2';
+    
+    let badgeClass = type === 'sent' ? 'bg-primary' : 'bg-success';
+    let content = type === 'sent' ? `→ SENT: ${JSON.stringify(message)}` : `← RECEIVED: ${JSON.stringify(message)}`;
+    
+    messageDiv.innerHTML = `
+        <div class="badge ${badgeClass} p-2" style="white-space: pre-wrap; word-break: break-all;">
+            <small>[${timestamp}]</small><br>${content}
+        </div>
+    `;
+    document.getElementById('messages').appendChild(messageDiv);
+    document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+}
+
+function updateStatus(status, alertClass) {
+    document.getElementById('status-text').textContent = status;
+    document.getElementById('status').className = `alert ${alertClass}`;
+}
+
+document.getElementById('connect-btn').onclick = function() {
+    const wsUrl = `ws://${window.location.host}/ws/{% endraw %}{{ feature_name }}{% raw %}/custom`;
+    websocket = new WebSocket(wsUrl);
+    
+    websocket.onopen = function() {
+        updateStatus('Connected', 'alert-success');
+        document.getElementById('connect-btn').disabled = true;
+        document.getElementById('disconnect-btn').disabled = false;
+        document.getElementById('send-message').disabled = false;
+    };
+    
+    websocket.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            addMessage(data, 'received');
+        } catch (e) {
+            addMessage(event.data, 'received');
+        }
+    };
+    
+    websocket.onclose = function() {
+        updateStatus('Disconnected', 'alert-secondary');
+        document.getElementById('connect-btn').disabled = false;
+        document.getElementById('disconnect-btn').disabled = true;
+        document.getElementById('send-message').disabled = true;
+    };
+};
+
+document.getElementById('disconnect-btn').onclick = function() {
+    if (websocket) websocket.close();
+};
+
+document.getElementById('send-message').onclick = function() {
+    const messageType = document.getElementById('message-type').value;
+    const rawData = document.getElementById('message-input').value.trim();
+    
+    if (rawData && websocket && websocket.readyState === WebSocket.OPEN) {
+        const message = {
+            type: messageType,
+            data: rawData,
+            timestamp: new Date().toISOString()
+        };
+        
+        websocket.send(JSON.stringify(message));
+        addMessage(message, 'sent');
+    }
+};
+
+document.getElementById('message-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('send-message').click();
+    }
+});
+</script>
+{% endblock %}{% endraw %}

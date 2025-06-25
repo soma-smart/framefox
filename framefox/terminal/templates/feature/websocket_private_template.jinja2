@@ -1,0 +1,121 @@
+{% raw %}{% extends "base.html" %}
+{% block title %}{% endraw %}{{ feature_name|title }} - Private Chat{% raw %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5>💬 {% endraw %}{{ feature_name|title }}{% raw %} - Private Chat</h5>
+        </div>
+        <div class="card-body">
+            <div id="status" class="alert alert-secondary">
+                Status: <span id="status-text">Disconnected</span>
+            </div>
+
+            <div class="mb-3">
+                <input type="text" id="target-user" class="form-control" placeholder="Chat with user ID..." value="user456">
+            </div>
+
+            <div id="messages" class="border p-3 mb-3" style="height: 300px; overflow-y: auto; background: #f8f9fa;"></div>
+
+            <div class="input-group mb-3">
+                <input type="text" id="message-input" class="form-control" placeholder="Type your private message...">
+                <button class="btn btn-info" id="send-message" disabled>Send</button>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" id="connect-btn">Connect</button>
+                <button class="btn btn-danger" id="disconnect-btn" disabled>Disconnect</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let websocket = null;
+let currentUserId = 'user123';
+
+function addMessage(message, type = 'received') {
+    const timestamp = new Date().toLocaleTimeString();
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'mb-2';
+    
+    let badgeClass = 'bg-secondary';
+    let content = '';
+    
+    if (type === 'sent') {
+        badgeClass = 'bg-primary';
+        content = `You → ${document.getElementById('target-user').value}: ${message}`;
+    } else if (type === 'received') {
+        badgeClass = 'bg-success';
+        content = `From ${message.from_user || 'Unknown'}: ${message.content || message.message || message}`;
+    } else if (type === 'system') {
+        badgeClass = 'bg-warning text-dark';
+        content = `System: ${message}`;
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="badge ${badgeClass} p-2">
+            <small>[${timestamp}]</small> ${content}
+        </div>
+    `;
+    document.getElementById('messages').appendChild(messageDiv);
+    document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+}
+
+function updateStatus(status, alertClass) {
+    document.getElementById('status-text').textContent = status;
+    document.getElementById('status').className = `alert ${alertClass}`;
+}
+
+document.getElementById('connect-btn').onclick = function() {
+    const wsUrl = `ws://${window.location.host}/ws/{% endraw %}{{ feature_name }}{% raw %}/private/${currentUserId}`;
+    websocket = new WebSocket(wsUrl);
+    
+    websocket.onopen = function() {
+        updateStatus('Connected', 'alert-success');
+        document.getElementById('connect-btn').disabled = true;
+        document.getElementById('disconnect-btn').disabled = false;
+        document.getElementById('send-message').disabled = false;
+        addMessage('Connected to private chat', 'system');
+    };
+    
+    websocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        addMessage(data, 'received');
+    };
+    
+    websocket.onclose = function() {
+        updateStatus('Disconnected', 'alert-secondary');
+        document.getElementById('connect-btn').disabled = false;
+        document.getElementById('disconnect-btn').disabled = true;
+        document.getElementById('send-message').disabled = true;
+        addMessage('Private chat connection closed', 'system');
+    };
+};
+
+document.getElementById('disconnect-btn').onclick = function() {
+    if (websocket) websocket.close();
+};
+
+document.getElementById('send-message').onclick = function() {
+    const message = document.getElementById('message-input').value.trim();
+    const targetUser = document.getElementById('target-user').value.trim();
+    
+    if (message && websocket) {
+        websocket.send(JSON.stringify({
+            type: 'message',
+            data: message,
+            target_user: targetUser
+        }));
+        
+        addMessage(message, 'sent');
+        document.getElementById('message-input').value = '';
+    }
+};
+
+document.getElementById('message-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') document.getElementById('send-message').click();
+});
+</script>
+{% endblock %}{% endraw %}

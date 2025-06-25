@@ -1,5 +1,4 @@
 import typer
-
 from framefox.terminal.command_registry import CommandRegistry
 from framefox.terminal.typer_config.command_builder import CommandBuilder
 from framefox.terminal.ui.display_manager import DisplayManager
@@ -91,7 +90,9 @@ class AppConfigurator:
                 for command_name, command_class in commands.items():
                     # Avoid duplicates with built-in commands
                     if command_name not in ["init", "list"]:
-                        instance = self.command_builder.instantiate_command(command_class)
+                        instance = self.command_builder.instantiate_command(
+                            command_class
+                        )
                         if instance:
                             self.app.command(name=command_name)(instance.execute)
                 continue

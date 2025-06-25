@@ -1,11 +1,10 @@
 import os
 import sys
 
-from rich.console import Console
-from rich.table import Table
-
 from framefox.application import Application
 from framefox.terminal.commands.abstract_command import AbstractCommand
+from rich.console import Console
+from rich.table import Table
 
 
 class DebugRouterCommand(AbstractCommand):
@@ -20,14 +19,20 @@ class DebugRouterCommand(AbstractCommand):
 
     def __init__(self):
         super().__init__("router")
+        self._app = None
 
-        current_dir = os.getcwd()
-        if current_dir not in sys.path:
-            sys.path.insert(0, current_dir)
+    @property
+    def app(self):
+        """Lazy loading de l'application - ne charge que quand nécessaire"""
+        if self._app is None:
+            current_dir = os.getcwd()
+            if current_dir not in sys.path:
+                sys.path.insert(0, current_dir)
 
-        application = Application()
-        kernel = application.boot_web()
-        self.app = kernel.app
+            application = Application()
+            kernel = application.boot_web()
+            self._app = kernel.app
+        return self._app
 
     def execute(self):
         """

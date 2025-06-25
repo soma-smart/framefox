@@ -1,0 +1,91 @@
+{% raw %}{% extends "base.html" %}
+{% block title %}{% endraw %}{{ feature_name|title }} - Chat{% raw %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5>💬 {% endraw %}{{ feature_name|title }}{% raw %} - Chat Feature</h5>
+        </div>
+        <div class="card-body">
+            <div id="status" class="alert alert-secondary">Disconnected</div>
+            <div id="messages" class="border p-3 mb-3" style="height: 200px; overflow-y: auto; background: #f8f9fa;"></div>
+            <div class="input-group mb-3">
+                <input type="text" id="input" class="form-control" placeholder="Message" disabled>
+                <button id="connect" class="btn btn-success">Connect</button>
+                <button id="send" class="btn btn-primary" disabled>Send</button>
+            </div>
+            <div class="d-flex gap-2">
+                {% if socket_type == "complete" %}
+                <a href="/{% endraw %}{{ feature_name }}{% raw %}/room" class="btn btn-outline-primary">Room Chat</a>
+                <a href="/{% endraw %}{{ feature_name }}{% raw %}/private" class="btn btn-outline-info">Private Chat</a>
+                {% elif socket_type == "rooms_only" %}
+                <a href="/{% endraw %}{{ feature_name }}{% raw %}/room" class="btn btn-outline-primary">Room Chat</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let ws = null;
+
+document.getElementById('connect').onclick = function() {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    
+    {% if socket_type == "general_only" %}
+    let wsUrl = `${protocol}//${location.host}/ws/{% endraw %}{{ feature_name }}{% raw %}`;
+    {% elif socket_type == "rooms_only" %}
+    let wsUrl = `${protocol}//${location.host}/ws/{% endraw %}{{ feature_name }}{% raw %}/general`;
+    {% elif socket_type == "complete" %}
+    let wsUrl = `${protocol}//${location.host}/ws/{% endraw %}{{ feature_name }}{% raw %}`;
+    {% else %}
+    let wsUrl = `${protocol}//${location.host}/ws/{% endraw %}{{ feature_name }}{% raw %}`;
+    {% endif %}
+    
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        document.getElementById('status').className = 'alert alert-success';
+        document.getElementById('status').textContent = 'Connected';
+        document.getElementById('connect').disabled = true;
+        document.getElementById('send').disabled = false;
+        document.getElementById('input').disabled = false;
+    };
+    
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        addMessage(data.user || data.username || 'System', data.message || data.data);
+    };
+    
+    ws.onclose = () => {
+        document.getElementById('status').className = 'alert alert-secondary';
+        document.getElementById('status').textContent = 'Disconnected';
+        document.getElementById('connect').disabled = false;
+        document.getElementById('send').disabled = true;
+        document.getElementById('input').disabled = true;
+    };
+};
+
+document.getElementById('send').onclick = function() {
+    const msg = document.getElementById('input').value.trim();
+    if (msg && ws) {
+        ws.send(JSON.stringify({type: 'message', data: msg, username: 'User'}));
+        addMessage('You', msg);
+        document.getElementById('input').value = '';
+    }
+};
+
+document.getElementById('input').onkeypress = function(e) {
+    if (e.key === 'Enter') document.getElementById('send').click();
+};
+
+function addMessage(user, msg) {
+    const div = document.createElement('div');
+    const time = new Date().toLocaleTimeString();
+    div.innerHTML = `<small>[${time}]</small> <strong>${user}:</strong> ${msg}`;
+    document.getElementById('messages').appendChild(div);
+    document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+}
+</script>
+{% endblock %}{% endraw %}

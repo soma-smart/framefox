@@ -36,7 +36,9 @@ class FramefoxMessages:
     HEADER_SUBTITLE = "Swift, smart, and a bit foxy"
 
     # Help messages
-    HELP_COMMAND_DETAILS = "Run 'framefox COMMAND --help' for specific command group details"
+    HELP_COMMAND_DETAILS = (
+        "Run 'framefox COMMAND --help' for specific command group details"
+    )
     HELP_INIT_DETAILS = "Run 'framefox init --help' for command details"
     HELP_EXAMPLE = "Example: 'framefox run' or 'framefox create controller'"
 

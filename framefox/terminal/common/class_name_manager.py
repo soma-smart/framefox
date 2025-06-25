@@ -8,6 +8,7 @@ Author: LEUROND Raphael
 Github: https://github.com/Vasulvius 
 """
 
+
 class ClassNameManager:
     @staticmethod
     def is_snake_case(name: str) -> bool:

@@ -18,7 +18,9 @@ Github: https://github.com/RayenBou
 class CreateRegisterCommand(AbstractCommand):
     def __init__(self):
         super().__init__("register")
-        self.register_controller_template_name = r"security/register_controller_template.jinja2"
+        self.register_controller_template_name = (
+            r"security/register_controller_template.jinja2"
+        )
         self.register_view_template_name = r"security/register_view_template.jinja2"
         self.controller_path = self.get_settings().controller_dir
         self.view_path = r"templates/security"
@@ -78,7 +80,9 @@ class CreateRegisterCommand(AbstractCommand):
             )
             return False
 
-        if not ModelChecker().check_entity_properties(provider_name, ["password", "email"]):
+        if not ModelChecker().check_entity_properties(
+            provider_name, ["password", "email"]
+        ):
             self.printer.print_msg(
                 "Provider entity must have 'password' and 'email' properties.",
                 theme="error",

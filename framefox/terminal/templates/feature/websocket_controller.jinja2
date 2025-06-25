@@ -1,0 +1,128 @@
+from framefox.core.routing.decorator.route import Route
+from framefox.core.routing.decorator.websocket import WebSocket
+from framefox.core.controller.abstract_controller import AbstractController
+from framefox.core.websocket.handlers.web_socket_handler import EchoHandler, BroadcastHandler
+from starlette.responses import HTMLResponse
+
+"""
+{{ class_name }} - WebSocket Controller
+Feature: {{ feature_name }}
+Type: {{ feature_type }}
+Socket: {{ socket_type }}
+"""
+
+class {{ class_name }}(AbstractController):
+    """
+    {{ feature_name }} WebSocket Controller
+    Handles {{ socket_type }} WebSocket connections using existing handlers
+    """
+    
+    {% if feature_type == "templated" %}
+    {% if socket_type == "general_only" %}
+    @Route("/{{ feature_name }}", "{{ feature_name }}.index", methods=["GET"])
+    async def index(self) -> HTMLResponse:
+        """Main page for {{ feature_name }} feature"""
+        return self.render("{{ feature_name }}/index.html", {
+            "feature_name": "{{ feature_name }}",
+            "socket_type": "{{ socket_type }}"
+        })
+    
+    {% elif socket_type == "rooms_only" %}
+    @Route("/{{ feature_name }}", "{{ feature_name }}.room", methods=["GET"])
+    async def room_page(self) -> HTMLResponse:
+        """Room chat page (main page for rooms_only)"""
+        return self.render("{{ feature_name }}/room.html", {
+            "feature_name": "{{ feature_name }}",
+            "socket_type": "{{ socket_type }}"
+        })
+    
+    {% elif socket_type == "complete" %}
+    @Route("/{{ feature_name }}", "{{ feature_name }}.index", methods=["GET"])
+    async def index(self) -> HTMLResponse:
+        """Main page for {{ feature_name }} feature"""
+        return self.render("{{ feature_name }}/index.html", {
+            "feature_name": "{{ feature_name }}",
+            "socket_type": "{{ socket_type }}"
+        })
+    
+    @Route("/{{ feature_name }}/room", "{{ feature_name }}.room", methods=["GET"])
+    async def room_page(self) -> HTMLResponse:
+        """Room chat page"""
+        return self.render("{{ feature_name }}/room.html", {
+            "feature_name": "{{ feature_name }}",
+            "socket_type": "{{ socket_type }}"
+        })
+    
+    @Route("/{{ feature_name }}/private", "{{ feature_name }}.private", methods=["GET"])
+    async def private_page(self) -> HTMLResponse:
+        """Private chat page"""
+        return self.render("{{ feature_name }}/private.html", {
+            "feature_name": "{{ feature_name }}",
+            "socket_type": "{{ socket_type }}"
+        })
+    
+    {% elif socket_type == "custom_base" %}
+    @Route("/{{ feature_name }}", "{{ feature_name }}.custom", methods=["GET"])
+    async def custom_page(self) -> HTMLResponse:
+        """Custom page"""
+        return self.render("{{ feature_name }}/custom.html", {
+            "feature_name": "{{ feature_name }}",
+            "socket_type": "{{ socket_type }}"
+        })
+    {% endif %}
+    {% endif %}
+
+    {% if socket_type == "general_only" %}
+    @WebSocket("/ws/{{ feature_name }}", "{{ feature_name }}.websocket.general", 
+               room="general", handlers=[BroadcastHandler()])
+    async def websocket_general(self):
+        """Chat général simple"""
+        pass
+
+    {% elif socket_type == "rooms_only" %}
+    # ✅ CORRECTION : Ajouter la route fixe pour "general" comme dans HomeController
+    @WebSocket("/ws/{{ feature_name }}", "{{ feature_name }}.websocket.general", 
+               room="general", handlers=[BroadcastHandler()])
+    async def websocket_general(self):
+        """Chat général fixe pour room 'general'"""
+        pass
+    
+    @WebSocket("/ws/{{ feature_name }}/{room}", "{{ feature_name }}.websocket.room", 
+               handlers=[BroadcastHandler()])
+    async def websocket_room(self, room: str):
+        """Chat par rooms dynamiques"""
+        pass
+
+    {% elif socket_type == "complete" %}
+    @WebSocket("/ws/{{ feature_name }}", "{{ feature_name }}.websocket.general", 
+               room="general", handlers=[BroadcastHandler()])
+    async def websocket_general(self):
+        """Chat général"""
+        pass
+    
+    @WebSocket("/ws/{{ feature_name }}/{room}", "{{ feature_name }}.websocket.room", 
+               handlers=[BroadcastHandler()])
+    async def websocket_room(self, room: str):
+        """Chat par rooms"""
+        pass
+    
+    @WebSocket("/ws/{{ feature_name }}/private/{user_id}", "{{ feature_name }}.websocket.private",
+               handlers=[EchoHandler()])
+    async def websocket_private(self, user_id: str):
+        """Chat privé"""
+        pass
+
+    {% elif socket_type == "custom_base" %}
+    @WebSocket("/ws/{{ feature_name }}/custom", "{{ feature_name }}.websocket.custom", auto_manage=False)
+    async def websocket_custom(self, websocket):
+        """WebSocket custom - à développer"""
+        await websocket.accept()
+        try:
+            while True:
+                data = await websocket.receive_text()
+                await websocket.send_text(f"Echo: {data}")
+        except Exception:
+            pass
+        finally:
+            await websocket.close()
+    {% endif %}
