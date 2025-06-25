@@ -1,8 +1,7 @@
-from rich.prompt import Confirm
-
 from framefox.terminal.commands.database.abstract_database_command import (
     AbstractDatabaseCommand,
 )
+from rich.prompt import Confirm
 
 
 class DropCommand(AbstractDatabaseCommand):
@@ -19,10 +18,14 @@ class DropCommand(AbstractDatabaseCommand):
             database = self.connection_manager.config.database
 
             if not self.driver.database_exists(database):
-                self.printer.print_msg(f"Database '{database}' does not exist", theme="warning")
+                self.printer.print_msg(
+                    f"Database '{database}' does not exist", theme="warning"
+                )
                 return
 
-            self.printer.print_msg(f"Database type: {self.connection_manager.config.driver}", theme="info")
+            self.printer.print_msg(
+                f"Database type: {self.connection_manager.config.driver}", theme="info"
+            )
             self.printer.print_msg(f"Database name: {database}", theme="info")
 
             confirmed = Confirm.ask(
@@ -35,7 +38,9 @@ class DropCommand(AbstractDatabaseCommand):
                 return
 
             if self.driver.drop_database(database):
-                self.printer.print_msg(f"Database dropped successfully: {database}", theme="success")
+                self.printer.print_msg(
+                    f"Database dropped successfully: {database}", theme="success"
+                )
             else:
                 self.printer.print_msg("Failed to drop database", theme="error")
 

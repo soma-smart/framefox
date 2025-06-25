@@ -24,7 +24,9 @@ class CreateEntityCommand(AbstractCommand):
     def __init__(self):
         super().__init__("entity")
         self.property_manager = PropertyManager(InputManager(), Printer())
-        self.relation_manager = RelationManager(InputManager(), Printer(), FileCreator(), ImportManager(Printer()))
+        self.relation_manager = RelationManager(
+            InputManager(), Printer(), FileCreator(), ImportManager(Printer())
+        )
         self.import_manager = ImportManager(Printer())
         self.file_creator = FileCreator()
 
@@ -56,7 +58,9 @@ class CreateEntityCommand(AbstractCommand):
             name = InputManager().wait_input("Entity name")
 
         if not name or not ClassNameManager.is_snake_case(name):
-            self.printer.print_msg("Invalid name. Must be in snake_case.", theme="error")
+            self.printer.print_msg(
+                "Invalid name. Must be in snake_case.", theme="error"
+            )
             return None
         return name
 
@@ -87,7 +91,9 @@ class CreateEntityCommand(AbstractCommand):
             if property_details is False:
                 break
             if property_details.type == "relation":
-                self.relation_manager.create_relation(entity_name, property_details.name, property_details.optional)
+                self.relation_manager.create_relation(
+                    entity_name, property_details.name, property_details.optional
+                )
             else:
                 self.property_manager.add_property(entity_name, property_details)
 

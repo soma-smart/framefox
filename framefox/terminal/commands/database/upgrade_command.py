@@ -41,7 +41,9 @@ class UpgradeCommand(AbstractDatabaseCommand):
 
             if success:
                 if migrations_applied:
-                    self.printer.print_msg("Migrations applied successfully.", theme="success")
+                    self.printer.print_msg(
+                        "Migrations applied successfully.", theme="success"
+                    )
                 else:
                     self.printer.print_msg(
                         "The database is already up to date, no migrations to apply.",

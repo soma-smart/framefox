@@ -70,7 +70,10 @@ class DiagramFileGenerator:
 
             system = platform.system()
             commands = {
-                "Linux": [["xclip", "-selection", "clipboard"], ["xsel", "--clipboard", "--input"]],
+                "Linux": [
+                    ["xclip", "-selection", "clipboard"],
+                    ["xsel", "--clipboard", "--input"],
+                ],
                 "Darwin": [["pbcopy"]],  # macOS
                 "Windows": [["clip"]],
             }

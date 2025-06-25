@@ -1,9 +1,8 @@
 import importlib.resources as pkg_resources
 import os
 
-from jinja2 import Environment, FileSystemLoader
-
 import framefox.terminal
+from jinja2 import Environment, FileSystemLoader
 
 """
 Framefox Framework developed by SOMA
@@ -12,6 +11,7 @@ Github: https://github.com/soma-smart/framefox
 Author: LEUROND Raphael
 Github: https://github.com/Vasulvius 
 """
+
 
 class FileCreator:
     def __init__(self):

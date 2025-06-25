@@ -1,11 +1,10 @@
 import time
 from pathlib import Path
 
-from rich.console import Console
-from rich.table import Table
-
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.commands.abstract_command import AbstractCommand
+from rich.console import Console
+from rich.table import Table
 
 """
 Framefox Framework developed by SOMA
@@ -28,7 +27,15 @@ class CacheClearCommand(AbstractCommand):
     def __init__(self):
         super().__init__("clear")
         self.cache_dir = Path("var/cache")
-        self.container=self.get_container()
+        # ✅ LAZY LOADING : Ne pas initialiser le container ici
+        self._container = None
+
+    @property
+    def container(self):
+        """Lazy loading du container - ne charge que quand nécessaire"""
+        if self._container is None:
+            self._container = ServiceContainer()
+        return self._container
 
     def execute(self):
         """
@@ -53,25 +60,39 @@ class CacheClearCommand(AbstractCommand):
         cache_files_cleared = self._clear_cache_files()
         table.add_row(
             "Service Cache Files",
-            "[green]Cleared[/green]" if cache_files_cleared > 0 else "[yellow]Empty[/yellow]",
+            (
+                "[green]Cleared[/green]"
+                if cache_files_cleared > 0
+                else "[yellow]Empty[/yellow]"
+            ),
             f"{cache_files_cleared} files removed",
         )
 
-    
+        # ✅ LAZY LOADING : Le container est chargé seulement ici
         memory_stats = self._clear_memory_caches(self.container)
         table.add_row(
-            "Memory Caches", "[green]Cleared[/green]", f"Resolution: {memory_stats['resolution']}, Modules: {memory_stats['modules']}"
+            "Memory Caches",
+            "[green]Cleared[/green]",
+            f"Resolution: {memory_stats['resolution']}, Modules: {memory_stats['modules']}",
         )
 
         instances_cleared = self._clear_service_instances(self.container)
         table.add_row(
             "Service Instances",
-            "[green]Cleared[/green]" if instances_cleared > 0 else "[yellow]Empty[/yellow]",
+            (
+                "[green]Cleared[/green]"
+                if instances_cleared > 0
+                else "[yellow]Empty[/yellow]"
+            ),
             f"{instances_cleared} instances removed",
         )
 
         scan_status = self._reset_scan_status(self.container)
-        table.add_row("Scan Status", "[green]Reset[/green]", f"Modules: {scan_status['modules']}, Sources: {scan_status['sources']}")
+        table.add_row(
+            "Scan Status",
+            "[green]Reset[/green]",
+            f"Modules: {scan_status['modules']}, Sources: {scan_status['sources']}",
+        )
 
         total_time = time.time() - start_time
 
@@ -104,7 +125,10 @@ class CacheClearCommand(AbstractCommand):
                     cache_file.unlink()
                     cleared_count += 1
                 except Exception as e:
-                    self.printer.print_msg(f"Warning: Could not remove {cache_file.name}: {e}", theme="warning")
+                    self.printer.print_msg(
+                        f"Warning: Could not remove {cache_file.name}: {e}",
+                        theme="warning",
+                    )
 
         return cleared_count
 
@@ -123,7 +147,10 @@ class CacheClearCommand(AbstractCommand):
         for service_class, instance in container._instances.items():
             if hasattr(instance, "__module__"):
                 module_name = instance.__module__
-                if any(essential in module_name for essential in ["settings", "logger", "config"]):
+                if any(
+                    essential in module_name
+                    for essential in ["settings", "logger", "config"]
+                ):
                     essential_services.append((service_class, instance))
 
         container._instances.clear()

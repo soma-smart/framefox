@@ -26,7 +26,9 @@ class ClearMigrationCommand(AbstractDatabaseCommand):
         It will check if the database exists, and if not, it will only clear the migration files.\n
         """
         try:
-            self.printer.print_msg("Clearing migration files and database references...", theme="info")
+            self.printer.print_msg(
+                "Clearing migration files and database references...", theme="info"
+            )
 
             # Check if database exists
             if not self.driver.database_exists(self.connection_manager.config.database):
@@ -52,8 +54,14 @@ class ClearMigrationCommand(AbstractDatabaseCommand):
             self.alembic_manager.setup_directories()
             self.printer.print_msg("Migration files cleared", theme="success")
 
-            self.printer.print_msg("Migration files and database references cleared successfully", theme="success")
-            self.printer.print_msg("You can now create new migrations with 'framefox database create-migration'", theme="info")
+            self.printer.print_msg(
+                "Migration files and database references cleared successfully",
+                theme="success",
+            )
+            self.printer.print_msg(
+                "You can now create new migrations with 'framefox database create-migration'",
+                theme="info",
+            )
 
         except Exception as e:
             self.printer.print_msg(

@@ -33,7 +33,9 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             migration_message = f"{timestamp}_migration"
 
-            created_file = self.alembic_manager.create_migration(migration_message, autogenerate=True)
+            created_file = self.alembic_manager.create_migration(
+                migration_message, autogenerate=True
+            )
 
             if not created_file:
                 self.printer.print_msg("No migration generated.", theme="warning")

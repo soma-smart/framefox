@@ -1,0 +1,182 @@
+{% raw %}{% extends "base.html" %}
+{% block title %}{% endraw %}{{ feature_name|title }} - Rooms{% raw %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5>🌐 {% endraw %}{{ feature_name|title }}{% raw %} - Room Chat</h5>
+        </div>
+        <div class="card-body">
+            <div id="status" class="alert alert-secondary">
+                Status: <span id="status-text">Disconnected</span> | 
+                Room: <span id="current-room">None</span>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <input type="text" id="room-name" class="form-control" placeholder="Room name..." value="general">
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="username" class="form-control" placeholder="Your name..." value="User123">
+                </div>
+            </div>
+
+            <div id="messages" class="border p-3 mb-3" style="height: 300px; overflow-y: auto; background: #f8f9fa;"></div>
+
+            <div class="input-group mb-3">
+                <input type="text" id="message-input" class="form-control" placeholder="Type your message...">
+                <button class="btn btn-success" id="send-message" disabled>Send</button>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-success" id="connect-btn">Join Room</button>
+                <button class="btn btn-danger" id="disconnect-btn" disabled>Leave Room</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-dark">
+            <h6 class="mb-0">🚀 Quick Rooms</h6>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-primary btn-sm quick-room" data-room="general">General</button>
+                <button class="btn btn-outline-success btn-sm quick-room" data-room="tech">Tech</button>
+                <button class="btn btn-outline-info btn-sm quick-room" data-room="gaming">Gaming</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let websocket = null;
+let currentRoom = null;
+
+function addMessage(message, type = 'received') {
+    const timestamp = new Date().toLocaleTimeString();
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'mb-2';
+    
+    let badgeClass = 'bg-secondary';
+    let content = '';
+    
+    if (type === 'sent') {
+        badgeClass = 'bg-primary';
+        content = `You: ${message}`;
+    } else if (type === 'received') {
+        badgeClass = 'bg-success';
+        if (typeof message === 'string') {
+            content = `Message: ${message}`;
+        } else {
+            content = `${message.user || message.username || 'Unknown'}: ${message.data || message.message}`;
+        }
+    } else if (type === 'system') {
+        badgeClass = 'bg-warning text-dark';
+        content = message.message || message;
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="badge ${badgeClass} p-2">
+            <small>[${timestamp}]</small> ${content}
+        </div>
+    `;
+    document.getElementById('messages').appendChild(messageDiv);
+    document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+}
+
+function updateStatus(status, alertClass) {
+    document.getElementById('status-text').textContent = status;
+    document.getElementById('status').className = `alert ${alertClass}`;
+}
+
+function connectToRoom(roomName) {
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.close();
+    }
+    
+    currentRoom = roomName;
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${protocol}//${location.host}/ws/{% endraw %}{{ feature_name }}{% raw %}/${roomName}`;
+    
+    websocket = new WebSocket(url);
+    
+    websocket.onopen = function() {
+        updateStatus('Connected', 'alert-success');
+        document.getElementById('current-room').textContent = currentRoom;
+        document.getElementById('connect-btn').disabled = true;
+        document.getElementById('disconnect-btn').disabled = false;
+        document.getElementById('send-message').disabled = false;
+        document.getElementById('room-name').disabled = true;
+        addMessage(`Joined room: ${currentRoom}`, 'system');
+    };
+    
+    websocket.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            addMessage(data, 'received');
+        } catch (e) {
+            addMessage(event.data, 'received');
+        }
+    };
+    
+    websocket.onclose = function() {
+        updateStatus('Disconnected', 'alert-secondary');
+        document.getElementById('current-room').textContent = 'None';
+        currentRoom = null;
+        document.getElementById('connect-btn').disabled = false;
+        document.getElementById('disconnect-btn').disabled = true;
+        document.getElementById('send-message').disabled = true;
+        document.getElementById('room-name').disabled = false;
+        addMessage('Left the room', 'system');
+    };
+}
+
+document.getElementById('connect-btn').onclick = function() {
+    const roomName = document.getElementById('room-name').value.trim();
+    if (roomName) {
+        connectToRoom(roomName);
+    } else {
+        alert('Please enter a room name');
+    }
+};
+
+document.getElementById('disconnect-btn').onclick = function() {
+    if (websocket) websocket.close();
+};
+
+document.getElementById('send-message').onclick = function() {
+    const message = document.getElementById('message-input').value.trim();
+    
+    if (message && websocket && websocket.readyState === WebSocket.OPEN) {
+        const messageData = {
+            type: 'message',
+            data: message,
+            username: document.getElementById('username').value.trim() || 'Anonymous'
+        };
+        
+        websocket.send(JSON.stringify(messageData));
+        addMessage(message, 'sent');
+        document.getElementById('message-input').value = '';
+    }
+};
+
+document.querySelectorAll('.quick-room').forEach(btn => {
+    btn.onclick = function() {
+        document.getElementById('room-name').value = this.dataset.room;
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+            connectToRoom(this.dataset.room);
+        }
+    };
+});
+
+document.getElementById('message-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') document.getElementById('send-message').click();
+});
+
+document.getElementById('room-name').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') document.getElementById('connect-btn').click();
+});
+</script>
+{% endblock %}{% endraw %}

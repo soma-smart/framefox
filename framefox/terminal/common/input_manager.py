@@ -8,6 +8,7 @@ Author: LEUROND Raphael
 Github: https://github.com/Vasulvius 
 """
 
+
 class InputManager:
     @staticmethod
     def input_with_option(prompt, default=None):

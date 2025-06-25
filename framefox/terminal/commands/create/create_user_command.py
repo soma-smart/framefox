@@ -62,8 +62,12 @@ class CreateUserCommand(AbstractCommand):
 
         self.create_entity_command.create_entity_and_repository(name)
 
-        self.entity_property_manager.insert_property(name, "    password: str = Field(nullable=False)\n")
-        self.entity_property_manager.insert_property(name, "    email: str = Field(nullable=False)\n")
+        self.entity_property_manager.insert_property(
+            name, "    password: str = Field(nullable=False)\n"
+        )
+        self.entity_property_manager.insert_property(
+            name, "    email: str = Field(nullable=False)\n"
+        )
         self.entity_property_manager.insert_property(
             name,
             "    roles: list[str] = Field(default_factory=lambda: ['ROLE_USER'], sa_column=Column(JSON))\n",

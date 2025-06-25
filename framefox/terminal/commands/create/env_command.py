@@ -49,7 +49,13 @@ class CreateEnvCommand(AbstractCommand):
 
             # Create .env file using FileCreator and template
             file_creator = FileCreator()
-            file_path = file_creator.create_file(template="init_files/env.jinja2", path=".", name=".env", data=template_data, format="env")
+            file_path = file_creator.create_file(
+                template="init_files/env.jinja2",
+                path=".",
+                name=".env",
+                data=template_data,
+                format="env",
+            )
 
             self.printer.print_msg(
                 f"✓ .env file created successfully: {file_path}",

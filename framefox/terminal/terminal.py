@@ -5,7 +5,6 @@ from io import StringIO
 from typing import List
 
 import typer
-
 from framefox.terminal.command_registry import CommandRegistry
 from framefox.terminal.typer_config.app_configurator import AppConfigurator
 from framefox.terminal.ui.display_manager import DisplayManager
@@ -31,13 +30,13 @@ class Terminal:
     def __init__(self):
         self.registry = CommandRegistry()
         self.display_manager = DisplayManager()
-        self.error_handler = ErrorHandler(self.display_manager.console, self.display_manager)
+        self.error_handler = ErrorHandler(
+            self.display_manager.console, self.display_manager
+        )
         self.suggestion_service = CommandSuggestionService(self.registry)
 
-        # Discover commands
         self.registry.discover_commands()
 
-        # Configure the Typer app
         configurator = AppConfigurator(self.registry, self.display_manager)
         self.app = configurator.configure()
 
@@ -71,7 +70,11 @@ class Terminal:
             # Check if it's a command not found error
             captured_error = stderr_capture.getvalue()
 
-            if e.code == 2 and args and self._is_command_not_found_error(captured_error):
+            if (
+                e.code == 2
+                and args
+                and self._is_command_not_found_error(captured_error)
+            ):
                 # This is our case: command not found
                 return self._handle_unknown_command(args)
 
@@ -103,13 +106,17 @@ class Terminal:
         command_groups = self.registry.get_command_groups()
 
         if len(args) >= 2:
-            suggestion_result = self.suggestion_service.suggest_command_with_subcommand(args)
+            suggestion_result = self.suggestion_service.suggest_command_with_subcommand(
+                args
+            )
             if suggestion_result:
                 return self._handle_suggestion_result(suggestion_result)
 
         # Case 1: Unknown main command
         if len(args) == 1:
-            available_groups = [group for group in command_groups.keys() if group != "main"]
+            available_groups = [
+                group for group in command_groups.keys() if group != "main"
+            ]
             available_groups.extend(["init", "list"])
 
             if self.error_handler.handle_unknown_command(args[0], available_groups):
@@ -121,7 +128,9 @@ class Terminal:
 
             if group_name in command_groups:
                 available_subcommands = list(command_groups[group_name].keys())
-                if self.error_handler.handle_unknown_subcommand(group_name, subcommand, available_subcommands):
+                if self.error_handler.handle_unknown_subcommand(
+                    group_name, subcommand, available_subcommands
+                ):
                     return 1
 
         # Fallback
@@ -139,7 +148,9 @@ class Terminal:
             if group_info.startswith("group:"):
                 group_name = group_info.replace("group:", "")
                 self.error_handler._print_error_header(error_msg)
-                self.error_handler.display_group_with_available_subcommands(group_name, subcommands)
+                self.error_handler.display_group_with_available_subcommands(
+                    group_name, subcommands
+                )
 
         return 1
 
