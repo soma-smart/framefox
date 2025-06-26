@@ -1,28 +1,25 @@
 import importlib.resources as pkg_resources
 import os
 
-import framefox.terminal
 from jinja2 import Environment, FileSystemLoader
+
+import framefox.terminal
 
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: LEUROND Raphael
-Github: https://github.com/Vasulvius 
+Github: https://github.com/Vasulvius
 """
 
 
 class FileCreator:
     def __init__(self):
         # self.template_path = r"framefox/framefox/terminal/templates"
-        self.template_path = pkg_resources.files(framefox.terminal).joinpath(
-            "templates"
-        )
+        self.template_path = pkg_resources.files(framefox.terminal).joinpath("templates")
 
-    def create_file(
-        self, template: str, path: str, name: str, data: str, format: str = "py"
-    ):
+    def create_file(self, template: str, path: str, name: str, data: str, format: str = "py"):
         """
         Create a file using a template.
 
@@ -40,7 +37,7 @@ class FileCreator:
         template = env.get_template(template)
         code = template.render(data)
         if format == "py":
-            output_file = f"{path}/{name}.py"
+            output_file = f"{path}{name}.py"
         else:
             output_file = f"{path}/{name}"
         with open(output_file, "w") as file:
