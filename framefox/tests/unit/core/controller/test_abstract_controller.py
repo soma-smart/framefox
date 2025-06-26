@@ -83,35 +83,6 @@ class TestAbstractController:
         assert response.status_code == 301
         assert response.headers["location"] == "/login"
 
-    # def test_flash(self, controller, mock_session):
-    #     """Test the flash method"""
-    #     # Test adding a flash message
-    #     controller.flash("success", "Operation successful")
-
-    #     mock_session.get.assert_called_with("flash_messages", [])
-    #     mock_session.set.assert_called_with(
-    #         "flash_messages",
-    #         [{"message": "Operation successful", "category": "success"}],
-    #     )
-
-    # def test_flash_with_existing_messages(self, controller, mock_session):
-    #     """Test flash with existing messages"""
-    #     # Setup existing messages
-    #     existing_messages = [{"message": "Previous message", "category": "info"}]
-    #     mock_session.get.return_value = existing_messages
-
-    #     # Add a new message
-    #     controller.flash("success", "New message")
-
-    #     # Verify that the new message is added to the existing ones
-    #     mock_session.set.assert_called_with(
-    #         "flash_messages",
-    #         [
-    #             {"message": "Previous message", "category": "info"},
-    #             {"message": "New message", "category": "success"},
-    #         ],
-    #     )
-
     def test_json(self, controller):
         data = {"status": "success"}
         response = controller.json(data)

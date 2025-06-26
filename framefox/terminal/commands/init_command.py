@@ -5,11 +5,12 @@ import shutil
 import sys
 from importlib.metadata import version
 
+from rich.console import Console
+from rich.table import Table
+
 from framefox.terminal.commands.abstract_command import AbstractCommand
 from framefox.terminal.common.file_creator import FileCreator
 from framefox.terminal.common.input_manager import InputManager
-from rich.console import Console
-from rich.table import Table
 
 """
 Framefox Framework developed by SOMA
@@ -98,9 +99,7 @@ class InitCommand(AbstractCommand):
         """Handle conflicts with existing files"""
         self._display_existing_files_warning(existing_items)
 
-        choice = InputManager().wait_input(
-            "Your choice", choices=["1", "2"], default="1"
-        )
+        choice = InputManager().wait_input("Your choice", choices=["1", "2"], default="1")
 
         if choice == "1":
             self.printer.print_msg(
@@ -132,9 +131,7 @@ class InitCommand(AbstractCommand):
         print("")
         self.printer.print_msg("What do you want to do?", theme="bold_normal")
         self.printer.print_msg("1. Cancel initialization", theme="normal")
-        self.printer.print_msg(
-            "2. Overwrite existing files/directories", theme="normal"
-        )
+        self.printer.print_msg("2. Overwrite existing files/directories", theme="normal")
 
     def _create_project(self):
         """Create the complete project structure"""
@@ -158,20 +155,20 @@ class InitCommand(AbstractCommand):
         return [
             {
                 "template": "init_files/main.jinja2",
-                "path": ".",
+                "path": "./",
                 "name": "main",
                 "data": {},
             },
             {
                 "template": "init_files/env.jinja2",
-                "path": ".",
+                "path": "./",
                 "name": ".env",
                 "data": {"session_secret_key": self._generate_secret_key()},
                 "format": "env",
             },
             {
                 "template": "init_files/base.jinja2",
-                "path": "./templates",
+                "path": "./templates/",
                 "name": "base.html",
                 "data": {},
                 "format": "html",
@@ -197,7 +194,7 @@ class InitCommand(AbstractCommand):
         return [
             {
                 "template": f"init_files/{name}.jinja2",
-                "path": "./config",
+                "path": "./config/",
                 "name": f"{name}.yaml",
                 "data": {},
                 "format": "yaml",
@@ -210,21 +207,21 @@ class InitCommand(AbstractCommand):
         return [
             {
                 "template": "init_files/env.py.jinja2",
-                "path": "./migrations",
+                "path": "./migrations/",
                 "name": "env",
                 "data": {},
                 "format": "py",
             },
             {
                 "template": "init_files/script.py.mako",
-                "path": "./migrations",
+                "path": "./migrations/",
                 "name": "script.py.mako",
                 "data": {},
                 "format": "py.mako",
             },
             {
                 "template": "init_files/blank.jinja2",
-                "path": "./migrations/versions/__pycache__",
+                "path": "./migrations/versions/__pycache__/",
                 "name": ".gitkeep",
                 "data": {},
                 "format": "gitkeep",
@@ -236,14 +233,14 @@ class InitCommand(AbstractCommand):
         return [
             {
                 "template": "init_files/gitignore.jinja2",
-                "path": ".",
+                "path": "./",
                 "name": ".gitignore",
                 "data": {},
                 "format": "gitignore",
             },
             {
                 "template": "init_files/requirements.jinja2",
-                "path": ".",
+                "path": "./",
                 "name": "requirements.txt",
                 "data": {"framefox_version": version("framefox")},
                 "format": "txt",

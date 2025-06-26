@@ -22,7 +22,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
 
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(
-                    "The database does not exist. Please run 'framefox database:create' first.",
+                    "The database does not exist. Please run 'framefox database create' first.",
                     theme="warning",
                 )
 
@@ -33,9 +33,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             migration_message = f"{timestamp}_migration"
 
-            created_file = self.alembic_manager.create_migration(
-                migration_message, autogenerate=True
-            )
+            created_file = self.alembic_manager.create_migration(migration_message, autogenerate=True)
 
             if not created_file:
                 self.printer.print_msg("No migration generated.", theme="warning")
@@ -55,7 +53,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
                     theme="success",
                 )
                 self.printer.print_msg(
-                    "You can now run the 'framefox database:upgrade' command to apply the updates.",
+                    "You can now run the 'framefox database upgrade' command to apply the updates.",
                     theme="info",
                 )
 
