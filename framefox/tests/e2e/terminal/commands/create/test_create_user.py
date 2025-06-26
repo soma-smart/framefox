@@ -1,6 +1,6 @@
 import os
 
-from framefox.tests.e2e.fixtures.commands import (
+from framefox.tests.e2e.fixtures.commands import (  # noqa: F401
     TMP_PATH,
     exec_command,
     handle_tmp_path,
@@ -8,19 +8,19 @@ from framefox.tests.e2e.fixtures.commands import (
 )
 
 
-def test_create_user_command_should_exist(init_project):
+def test_create_user_command_should_exist(init_project):  # noqa: F811
     result = exec_command(["framefox", "create", "user", "--help"])
 
     assert result.returncode == 0, f"Command failed with error: {result.stderr.strip()}"
 
 
-def test_create_user_command_without_input_should_fail(init_project):
+def test_create_user_command_without_input_should_fail(init_project):  # noqa: F811
     result = exec_command(["framefox", "create", "user"])
 
     assert result.returncode != 0, "Command should fail without input"
 
 
-def test_create_user_with_invalid_name_should_fail(init_project):
+def test_create_user_with_invalid_name_should_fail(init_project):  # noqa: F811
     os.makedirs(os.path.join(TMP_PATH, "src", "entity"), exist_ok=True)
     os.makedirs(os.path.join(TMP_PATH, "src", "repository"), exist_ok=True)
 

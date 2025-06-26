@@ -1,10 +1,11 @@
-import pytest
-import subprocess
-import shutil
 import os
+import shutil
+import subprocess
 
+import pytest
 
 TMP_PATH = "test_dir"
+
 
 @pytest.fixture()
 def handle_tmp_path():
@@ -19,19 +20,9 @@ def handle_tmp_path():
 
 @pytest.fixture()
 def init_project(handle_tmp_path):
-    result = subprocess.run(
-        ["framefox", "init"],
-        cwd=TMP_PATH,
-        capture_output=True,
-        text=True
-    )
+    _ = subprocess.run(["framefox", "init"], cwd=TMP_PATH, capture_output=True, text=True)
+
 
 def exec_command(command, input_value=None):
-    result = subprocess.run(
-        command,
-        cwd=TMP_PATH,
-        input=input_value,
-        capture_output=True,
-        text=True
-    )
+    result = subprocess.run(command, cwd=TMP_PATH, input=input_value, capture_output=True, text=True)
     return result
