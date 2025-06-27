@@ -26,10 +26,10 @@ from framefox.core.form.type.date_time_type import DateTimeType
 
 
 class {{ form_type_class_name }}(FormTypeInterface):
-    """Formulaire pour l'entité {{ entity_class_name }}."""
+    """Form of the entity {{ entity_class_name }}."""
     
     def build_form(self, builder: FormBuilder) -> None:
-        """Configure les champs du formulaire."""
+        """Configure properties of the form."""
         {% for property in properties %}
         {% if property.name != 'id' %}
         {% if property.is_relation %}

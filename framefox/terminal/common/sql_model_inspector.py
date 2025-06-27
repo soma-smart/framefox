@@ -9,7 +9,7 @@ Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: LEUROND Raphael
-Github: https://github.com/Vasulvius 
+Github: https://github.com/Vasulvius
 """
 
 
@@ -80,16 +80,12 @@ class SQLModelInspector:
                             target_entity = match.group(1).split(".")[-1]
 
                     if not target_entity or target_entity == "None":
-                        rel_match = re.search(
-                            rf"{name}\s*:\s*(.*?)\s*=\s*Relationship", class_source
-                        )
+                        rel_match = re.search(rf"{name}\s*:\s*(.*?)\s*=\s*Relationship", class_source)
                         if rel_match:
                             type_annotation = rel_match.group(1).strip()
 
                             if "list[" in type_annotation.lower():
-                                list_match = re.search(
-                                    r"list\[(.*?)\]", type_annotation, re.IGNORECASE
-                                )
+                                list_match = re.search(r"list\[(.*?)\]", type_annotation, re.IGNORECASE)
                                 if list_match:
                                     inner_type = list_match.group(1).strip()
 
@@ -97,11 +93,7 @@ class SQLModelInspector:
                                         parts = inner_type.split("|")
                                         for part in parts:
                                             part = part.strip()
-                                            if (
-                                                part != "None"
-                                                and part != "'None'"
-                                                and part != '"None"'
-                                            ):
+                                            if part != "None" and part != "'None'" and part != '"None"':
                                                 inner_type = part
                                                 break
 
@@ -112,11 +104,7 @@ class SQLModelInspector:
                                 parts = type_annotation.split("|")
                                 for part in parts:
                                     part = part.strip()
-                                    if (
-                                        part != "None"
-                                        and part != "'None'"
-                                        and part != '"None"'
-                                    ):
+                                    if part != "None" and part != "'None'" and part != '"None"':
                                         target_entity = part.split(".")[-1]
                                         break
 
@@ -125,18 +113,14 @@ class SQLModelInspector:
 
                     if not target_entity or target_entity == "None":
                         if is_many:
-                            list_match = re.search(
-                                r"list\[(.*?)\]", type_str, re.IGNORECASE
-                            )
+                            list_match = re.search(r"list\[(.*?)\]", type_str, re.IGNORECASE)
                             if list_match:
                                 entity_type = list_match.group(1).strip("'\" ")
                                 if entity_type and entity_type != "None":
                                     target_entity = entity_type.split(".")[-1]
 
                     if not target_entity or target_entity == "None":
-                        target_entity = "".join(
-                            word.capitalize() for word in name.split("_")
-                        )
+                        target_entity = "".join(word.capitalize() for word in name.split("_"))
 
                     if target_entity:
                         target_entity = target_entity.strip("'\" ")

@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import typer
+
 from framefox.core.di.service_container import ServiceContainer
 from framefox.terminal.command_registry import CommandRegistry
 from framefox.terminal.ui.display_manager import DisplayManager
@@ -37,9 +38,7 @@ class CommandBuilder:
         def subgroup_main(ctx: typer.Context):
             if ctx.invoked_subcommand is None:
                 self.display_manager.print_header()
-                self.display_manager.display_subgroup_help(
-                    namespace, commands, description
-                )
+                self.display_manager.display_subgroup_help(namespace, commands, description)
                 raise typer.Exit()
 
         # Add commands to subapp
@@ -48,9 +47,7 @@ class CommandBuilder:
 
         return subapp
 
-    def _add_command_to_subapp(
-        self, subapp: typer.Typer, command_name: str, command_class
-    ):
+    def _add_command_to_subapp(self, subapp: typer.Typer, command_name: str, command_class):
         """Add a single command to a subapp"""
 
         # Create an instance of the command
@@ -75,6 +72,4 @@ class CommandBuilder:
 
     def _get_namespace_description(self, namespace: str) -> str:
         """Get description for a namespace"""
-        return FramefoxMessages.NAMESPACE_DESCRIPTIONS.get(
-            namespace, f"{namespace.title()} operations"
-        )
+        return FramefoxMessages.NAMESPACE_DESCRIPTIONS.get(namespace, f"{namespace.title()} operations")

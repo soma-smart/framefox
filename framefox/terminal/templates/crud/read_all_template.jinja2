@@ -30,9 +30,8 @@
                 {% endraw %}
                 {%- for prop in properties %}
                 {% if prop.name != 'id' %}
-                {# Affichage adapté selon le type #}
                 {% if prop.is_relation and prop.relation_type == 'many' %}
-                <td>{{ '{{ item.' + prop.name + '|length }} élément(s)' }}</td>
+                <td>{{ '{{ item.' + prop.name + '|length }} element(s)' }}</td>
                 {% elif prop.is_relation %}
                 <td>{{ '{{ item.' + prop.name + '.id if item.' + prop.name + ' else "N/A" }}' }}</td>
                 {% elif 'list[str]' in prop.type %}

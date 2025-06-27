@@ -1,8 +1,9 @@
 from typing import List
 
+from rich.console import Console
+
 from framefox.terminal.ui.table_builder import TableBuilder
 from framefox.terminal.ui.themes import FramefoxTheme
-from rich.console import Console
 
 """
 Framefox Framework developed by SOMA
@@ -20,9 +21,7 @@ class ErrorHandler:
         self.console = console
         self.display_manager = display_manager
 
-    def handle_unknown_command(
-        self, command: str, available_commands: List[str]
-    ) -> bool:
+    def handle_unknown_command(self, command: str, available_commands: List[str]) -> bool:
         """Handle unknown command and suggest alternatives"""
         from framefox.terminal.utils.text_utils import suggest_similar_commands
 
@@ -39,9 +38,7 @@ class ErrorHandler:
 
         return False
 
-    def display_group_with_available_subcommands(
-        self, group: str, subcommands: List[str]
-    ):
+    def display_group_with_available_subcommands(self, group: str, subcommands: List[str]):
         """Display a group suggestion with its available subcommands"""
         self.console.print(
             f"[{FramefoxTheme.HEADER_STYLE}]💡 Did you mean group:[/{FramefoxTheme.HEADER_STYLE}] "
@@ -50,26 +47,18 @@ class ErrorHandler:
         self.console.print("")
 
         # Show available subcommands for this group
-        self.console.print(
-            f"[{FramefoxTheme.HEADER_STYLE}]Available {group} commands:[/{FramefoxTheme.HEADER_STYLE}]"
-        )
+        self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]Available {group} commands:[/{FramefoxTheme.HEADER_STYLE}]")
 
         for subcommand in sorted(subcommands):
-            self.console.print(
-                f"  • [bold {FramefoxTheme.SECONDARY}]framefox {group} {subcommand}[/bold {FramefoxTheme.SECONDARY}]"
-            )
+            self.console.print(f"  • [bold {FramefoxTheme.SECONDARY}]framefox {group} {subcommand}[/bold {FramefoxTheme.SECONDARY}]")
 
         self.console.print("")
 
-    def handle_unknown_subcommand(
-        self, group: str, subcommand: str, available_subcommands: List[str]
-    ) -> bool:
+    def handle_unknown_subcommand(self, group: str, subcommand: str, available_subcommands: List[str]) -> bool:
         """Handle unknown subcommand within a group"""
         from framefox.terminal.utils.text_utils import suggest_similar_commands
 
-        suggestions = suggest_similar_commands(
-            subcommand, available_subcommands, threshold=3
-        )
+        suggestions = suggest_similar_commands(subcommand, available_subcommands, threshold=3)
 
         if suggestions:
             # Main error message
@@ -87,9 +76,7 @@ class ErrorHandler:
         self._print_error_header(error_message)
         self._display_single_suggestion(suggestion)
 
-    def handle_group_suggestion(
-        self, error_message: str, group: str, subcommands: List[str]
-    ) -> None:
+    def handle_group_suggestion(self, error_message: str, group: str, subcommands: List[str]) -> None:
         """Handle suggestion of a group with its subcommands"""
         self._print_error_header(error_message)
         self.display_group_with_available_subcommands(group, subcommands)
@@ -97,9 +84,7 @@ class ErrorHandler:
     def _print_error_header(self, error_message: str):
         """Print styled error header"""
         self.console.print("")
-        self.console.print(
-            f"[{FramefoxTheme.ERROR}]❌ {error_message}[/{FramefoxTheme.ERROR}]"
-        )
+        self.console.print(f"[{FramefoxTheme.ERROR}]❌ {error_message}[/{FramefoxTheme.ERROR}]")
         self.console.print("")
 
     def _display_single_suggestion(self, suggestion: str):
@@ -116,9 +101,7 @@ class ErrorHandler:
         self._print_error_header(f"Invalid command: {' '.join(args)}")
 
         # Table with basic commands
-        self.console.print(
-            f"[{FramefoxTheme.HEADER_STYLE}]🚀 GETTING STARTED[/{FramefoxTheme.HEADER_STYLE}]"
-        )
+        self.console.print(f"[{FramefoxTheme.HEADER_STYLE}]🚀 GETTING STARTED[/{FramefoxTheme.HEADER_STYLE}]")
         self.console.print("")
 
         getting_started_table = TableBuilder.create_commands_table()

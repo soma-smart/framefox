@@ -32,9 +32,7 @@ def levenshtein_distance(s1: str, s2: str) -> int:
     return previous_row[-1]
 
 
-def suggest_similar_commands(
-    target: str, available_commands: list, threshold: int = 3
-) -> list:
+def suggest_similar_commands(target: str, available_commands: list, threshold: int = 3) -> list:
     """Suggest similar commands based on Levenshtein distance with smart scoring"""
     if not target or not available_commands:
         return []

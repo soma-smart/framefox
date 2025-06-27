@@ -1,7 +1,8 @@
 from typing import Dict, List
 
-from framefox.core.orm.migration.alembic_manager import AlembicManager
 from sqlalchemy import create_engine, inspect
+
+from framefox.core.orm.migration.alembic_manager import AlembicManager
 
 """
 Framefox Framework developed by SOMA
