@@ -27,7 +27,6 @@ class CreateEnvCommand(AbstractCommand):
         If a .env file already exists, it prompts the user to remove it first.\n
         """
         try:
-            # Check if .env file already exists
             env_file_path = ".env"
             if os.path.exists(env_file_path):
                 self.printer.print_msg(
@@ -41,13 +40,10 @@ class CreateEnvCommand(AbstractCommand):
                 )
                 return
 
-            # Generate secure session secret key
             session_secret_key = self._generate_secret_key()
 
-            # Prepare template data
             template_data = {"session_secret_key": session_secret_key}
 
-            # Create .env file using FileCreator and template
             file_creator = FileCreator()
             file_path = file_creator.create_file(
                 template="init_files/env.jinja2",

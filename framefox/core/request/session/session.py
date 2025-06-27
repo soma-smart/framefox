@@ -3,11 +3,11 @@ from typing import Any, Dict, Optional
 
 from fastapi import Request
 
+from framefox.core.config.settings import Settings
+from framefox.core.di.service_container import ServiceContainer
 from framefox.core.request.request_stack import RequestStack
 from framefox.core.request.session.flash_bag import FlashBag
 from framefox.core.request.session.session_interface import SessionInterface
-from framefox.core.di.service_container import ServiceContainer
-from framefox.core.config.settings import Settings
 
 """
 Framefox Framework developed by SOMA
@@ -23,7 +23,6 @@ class Session(SessionInterface):
     def __init__(self):
         self._flash_bag = FlashBag()
         self.container = ServiceContainer()
-
 
     def get_request(self) -> Request:
         """Retrieve the current request via the RequestStack"""
@@ -110,6 +109,4 @@ class Session(SessionInterface):
         if session_id and hasattr(request.state, "session_data"):
             session_manager = self.container.get_by_name("SessionManager")
             if session_manager:
-                session_manager.update_session(
-                    session_id, request.state.session_data, Settings().cookie_max_age
-                )
+                session_manager.update_session(session_id, request.state.session_data, Settings().cookie_max_age)

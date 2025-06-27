@@ -65,20 +65,10 @@ class ContextLogger:
             kwargs["extra"] = extra
             return func(*args, **kwargs)
 
-        logger.debug = lambda *args, **kwargs: add_context_info(
-            original_debug, *args, **kwargs
-        )
-        logger.info = lambda *args, **kwargs: add_context_info(
-            original_info, *args, **kwargs
-        )
-        logger.warning = lambda *args, **kwargs: add_context_info(
-            original_warning, *args, **kwargs
-        )
-        logger.error = lambda *args, **kwargs: add_context_info(
-            original_error, *args, **kwargs
-        )
-        logger.critical = lambda *args, **kwargs: add_context_info(
-            original_critical, *args, **kwargs
-        )
+        logger.debug = lambda *args, **kwargs: add_context_info(original_debug, *args, **kwargs)
+        logger.info = lambda *args, **kwargs: add_context_info(original_info, *args, **kwargs)
+        logger.warning = lambda *args, **kwargs: add_context_info(original_warning, *args, **kwargs)
+        logger.error = lambda *args, **kwargs: add_context_info(original_error, *args, **kwargs)
+        logger.critical = lambda *args, **kwargs: add_context_info(original_critical, *args, **kwargs)
 
         return logger

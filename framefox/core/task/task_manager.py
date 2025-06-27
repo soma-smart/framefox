@@ -65,9 +65,7 @@ class TaskManager:
 
         queue = queue if queue is not None else self.defaults.get("queue")
         priority = priority if priority is not None else self.defaults.get("priority")
-        max_retries = (
-            max_retries if max_retries is not None else self.defaults.get("max_retries")
-        )
+        max_retries = max_retries if max_retries is not None else self.defaults.get("max_retries")
         scheduled_for = self._calculate_schedule_time(delay, schedule_at)
         task_name = self._get_task_name(task)
         payload = {"kwargs": kwargs}
@@ -97,9 +95,7 @@ class TaskManager:
 
         raise ValueError(f"The task type {type(task)} is not supported")
 
-    def _calculate_schedule_time(
-        self, delay: Optional[Union[int, timedelta]], schedule_at: Optional[datetime]
-    ) -> Optional[datetime]:
+    def _calculate_schedule_time(self, delay: Optional[Union[int, timedelta]], schedule_at: Optional[datetime]) -> Optional[datetime]:
         """Calculates the scheduled execution date"""
         if schedule_at:
             return schedule_at

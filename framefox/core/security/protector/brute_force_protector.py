@@ -72,7 +72,7 @@ class BruteForceProtector:
         self.login_attempts[client_ip].append(current_time)
         self.user_attempts[username].append(current_time)
 
-        ip_recent_15min = len([t for t in self.login_attempts[client_ip] if t > current_time - 900])
+        # ip_recent_15min = len([t for t in self.login_attempts[client_ip] if t > current_time - 900])
         ip_recent_1hour = len([t for t in self.login_attempts[client_ip] if t > current_time - 3600])
         user_recent_30min = len([t for t in self.user_attempts[username] if t > current_time - 1800])
         user_recent_1hour = len([t for t in self.user_attempts[username] if t > current_time - 3600])

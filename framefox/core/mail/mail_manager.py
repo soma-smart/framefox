@@ -1,4 +1,7 @@
-import asyncio, logging, os, re
+import asyncio
+import logging
+import os
+import re
 from datetime import datetime
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -13,6 +16,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from framefox.core.config.settings import Settings
 from framefox.core.mail.email_message import EmailMessage
 from framefox.core.mail.mail_url_parser import MailUrlParser
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -21,10 +25,11 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
+
 class MailManager:
     """
-    Email management service for sending emails, supporting templates, attachments, 
-    queuing, and retry logic. Integrates with Jinja2 for templated emails and 
+    Email management service for sending emails, supporting templates, attachments,
+    queuing, and retry logic. Integrates with Jinja2 for templated emails and
     supports both immediate and queued delivery using SMTP.
     """
 
@@ -36,10 +41,7 @@ class MailManager:
         self.templates_env = None
         templates_dir = None
 
-        if (
-            "mail" in self.settings.config
-            and "templates_dir" in self.settings.config["mail"]
-        ):
+        if "mail" in self.settings.config and "templates_dir" in self.settings.config["mail"]:
             templates_dir = self.settings.config["mail"]["templates_dir"]
 
         else:
@@ -71,9 +73,7 @@ class MailManager:
                 break
 
         if not template_path_found:
-            self.logger.warning(
-                f"No templates folder found in tested paths: {possible_paths}"
-            )
+            self.logger.warning(f"No templates folder found in tested paths: {possible_paths}")
 
     def _validate_config(self) -> bool:
         mail_config = getattr(self.settings, "mail_config", None)
@@ -84,9 +84,7 @@ class MailManager:
             if "mail" in self.settings.config and "url" in self.settings.config["mail"]:
                 mail_url = self.settings.config["mail"]["url"]
             else:
-                mail_url = self.settings.get_param(
-                    "mail.url"
-                ) or self.settings.get_param("mail_url")
+                mail_url = self.settings.get_param("mail.url") or self.settings.get_param("mail_url")
 
             if mail_url:
                 mail_config = MailUrlParser.parse_url(mail_url)
@@ -145,9 +143,7 @@ class MailManager:
 
         for attachment in attachments:
             if isinstance(attachment, dict):
-                message.add_attachment(
-                    attachment["filepath"], attachment.get("filename")
-                )
+                message.add_attachment(attachment["filepath"], attachment.get("filename"))
             else:
                 message.add_attachment(attachment)
 
@@ -163,9 +159,7 @@ class MailManager:
         **kwargs,
     ) -> bool:
         if not self.templates_env:
-            self.logger.error(
-                "No template available. Check the templates/emails folder"
-            )
+            self.logger.error("No template available. Check the templates/emails folder")
             return False
 
         try:
@@ -198,14 +192,10 @@ class MailManager:
 
                     break
                 except Exception as e:
-                    self.logger.debug(
-                        f"Failed to load text template {template}: {str(e)}"
-                    )
+                    self.logger.debug(f"Failed to load text template {template}: {str(e)}")
 
             if not text_content:
-                self.logger.debug(
-                    f"Converting HTML content to text for {template_name}"
-                )
+                self.logger.debug(f"Converting HTML content to text for {template_name}")
                 text_content = self._html_to_text(html_content)
 
             return await self.send_mail(
@@ -223,9 +213,7 @@ class MailManager:
             self.logger.error(f"Error sending template {template_name}: {str(e)}")
             return False
 
-    async def _process_message(
-        self, message: EmailMessage, queue: bool = False
-    ) -> bool:
+    async def _process_message(self, message: EmailMessage, queue: bool = False) -> bool:
         queue_enabled = False
 
         if "mail" in self.settings.config and "queue" in self.settings.config["mail"]:
@@ -254,9 +242,7 @@ class MailManager:
 
         if "mail" in self.settings.config and "queue" in self.settings.config["mail"]:
             max_retries = self.settings.config["mail"]["queue"].get("max_retries", 3)
-            retry_interval = self.settings.config["mail"]["queue"].get(
-                "retry_interval", 300
-            )
+            retry_interval = self.settings.config["mail"]["queue"].get("retry_interval", 300)
         else:
             max_retries = self.settings.get_param("mail.queue.max_retries", 3)
             retry_interval = self.settings.get_param("mail.queue.retry_interval", 300)
@@ -277,9 +263,7 @@ class MailManager:
                                 f" for {message.subject} to {message.receiver}"
                             )
                         else:
-                            self.logger.error(
-                                f"Abandoning send after {max_retries} attempts: {message.subject} to {message.receiver}"
-                            )
+                            self.logger.error(f"Abandoning send after {max_retries} attempts: {message.subject} to {message.receiver}")
                 except Exception as e:
                     self.logger.error(f"Error processing a queued message: {str(e)}")
                     if message.retry_count < max_retries:
@@ -291,9 +275,7 @@ class MailManager:
             self.is_processing = False
 
             if self.queue:
-                self.logger.info(
-                    f"{len(self.queue)} emails remain in the queue. Next attempt in {retry_interval}s"
-                )
+                self.logger.info(f"{len(self.queue)} emails remain in the queue. Next attempt in {retry_interval}s")
                 await asyncio.sleep(retry_interval)
                 asyncio.create_task(self._process_queue())
 
@@ -329,9 +311,7 @@ class MailManager:
                     )
                     mime_message.attach(part)
             except Exception as e:
-                self.logger.error(
-                    f"Error adding attachment {attachment['filepath']}: {str(e)}"
-                )
+                self.logger.error(f"Error adding attachment {attachment['filepath']}: {str(e)}")
 
         all_recipients = [message.receiver]
         if message.cc:
@@ -344,16 +324,13 @@ class MailManager:
                 hostname=mail_config["host"],
                 port=mail_config["port"],
                 use_tls=mail_config.get("use_tls", False),
-                start_tls=mail_config.get("use_tls", False)
-                and not mail_config.get("use_ssl", False),
+                start_tls=mail_config.get("use_tls", False) and not mail_config.get("use_ssl", False),
             )
 
             await smtp_client.connect()
 
             if mail_config.get("username") and mail_config.get("password"):
-                await smtp_client.login(
-                    mail_config["username"], mail_config["password"]
-                )
+                await smtp_client.login(mail_config["username"], mail_config["password"])
 
             await smtp_client.send_message(mime_message)
             await smtp_client.quit()

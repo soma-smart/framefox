@@ -15,8 +15,8 @@ def main():
     """
     Main entry point of the Framefox CLI application.
     """
-    console = Terminal()
-    return console.run()
+    terminal = Terminal()
+    return terminal.run()
 
 
 if __name__ == "__main__":

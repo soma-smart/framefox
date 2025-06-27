@@ -1,4 +1,7 @@
-import logging, sys, time, traceback
+import logging
+import sys
+import time
+import traceback
 from typing import Callable
 
 from fastapi import Request, Response
@@ -23,17 +26,17 @@ Github: https://github.com/RayenBou
 class ProfilerMiddleware(BaseHTTPMiddleware):
     """
     Middleware for profiling HTTP requests in a FastAPI application.
-    
+
     This middleware collects comprehensive request data including:
     - Request and response details
     - SQL queries and database operations
     - Memory usage statistics
     - Exception information
     - Performance metrics
-    
+
     For HTML responses, it automatically injects a profiler toolbar
     for debugging and performance monitoring when profiling is enabled.
-    
+
     Args:
         app: The FastAPI application instance
     """
@@ -69,35 +72,11 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
         if sql_collector:
             sql_collector.start_request()
 
-        try:
-            response = await call_next(request)
-        except Exception as e:
-            if sql_collector:
-                sql_collector.request_active = False
+        response = await call_next(request)
 
-            request.state.exception = {
-                "class": e.__class__.__name__,
-                "message": str(e),
-                "trace": traceback.format_exc(),
-            }
-
-            exception_collector = self.profiler.get_collector("exception")
-            if exception_collector:
-                stack_trace = traceback.format_exc()
-                exception_collector.collect_exception(e, stack_trace)
-
-            if self.profiler.is_enabled():
-                try:
-                    error_token = self.profiler.collect_error_profile(request, e)
-                    request.state.profiler_token = error_token
-          
-                except Exception as profiler_error:
-                    pass
-
-            raise e
         try:
             profiler_enabled = self.profiler.is_enabled()
-            
+
             if profiler_enabled:
                 try:
                     token = self.profiler.collect(request, response)
@@ -106,7 +85,6 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                 except Exception as e:
                     self.logger.debug(f"Failed to collect profiler data: {e}")
                     token = None
-
 
             content_type = response.headers.get("content-type", "")
             is_html = "text/html" in content_type
@@ -124,9 +102,7 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             )
 
             if is_streaming:
-                return await self._handle_streaming_response(
-                    response, token, start_time, request
-                )
+                return await self._handle_streaming_response(response, token, start_time, request)
 
             if hasattr(response, "body"):
                 response_text = response.body.decode("utf-8")
@@ -135,9 +111,7 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
 
                 if has_body_tag:
                     try:
-                        html = self._generate_profiler_bar(
-                            token, time.time() - start_time, request
-                        )
+                        html = self._generate_profiler_bar(token, time.time() - start_time, request)
 
                         response_text = response_text.replace("</body>", f"{html}</body>")
                         response.body = response_text.encode("utf-8")
@@ -149,12 +123,8 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback_details = "".join(
-                traceback.format_exception(exc_type, exc_value, exc_traceback)
-            )
-            self.logger.error(
-                f"Unhandled exception in profiler: {str(e)}\n{traceback_details}"
-            )
+            traceback_details = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+            self.logger.error(f"Unhandled exception in profiler: {str(e)}\n{traceback_details}")
             return response
 
     async def _handle_streaming_response(
@@ -165,9 +135,7 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
         request: Request,
     ) -> StreamingResponse:
         try:
-            profiler_html = self._generate_profiler_bar(
-                token, time.time() - start_time, request
-            )
+            profiler_html = self._generate_profiler_bar(token, time.time() - start_time, request)
 
             content_chunks = []
 
@@ -182,9 +150,7 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
                         content_str = full_content.decode("utf-8")
 
                         if "</body>" in content_str:
-                            modified_content = content_str.replace(
-                                "</body>", f"{profiler_html}</body>"
-                            )
+                            modified_content = content_str.replace("</body>", f"{profiler_html}</body>")
                             yield modified_content.encode("utf-8")
                         else:
                             yield full_content
@@ -212,34 +178,22 @@ class ProfilerMiddleware(BaseHTTPMiddleware):
             return new_response
 
         except Exception as e:
-            self.logger.error(
-                f"Fatal exception in _handle_streaming_response: {str(e)}\n{traceback.format_exc()}"
-            )
+            self.logger.error(f"Fatal exception in _handle_streaming_response: {str(e)}\n{traceback.format_exc()}")
             return response
 
-    def _generate_profiler_bar(
-        self, token: str, duration: float, request: Request
-    ) -> str:
+    def _generate_profiler_bar(self, token: str, duration: float, request: Request) -> str:
         profile = self.profiler.get_profile(token)
 
         duration_ms = round(duration * 1000, 2)
-        
+
         memory_data = profile.get("memory", {})
         memory = 0
-        
+
         if memory_data:
-            memory = (
-                memory_data.get("memory_usage_mb") or 
-                memory_data.get("memory_usage") or 
-                0
-            )
-        
+            memory = memory_data.get("memory_usage_mb") or memory_data.get("memory_usage") or 0
+
         route = request.url.path
-        status_code = (
-            profile.get("request", {}).get("status_code", 200)
-            if "request" in profile
-            else 200
-        )
+        status_code = profile.get("request", {}).get("status_code", 200) if "request" in profile else 200
 
         context = {
             "token": token,

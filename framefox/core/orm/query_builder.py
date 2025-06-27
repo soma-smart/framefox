@@ -137,9 +137,7 @@ class QueryBuilder:
         with self.entity_manager.session as session:
 
             if isinstance(query, (Delete, Update)):
-                raise ValueError(
-                    "The 'first' method is not applicable for delete or update queries."
-                )
+                raise ValueError("The 'first' method is not applicable for delete or update queries.")
             result = session.exec(query).first()
             return result
 
@@ -167,8 +165,6 @@ class QueryBuilder:
         with self.entity_manager.session as session:
 
             if isinstance(query, (Delete, Update)):
-                raise ValueError(
-                    "The 'last' method is not applicable for delete or update queries."
-                )
+                raise ValueError("The 'last' method is not applicable for delete or update queries.")
             result = session.exec(query).first()
             return result

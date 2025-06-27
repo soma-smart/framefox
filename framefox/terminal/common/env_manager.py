@@ -19,9 +19,7 @@ class EnvManager:
     def __init__(self, env_path: str = ".env"):
         self.env_path = env_path
 
-    def add_variables(
-        self, variables: Dict[str, str], section_title: str = None
-    ) -> None:
+    def add_variables(self, variables: Dict[str, str], section_title: str = None) -> None:
         if not os.path.exists(self.env_path):
             with open(self.env_path, "w") as f:
                 f.write("# Environment variables\n\n")
@@ -49,16 +47,14 @@ class EnvManager:
                 existing[key] = value
         return existing
 
-    def _append_variables(
-        self, variables: Dict[str, str], section_title: str = None
-    ) -> None:
+    def _append_variables(self, variables: Dict[str, str], section_title: str = None) -> None:
         with open(self.env_path, "a") as f:
             f.write("\n")
 
             if section_title:
-                f.write(f"#==============================\n")
+                f.write("#==============================\n")
                 f.write(f"# {section_title}\n")
-                f.write(f"#==============================\n")
+                f.write("#==============================\n")
 
             for key, value in variables.items():
                 f.write(f"{key}={value}\n")
@@ -88,9 +84,7 @@ class EnvManager:
                 "APP_URL": "http://localhost:8000",
             }
         elif auth_type == "jwt_api":
-            return {
-                "JWT_SECRET_KEY": "your-super-secret-jwt-key-change-this-in-production"
-            }
+            return {"JWT_SECRET_KEY": "your-super-secret-jwt-key-change-this-in-production"}
         else:
             return {}
 

@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Framefox Profiler</title>
     <style>
-      /* Base styles - harmonized with details.html */
       body {
         font-family: Arial, sans-serif;
         margin: 0;
@@ -46,8 +45,6 @@
         margin: 20px auto;
         padding: 0 20px;
       }
-
-      /* Profiler panel style */
       .profiler-panel {
         background-color: #fff;
         padding: 20px;
@@ -63,7 +60,6 @@
         margin-bottom: 20px;
       }
 
-      /* Search bar */
       .search-container {
         margin-bottom: 20px;
         display: flex;
@@ -90,7 +86,6 @@
         color: #999;
       }
 
-      /* Table styles */
       .profiles-table {
         width: 100%;
         border-collapse: collapse;
@@ -135,7 +130,6 @@
         text-decoration: underline;
       }
 
-      /* Status and duration */
       .status-success {
         color: #28a745;
         font-weight: bold;
@@ -165,9 +159,7 @@
 
       .duration-slow {
         color: #dc3545;
-      }
 
-      /* Pagination */
       .pagination {
         margin-top: 20px;
         display: flex;
@@ -354,15 +346,11 @@
     </div>
 
     <script>
-      // Make rows clickable
       document.addEventListener("DOMContentLoaded", function () {
-        // Get all profile rows
         const profileRows = document.querySelectorAll(".profile-row");
 
-        // Add click event to each row
         profileRows.forEach((row) => {
           row.addEventListener("click", function (e) {
-            // Prevent the click if the user clicked on the token link
             if (
               e.target.tagName === "A" ||
               e.target.parentNode.tagName === "A"
@@ -370,21 +358,16 @@
               return;
             }
 
-            // Get the token of the profile
             const token = this.getAttribute("data-token");
 
-            // Redirect to the profile details page
             window.location.href = `/_profiler/${token}`;
           });
         });
-
-        // Search functionality
         const searchInput = document.getElementById("profileSearchInput");
         if (searchInput) {
           searchInput.addEventListener("input", function () {
             const searchTerm = this.value.toLowerCase();
 
-            // Filter the table rows
             profileRows.forEach((row) => {
               const rowText = row.textContent.toLowerCase();
 
@@ -395,7 +378,6 @@
               }
             });
 
-            // Update the display count
             const visibleRows = document.querySelectorAll(
               '.profile-row[style=""]'
             ).length;

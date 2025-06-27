@@ -82,10 +82,13 @@ class InitCommand(AbstractCommand):
         self._display_success_message()
 
     def _check_existing_project_structure(self):
-        """Check which project files and directories already exist"""
+        """Check which project files and directories already exist (excluding var/)"""
         existing_items = []
 
+        # Check directories, excluding var/ and its subdirectories
         for directory in PROJECT_DIRECTORIES:
+            if directory.startswith("var"):
+                continue  # Skip var/ directories - they'll be overwritten without prompt
             if os.path.exists(directory):
                 existing_items.append(f"{directory}/ (directory)")
 
@@ -135,13 +138,30 @@ class InitCommand(AbstractCommand):
 
     def _create_project(self):
         """Create the complete project structure"""
+        self._handle_var_directory_cleanup()
         self._create_directories()
         self._create_files()
+
+    def _handle_var_directory_cleanup(self):
+        """Handle var/ directory cleanup with user notification"""
+        var_exists = os.path.exists("var")
+        if var_exists:
+            self.printer.print_msg(
+                "Cleaning up var/ directory (cache, logs, sessions)...",
+                theme="info",
+                linebefore=True,
+            )
 
     def _create_directories(self):
         """Create all project directories"""
         for directory in PROJECT_DIRECTORIES:
-            os.makedirs(directory, exist_ok=True)
+            if directory.startswith("var"):
+                # Always overwrite var/ directories without prompting
+                if os.path.exists(directory):
+                    shutil.rmtree(directory)
+                os.makedirs(directory, exist_ok=True)
+            else:
+                os.makedirs(directory, exist_ok=True)
 
     def _create_files(self):
         """Create all project files"""
@@ -158,17 +178,18 @@ class InitCommand(AbstractCommand):
                 "path": "./",
                 "name": "main",
                 "data": {},
+                "format": "py",
             },
             {
                 "template": "init_files/env.jinja2",
-                "path": "./",
+                "path": ".",
                 "name": ".env",
                 "data": {"session_secret_key": self._generate_secret_key()},
                 "format": "env",
             },
             {
                 "template": "init_files/base.jinja2",
-                "path": "./templates/",
+                "path": "./templates",
                 "name": "base.html",
                 "data": {},
                 "format": "html",
@@ -194,7 +215,7 @@ class InitCommand(AbstractCommand):
         return [
             {
                 "template": f"init_files/{name}.jinja2",
-                "path": "./config/",
+                "path": "./config",
                 "name": f"{name}.yaml",
                 "data": {},
                 "format": "yaml",
@@ -214,14 +235,14 @@ class InitCommand(AbstractCommand):
             },
             {
                 "template": "init_files/script.py.mako",
-                "path": "./migrations/",
+                "path": "./migrations",
                 "name": "script.py.mako",
                 "data": {},
                 "format": "py.mako",
             },
             {
                 "template": "init_files/blank.jinja2",
-                "path": "./migrations/versions/__pycache__/",
+                "path": "./migrations/versions/__pycache__",
                 "name": ".gitkeep",
                 "data": {},
                 "format": "gitkeep",
@@ -233,14 +254,14 @@ class InitCommand(AbstractCommand):
         return [
             {
                 "template": "init_files/gitignore.jinja2",
-                "path": "./",
+                "path": ".",
                 "name": ".gitignore",
                 "data": {},
                 "format": "gitignore",
             },
             {
                 "template": "init_files/requirements.jinja2",
-                "path": "./",
+                "path": ".",
                 "name": "requirements.txt",
                 "data": {"framefox_version": version("framefox")},
                 "format": "txt",

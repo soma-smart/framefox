@@ -1,5 +1,3 @@
-import logging
-
 import colorlog
 
 """
@@ -19,7 +17,6 @@ class ColoredSQLFormatter(colorlog.ColoredFormatter):
 
     def format(self, record):
         if record.name.startswith("sqlalchemy") or record.name == "sqlmodel":
-            original_name = record.name
             original_msg = record.msg
             original_args = record.args
 

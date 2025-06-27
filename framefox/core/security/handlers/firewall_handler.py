@@ -14,18 +14,17 @@ from framefox.core.request.session.session_manager import SessionManager
 from framefox.core.security.access_manager import AccessManager
 from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
 from framefox.core.security.handlers.firewall_utils import FirewallUtils
-from framefox.core.security.handlers.oauth_callback_handler import OAuthCallbackHandler
 from framefox.core.security.handlers.jwt_authentication_handler import JWTAuthenticationHandler
+from framefox.core.security.handlers.oauth_callback_handler import OAuthCallbackHandler
 from framefox.core.security.handlers.security_context_handler import SecurityContextHandler
+from framefox.core.security.protector.brute_force_protector import BruteForceProtector
+from framefox.core.security.protector.input_validation_protector import InputValidationProtector
+from framefox.core.security.protector.rate_limiting_protector import RateLimitingProtector
+from framefox.core.security.protector.security_headers_protector import SecurityHeadersProtector
+from framefox.core.security.protector.time_attack_protector import TimingAttackProtector
 from framefox.core.security.token_manager import TokenManager
 from framefox.core.security.token_storage import TokenStorage
 from framefox.core.templates.template_renderer import TemplateRenderer
-
-from framefox.core.security.protector.time_attack_protector import TimingAttackProtector
-from framefox.core.security.protector.rate_limiting_protector import RateLimitingProtector
-from framefox.core.security.protector.security_headers_protector import SecurityHeadersProtector
-from framefox.core.security.protector.input_validation_protector import InputValidationProtector
-from framefox.core.security.protector.brute_force_protector import BruteForceProtector
 
 """
 Framefox Framework developed by SOMA
@@ -40,11 +39,11 @@ class FirewallHandler:
     """
     Main security firewall handler.
     Orchestrates JWT authentication, OAuth, form authentication and authorization.
-    
+
     This class serves as the central security component that manages all incoming requests,
     applies security protections, handles various authentication methods, and enforces
     authorization policies.
-    
+
     Features:
     - Multiple authentication methods (JWT, OAuth, form-based)
     - Rate limiting and brute force protection
@@ -111,8 +110,6 @@ class FirewallHandler:
 
         self.authenticators = self.load_authenticators()
 
-
-
     def load_authenticators(self) -> Dict[str, AuthenticatorInterface]:
         authenticators = {}
         firewalls = self.settings.firewalls
@@ -126,18 +123,17 @@ class FirewallHandler:
                     module_path, class_name = authenticator_path.rsplit(".", 1)
                     module = importlib.import_module(module_path)
                     AuthenticatorClass: Type[AuthenticatorInterface] = getattr(module, class_name)
-                    
-                    # ✅ Utiliser le conteneur de services pour l'autowiring
+
                     from framefox.core.di.service_container import ServiceContainer
+
                     container = ServiceContainer()
-                    
+
                     try:
                         authenticator_instance = container.get(AuthenticatorClass)
                     except Exception as e:
                         self.logger.warning(f"Could not autowire {class_name}, falling back to manual instantiation: {e}")
-                        # Fallback : instanciation manuelle si l'autowiring échoue
                         authenticator_instance = AuthenticatorClass()
-                    
+
                     authenticators[firewall_name] = authenticator_instance
                 except (ImportError, AttributeError) as e:
                     self.logger.error(f"Error loading authenticator '{authenticator_path}' for firewall '{firewall_name}': {e}")
@@ -155,15 +151,13 @@ class FirewallHandler:
             self.headers_protector.apply_headers(auth_response, request)
             return auth_response
 
-        jwt_response = await self.jwt_authentication_handler.handle_jwt_authentication(
-            request, self.authenticators
-        )
+        jwt_response = await self.jwt_authentication_handler.handle_jwt_authentication(request, self.authenticators)
         if jwt_response:
             self.headers_protector.apply_headers(jwt_response, request)
             return jwt_response
 
         required_roles = self.access_manager.get_required_roles(request.url.path)
-        
+
         if not required_roles or "IS_AUTHENTICATED_ANONYMOUSLY" in required_roles:
             response = await call_next(request)
             self.headers_protector.apply_headers(response, request)
@@ -192,7 +186,7 @@ class FirewallHandler:
         return True
 
     def _get_protection_failure_response(self):
-        return getattr(self, '_protection_failure_response', JSONResponse({"error": "Protection failed"}, status_code=400))
+        return getattr(self, "_protection_failure_response", JSONResponse({"error": "Protection failed"}, status_code=400))
 
     async def _handle_authentication_routes(self, request: Request, call_next) -> Optional[Response]:
         auth_routes = self.utils.get_auth_routes()
@@ -209,7 +203,7 @@ class FirewallHandler:
 
     async def handle_authentication(self, request: Request, call_next) -> Optional[Response]:
         self.logger.debug(f"Handling authentication for path: {request.url.path}")
-        
+
         for firewall_name, authenticator in self.authenticators.items():
             firewall_config = self.settings.get_firewall_config(firewall_name)
             login_path = firewall_config.get("login_path")
@@ -221,9 +215,7 @@ class FirewallHandler:
                 return await self.handle_logout(request, firewall_config, firewall_name, call_next)
 
             if self.utils.should_apply_oauth_logic(request, authenticator, firewall_config):
-                oauth_response = await self._handle_oauth_authentication(
-                    request, firewall_name, authenticator, firewall_config
-                )
+                oauth_response = await self._handle_oauth_authentication(request, firewall_name, authenticator, firewall_config)
                 if oauth_response:
                     return oauth_response
 
@@ -237,16 +229,12 @@ class FirewallHandler:
         return None
 
     async def _handle_oauth_authentication(
-        self,
-        request: Request,
-        firewall_name: str,
-        authenticator: AuthenticatorInterface,
-        firewall_config: Dict
+        self, request: Request, firewall_name: str, authenticator: AuthenticatorInterface, firewall_config: Dict
     ) -> Optional[Response]:
         login_path = firewall_config.get("login_path")
-        
+
         self.logger.debug(f"OAuth authenticator detected for firewall '{firewall_name}'")
-        
+
         if request.url.path.startswith(login_path):
             self.utils.log_oauth_event("login_initiated", firewall_name)
             return authenticator.on_auth_failure(request)
@@ -254,21 +242,15 @@ class FirewallHandler:
         callback_path = self.utils.get_oauth_callback_path(firewall_config)
         if self.utils.is_oauth_callback(request, callback_path):
             self.utils.log_oauth_event("callback_detected", firewall_name)
-            return await self.oauth_callback_handler.handle_oauth_callback(
-                request, authenticator, firewall_config, firewall_name
-            )
+            return await self.oauth_callback_handler.handle_oauth_callback(request, authenticator, firewall_config, firewall_name)
 
         return None
 
     async def _handle_form_authentication(
-        self,
-        request: Request,
-        authenticator: AuthenticatorInterface,
-        firewall_config: Dict,
-        firewall_name: str
+        self, request: Request, authenticator: AuthenticatorInterface, firewall_config: Dict, firewall_name: str
     ) -> Response:
         login_path = firewall_config.get("login_path")
-        
+
         if not self.utils.is_jwt_authenticator(authenticator):
             csrf_valid = await self.timing_protector.protected_csrf_validation(self.csrf_manager.validate_token, request)
 
@@ -280,10 +262,9 @@ class FirewallHandler:
 
         return await self.handle_post_request(request, authenticator, firewall_config, firewall_name)
 
-
     async def _handle_authorization(self, request: Request, call_next) -> Response:
         required_roles = self.access_manager.get_required_roles(request.url.path)
-        
+
         if not required_roles:
             return await call_next(request)
 
@@ -309,7 +290,7 @@ class FirewallHandler:
             form_data = await request.form()
             request._form_data = form_data
             username = form_data.get("_username") or form_data.get("email", "")
-        except:
+        except Exception:
             username = "unknown"
 
         allowed, reason, delay = self.brute_force_protector.check_login_attempt(client_ip, username)
@@ -322,9 +303,7 @@ class FirewallHandler:
         if delay > 0:
             await asyncio.sleep(min(delay, 5))
 
-        passport = await self.timing_protector.protected_authentication(
-            authenticator.authenticate_request, request, firewall_name
-        )
+        passport = await self.timing_protector.protected_authentication(authenticator.authenticate_request, request, firewall_name)
 
         if passport:
             return self._handle_authentication_success(passport, firewall_name, authenticator, client_ip, username)
@@ -332,12 +311,7 @@ class FirewallHandler:
             return self._handle_authentication_failure(request, authenticator, client_ip, username)
 
     def _handle_authentication_success(
-        self, 
-        passport, 
-        firewall_name: str, 
-        authenticator: AuthenticatorInterface,
-        client_ip: str,
-        username: str
+        self, passport, firewall_name: str, authenticator: AuthenticatorInterface, client_ip: str, username: str
     ) -> Response:
         self.brute_force_protector.check_login_attempt(client_ip, username, success=True)
 
@@ -358,11 +332,7 @@ class FirewallHandler:
         return response
 
     def _handle_authentication_failure(
-        self, 
-        request: Request,
-        authenticator: AuthenticatorInterface,
-        client_ip: str,
-        username: str
+        self, request: Request, authenticator: AuthenticatorInterface, client_ip: str, username: str
     ) -> Response:
         self.brute_force_protector.check_login_attempt(client_ip, username, success=False)
 

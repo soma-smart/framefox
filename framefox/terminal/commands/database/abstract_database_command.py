@@ -15,9 +15,16 @@ Github: https://github.com/Vasulvius
 
 
 class AbstractDatabaseCommand(AbstractCommand, ABC):
-    def __init__(self, name: str):
+    def __init__(self, name: str = None):
         super().__init__(name)
-        self.connection_manager = ConnectionManager.get_instance()
+        self._connection_manager = None
+
+    @property
+    def connection_manager(self):
+        """Lazy loading du connection manager pour éviter les erreurs à l'instanciation"""
+        if self._connection_manager is None:
+            self._connection_manager = ConnectionManager.get_instance()
+        return self._connection_manager
 
     @property
     def driver(self):
@@ -25,9 +32,7 @@ class AbstractDatabaseCommand(AbstractCommand, ABC):
 
     def _create_connection_manager(self) -> ConnectionManager:
         parser = DatabaseUrlParser()
-        scheme, user, password, host, port, database = parser.parse(
-            self.settings.database_url
-        )
+        scheme, user, password, host, port, database = parser.parse(self.settings.database_url)
 
         config = DatabaseConfig(
             driver=scheme.split("+")[0],

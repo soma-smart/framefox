@@ -6,7 +6,7 @@ import logging
 import os
 import sqlite3
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from framefox.core.config.settings import Settings
 
@@ -45,9 +45,7 @@ class SessionManager:
             """
             )
 
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_expires_at ON sessions(expires_at)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_expires_at ON sessions(expires_at)")
 
             conn.commit()
             conn.close()
@@ -207,9 +205,7 @@ class SessionManager:
 
         secret_key = self.settings.session_secret_key.encode("utf-8")
 
-        signature = hmac.new(
-            secret_key, session_id.encode("utf-8"), digestmod=hashlib.sha256
-        ).digest()
+        signature = hmac.new(secret_key, session_id.encode("utf-8"), digestmod=hashlib.sha256).digest()
 
         encoded_sig = base64.urlsafe_b64encode(signature).decode("utf-8").rstrip("=")
 

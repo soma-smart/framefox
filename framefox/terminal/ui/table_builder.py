@@ -1,7 +1,8 @@
 from typing import List, Tuple
 
-from framefox.terminal.ui.themes import FramefoxTheme
 from rich.table import Table
+
+from framefox.terminal.ui.themes import FramefoxTheme
 
 """
 Framefox Framework developed by SOMA
@@ -43,9 +44,7 @@ class TableBuilder:
     def create_groups_table() -> Table:
         """Create a table for displaying command groups"""
         table = TableBuilder.create_basic_table()
-        table.add_column(
-            "Command Group", style=FramefoxTheme.COMMAND_STYLE, no_wrap=True
-        )
+        table.add_column("Command Group", style=FramefoxTheme.COMMAND_STYLE, no_wrap=True)
         table.add_column("Description", style=FramefoxTheme.DESCRIPTION_STYLE)
         return table
 

@@ -3,8 +3,8 @@ import logging
 import time
 from pathlib import Path
 from typing import Any, Dict, Type
-from framefox.core.config.settings import Settings
 
+from framefox.core.config.settings import Settings
 from framefox.core.di.service_definition import ServiceDefinition
 
 """
@@ -178,11 +178,11 @@ class ServiceCacheManager:
         try:
 
             watch_dirs = [
-                Path(self.settings.controller_dir),  
+                Path(self.settings.controller_dir),
                 Path("src/entities") if Path("src/entities").exists() else None,
                 Path("src/services") if Path("src/services").exists() else None,
             ]
-            
+
             for watch_dir in filter(None, watch_dirs):
                 if watch_dir.exists():
                     for py_file in watch_dir.rglob("*.py"):
@@ -191,11 +191,7 @@ class ServiceCacheManager:
                             return True
 
             core_path = Path(__file__).parent.parent
-            critical_files = [
-                "controller/abstract_controller.py", 
-                "routing/router.py", 
-                "di/service_container.py"
-            ]
+            critical_files = ["controller/abstract_controller.py", "routing/router.py", "di/service_container.py"]
 
             for critical_file in critical_files:
                 file_path = core_path / critical_file

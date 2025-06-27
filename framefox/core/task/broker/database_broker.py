@@ -72,9 +72,7 @@ class DatabaseBroker(BrokerInterface):
         return tasks
 
     def complete_task(self, task: Task) -> None:
-        self.logger.info(
-            f"Task {task.id} ({task.name}) successfully completed - deleting"
-        )
+        self.logger.info(f"Task {task.id} ({task.name}) successfully completed - deleting")
         self.entity_manager.delete(task)
         self.entity_manager.commit()
 
@@ -82,15 +80,11 @@ class DatabaseBroker(BrokerInterface):
         if task.retry_count < task.max_retries:
             task.status = TaskStatus.RETRYING
             task.retry_count += 1
-            self.logger.warning(
-                f"Task {task.id} ({task.name}) failed, retrying {task.retry_count}/{task.max_retries}"
-            )
+            self.logger.warning(f"Task {task.id} ({task.name}) failed, retrying {task.retry_count}/{task.max_retries}")
         else:
             task.status = TaskStatus.FAILED
             task.error_message = error
-            self.logger.error(
-                f"Task {task.id} ({task.name}) permanently failed: {error}"
-            )
+            self.logger.error(f"Task {task.id} ({task.name}) permanently failed: {error}")
 
         task.updated_at = datetime.now()
         self.entity_manager.persist(task)
@@ -99,9 +93,7 @@ class DatabaseBroker(BrokerInterface):
     def get_task(self, task_id: str) -> Optional[Task]:
         return self.entity_manager.find(Task, task_id)
 
-    def get_tasks_by_status(
-        self, status: TaskStatus, queue: str = None, limit: int = 100
-    ) -> List[Task]:
+    def get_tasks_by_status(self, status: TaskStatus, queue: str = None, limit: int = 100) -> List[Task]:
         statement = select(Task).where(Task.status == status)
 
         if queue:
@@ -114,9 +106,7 @@ class DatabaseBroker(BrokerInterface):
     def purge_failed_tasks(self, older_than_days: int = 30) -> int:
         cutoff_date = datetime.now() - timedelta(days=older_than_days)
 
-        statement = select(Task).where(
-            and_(Task.status == TaskStatus.FAILED, Task.updated_at <= cutoff_date)
-        )
+        statement = select(Task).where(and_(Task.status == TaskStatus.FAILED, Task.updated_at <= cutoff_date))
 
         tasks_to_delete = self.entity_manager.exec_statement(statement)
         count = 0
@@ -127,8 +117,6 @@ class DatabaseBroker(BrokerInterface):
 
         if count > 0:
             self.entity_manager.commit()
-            self.logger.info(
-                f"Cleanup: {count} failed tasks deleted (older than {older_than_days} days)"
-            )
+            self.logger.info(f"Cleanup: {count} failed tasks deleted (older than {older_than_days} days)")
 
         return count

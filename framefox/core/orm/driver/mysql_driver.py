@@ -1,5 +1,11 @@
 from sqlalchemy.sql import text
 
+from framefox.core.debug.exception.database_exception import (
+    DatabaseConnectionError,
+    DatabaseCreationError,
+    DatabaseDriverError,
+    DatabaseDropError,
+)
 from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.core.orm.driver.database_driver import DatabaseDriver
 
@@ -30,17 +36,17 @@ class MySQLDriver(DatabaseDriver):
                 charset=str(self.config.charset),
             )
         except Exception as e:
-            print(f"MySQL connection error: {str(e)}")
-            raise
+            raise DatabaseConnectionError(f"MySQL connection failed: {str(e)}", e)
 
     def create_database(self, name: str) -> bool:
-        with self.connect() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    f"CREATE DATABASE IF NOT EXISTS `{name}` CHARACTER SET {self.config.charset}"
-                )
-            connection.commit()
-        return True
+        try:
+            with self.connect() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{name}` CHARACTER SET {self.config.charset}")
+                connection.commit()
+            return True
+        except Exception as e:
+            raise DatabaseCreationError(name, e)
 
     def create_alembic_version_table(self, engine):
         """Creates the alembic_version table if it does not exist for MySQL"""
@@ -56,11 +62,9 @@ class MySQLDriver(DatabaseDriver):
                     )
                 )
                 connection.commit()
-                print("alembic_version table created successfully (MySQL)")
                 return True
         except Exception as e:
-            print(f"Error creating alembic_version table: {str(e)}")
-            return False
+            raise DatabaseDriverError("MySQL", "create alembic_version table", e)
 
     def database_exists(self, name: str) -> bool:
         """Checks if the database exists"""
@@ -70,8 +74,7 @@ class MySQLDriver(DatabaseDriver):
                     cursor.execute(f"SHOW DATABASES LIKE '{name}'")
                     return cursor.fetchone() is not None
         except Exception as e:
-            print(f"Error checking database existence: {str(e)}")
-            return False
+            raise DatabaseDriverError("MySQL", "check database existence", e)
 
     def drop_database(self, name: str) -> bool:
         """Drops the database"""
@@ -82,5 +85,4 @@ class MySQLDriver(DatabaseDriver):
                 connection.commit()
             return True
         except Exception as e:
-            print(f"Error dropping database: {str(e)}")
-            return False
+            raise DatabaseDropError(name, e)

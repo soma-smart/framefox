@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List, Optional, Set, Type
 
-from framefox.core.di.exceptions import InvalidServiceDefinitionError
+from framefox.core.debug.exception.di_exception import InvalidServiceDefinitionError
 from framefox.core.di.service_definition import ServiceDefinition
 
 """
@@ -66,18 +66,10 @@ class ServiceRegistry:
 
     def get_definitions_by_tag(self, tag: str) -> List[ServiceDefinition]:
         if tag in self._tag_cache:
-            return [
-                self._definitions[cls]
-                for cls in self._tag_cache[tag]
-                if cls in self._definitions
-            ]
+            return [self._definitions[cls] for cls in self._tag_cache[tag] if cls in self._definitions]
         service_classes = list(self._tags.get(tag, set()))
         self._tag_cache[tag] = service_classes
-        return [
-            self._definitions[cls]
-            for cls in service_classes
-            if cls in self._definitions
-        ]
+        return [self._definitions[cls] for cls in service_classes if cls in self._definitions]
 
     def has_definition(self, service_class: Type[Any]) -> bool:
         return service_class in self._definitions
@@ -93,9 +85,10 @@ class ServiceRegistry:
 
     def freeze(self) -> None:
         self._frozen = True
+
     def is_frozen(self) -> bool:
         """Check if the registry is frozen."""
-        return getattr(self, '_frozen', False)
+        return getattr(self, "_frozen", False)
 
     def _clear_caches(self) -> None:
         self._name_cache.clear()

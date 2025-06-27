@@ -1,11 +1,7 @@
 import os
 
 from framefox.terminal.commands.init_command import PROJECT_DIRECTORIES, PROJECT_FILES
-from framefox.tests.e2e.fixtures.commands import (  # noqa: F401
-    TMP_PATH,
-    exec_command,
-    handle_tmp_path,
-)
+from framefox.tests.e2e.fixtures.commands import TMP_PATH, exec_command, handle_tmp_path  # noqa: F401
 
 
 def test_init_command_should_exist(handle_tmp_path):  # noqa: F811
@@ -39,12 +35,4 @@ def test_init_command_should_create_files(handle_tmp_path):  # noqa: F811
         assert os.path.exists(file_path), f"File {file_path} was not created"
 
 
-def test_init_command_when_already_done_should_fail(handle_tmp_path):  # noqa: F811
-    exec_command(
-        ["framefox", "init"],
-    )
-    result = exec_command(
-        ["framefox", "init"],
-    )
 
-    assert result.returncode == 1

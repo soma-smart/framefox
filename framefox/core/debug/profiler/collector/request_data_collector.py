@@ -132,13 +132,9 @@ class RequestDataCollector(DataCollector):
                     body_str = body.decode("utf-8", errors="ignore")
                     self.request_body = self._clean_raw_body(body_str, content_type)
                 except UnicodeDecodeError:
-                    self.request_body = {
-                        "_error": "Could not decode request body (binary data?)"
-                    }
+                    self.request_body = {"_error": "Could not decode request body (binary data?)"}
             except Exception as e:
-                self.request_body = {
-                    "_error": f"Could not capture request body: {str(e)}"
-                }
+                self.request_body = {"_error": f"Could not capture request body: {str(e)}"}
 
     def collect(self, request: Request, response: Response) -> None:
         headers = dict(request.headers)
@@ -149,10 +145,7 @@ class RequestDataCollector(DataCollector):
             "x-auth-token",
             "x-csrf-token",
         }
-        filtered_headers = {
-            k: v if k.lower() not in sensitive_headers else "***FILTERED***"
-            for k, v in headers.items()
-        }
+        filtered_headers = {k: v if k.lower() not in sensitive_headers else "***FILTERED***" for k, v in headers.items()}
         query_params = dict(request.query_params)
         filtered_query_params = self._filter_sensitive_data(query_params)
         request_data = None
@@ -166,9 +159,7 @@ class RequestDataCollector(DataCollector):
             "host": request.client.host if request.client else "unknown",
             "port": request.client.port if request.client else "unknown",
         }
-        response_headers = (
-            dict(response.headers) if hasattr(response, "headers") else {}
-        )
+        response_headers = dict(response.headers) if hasattr(response, "headers") else {}
         self.data = {
             "method": request.method,
             "url": str(request.url),
@@ -176,9 +167,7 @@ class RequestDataCollector(DataCollector):
             "query_params": filtered_query_params,
             "headers": filtered_headers,
             "client": client_info,
-            "status_code": (
-                response.status_code if hasattr(response, "status_code") else 200
-            ),
+            "status_code": (response.status_code if hasattr(response, "status_code") else 200),
             "response_headers": response_headers,
             "request_data": request_data,
             "content_type": request.headers.get("content-type", ""),

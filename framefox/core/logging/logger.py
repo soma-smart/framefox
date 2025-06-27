@@ -47,6 +47,19 @@ class Logger:
         sql_console_enabled = self.settings.database_echo
         sql_profiler_enabled = self.settings.database_echo_for_profiler
 
+        color_formatter_exception = {
+            "()": "colorlog.ColoredFormatter",
+            "format": "%(white)s[%(reset)s%(green)sApplication%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "log_colors": {
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red",
+            },
+        }
+
         color_formatter_app = {
             "()": "colorlog.ColoredFormatter",
             "format": "%(white)s[%(reset)s%(green)sApplication%(reset)s%(white)s]%(reset)s %(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(yellow)s%(name)s%(reset)s  %(message)s",
@@ -98,7 +111,7 @@ class Logger:
         }
 
         sql_handlers = ["app_file"]
-        
+
         if self.settings.is_debug and sql_console_enabled:
             sql_handlers.append("console_sql")
 
@@ -109,6 +122,7 @@ class Logger:
                 "colored_app": color_formatter_app,
                 "colored_server": color_formatter_server,
                 "colored_sql": color_formatter_sql,
+                "colored_exception": color_formatter_exception,
                 "file": file_formatter,
                 "file_sql": file_sql_formatter,
             },
@@ -127,6 +141,12 @@ class Logger:
                     "class": "logging.StreamHandler",
                     "formatter": "colored_sql",
                     "level": "INFO",
+                },
+                # ✅ HANDLER SPÉCIAL POUR LES EXCEPTIONS
+                "console_exception": {
+                    "class": "logging.StreamHandler",
+                    "formatter": "colored_exception",
+                    "level": "ERROR",
                 },
                 "app_file": {
                     "class": "logging.handlers.RotatingFileHandler",
@@ -206,6 +226,46 @@ class Logger:
                 "starlette": {
                     "handlers": ["console_app", "app_file"],
                     "level": "WARNING",
+                    "propagate": False,
+                },
+                "TemplateNotFoundError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "TemplateSyntaxError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "TemplateRenderError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "DatabaseException": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "TableNotFoundError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "ValidationError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "AuthenticationError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "FileNotFoundError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
                     "propagate": False,
                 },
             },

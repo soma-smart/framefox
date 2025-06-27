@@ -1,10 +1,11 @@
 import time
 from pathlib import Path
 
-from framefox.core.di.service_container import ServiceContainer
-from framefox.terminal.commands.abstract_command import AbstractCommand
 from rich.console import Console
 from rich.table import Table
+
+from framefox.core.di.service_container import ServiceContainer
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 """
 Framefox Framework developed by SOMA
@@ -16,37 +17,23 @@ Github: https://github.com/RayenBou
 
 
 class CacheClearCommand(AbstractCommand):
-    """
-    Command to clear ServiceContainer cache files and force cache rebuild.
-
-    Handles clearing all service-related cache files including service definition cache files,
-    module scan cache, service resolution cache, and development/production cache files.
-    Also clears memory caches and resets service instances to force re-instantiation.
-    """
 
     def __init__(self):
         super().__init__("clear")
         self.cache_dir = Path("var/cache")
-        # ✅ LAZY LOADING : Ne pas initialiser le container ici
         self._container = None
 
     @property
     def container(self):
-        """Lazy loading du container - ne charge que quand nécessaire"""
         if self._container is None:
             self._container = ServiceContainer()
         return self._container
 
     def execute(self):
         """
-        Execute the cache clear command to remove all cached service data.\n
-        This method performs the following steps:\n
-        1. Clear all service cache files from the cache directory.\n
-        2. Clear memory caches including service resolution and module scan caches.\n
-        3. Clear all service instances from the ServiceContainer.\n
-        4. Reset the scan status to ensure a fresh start for the next service discovery.\n
-        5. Display the results in a formatted table.\n
-        6. Print a success message with the total time taken for the operation.\n
+        Command to clear various cache components used by the service container.
+        This command removes cache files, clears in-memory caches, resets service instances
+        (except for essential ones), and resets scan status.
         """
         console = Console()
         print("")
@@ -60,15 +47,17 @@ class CacheClearCommand(AbstractCommand):
         cache_files_cleared = self._clear_cache_files()
         table.add_row(
             "Service Cache Files",
-            (
-                "[green]Cleared[/green]"
-                if cache_files_cleared > 0
-                else "[yellow]Empty[/yellow]"
-            ),
+            ("[green]Cleared[/green]" if cache_files_cleared > 0 else "[yellow]Empty[/yellow]"),
             f"{cache_files_cleared} files removed",
         )
 
-        # ✅ LAZY LOADING : Le container est chargé seulement ici
+        command_cache_cleared = self._clear_command_cache()
+        table.add_row(
+            "Command Cache",
+            ("[green]Cleared[/green]" if command_cache_cleared else "[yellow]Empty[/yellow]"),
+            "Command registry cache",
+        )
+
         memory_stats = self._clear_memory_caches(self.container)
         table.add_row(
             "Memory Caches",
@@ -79,11 +68,7 @@ class CacheClearCommand(AbstractCommand):
         instances_cleared = self._clear_service_instances(self.container)
         table.add_row(
             "Service Instances",
-            (
-                "[green]Cleared[/green]"
-                if instances_cleared > 0
-                else "[yellow]Empty[/yellow]"
-            ),
+            ("[green]Cleared[/green]" if instances_cleared > 0 else "[yellow]Empty[/yellow]"),
             f"{instances_cleared} instances removed",
         )
 
@@ -132,6 +117,23 @@ class CacheClearCommand(AbstractCommand):
 
         return cleared_count
 
+    def _clear_command_cache(self) -> bool:
+        """Clear the command registry cache"""
+        command_cache_file = self.cache_dir / "command_registry.json"
+
+        if command_cache_file.exists():
+            try:
+                command_cache_file.unlink()
+                return True
+            except Exception as e:
+                self.printer.print_msg(
+                    f"Warning: Could not remove command_registry.json: {e}",
+                    theme="warning",
+                )
+                return False
+
+        return False
+
     def _clear_memory_caches(self, container: ServiceContainer) -> dict:
         resolution_count = len(container._resolution_cache)
         modules_count = len(container._module_scan_cache)
@@ -147,10 +149,7 @@ class CacheClearCommand(AbstractCommand):
         for service_class, instance in container._instances.items():
             if hasattr(instance, "__module__"):
                 module_name = instance.__module__
-                if any(
-                    essential in module_name
-                    for essential in ["settings", "logger", "config"]
-                ):
+                if any(essential in module_name for essential in ["settings", "logger", "config"]):
                     essential_services.append((service_class, instance))
 
         container._instances.clear()

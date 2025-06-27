@@ -1,12 +1,15 @@
-import logging, uuid
+import logging
+import uuid
 from datetime import datetime, timedelta, timezone
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+
+from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.request.request_stack import RequestStack
-from framefox.core.request.session.session_interface import SessionInterface
-from framefox.core.config.settings import Settings
 from framefox.core.request.session.session import Session
+from framefox.core.request.session.session_interface import SessionInterface
 
 """
 Framefox Framework developed by SOMA
@@ -18,8 +21,8 @@ Github: https://github.com/RayenBou
 
 
 class SessionMiddleware(BaseHTTPMiddleware):
-    def __init__(self,app):
-        super().__init__(app)   
+    def __init__(self, app):
+        super().__init__(app)
         self.logger = logging.getLogger("SESSION")
         self.settings = Settings()
         self.container = ServiceContainer()
@@ -39,9 +42,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
 
         if signed_session_id:
 
-            session_id = self.session_manager.verify_and_extract_session_id(
-                signed_session_id
-            )
+            session_id = self.session_manager.verify_and_extract_session_id(signed_session_id)
             if session_id:
                 session = self.session_manager.get_session(session_id)
                 if not session:
@@ -70,18 +71,12 @@ class SessionMiddleware(BaseHTTPMiddleware):
 
                 session_id = str(uuid.uuid4())
                 request.state.session_id = session_id
-                self.session_manager.create_session(
-                    session_id, request.state.session_data, self.settings.cookie_max_age
-                )
+                self.session_manager.create_session(session_id, request.state.session_data, self.settings.cookie_max_age)
             else:
 
-                self.session_manager.update_session(
-                    session_id, request.state.session_data, self.settings.cookie_max_age
-                )
+                self.session_manager.update_session(session_id, request.state.session_data, self.settings.cookie_max_age)
 
-            expiration = datetime.now(timezone.utc) + timedelta(
-                seconds=self.settings.cookie_max_age
-            )
+            expiration = datetime.now(timezone.utc) + timedelta(seconds=self.settings.cookie_max_age)
 
             signed_session_id = self.session_manager.sign_session_id(session_id)
 

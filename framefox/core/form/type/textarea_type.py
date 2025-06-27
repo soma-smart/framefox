@@ -35,7 +35,7 @@ class TextareaType(AbstractFormType):
                     import json
 
                     return json.loads(value)
-                except:
+                except Exception:
                     pass
 
             if value.strip():

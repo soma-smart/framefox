@@ -1,4 +1,3 @@
-
 import os
 import socket
 import subprocess
@@ -8,6 +7,7 @@ import webbrowser
 from typing import Annotated
 
 import typer
+
 from framefox.terminal.commands.abstract_command import AbstractCommand
 
 """
@@ -18,6 +18,7 @@ Author: BOUMAZA Rayen & LEUROND Raphael
 Github: https://github.com/RayenBou
 Github: https://github.com/Vasulvius
 """
+
 
 class RunCommand(AbstractCommand):
     """
@@ -30,7 +31,6 @@ class RunCommand(AbstractCommand):
     BROWSER_DELAY_SECONDS = 2
     MAX_PORT_SEARCH_ATTEMPTS = 10
 
-
     def __init__(self):
         """Initialize the run command."""
         super().__init__("run")
@@ -41,15 +41,7 @@ class RunCommand(AbstractCommand):
         no_browser: Annotated[bool, typer.Option("--no-browser", help="Don't open browser automatically")] = False,
     ):
         """
-        Execute the run command to start the development server.\n
-        This method performs the following steps:\n
-        1. Set environment variables for development mode and caching.\n
-        2. Find an available port starting from the specified port.\n
-        3. Prewarm the service container to optimize startup performance.\n
-        4. Print a success message with the server URL.\n
-
-        6. Handle browser opening based on user preference.\n
-        7. Start the uvicorn server with the specified port and options.\n
+        Run the development server
         Args:
             port (int): The port to run the server on. Defaults to 8000.
 
@@ -102,8 +94,6 @@ class RunCommand(AbstractCommand):
             self.printer.print_msg("\nStopping the server...", theme="warning")
             return 0
 
-
-
     def _is_port_in_use(self, port: int) -> bool:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             return s.connect_ex(("localhost", port)) == 0
@@ -111,5 +101,3 @@ class RunCommand(AbstractCommand):
     def _open_browser_delayed(self, url: str):
         time.sleep(self.BROWSER_DELAY_SECONDS)
         webbrowser.open(url)
-
-

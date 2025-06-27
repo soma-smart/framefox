@@ -15,7 +15,7 @@ Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: BOUMAZA Rayen & LEUROND Raphael
 Github: https://github.com/RayenBou
-Github: https://github.com/Vasulvius 
+Github: https://github.com/Vasulvius
 """
 
 
@@ -24,22 +24,14 @@ class CreateAuthCommand(AbstractCommand):
         super().__init__("auth")
         self.default_template_name = r"security/default_authenticator_template.jinja2"
         self.custom_template_name = r"security/custom_authenticator_template.jinja2"
-        self.login_controller_template_name = (
-            r"security/login_controller_template.jinja2"
-        )
+        self.login_controller_template_name = r"security/login_controller_template.jinja2"
         self.login_view_template_name = r"security/login_view_template.jinja2"
 
         self.jwt_template_name = r"security/jwt_authenticator_template.jinja2"
-        self.oauth_google_template_name = (
-            r"security/oauth_google_authenticator_template.jinja2"
-        )
-        self.oauth_microsoft_template_name = (
-            r"security/oauth_microsoft_authenticator_template.jinja2"
-        )
+        self.oauth_google_template_name = r"security/oauth_google_authenticator_template.jinja2"
+        self.oauth_microsoft_template_name = r"security/oauth_microsoft_authenticator_template.jinja2"
 
-        self.oauth_controller_template_name = (
-            r"security/oauth_controller_template.jinja2"
-        )
+        self.oauth_controller_template_name = r"security/oauth_controller_template.jinja2"
         self.jwt_controller_template_name = r"security/jwt_controller_template.jinja2"
 
         self.env_manager = EnvManager()
@@ -84,9 +76,7 @@ class CreateAuthCommand(AbstractCommand):
         if not authenticator_import_path:
             raise Exception("Issue while creating the authenticator.")
 
-        self._configure_security(
-            provider_name, authenticator_import_path, auth_type, auth_name
-        )
+        self._configure_security(provider_name, authenticator_import_path, auth_type, auth_name)
 
     def _ask_authenticator_type(self) -> str:
         self.printer.print_msg(
@@ -107,9 +97,7 @@ class CreateAuthCommand(AbstractCommand):
         for option in options:
             self.printer.print_msg(option, theme="normal")
 
-        choice = InputManager().wait_input(
-            "Authenticator type", choices=["1", "2", "3", "4", "5"], default="1"
-        )
+        choice = InputManager().wait_input("Authenticator type", choices=["1", "2", "3", "4", "5"], default="1")
 
         return {
             "1": "form",
@@ -137,9 +125,7 @@ class CreateAuthCommand(AbstractCommand):
                 theme="bold_normal",
                 linebefore=True,
             )
-            user_name = InputManager().wait_input(
-                "Authenticator name (snake_case)", default=default_name
-            )
+            user_name = InputManager().wait_input("Authenticator name (snake_case)", default=default_name)
             name = user_name.strip() if user_name.strip() else default_name
 
             if not ClassNameManager.is_snake_case(name):
@@ -191,9 +177,7 @@ class CreateAuthCommand(AbstractCommand):
             )
             return False
 
-        if not ModelChecker().check_entity_properties(
-            provider_name, ["password", "email"]
-        ):
+        if not ModelChecker().check_entity_properties(provider_name, ["password", "email"]):
             self.printer.print_msg(
                 f"[bold red]Provider entity '{provider_name}' must have 'password' and 'email' properties.[/bold red]",
                 theme="error",
@@ -220,7 +204,7 @@ class CreateAuthCommand(AbstractCommand):
             )
 
             self.printer.print_msg(
-                f"[bold orange1]Tip:[/bold orange1] Use a different name or delete the existing file",
+                "[bold orange1]Tip:[/bold orange1] Use a different name or delete the existing file",
                 theme="normal",
                 linebefore=True,
             )
@@ -231,13 +215,9 @@ class CreateAuthCommand(AbstractCommand):
         elif auth_type == "jwt_api":
             return self._create_jwt_auth_files(class_name, file_name, auth_name)
         elif auth_type == "oauth_google":
-            return self._create_oauth_google_auth_files(
-                class_name, file_name, auth_name
-            )
+            return self._create_oauth_google_auth_files(class_name, file_name, auth_name)
         elif auth_type == "oauth_microsoft":
-            return self._create_oauth_microsoft_auth_files(
-                class_name, file_name, auth_name
-            )
+            return self._create_oauth_microsoft_auth_files(class_name, file_name, auth_name)
         elif auth_type == "custom":
             return self._create_custom_auth_files(class_name, file_name)
 
@@ -295,9 +275,7 @@ class CreateAuthCommand(AbstractCommand):
 
         return f"src.security.{file_name}.{class_name}Authenticator"
 
-    def _create_jwt_auth_files(
-        self, class_name: str, file_name: str, auth_name: str
-    ) -> str:
+    def _create_jwt_auth_files(self, class_name: str, file_name: str, auth_name: str) -> str:
         file_path = FileCreator().create_file(
             self.jwt_template_name,
             self.authenticator_path,
@@ -317,21 +295,13 @@ class CreateAuthCommand(AbstractCommand):
             "[bold yellow]📋 JWT Configuration:[/bold yellow]",
             linebefore=True,
         )
-        self.printer.print_msg(
-            "• Environment variables added to .env file", theme="normal"
-        )
-        self.printer.print_msg(
-            "• JWT parameters added to config/parameter.yaml", theme="normal"
-        )
-        self.printer.print_msg(
-            "• Configure JWT token generation in your application", theme="normal"
-        )
+        self.printer.print_msg("• Environment variables added to .env file", theme="normal")
+        self.printer.print_msg("• JWT parameters added to config/parameter.yaml", theme="normal")
+        self.printer.print_msg("• Configure JWT token generation in your application", theme="normal")
 
         return f"src.security.{file_name}.{class_name}Authenticator"
 
-    def _create_oauth_google_auth_files(
-        self, class_name: str, file_name: str, auth_name: str
-    ) -> str:
+    def _create_oauth_google_auth_files(self, class_name: str, file_name: str, auth_name: str) -> str:
         file_path = FileCreator().create_file(
             self.oauth_google_template_name,
             self.authenticator_path,
@@ -351,9 +321,7 @@ class CreateAuthCommand(AbstractCommand):
             "[bold yellow]📋 Google OAuth Configuration:[/bold yellow]",
             linebefore=True,
         )
-        self.printer.print_msg(
-            "• Environment variables added to .env file", theme="normal"
-        )
+        self.printer.print_msg("• Environment variables added to .env file", theme="normal")
         self.printer.print_msg(
             "• Update the values in .env with your Google OAuth credentials",
             theme="normal",
@@ -365,9 +333,7 @@ class CreateAuthCommand(AbstractCommand):
 
         return f"src.security.{file_name}.{class_name}Authenticator"
 
-    def _create_oauth_microsoft_auth_files(
-        self, class_name: str, file_name: str, auth_name: str
-    ) -> str:
+    def _create_oauth_microsoft_auth_files(self, class_name: str, file_name: str, auth_name: str) -> str:
         file_path = FileCreator().create_file(
             self.oauth_microsoft_template_name,
             self.authenticator_path,
@@ -385,16 +351,12 @@ class CreateAuthCommand(AbstractCommand):
             "[bold yellow]📋 Microsoft OAuth Configuration:[/bold yellow]",
             linebefore=True,
         )
-        self.printer.print_msg(
-            "• Environment variables added to .env file", theme="normal"
-        )
+        self.printer.print_msg("• Environment variables added to .env file", theme="normal")
         self.printer.print_msg(
             "• Update the values in .env with your Microsoft OAuth credentials",
             theme="normal",
         )
-        self.printer.print_msg(
-            "• Configure Microsoft App at: https://portal.azure.com", theme="normal"
-        )
+        self.printer.print_msg("• Configure Microsoft App at: https://portal.azure.com", theme="normal")
 
         return f"src.security.{file_name}.{class_name}Authenticator"
 
@@ -422,15 +384,9 @@ class CreateAuthCommand(AbstractCommand):
         if auth_type == "form":
             provider_class = ClassNameManager.snake_to_pascal(provider_name)
             SecurityConfigurator().add_provider(provider_name, provider_class)
-            SecurityConfigurator().add_firewall(
-                provider_name, authenticator_import_path
-            )
+            SecurityConfigurator().add_firewall(provider_name, authenticator_import_path)
         elif auth_type in ["oauth_google", "oauth_microsoft"]:
-            provider_class = (
-                ClassNameManager.snake_to_pascal(provider_name)
-                if provider_name
-                else None
-            )
+            provider_class = ClassNameManager.snake_to_pascal(provider_name) if provider_name else None
             if provider_name:
                 SecurityConfigurator().add_provider(provider_name, provider_class)
                 provider_key = f"app_{provider_name}_provider"
@@ -444,11 +400,7 @@ class CreateAuthCommand(AbstractCommand):
                 oauth_type=auth_type,
             )
         elif auth_type == "jwt_api":
-            provider_class = (
-                ClassNameManager.snake_to_pascal(provider_name)
-                if provider_name
-                else None
-            )
+            provider_class = ClassNameManager.snake_to_pascal(provider_name) if provider_name else None
             if provider_name:
                 SecurityConfigurator().add_provider(provider_name, provider_class)
                 provider_key = f"app_{provider_name}_provider"
@@ -498,26 +450,18 @@ class CreateAuthCommand(AbstractCommand):
                     with open(parameter_path, "a") as f:
                         f.write(jwt_config)
 
-                    self.printer.print_full_text(
-                        "[bold green]✓ JWT configuration added to config/parameter.yaml[/bold green]"
-                    )
+                    self.printer.print_full_text("[bold green]✓ JWT configuration added to config/parameter.yaml[/bold green]")
                 else:
-                    self.printer.print_full_text(
-                        "[bold yellow]ℹ JWT configuration already exists in config/parameter.yaml[/bold yellow]"
-                    )
+                    self.printer.print_full_text("[bold yellow]ℹ JWT configuration already exists in config/parameter.yaml[/bold yellow]")
             else:
                 with open(parameter_path, "w") as f:
                     f.write("parameters:")
                     f.write(jwt_config)
 
-                self.printer.print_full_text(
-                    "[bold green]✓ Created config/parameter.yaml with JWT configuration[/bold green]"
-                )
+                self.printer.print_full_text("[bold green]✓ Created config/parameter.yaml with JWT configuration[/bold green]")
 
         except Exception as e:
-            self.printer.print_msg(
-                f"Warning: Could not update parameter.yaml: {e}", theme="warning"
-            )
+            self.printer.print_msg(f"Warning: Could not update parameter.yaml: {e}", theme="warning")
 
     def _add_env_variables(self, auth_type: str) -> None:
         """

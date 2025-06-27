@@ -1,7 +1,5 @@
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import (
-    AbstractDatabaseCommand,
-)
+from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
 
 """
 Framefox Framework developed by SOMA
@@ -14,7 +12,7 @@ Github: https://github.com/RayenBou
 
 class UpgradeCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("upgrade")
+        super().__init__()
         self.alembic_manager = AlembicManager()
 
     def execute(self):
@@ -26,7 +24,6 @@ class UpgradeCommand(AbstractDatabaseCommand):
         If an error occurs during the migration process, it displays an error message.\n
         """
         try:
-            # Vérifier si la base de données existe
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(
                     "The database does not exist. Please create it first.",
@@ -36,14 +33,11 @@ class UpgradeCommand(AbstractDatabaseCommand):
 
             self.printer.print_msg("Applying migrations...", theme="info")
 
-            # Utiliser le gestionnaire pour appliquer les migrations
             success, migrations_applied = self.alembic_manager.upgrade("head")
 
             if success:
                 if migrations_applied:
-                    self.printer.print_msg(
-                        "Migrations applied successfully.", theme="success"
-                    )
+                    self.printer.print_msg("Migrations applied successfully.", theme="success")
                 else:
                     self.printer.print_msg(
                         "The database is already up to date, no migrations to apply.",

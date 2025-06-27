@@ -67,9 +67,7 @@ class LogDataCollector(DataCollector):
         self.data = {
             "records": self.records,
             "count": len(self.records),
-            "error_count": sum(
-                1 for r in self.records if r["level"] in ("ERROR", "CRITICAL")
-            ),
+            "error_count": sum(1 for r in self.records if r["level"] in ("ERROR", "CRITICAL")),
         }
 
     def reset(self):

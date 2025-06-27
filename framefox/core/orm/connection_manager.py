@@ -1,6 +1,7 @@
 from typing import Dict, Type
 
 from framefox.core.config.settings import Settings
+from framefox.core.debug.exception.database_exception import UnsupportedDatabaseDriverError
 from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.core.orm.driver.database_driver import DatabaseDriver
 from framefox.core.orm.driver.mysql_driver import MySQLDriver
@@ -39,7 +40,7 @@ class ConnectionManager:
     def _create_driver(self) -> DatabaseDriver:
         driver_class = self._drivers.get(self.config.driver)
         if not driver_class:
-            raise ValueError(f"Unsupported database driver: {self.config.driver}")
+            raise UnsupportedDatabaseDriverError(self.config.driver)
         return driver_class(self.config)
 
     @property

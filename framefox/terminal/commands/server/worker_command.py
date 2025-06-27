@@ -41,12 +41,8 @@ class WorkerCommand(AbstractCommand):
         concurrency = self.settings.task_worker_concurrency
         interval = self.settings.task_polling_interval
 
-        self.printer.print_msg(
-            f"Starting workers (queues: {', '.join(queues)})", "info"
-        )
-        self.printer.print_msg(
-            f"Concurrency: {concurrency}, interval: {interval}s", "info"
-        )
+        self.printer.print_msg(f"Starting workers (queues: {', '.join(queues)})", "info")
+        self.printer.print_msg(f"Concurrency: {concurrency}, interval: {interval}s", "info")
 
         worker_manager = self.service_container.get(WorkerManager)
         worker_manager.set_queues(queues)

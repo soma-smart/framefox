@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 from fastapi import HTTPException, Request
+
 from framefox.core.config.settings import Settings
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.token_manager import TokenManager

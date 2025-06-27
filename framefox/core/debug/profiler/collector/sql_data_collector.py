@@ -1,8 +1,9 @@
 import datetime
 from typing import Any, Dict, Optional
-from fastapi import Request, Response
-from framefox.core.config.settings import Settings
 
+from fastapi import Request, Response
+
+from framefox.core.config.settings import Settings
 from framefox.core.debug.profiler.collector.data_collector import DataCollector
 
 """
@@ -13,33 +14,35 @@ Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
 
+
 class SQLDataCollector(DataCollector):
     """
     SQL profiling data collector that captures SQL queries for the profiler.
-    
+
     This collector intercepts and stores SQL queries executed during a request,
     providing detailed information about database operations including query text,
     parameters, execution time, and database configuration.
-    
+
     Attributes:
         name (str): Identifier for this collector type
         request_active (bool): Flag indicating if request collection is active
         queries (list): List of captured SQL queries for the current request
     """
+
     name = "database"
 
     def __init__(self):
         super().__init__("database", "fa-database")
         self.request_active = False
         self.queries = []
-        self.settings= Settings()
-        
+        self.settings = Settings()
+
         self._setup_sql_logging()
 
     def _setup_sql_logging(self):
         """Setup SQL logging specifically for profiler collection."""
         import logging
-        
+
         class ProfilerSQLHandler(logging.Handler):
             def __init__(self, collector):
                 super().__init__()
@@ -50,24 +53,17 @@ class SQLDataCollector(DataCollector):
                 if self.collector.request_active:
                     message = record.getMessage()
                     timestamp = record.created
-                    
+
                     if self._is_sql_query(message):
                         query_info = self._parse_sql_message(message, record)
                         if query_info:
                             self.collector.add_query(
-                                query_info['query'],
-                                timestamp,
-                                query_info.get('parameters'),
-                                query_info.get('duration')
+                                query_info["query"], timestamp, query_info.get("parameters"), query_info.get("duration")
                             )
 
             def _is_sql_query(self, message):
                 """Check if the message is a SQL query."""
-                sql_keywords = [
-                    "SELECT", "INSERT", "UPDATE", "DELETE", 
-                    "BEGIN", "COMMIT", "ROLLBACK",
-                    "CREATE", "ALTER", "DROP"
-                ]
+                sql_keywords = ["SELECT", "INSERT", "UPDATE", "DELETE", "BEGIN", "COMMIT", "ROLLBACK", "CREATE", "ALTER", "DROP"]
                 message_upper = message.upper()
                 return any(keyword in message_upper for keyword in sql_keywords)
 
@@ -80,31 +76,25 @@ class SQLDataCollector(DataCollector):
                         query = message
 
                     parameters = None
-                    if hasattr(record, 'args') and record.args:
+                    if hasattr(record, "args") and record.args:
                         parameters = record.args
 
                     duration = None
                     if "[generated in" in message:
                         import re
-                        duration_match = re.search(r'\[generated in ([\d.]+)s\]', message)
+
+                        duration_match = re.search(r"\[generated in ([\d.]+)s\]", message)
                         if duration_match:
                             duration = float(duration_match.group(1)) * 1000
 
-                    return {
-                        'query': query.strip(),
-                        'parameters': parameters,
-                        'duration': duration
-                    }
+                    return {"query": query.strip(), "parameters": parameters, "duration": duration}
                 except Exception:
                     return None
 
         profiler_handler = ProfilerSQLHandler(self)
-        
-        sql_loggers = [
-            logging.getLogger("sqlalchemy.engine.Engine"),
-            logging.getLogger("sqlmodel")
-        ]
-        
+
+        sql_loggers = [logging.getLogger("sqlalchemy.engine.Engine"), logging.getLogger("sqlmodel")]
+
         for logger in sql_loggers:
             logger.addHandler(profiler_handler)
 
@@ -127,9 +117,7 @@ class SQLDataCollector(DataCollector):
             "parameters": parameters,
             "duration": duration or 0.0,
             "timestamp": timestamp,
-            "formatted_time": datetime.datetime.fromtimestamp(timestamp).strftime(
-                "%H:%M:%S.%f"
-            )[:-3],
+            "formatted_time": datetime.datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f")[:-3],
         }
         self.queries.append(query_data)
 
@@ -150,9 +138,7 @@ class SQLDataCollector(DataCollector):
             "query_count": len(self.queries),
             "total_duration": round(total_duration, 2),
             "database_info": db_config,
-            "average_duration": (
-                round(total_duration / len(self.queries), 2) if self.queries else 0
-            ),
+            "average_duration": (round(total_duration / len(self.queries), 2) if self.queries else 0),
         }
 
     def _get_database_info(self) -> Dict[str, Any]:

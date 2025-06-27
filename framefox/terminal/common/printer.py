@@ -6,7 +6,7 @@ Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: LEUROND Raphael
-Github: https://github.com/Vasulvius 
+Github: https://github.com/Vasulvius
 """
 
 
@@ -50,9 +50,7 @@ class Printer:
         if newline:
             self.console.print()
 
-    def print_full_text(
-        self, text: str, newline: bool = False, linebefore: bool = False
-    ):
+    def print_full_text(self, text: str, newline: bool = False, linebefore: bool = False):
         """
         Prints the given text with optional styling and a newline.
 

@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
 
 from framefox.core.orm.abstract_entity import AbstractEntity
 
@@ -18,9 +18,7 @@ class TaskStatus(str, Enum):
 
 
 class Task(AbstractEntity, table=True):
-    id: Optional[str] = Field(
-        default_factory=lambda: str(uuid.uuid4()), primary_key=True
-    )
+    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     name: str
     queue: str = "default"
     payload: str = ""  # JSON serialized data

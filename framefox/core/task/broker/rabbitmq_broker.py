@@ -23,9 +23,7 @@ class RabbitMQBroker(BrokerInterface):
     persistence and a RabbitMQ transport for message broker operations.
     """
 
-    def __init__(
-        self, entity_manager: EntityManagerInterface, transport: RabbitMQTransport
-    ):
+    def __init__(self, entity_manager: EntityManagerInterface, transport: RabbitMQTransport):
         self.entity_manager = entity_manager
         self.transport = transport
         self.logger = logging.getLogger("RABBITMQ_BROKER")
@@ -53,9 +51,7 @@ class RabbitMQBroker(BrokerInterface):
 
         self.transport.publish(task)
 
-        self.logger.info(
-            f"Task {task.id} ({task.name}) added to queue '{queue}' and published to RabbitMQ"
-        )
+        self.logger.info(f"Task {task.id} ({task.name}) added to queue '{queue}' and published to RabbitMQ")
         return task
 
     def dequeue(self, queue: str = "default", batch_size: int = 1) -> List[Task]:
@@ -77,9 +73,7 @@ class RabbitMQBroker(BrokerInterface):
             self.entity_manager.commit()
 
             self.transport.reject(task, requeue=True)
-            self.logger.warning(
-                f"Task {task.id} ({task.name}) failed, retrying {task.retry_count}/{task.max_retries}"
-            )
+            self.logger.warning(f"Task {task.id} ({task.name}) failed, retrying {task.retry_count}/{task.max_retries}")
         else:
             task.status = TaskStatus.FAILED
             task.error_message = error
@@ -88,16 +82,12 @@ class RabbitMQBroker(BrokerInterface):
             self.entity_manager.commit()
 
             self.transport.reject(task, requeue=False)
-            self.logger.error(
-                f"Task {task.id} ({task.name}) permanently failed: {error}"
-            )
+            self.logger.error(f"Task {task.id} ({task.name}) permanently failed: {error}")
 
     def get_task(self, task_id: str) -> Optional[Task]:
         return self.entity_manager.find(Task, task_id)
 
-    def get_tasks_by_status(
-        self, status: TaskStatus, queue: str = None, limit: int = 100
-    ) -> List[Task]:
+    def get_tasks_by_status(self, status: TaskStatus, queue: str = None, limit: int = 100) -> List[Task]:
         from sqlmodel import select
 
         statement = select(Task).where(Task.status == status)
@@ -110,9 +100,7 @@ class RabbitMQBroker(BrokerInterface):
         cutoff_date = datetime.now() - timedelta(days=older_than_days)
         from sqlmodel import and_, select
 
-        statement = select(Task).where(
-            and_(Task.status == TaskStatus.FAILED, Task.updated_at <= cutoff_date)
-        )
+        statement = select(Task).where(and_(Task.status == TaskStatus.FAILED, Task.updated_at <= cutoff_date))
         tasks = self.entity_manager.exec_statement(statement)
         count = 0
         for task in tasks:
@@ -120,7 +108,5 @@ class RabbitMQBroker(BrokerInterface):
             count += 1
         if count > 0:
             self.entity_manager.commit()
-            self.logger.info(
-                f"Cleaned up {count} failed tasks older than {older_than_days} days"
-            )
+            self.logger.info(f"Cleaned up {count} failed tasks older than {older_than_days} days")
         return count

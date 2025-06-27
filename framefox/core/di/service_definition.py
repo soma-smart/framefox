@@ -144,9 +144,7 @@ class ServiceDefinition:
             self._lazy,
         )
 
-    def with_method_call(
-        self, method: str, arguments: List[Any] = None
-    ) -> "ServiceDefinition":
+    def with_method_call(self, method: str, arguments: List[Any] = None) -> "ServiceDefinition":
         """Create a new definition with an additional method call."""
         if self._frozen:
             raise RuntimeError("Cannot modify frozen service definition")

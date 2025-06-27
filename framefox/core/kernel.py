@@ -6,8 +6,6 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from framefox.core.config.settings import Settings
-from framefox.core.debug.exception.debug_exception import DebugException
-from framefox.core.debug.handler.debug_handler import DebugHandler
 from framefox.core.events.event_dispatcher import dispatcher
 from framefox.core.logging.logger import Logger
 from framefox.core.middleware.middleware_manager import MiddlewareManager
@@ -29,6 +27,7 @@ class Kernel:
     middleware, routing, and static files. It provides access to the main FastAPI app,
     configuration settings, and logger.
     """
+
     _instance: ClassVar[Optional["Kernel"]] = None
 
     def __init__(self, container=None, bundle_manager=None) -> None:
@@ -49,42 +48,54 @@ class Kernel:
             raise RuntimeError(f"Kernel initialization failed: {e}") from e
 
     def _create_fastapi_app(self) -> FastAPI:
+        """Create FastAPI application with proper configuration"""
         return FastAPI(
             debug=self._settings.is_debug,
-            openapi_url=self._settings.openapi_url,
-            redoc_url=self._settings.redoc_url,
+            openapi_url=self._settings.openapi_url if self._settings.is_debug else None,
+            redoc_url=self._settings.redoc_url if self._settings.is_debug else None,
+            docs_url="/docs" if self._settings.is_debug else None,
+            title="Framefox Application",
+            version="1.0.0",
         )
 
     def _configure_app(self) -> None:
-        self._app.add_exception_handler(
-            DebugException, DebugHandler.debug_exception_handler
-        )
+        """Configure the FastAPI application"""
         MiddlewareManager(self._app).setup_middlewares()
         self._setup_routing()
         self._setup_static_files()
         self._bundle_manager.boot_bundles(self._container)
         dispatcher.load_listeners()
         self._container.freeze_registry()
+
+        self._logger.debug("Framefox application initialized successfully")
         self._logger.debug("Application configuration complete - registry frozen")
 
     def _setup_routing(self) -> None:
+        """Setup routing system and register controllers"""
         router = Router(self._app)
         self._container.set_instance(Router, router)
-
-        if self._settings.app_env == "dev":
-            router._register_profiler_routes()
         router.register_controllers()
 
+        self._logger.debug("Routing system configured")
+
     def _setup_static_files(self) -> None:
-        static_path = Path(__file__).parent / "templates" / "static"
-        self._app.mount("/static", StaticFiles(directory=static_path), name="static")
+        """Setup static file serving"""
+        try:
+            static_path = Path(__file__).parent / "templates" / "static"
+            if static_path.exists():
+                self._app.mount("/static", StaticFiles(directory=static_path), name="static")
+                self._logger.debug(f"Framework static files mounted: {static_path}")
 
-        profiler_path = static_path / "profiler"
-        profiler_path.mkdir(parents=True, exist_ok=True)
+            profiler_path = static_path / "profiler"
+            profiler_path.mkdir(parents=True, exist_ok=True)
 
-        self._app.mount(
-            "/", StaticFiles(directory=Path("public")), name="public_assets"
-        )
+            public_path = Path("public")
+            if public_path.exists():
+                self._app.mount("/", StaticFiles(directory=public_path), name="public_assets")
+                self._logger.debug(f"Public assets mounted: {public_path}")
+
+        except Exception as e:
+            self._logger.warning(f"Failed to setup some static files: {e}")
 
     @property
     def app(self) -> FastAPI:

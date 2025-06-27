@@ -82,8 +82,8 @@ class AbstractController:
         try:
             content = template_renderer.render(template_path, context)
             return HTMLResponse(content=content)
-        except Exception as e:
-            return HTMLResponse(content=str(e), status_code=500)
+        except Exception:
+            raise
 
     def json(self, data: dict, status: int = 200):
         """

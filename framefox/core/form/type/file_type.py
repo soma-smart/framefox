@@ -1,5 +1,6 @@
 import os
 from typing import Any, Dict
+
 from fastapi import UploadFile
 
 from framefox.core.file.file_manager import FileManager
@@ -19,7 +20,6 @@ class FileType(AbstractFormType):
 
     def __init__(self, options: Dict[str, Any] = None):
         super().__init__(options or {})
-
 
         self.options.setdefault("attr", {})
         self.options.setdefault("multiple", False)
@@ -45,18 +45,14 @@ class FileType(AbstractFormType):
         await upload_file.seek(0)
 
         if file_size > self.options.get("max_file_size"):
-            raise ValueError(
-                f"The file is too large. Maximum: {self.options.get('max_file_size') / 1024 / 1024}MB"
-            )
+            raise ValueError(f"The file is too large. Maximum: {self.options.get('max_file_size') / 1024 / 1024}MB")
 
         original_filename = upload_file.filename
         extension = os.path.splitext(original_filename)[1].lower()
         allowed_extensions = self.options.get("allowed_extensions")
 
         if allowed_extensions and extension not in allowed_extensions:
-            raise ValueError(
-                f"File type not allowed. Allowed extensions: {', '.join(allowed_extensions)}"
-            )
+            raise ValueError(f"File type not allowed. Allowed extensions: {', '.join(allowed_extensions)}")
 
         file_manager = FileManager()
 

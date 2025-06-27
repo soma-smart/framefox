@@ -1,5 +1,6 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from framefox.core.config.settings import Settings
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.events.decorator.dispatch_event import DispatchEvent
@@ -7,10 +8,11 @@ from framefox.core.events.decorator.dispatch_event import DispatchEvent
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
----------------------------- 
+----------------------------
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
+
 
 class FirewallMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):

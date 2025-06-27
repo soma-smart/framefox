@@ -1,9 +1,10 @@
 import time
 
-from framefox.core.di.service_container import ServiceContainer
-from framefox.terminal.commands.abstract_command import AbstractCommand
 from rich.console import Console
 from rich.table import Table
+
+from framefox.core.di.service_container import ServiceContainer
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 """
 Framefox Framework developed by SOMA
@@ -15,39 +16,22 @@ Github: https://github.com/RayenBou
 
 
 class CacheWarmupCommand(AbstractCommand):
-    """
-    Command to warm up ServiceContainer cache for optimal performance.
-
-    This command handles pre-loading and caching of all services including
-    service discovery, module scanning, service instance pre-loading,
-    and cache file generation for faster startup times.
-    """
 
     def __init__(self):
         super().__init__("warmup")
         self.console = Console()
-        # ✅ LAZY LOADING : Ne pas initialiser le container ici
         self._container = None
 
     @property
     def container(self):
-        """Lazy loading du container - ne charge que quand nécessaire"""
         if self._container is None:
             self._container = ServiceContainer()
         return self._container
 
     def execute(self):
         """
-        Execute the cache warmup command to prepare the ServiceContainer cache.\n
-        This method performs the following steps:\n
-        1. Force service discovery to ensure all services are registered.\n
-        2. Pre-load essential services to ensure they are ready for use.\n
-        3. Generate the service cache file with all registered services.\n
-        4. Validate the cache to ensure it is correctly formatted and up-to-date.\n
-        5. Display the results in a formatted table.\n
-        6. Print container statistics for debugging and performance insights.\n
+        Command to warm up the service container cache.
         """
-
         print("")
         start_time = time.time()
 
@@ -56,7 +40,6 @@ class CacheWarmupCommand(AbstractCommand):
         table.add_column("Status", style="white")
         table.add_column("Details", style="cyan")
 
-        # ✅ LAZY LOADING : Le container est chargé seulement ici
         discovery_start = time.time()
         discovery_stats = self._force_service_discovery(self.container)
         discovery_time = time.time() - discovery_start
@@ -90,14 +73,10 @@ class CacheWarmupCommand(AbstractCommand):
 
         if validation_stats["valid"]:
             validation_status = "[green]Valid[/green]"
-            validation_details = validation_stats.get(
-                "details", f"Validated in {validation_time:.2f}s"
-            )
+            validation_details = validation_stats.get("details", f"Validated in {validation_time:.2f}s")
         else:
             validation_status = "[red]Invalid[/red]"
-            validation_details = (
-                f"{validation_stats['reason']} | {validation_stats.get('details', '')}"
-            )
+            validation_details = f"{validation_stats['reason']} | {validation_stats.get('details', '')}"
 
         table.add_row("Cache Validation", validation_status, validation_details)
 
@@ -157,9 +136,7 @@ class CacheWarmupCommand(AbstractCommand):
                     try:
                         loaded_count += 1
                     except Exception as e:
-                        self.printer.print_msg(
-                            f"Warning: Could not pre-load service: {e}", theme="warning"
-                        )
+                        self.printer.print_msg(f"Warning: Could not pre-load service: {e}", theme="warning")
             except Exception:
                 pass
 
@@ -197,13 +174,10 @@ class CacheWarmupCommand(AbstractCommand):
         }
 
     def _validate_cache(self, container: ServiceContainer) -> dict:
-        """Validate cache with detailed error reporting"""
         try:
             if hasattr(self, "_generated_cache_data") and self._generated_cache_data:
                 cache_data = self._generated_cache_data
-                self.console.print(
-                    "[dim]Note: Validating freshly generated cache data[/dim]"
-                )
+                self.console.print("[dim]Note: Validating freshly generated cache data[/dim]")
             else:
                 cache_data = container._cache_manager.load_cache()
                 if not cache_data:
@@ -245,13 +219,9 @@ class CacheWarmupCommand(AbstractCommand):
             invalid_services = []
             for i, service in enumerate(services[:5]):
                 required_service_keys = ["name", "class_path", "module"]
-                missing_service_keys = [
-                    key for key in required_service_keys if key not in service
-                ]
+                missing_service_keys = [key for key in required_service_keys if key not in service]
                 if missing_service_keys:
-                    invalid_services.append(
-                        f"Service {i}: missing {missing_service_keys}"
-                    )
+                    invalid_services.append(f"Service {i}: missing {missing_service_keys}")
 
             if invalid_services:
                 return {
@@ -281,12 +251,8 @@ class CacheWarmupCommand(AbstractCommand):
         stats_table.add_column("Value", style="white")
 
         stats_table.add_row("Total Definitions", str(stats.get("total_definitions", 0)))
-        stats_table.add_row(
-            "Instantiated Services", str(stats.get("instantiated_services", 0))
-        )
-        stats_table.add_row(
-            "Cached Resolutions", str(stats.get("cached_resolutions", 0))
-        )
+        stats_table.add_row("Instantiated Services", str(stats.get("instantiated_services", 0)))
+        stats_table.add_row("Cached Resolutions", str(stats.get("cached_resolutions", 0)))
         stats_table.add_row("Total Aliases", str(stats.get("total_aliases", 0)))
         stats_table.add_row("Total Tags", str(stats.get("total_tags", 0)))
 

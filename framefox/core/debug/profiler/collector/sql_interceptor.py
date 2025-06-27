@@ -24,15 +24,11 @@ class SQLInterceptor:
 
     def setup_sqlalchemy_events(self):
         @event.listens_for(Engine, "before_cursor_execute")
-        def before_cursor_execute(
-            conn, cursor, statement, parameters, context, executemany
-        ):
+        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
             context._query_start_time = time.time()
 
         @event.listens_for(Engine, "after_cursor_execute")
-        def after_cursor_execute(
-            conn, cursor, statement, parameters, context, executemany
-        ):
+        def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
             start_time = getattr(context, "_query_start_time", time.time())
             duration = (time.time() - start_time) * 1000
 

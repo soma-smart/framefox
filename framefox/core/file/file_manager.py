@@ -47,9 +47,7 @@ class FileManager:
         extension = os.path.splitext(original_filename)[1].lower()
 
         if allowed_extensions and extension not in allowed_extensions:
-            raise ValueError(
-                f"Unauthorized file type. Allowed extensions: {', '.join(allowed_extensions)}"
-            )
+            raise ValueError(f"Unauthorized file type. Allowed extensions: {', '.join(allowed_extensions)}")
 
         dest_dir = self.base_upload_path
         if subdirectory:
@@ -64,7 +62,6 @@ class FileManager:
             filename = original_filename
 
         file_path = dest_dir / filename
-        abs_file_path = os.path.abspath(file_path)
 
         try:
             content = await file.read()
@@ -102,9 +99,7 @@ class FileManager:
         path = Path(file_path)
         if not path.is_absolute():
             path = Path(os.getcwd()) / path
-        if path.exists() and str(path).startswith(
-            str(Path(os.getcwd()) / self.base_upload_path)
-        ):
+        if path.exists() and str(path).startswith(str(Path(os.getcwd()) / self.base_upload_path)):
             os.remove(path)
             return True
         return False

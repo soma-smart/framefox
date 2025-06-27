@@ -58,14 +58,10 @@ class MermaidDiagramGenerator:
                 referred_entity = self._format_entity_name(fk["referred_table"])
 
                 # Determine relationship type
-                relationship_type = self._determine_relationship_type(
-                    table_name, fk, tables_info
-                )
+                relationship_type = self._determine_relationship_type(table_name, fk, tables_info)
 
                 # Generate relationship line
-                relation_line = self._format_relationship_for_mermaid(
-                    entity_name, referred_entity, relationship_type, fk
-                )
+                relation_line = self._format_relationship_for_mermaid(entity_name, referred_entity, relationship_type, fk)
 
                 if relation_line:
                     relationship_lines.append(f"    {relation_line}")
@@ -150,9 +146,7 @@ class MermaidDiagramGenerator:
 
         return "string"  # Default fallback
 
-    def _determine_relationship_type(
-        self, table_name: str, fk: Dict, tables_info: Dict
-    ) -> str:
+    def _determine_relationship_type(self, table_name: str, fk: Dict, tables_info: Dict) -> str:
         """
         Determine relationship type based on foreign key constraints
 
@@ -174,9 +168,7 @@ class MermaidDiagramGenerator:
 
         return "many-to-one"
 
-    def _format_relationship_for_mermaid(
-        self, entity_name: str, referred_entity: str, relationship_type: str, fk: Dict
-    ) -> str:
+    def _format_relationship_for_mermaid(self, entity_name: str, referred_entity: str, relationship_type: str, fk: Dict) -> str:
         """
         Format relationship line for Mermaid diagram
 
@@ -198,14 +190,10 @@ class MermaidDiagramGenerator:
             "default": "}o--o{",
         }
 
-        symbol = relationship_symbols.get(
-            relationship_type, relationship_symbols["default"]
-        )
+        symbol = relationship_symbols.get(relationship_type, relationship_symbols["default"])
         return f"{entity_name} {symbol} {referred_entity} : {action}"
 
-    def _generate_action_name(
-        self, entity_name: str, referred_entity: str, fk_column: str
-    ) -> str:
+    def _generate_action_name(self, entity_name: str, referred_entity: str, fk_column: str) -> str:
         """
         Generate meaningful action name for relationships based on entity names and context
 

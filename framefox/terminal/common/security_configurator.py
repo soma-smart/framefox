@@ -5,7 +5,7 @@ Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: LEUROND Raphael
-Github: https://github.com/Vasulvius 
+Github: https://github.com/Vasulvius
 """
 
 
@@ -23,10 +23,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "providers" not in config["security"]
-            or config["security"]["providers"] is None
-        ):
+        if "providers" not in config["security"] or config["security"]["providers"] is None:
             config["security"]["providers"] = {}
 
         provider_key = f"app_{provider_name}_provider"
@@ -60,10 +57,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
+        if "firewalls" not in config["security"] or config["security"]["firewalls"] is None:
             config["security"]["firewalls"] = {}
 
         if firewall_name in config["security"]["firewalls"]:
@@ -135,10 +129,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
+        if "firewalls" not in config["security"] or config["security"]["firewalls"] is None:
             config["security"]["firewalls"] = {}
 
         if firewall_name in config["security"]["firewalls"]:
@@ -175,10 +166,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
+        if "firewalls" not in config["security"] or config["security"]["firewalls"] is None:
             config["security"]["firewalls"] = {}
 
         if firewall_name in config["security"]["firewalls"]:
@@ -208,10 +196,7 @@ class SecurityConfigurator:
         if "security" not in config:
             config["security"] = {}
 
-        if (
-            "firewalls" not in config["security"]
-            or config["security"]["firewalls"] is None
-        ):
+        if "firewalls" not in config["security"] or config["security"]["firewalls"] is None:
             config["security"]["firewalls"] = {}
 
         firewall_key = "main"

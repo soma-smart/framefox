@@ -31,9 +31,8 @@ class Application:
 
         self._container = ServiceContainer()
         self._bundle_manager = BundleManager()
-        self._bundle_manager.discover_bundles()
         self._container.set_instance(BundleManager, self._bundle_manager)
-        self._bundle_manager.register_bundle_services(self._container)
+
         self._initialized = True
 
     def boot_web(self):
@@ -44,7 +43,10 @@ class Application:
 
     def boot_cli(self):
         registry = CommandRegistry()
-        self._bundle_manager.register_bundle_commands(registry)
+        if not hasattr(self, "_cli_loaded"):
+            self._bundle_manager.register_bundle_commands(registry)
+            self._cli_loaded = True
+
         return registry
 
     @property

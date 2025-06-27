@@ -1,5 +1,6 @@
+import hmac
 import logging
-import re,hmac
+import re
 from typing import Dict, List, Optional
 
 from fastapi import Request
@@ -50,7 +51,7 @@ class FirewallUtils:
     def matches_firewall_pattern(self, path: str, firewall_name: str) -> bool:
         firewall_config = self.settings.get_firewall_config(firewall_name)
         pattern = firewall_config.get("pattern")
-        
+
         if pattern:
             try:
                 match = re.match(pattern, path)
@@ -92,7 +93,7 @@ class FirewallUtils:
         return "/"
 
     def is_jwt_authenticator(self, authenticator: AuthenticatorInterface) -> bool:
-        return hasattr(authenticator, '__class__') and 'jwt' in authenticator.__class__.__name__.lower()
+        return hasattr(authenticator, "__class__") and "jwt" in authenticator.__class__.__name__.lower()
 
     def is_oauth_authenticator(self, authenticator: AuthenticatorInterface) -> bool:
         return getattr(authenticator, "is_oauth_authenticator", False)
@@ -102,17 +103,13 @@ class FirewallUtils:
         return not required_roles or "IS_AUTHENTICATED_ANONYMOUSLY" in required_roles
 
     def is_oauth_callback(self, request: Request, callback_path: str) -> bool:
-        return (
-            callback_path
-            and request.url.path == callback_path
-            and "code" in request.query_params
-        )
+        return callback_path and request.url.path == callback_path and "code" in request.query_params
 
     def generate_access_denied_response(self, request: Request) -> Response:
         self.logger.warning(f"Access forbidden for path: {request.url.path}")
 
         accept_header = request.headers.get("accept", "")
-        
+
         if "text/html" in accept_header:
             redirect_url = self.get_denied_redirect_url()
             return RedirectResponse(url=redirect_url, status_code=302)
@@ -120,9 +117,9 @@ class FirewallUtils:
             return JSONResponse(content={"error": "Access denied"}, status_code=403)
 
     def check_user_authorization(self, request: Request, required_roles: List[str], token_storage) -> bool:
-        current_user = getattr(request.state, 'current_user', None)
+        current_user = getattr(request.state, "current_user", None)
         if current_user:
-            user_roles = current_user.roles if hasattr(current_user, 'roles') else []
+            user_roles = current_user.roles if hasattr(current_user, "roles") else []
             if self.access_manager.is_allowed(user_roles, required_roles):
                 self.logger.debug(f"JWT user authorized with roles: {user_roles}")
                 return True
@@ -139,7 +136,7 @@ class FirewallUtils:
             else:
                 self.logger.warning(f"Session user does not have required roles. Has: {user_roles}, Required: {required_roles}")
                 return False
-        
+
         self.logger.debug("No authenticated user found")
         return False
 
@@ -148,34 +145,26 @@ class FirewallUtils:
             if self.is_jwt_authenticator(authenticator):
                 if self.matches_firewall_pattern(request.url.path, firewall_name):
                     self.logger.debug(f"JWT firewall '{firewall_name}' matched for path: {request.url.path}")
-                    return {
-                        "firewall_name": firewall_name,
-                        "authenticator": authenticator
-                    }
+                    return {"firewall_name": firewall_name, "authenticator": authenticator}
 
         self.logger.debug(f"No JWT firewall pattern matched for path: {request.url.path}")
         return None
 
     def extract_username_from_request(self, request: Request) -> str:
         try:
-            if hasattr(request, '_form_data'):
+            if hasattr(request, "_form_data"):
                 form_data = request._form_data
             else:
                 return "unknown"
-            
+
             return form_data.get("_username") or form_data.get("email", "unknown")
-        except:
+        except Exception:
             return "unknown"
 
-    def should_apply_oauth_logic(
-        self, 
-        request: Request, 
-        authenticator: AuthenticatorInterface, 
-        firewall_config: Dict
-    ) -> bool:
+    def should_apply_oauth_logic(self, request: Request, authenticator: AuthenticatorInterface, firewall_config: Dict) -> bool:
         is_oauth_auth = self.is_oauth_authenticator(authenticator)
         oauth_config = firewall_config.get("oauth", {})
-        
+
         return is_oauth_auth and oauth_config
 
     def get_oauth_callback_path(self, firewall_config: Dict) -> Optional[str]:
@@ -185,27 +174,27 @@ class FirewallUtils:
     def validate_oauth_callback(self, request: Request) -> bool:
         """
         Complete OAuth callback validation
-        
+
         Args:
             request: Request containing callback parameters
-            
+
         Returns:
             bool: True if callback is valid
         """
         if not self.validate_oauth_state(request):
             return False
-        
+
         code = request.query_params.get("code")
         if not code:
             self.logger.warning("OAuth callback without authorization code")
             return False
-        
+
         error = request.query_params.get("error")
         if error:
             error_description = request.query_params.get("error_description", "")
             self.logger.warning(f"OAuth provider returned error: {error} - {error_description}")
             return False
-        
+
         self.logger.debug("OAuth callback validation successful")
         return True
 
@@ -215,24 +204,25 @@ class FirewallUtils:
         if not received_state:
             self.logger.warning("OAuth callback without state parameter - potential CSRF attack")
             return False
-            
+
         from framefox.core.request.session.session import Session
+
         session = Session()
-        
+
         stored_state = session.get("oauth_state")
-        
+
         if not stored_state:
             self.logger.warning("No stored OAuth state found - session may have expired")
             return False
-            
+
         if not hmac.compare_digest(received_state, stored_state):
             self.logger.warning("OAuth state mismatch - potential CSRF attack")
             self.logger.debug(f"Expected state: {stored_state[:8]}..., Received: {received_state[:8]}...")
             return False
-            
+
         session.remove("oauth_state")
         session.save()
-        
+
         self.logger.debug("OAuth state validation successful")
         return True
 
@@ -242,7 +232,7 @@ class FirewallUtils:
         elif event_type == "callback_detected":
             self.logger.debug(f"OAuth callback detected for firewall '{firewall_name}' - processing authentication")
         elif event_type == "auth_success":
-            self.logger.info(f"OAuth authentication successful")
+            self.logger.info("OAuth authentication successful")
         elif event_type == "auth_failure":
             self.logger.warning(f"OAuth authentication failed: {additional_info}")
         elif event_type == "session_created":
