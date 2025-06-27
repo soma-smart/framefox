@@ -53,11 +53,9 @@ class User(AbstractEntity, table=True):
 class UserController(AbstractController):
     def __init__(self):
         # Dependency injection for loose coupling
-        self.user_service = self._container.get_service("user_service")
-    
     @Route("/users", "user.index")
-    async def index(self) -> HTMLResponse:
-        users = await self.user_service.get_all_users()
+    async def index(self,user_service: UserService) -> HTMLResponse:
+        users = await user_service.get_all_users()
         return self.render("user/index.html", {"users": users})
 ```
 
@@ -102,8 +100,7 @@ class UserService:
 # Dependency Inversion: Controller depends on abstraction (service interface)
 class UserController(AbstractController):
     def __init__(self):
-        # Injected dependency, not concrete implementation
-        self.user_service = self._container.get_service("user_service")
+        self.user_service = UserService()
 ```
 
 **Benefits of SOLID in Framefox:**
@@ -124,53 +121,30 @@ Framefox enforces **clean code** practices through its architecture, naming conv
 
 ```python
 from fastapi import Request
-from framefox.core.controller.abstract_controller import AbstractController
-from framefox.core.orm.entity_manager_interface import EntityManagerInterface
-from framefox.core.routing.decorator.route import Route
-
 from src.entity.user import User
-from src.form.user_registration_form import UserRegistrationForm
-from src.services.user.user_service import UserService
 
-# Descriptive names and clear structure
-class UserRegistrationController(AbstractController):
-    """Controller for managing user registration"""
-    
-    def __init__(self):
-        self.entity_manager = EntityManagerInterface()
-        self.user_service = UserService()
-    
-    @Route("/register", "user.register", methods=["GET", "POST"])
-    async def register_new_user(self, request: Request):
-        """Register a new user"""
-        # Check if user is already logged in
-        if self.get_user():
-            return self.redirect(self.generate_url("dashboard.index"))
-        
-        # Create and handle form
+from framefox.core.routing.decorator.route import Route
+from framefox.core.orm.entity_manager import EntityManager
+from framefox.core.security.password.password_hasher import PasswordHasher
+from framefox.core.controller.abstract_controller import AbstractController
+
+class RegisterController(AbstractController):
+
+    @Route("/register", "security.register", methods=["GET", "POST"])
+    async def register(self, request: Request,entity_manager:EntityManager):
         user = User()
-        form = self.create_form(UserRegistrationForm, user)
-        await form.handle_request(request)
-        
-        if form.is_submitted() and form.is_valid():
-            try:
-                form_data = dict(await request.form())
-                success, message, created_user = await self.user_service.create_user(form_data)
-                
-                if success:
-                    await self.login_user(created_user)
-                    self.flash("success", "Registration successful! Welcome.")
-                    return self.redirect(self.generate_url("dashboard.index"))
-                else:
-                    self.flash("error", message)
-                    
-            except Exception as e:
-                self.flash("error", f"Registration error: {str(e)}")
-        
-        return self.render("user/register.html", {
-            "form": form.create_view(),
-            "user": user
-        })
+
+        if request.method == "POST":
+            form = await request.form()
+            user = User()
+            user.email = form.get("email")
+            user.password = PasswordHasher().hash(form.get("password"))
+
+            entity_manager.persist(user)
+            entity_manager.commit()
+            return self.redirect("/login")
+
+        return self.render("security/register.html")
 ```
 
 ### Clean Code Benefits

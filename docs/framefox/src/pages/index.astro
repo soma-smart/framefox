@@ -1,6 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import { Image } from 'astro:assets';
+import { Image } from "astro:assets";
 import CodeBlock from "../components/CodeBlock.astro";
 import "../styles/landing.css";
 import profilerRequestImage from "../assets/profiler-request.png";
@@ -25,7 +25,6 @@ import profilerRequestImage from "../assets/profiler-request.png";
     />
 
     <ClientRouter />
-
   </head>
   <body>
     <header>
@@ -355,7 +354,7 @@ class Product(AbstractEntity):
             <ul>
               <li><a href="installation/">Getting Started Guide</a></li>
               <li><a href="quick_start/">Tutorials</a></li>
-              <li><a href="controllers/">Examples</a></li>
+              <li><a href="core/controllers/">Examples</a></li>
             </ul>
           </div>
 
@@ -407,43 +406,43 @@ class Product(AbstractEntity):
     </footer>
 
     <!-- <script src="../scripts/landing.js"></script> -->
-     <script>
+    <script>
       document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-          anchor.addEventListener("click", function (e) {
-              e.preventDefault();
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
 
-              const href = this.getAttribute("href");
-              if (href) {
-              const targetElement = document.querySelector(href);
-              if (targetElement) {
-                  targetElement.scrollIntoView({
-                  behavior: "smooth",
-                  });
-              }
-              }
-          });
+          const href = this.getAttribute("href");
+          if (href) {
+            const targetElement = document.querySelector(href);
+            if (targetElement) {
+              targetElement.scrollIntoView({
+                behavior: "smooth",
+              });
+            }
+          }
+        });
       });
 
       // Gestion du menu mobile
-      document.addEventListener('DOMContentLoaded', function() {
-          const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-          const nav = document.querySelector('nav');
-          
-          if (mobileMenuToggle && nav) {
-              mobileMenuToggle.addEventListener('click', function() {
-                  mobileMenuToggle.classList.toggle('active');
-                  nav.classList.toggle('active');
-              });
-              
-              // Fermer le menu quand on clique sur un lien
-              const navLinks = nav.querySelectorAll('a');
-              navLinks.forEach(link => {
-                  link.addEventListener('click', function() {
-                      mobileMenuToggle.classList.remove('active');
-                      nav.classList.remove('active');
-                  });
-              });
-          }
+      document.addEventListener("DOMContentLoaded", function () {
+        const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
+        const nav = document.querySelector("nav");
+
+        if (mobileMenuToggle && nav) {
+          mobileMenuToggle.addEventListener("click", function () {
+            mobileMenuToggle.classList.toggle("active");
+            nav.classList.toggle("active");
+          });
+
+          // Fermer le menu quand on clique sur un lien
+          const navLinks = nav.querySelectorAll("a");
+          navLinks.forEach((link) => {
+            link.addEventListener("click", function () {
+              mobileMenuToggle.classList.remove("active");
+              nav.classList.remove("active");
+            });
+          });
+        }
       });
     </script>
   </body>
