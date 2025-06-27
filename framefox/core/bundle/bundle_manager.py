@@ -1,6 +1,6 @@
 import logging
-from typing import Dict
 from importlib.metadata import entry_points
+from typing import Dict
 
 from framefox.core.bundle.abstract_bundle import AbstractBundle
 from framefox.core.di.service_container import ServiceContainer
@@ -13,6 +13,7 @@ Github: https://github.com/soma-smart/framefox
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
+
 
 class BundleManager:
     """
@@ -28,7 +29,7 @@ class BundleManager:
     def discover_bundles(self) -> None:
         try:
             eps = entry_points()
-            if hasattr(eps, 'select'):
+            if hasattr(eps, "select"):
                 bundle_entries = eps.select(group="framefox.bundles")
             else:
                 bundle_entries = eps.get("framefox.bundles", [])
@@ -49,9 +50,7 @@ class BundleManager:
                 bundle.register_services(container)
                 self.logger.debug(f"Registered services for bundle: {name}")
             except Exception as e:
-                self.logger.error(
-                    f"Error registering services for bundle {name}: {str(e)}"
-                )
+                self.logger.error(f"Error registering services for bundle {name}: {str(e)}")
 
     def register_bundle_commands(self, registry: CommandRegistry) -> None:
         for name, bundle in self.bundles.items():
@@ -59,9 +58,7 @@ class BundleManager:
                 bundle.register_commands(registry)
                 self.logger.debug(f"Registered commands for bundle: {name}")
             except Exception as e:
-                self.logger.error(
-                    f"Error registering commands for bundle {name}: {str(e)}"
-                )
+                self.logger.error(f"Error registering commands for bundle {name}: {str(e)}")
 
     def boot_bundles(self, container: ServiceContainer) -> None:
         for name, bundle in self.bundles.items():
@@ -80,7 +77,4 @@ class BundleManager:
         return name in self.bundles
 
     def list_bundles(self) -> Dict[str, str]:
-        return {
-            name: getattr(bundle, 'description', 'No description available')
-            for name, bundle in self.bundles.items()
-        }
+        return {name: getattr(bundle, "description", "No description available") for name, bundle in self.bundles.items()}
