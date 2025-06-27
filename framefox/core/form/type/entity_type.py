@@ -27,9 +27,6 @@ class EntityType(AbstractFormType):
         if self._repository is None:
             entity_class = self.options.get("class")
             if entity_class:
-                from framefox.core.di.service_container import ServiceContainer
-
-                container = ServiceContainer()
                 entity_name = entity_class.lower()
                 repo_class = f"{entity_name}_repository"
                 try:

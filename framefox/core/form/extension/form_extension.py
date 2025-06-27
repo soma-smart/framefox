@@ -1,4 +1,5 @@
 from jinja2 import Environment
+
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
@@ -6,6 +7,8 @@ Github: https://github.com/soma-smart/framefox
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
+
+
 class FormExtension:
     """
     FormExtension integrates form rendering helpers into the Jinja2 environment.
@@ -42,10 +45,7 @@ class FormExtension:
 
         has_file_field = False
         for field in form_view.form.fields.values():
-            if (
-                hasattr(field.type, "get_block_prefix")
-                and field.type.get_block_prefix() == "file"
-            ):
+            if hasattr(field.type, "get_block_prefix") and field.type.get_block_prefix() == "file":
                 has_file_field = True
                 break
 
@@ -130,9 +130,7 @@ class FormExtension:
             return ""
 
         errors = field_view.get_errors()
-        error_html = "".join(
-            [f'<div class="invalid-feedback">{error}</div>' for error in errors]
-        )
+        error_html = "".join([f'<div class="invalid-feedback">{error}</div>' for error in errors])
 
         return error_html
 

@@ -57,17 +57,12 @@ class Form:
 
         for name, field in self.fields.items():
             if field.options.get("required", False):
-                is_file_field = (
-                    hasattr(field.type, "get_block_prefix")
-                    and field.type.get_block_prefix() == "file"
-                )
+                is_file_field = hasattr(field.type, "get_block_prefix") and field.type.get_block_prefix() == "file"
                 file_already_exists = is_file_field and field.get_value() is not None
 
                 if not is_file_field or (is_file_field and not file_already_exists):
                     if name not in data_dict and name not in file_dict:
-                        field.errors.append(
-                            f"The field {field.options.get('label', name)} is required"
-                        )
+                        field.errors.append(f"The field {field.options.get('label', name)} is required")
 
         self.valid = self.validate()
 
@@ -83,9 +78,7 @@ class Form:
                 field = self.fields[field_name]
                 if hasattr(field.type, "handle_upload"):
                     try:
-                        if field.options.get("multiple", False) and isinstance(
-                            upload_file, list
-                        ):
+                        if field.options.get("multiple", False) and isinstance(upload_file, list):
                             file_paths = []
                             for file in upload_file:
                                 file_path = await field.type.handle_upload(file)
@@ -125,9 +118,7 @@ class Form:
             if field.options.get("required", False):
                 value = field.get_value()
                 if value is None or (isinstance(value, str) and value.strip() == ""):
-                    field.errors.append(
-                        f"The field {field.options.get('label', name)} is required"
-                    )
+                    field.errors.append(f"The field {field.options.get('label', name)} is required")
                     valid = False
                     self.errors[name] = field.errors
                     continue

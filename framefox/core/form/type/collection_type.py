@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List
 
 from framefox.core.form.type.abstract_form_type import AbstractFormType
 

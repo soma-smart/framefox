@@ -51,9 +51,7 @@ class DateTimeType(AbstractFormType):
                         continue
                 raise ValueError(f"Unrecognized date/time format: {value}")
             except Exception as e:
-                raise ValueError(
-                    f"Unable to convert to datetime: {value}. Error: {str(e)}"
-                )
+                raise ValueError(f"Unable to convert to datetime: {value}. Error: {str(e)}")
 
     def transform_to_view(self, value: Any) -> str:
         """Transforms a datetime object into a string for display."""

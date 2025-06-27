@@ -17,9 +17,7 @@ class FormFactory:
     """Factory to create forms."""
 
     @classmethod
-    def create_builder(
-        cls, data: Optional[Any] = None, options: Dict[str, Any] = None
-    ) -> FormBuilder:
+    def create_builder(cls, data: Optional[Any] = None, options: Dict[str, Any] = None) -> FormBuilder:
         """Create a form builder."""
         return FormBuilder(data, options)
 

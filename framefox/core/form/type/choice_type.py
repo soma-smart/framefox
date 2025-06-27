@@ -10,6 +10,8 @@ Github: https://github.com/soma-smart/framefox
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
+
+
 class ChoiceType(AbstractFormType):
     """
     Represents a form field type for selecting from predefined choices.
@@ -87,7 +89,7 @@ class ChoiceType(AbstractFormType):
             attr_str = " ".join(f'{k}="{v}"' for k, v in item_attr.items())
             html += f"""
             <div class="form-check">
-                <input type="{input_type}" id="{item_id}" name="{self.name}{"[]" if is_multiple else ""}" 
+                <input type="{input_type}" id="{item_id}" name="{self.name}{"[]" if is_multiple else ""}"
                     value="{value}" {checked} {attr_str}>
                 <label class="form-check-label" for="{item_id}">
                     {label}
