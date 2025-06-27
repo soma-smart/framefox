@@ -18,9 +18,7 @@ class WorkerServiceProvider:
         container = ServiceContainer()
         settings = Settings()
 
-        entity_manager = (
-            EntityManagerRegistry.get_instance().get_entity_manager_for_worker()
-        )
+        entity_manager = EntityManagerRegistry.get_instance().get_entity_manager_for_worker()
         entity_manager_interface = EntityManagerInterface(entity_manager=entity_manager)
         container.set_instance(EntityManagerInterface, entity_manager_interface)
         from framefox.core.task.broker.broker_interface import BrokerInterface
@@ -36,9 +34,7 @@ class WorkerServiceProvider:
         if broker_type == "rabbitmq":
 
             from framefox.core.task.broker.rabbitmq_broker import RabbitMQBroker
-            from framefox.core.task.transport.rabbitmq_transport import (
-                RabbitMQTransport,
-            )
+            from framefox.core.task.transport.rabbitmq_transport import RabbitMQTransport
 
             task_transport = settings.task_transport_url
             transport = RabbitMQTransport(entity_manager_interface, task_transport)
