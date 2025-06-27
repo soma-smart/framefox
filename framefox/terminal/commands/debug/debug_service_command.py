@@ -1,9 +1,10 @@
-from framefox.application import Application
-from framefox.terminal.commands.abstract_command import AbstractCommand
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+
+from framefox.application import Application
+from framefox.terminal.commands.abstract_command import AbstractCommand
 
 """
 Framefox Framework developed by SOMA
@@ -27,31 +28,20 @@ class DebugServiceCommand(AbstractCommand):
     """
 
     def __init__(self):
-        super().__init__("service")
+        super().__init__()
         self.container = Application().container
 
     def execute(self):
         """
         Displays a formatted list of all registered services grouped by their modules.\n
         Shows service status, instance IDs, and associated tags.\n
-        This method performs the following steps:\n
-        1. Checks if the service definitions have been scanned.\n
-        2. Forces a complete scan if not already done.\n
-        3. Displays general statistics about the service container.\n
-        4. Groups services by their module namespace.\n
-        5. Displays the total number of registered services.\n
-        6. Displays each service group with its details in a formatted table.\n
-        7. Optionally displays detailed information about each service.\n
-        8. Provides a summary of the scan status and filtering information.\n
         """
         console = Console()
         print("")
 
         scan_status = self.container.get_scan_status()
         if not scan_status["src_scanned"]:
-            console.print(
-                "🔄 [yellow]Src services not yet scanned. Forcing complete scan...[/yellow]"
-            )
+            console.print("🔄 [yellow]Src services not yet scanned. Forcing complete scan...[/yellow]")
             self.container.force_complete_scan()
             console.print("✅ [green]Complete scan finished[/green]")
             print("")
@@ -77,16 +67,12 @@ class DebugServiceCommand(AbstractCommand):
 
         stats_text = Text()
         stats_text.append("Service Container Statistics\n", style="bold cyan")
-        stats_text.append(
-            f"• Total definitions: {stats['total_definitions']}\n", style="white"
-        )
+        stats_text.append(f"• Total definitions: {stats['total_definitions']}\n", style="white")
         stats_text.append(
             f"• Instantiated services: {stats['instantiated_services']}\n",
             style="green",
         )
-        stats_text.append(
-            f"• Cached resolutions: {stats['cached_resolutions']}\n", style="yellow"
-        )
+        stats_text.append(f"• Cached resolutions: {stats['cached_resolutions']}\n", style="yellow")
         stats_text.append(f"• Total aliases: {stats['total_aliases']}\n", style="blue")
         stats_text.append(f"• Total tags: {stats['total_tags']}\n", style="magenta")
         stats_text.append(
@@ -108,15 +94,9 @@ class DebugServiceCommand(AbstractCommand):
             f"• Src scan in progress: {scan_status['src_scan_in_progress']}\n",
             style="yellow" if scan_status["src_scan_in_progress"] else "white",
         )
-        stats_text.append(
-            f"• Scanned modules: {scan_status['scanned_modules_count']}\n", style="cyan"
-        )
-        stats_text.append(
-            f"• Cached modules: {scan_status['cached_modules_count']}\n", style="cyan"
-        )
-        stats_text.append(
-            f"• Src paths found: {scan_status['src_paths_count']}\n", style="cyan"
-        )
+        stats_text.append(f"• Scanned modules: {scan_status['scanned_modules_count']}\n", style="cyan")
+        stats_text.append(f"• Cached modules: {scan_status['cached_modules_count']}\n", style="cyan")
+        stats_text.append(f"• Src paths found: {scan_status['src_paths_count']}\n", style="cyan")
         stats_text.append(
             f"• Background scan enabled: {scan_status['background_scan_enabled']}\n",
             style="cyan",
@@ -147,9 +127,7 @@ class DebugServiceCommand(AbstractCommand):
 
             instance = self.container._instances.get(service_class)
 
-            tags_str = (
-                ", ".join(sorted(definition.tags)) if definition.tags else "No tags"
-            )
+            tags_str = ", ".join(sorted(definition.tags)) if definition.tags else "No tags"
 
             grouped_services[group].append(
                 {
@@ -188,12 +166,8 @@ class DebugServiceCommand(AbstractCommand):
 
         return "other"
 
-    def _display_service_group(
-        self, console: Console, group: str, services: list
-    ) -> None:
-        console.print(
-            f"Services in group: [bold cyan]{group}[/bold cyan] ({len(services)} services)"
-        )
+    def _display_service_group(self, console: Console, group: str, services: list) -> None:
+        console.print(f"Services in group: [bold cyan]{group}[/bold cyan] ({len(services)} services)")
 
         table = Table(show_header=True, header_style="bold orange1")
         table.add_column("Service", style="bold orange3", no_wrap=True)
@@ -253,9 +227,7 @@ class DebugServiceCommand(AbstractCommand):
         }
         return status_styles.get(status, "white")
 
-    def _display_detailed_service_info(
-        self, console: Console, service_class, definition, instance
-    ) -> None:
+    def _display_detailed_service_info(self, console: Console, service_class, definition, instance) -> None:
         details = Text()
         details.append(f"Service: {service_class.__name__}\n", style="bold cyan")
         details.append(f"Module: {service_class.__module__}\n", style="white")
@@ -272,9 +244,7 @@ class DebugServiceCommand(AbstractCommand):
             details.append(f"Arguments: {definition.arguments}\n", style="purple")
 
         if definition.method_calls:
-            details.append(
-                f"Method calls: {definition.method_calls}\n", style="dark_orange"
-            )
+            details.append(f"Method calls: {definition.method_calls}\n", style="dark_orange")
 
         if instance:
             details.append(f"Instance ID: {id(instance)}\n", style="cyan")
