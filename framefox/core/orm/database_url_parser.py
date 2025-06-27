@@ -26,12 +26,11 @@ class DatabaseUrlParser:
         """
 
         if isinstance(url_or_config, dict):
-  
+
             if "url" in url_or_config and isinstance(url_or_config["url"], str):
-               
+
                 return DatabaseUrlParser.parse_url(url_or_config["url"])
 
-       
             driver = url_or_config.get("driver", "postgresql")
 
             if driver == "sqlite":
@@ -47,11 +46,7 @@ class DatabaseUrlParser:
             return DatabaseConfig(
                 driver=driver,
                 host=url_or_config.get("host", "localhost"),
-                port=int(
-                    url_or_config.get(
-                        "port", DatabaseUrlParser._get_default_port(driver)
-                    )
-                ),
+                port=int(url_or_config.get("port", DatabaseUrlParser._get_default_port(driver))),
                 username=url_or_config.get("username", ""),
                 password=url_or_config.get("password", ""),
                 database=url_or_config.get("database", ""),

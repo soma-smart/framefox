@@ -88,6 +88,7 @@ class AbstractRepository(ABC):
         if offset is not None:
             statement = statement.offset(offset)
         return self.entity_manager.exec_statement(statement)
+
     def find_one_by(self, criteria) -> Optional[T]:
         """
         Retrieve a single entity based on specific criteria.
@@ -101,6 +102,7 @@ class AbstractRepository(ABC):
         statement = select(self.model).filter_by(**criteria).limit(1)
         results = self.entity_manager.exec_statement(statement)
         return results[0] if results else None
+
     def get_query_builder(self) -> QueryBuilder:
         """
         Retrieve an instance of QueryBuilder for the specific entity of the repository.

@@ -1,5 +1,11 @@
 from sqlalchemy import text
 
+from framefox.core.debug.exception.database_exception import (
+    DatabaseConnectionError,
+    DatabaseCreationError,
+    DatabaseDriverError,
+    DatabaseDropError,
+)
 from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.core.orm.driver.database_driver import DatabaseDriver
 
@@ -30,8 +36,7 @@ class PostgreSQLDriver(DatabaseDriver):
                 dbname="postgres",
             )
         except Exception as e:
-            print(f"PostgreSQL connection error: {str(e)}")
-            raise
+            raise DatabaseConnectionError(f"PostgreSQL connection failed: {str(e)}", e)
 
     def create_database(self, name: str) -> bool:
         try:
@@ -53,8 +58,7 @@ class PostgreSQLDriver(DatabaseDriver):
             conn.close()
             return True
         except Exception as e:
-            print(f"Error creating database: {str(e)}")
-            return False
+            raise DatabaseCreationError(name, e)
 
     def create_alembic_version_table(self, engine):
         """Creates the alembic_version table if it does not exist for PostgreSQL"""
@@ -70,23 +74,18 @@ class PostgreSQLDriver(DatabaseDriver):
                     )
                 )
                 connection.commit()
-                print("alembic_version table created successfully (PostgreSQL)")
                 return True
         except Exception as e:
-            print(f"Error creating alembic_version table: {str(e)}")
-            return False
+            raise DatabaseDriverError("PostgreSQL", "create alembic_version table", e)
 
     def database_exists(self, name: str) -> bool:
         try:
             with self.connect() as connection:
                 with connection.cursor() as cursor:
-                    cursor.execute(
-                        "SELECT 1 FROM pg_database WHERE datname = %s", (name,)
-                    )
+                    cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (name,))
                     return cursor.fetchone() is not None
         except Exception as e:
-            print(f"Error checking database existence: {str(e)}")
-            return False
+            raise DatabaseDriverError("PostgreSQL", "check database existence", e)
 
     def drop_database(self, name: str) -> bool:
         try:
@@ -107,5 +106,4 @@ class PostgreSQLDriver(DatabaseDriver):
             conn.close()
             return True
         except Exception as e:
-            print(f"Error dropping database: {str(e)}")
-            return False
+            raise DatabaseDropError(name, e)
