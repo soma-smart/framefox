@@ -1,8 +1,4 @@
-from framefox.tests.e2e.fixtures.commands import (  # noqa: F401
-    exec_command,
-    handle_tmp_path,
-    init_project,
-)
+from framefox.tests.e2e.fixtures.commands import exec_command, handle_tmp_path, init_project  # noqa: F401
 
 
 def testest_create_crud_command_should_exist(init_project):  # noqa: F811

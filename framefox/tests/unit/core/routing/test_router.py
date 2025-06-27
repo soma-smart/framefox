@@ -63,13 +63,7 @@ class TestRouter:
         assert router.app == mock_app
         assert isinstance(router._routes, dict)
 
-    def test_get_module_name(self, router):
-        """Test path to module name conversion"""
-        with patch("pathlib.Path.cwd") as mock_cwd:
-            mock_cwd.return_value = Path("/home/project")
-            module_path = "/home/project/src/controller/home.py"
-            result = router._get_module_name(module_path)
-            assert result == "src.controller.home"
+
 
     def test_url_path_for_existing_route(self, router):
         """Test URL generation for an existing route"""

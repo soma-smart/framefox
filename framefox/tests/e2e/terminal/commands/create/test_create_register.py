@@ -1,11 +1,6 @@
 import os
 
-from framefox.tests.e2e.fixtures.commands import (  # noqa: F401
-    TMP_PATH,
-    exec_command,
-    handle_tmp_path,
-    init_project,
-)
+from framefox.tests.e2e.fixtures.commands import TMP_PATH, exec_command, handle_tmp_path, init_project  # noqa: F401
 
 
 def test_create_register_command_should_exist(init_project):  # noqa: F811
