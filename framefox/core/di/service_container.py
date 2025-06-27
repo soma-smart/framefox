@@ -6,15 +6,10 @@ import os
 import sys
 import threading
 import time
-
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Type, get_type_hints
 
-from framefox.core.di.exceptions import (
-    CircularDependencyError,
-    ServiceInstantiationError,
-    ServiceNotFoundError,
-)
+from framefox.core.debug.exception.di_exception import CircularDependencyError, ServiceInstantiationError, ServiceNotFoundError
 from framefox.core.di.service_cache_manager import ServiceCacheManager
 from framefox.core.di.service_config import ServiceConfig
 from framefox.core.di.service_definition import ServiceDefinition
@@ -113,14 +108,10 @@ class ServiceContainer:
     def _register_core_factories(self):
         """Register core factories before registry freeze."""
         try:
-            from framefox.core.di.factory.entity_manager_factory import (
-                EntityManagerFactory,
-            )
+            from framefox.core.di.factory.entity_manager_factory import EntityManagerFactory
 
             self._factory_manager.register_factory(EntityManagerFactory())
-            from framefox.core.di.factory.pydantic_model_factory import (
-                PydanticModelFactory,
-            )
+            from framefox.core.di.factory.pydantic_model_factory import PydanticModelFactory
 
             self._factory_manager.register_factory(PydanticModelFactory())
             self._logger.debug("Core factories registered successfully")
@@ -238,9 +229,9 @@ class ServiceContainer:
 
         self._src_paths = self._find_source_paths()
         for src_path in self._src_paths:
-            controller_path = src_path / "controller"
-            if controller_path.exists():
-                self._scan_for_service_definitions(controller_path, "src.controller", [], [])
+            for subdir in src_path.iterdir():
+                if subdir.is_dir() and subdir.name not in ["controller", "controllers", "__pycache__"]:
+                    self._scan_for_service_definitions(subdir, f"src.{subdir.name}", [], [])
 
         self._save_initial_cache()
 
@@ -883,4 +874,3 @@ class ServiceContainer:
             "registered_factories": len(self._factory_manager.get_factories()),
             **registry_stats,
         }
-
