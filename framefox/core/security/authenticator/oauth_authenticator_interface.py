@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from framefox.core.security.authenticator.authenticator_interface import (
-    AuthenticatorInterface,
-)
+from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
 
 """
 Framefox Framework developed by SOMA
@@ -17,7 +15,7 @@ Github: https://github.com/RayenBou
 class OAuthAuthenticatorInterface(AuthenticatorInterface, ABC):
     """
     Interface for OAuth authenticators.
-    
+
     This interface extends the base AuthenticatorInterface to provide
     OAuth-specific functionality for user authentication via external providers.
     """

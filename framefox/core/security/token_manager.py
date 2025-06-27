@@ -1,8 +1,8 @@
 import logging
-from datetime import datetime, timedelta
+import time
 
 import jwt
-import time
+
 from framefox.core.config.settings import Settings
 
 """
@@ -38,7 +38,7 @@ class TokenManager:
             str: The JWT token
         """
         # Gestion des utilisateurs virtuels OAuth
-        if hasattr(user, 'is_virtual') and user.is_virtual:
+        if hasattr(user, "is_virtual") and user.is_virtual:
             user_id = user.id  # ID virtuel déjà généré
             self.logger.debug(f"Creating token for virtual OAuth user: {user.email}")
         else:

@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from framefox.core.security.passport.csrf_token_badge import CsrfTokenBadge
 from framefox.core.security.passport.password_credentials import PasswordCredentials
@@ -24,7 +24,7 @@ class Passport:
         password_credentials (PasswordCredentials): An instance of PasswordCredentials to verify the user's password.
         csrf_token_badge (Optional[CsrfTokenBadge]): An optional instance of CsrfTokenBadge for CSRF protection.
         user (Optional[User]): The authenticated user, if authentication is successful.
-        provider_info (Optional[Dict]): Informations du provider, incluant repository et propriété d'identification.
+        provider_info (Optional[Dict]): Provider information, including repository and identification property.
     """
 
     def __init__(
@@ -41,7 +41,6 @@ class Passport:
         self.roles: List[str] = []
         self.provider_info = provider_info
         self.logger = logging.getLogger("PASSPORT")
-
 
     async def authenticate_user(self) -> bool:
         if self.user:
@@ -62,11 +61,9 @@ class Passport:
                 if user:
                     self.user = user
                 else:
-                    # NOUVEAU: Essayer de créer l'utilisateur via la méthode personnalisable de l'authenticator
-                    if not self.password_credentials and hasattr(self, '_oauth_authenticator'):  # C'est un utilisateur OAuth
+                    if not self.password_credentials and hasattr(self, "_oauth_authenticator"):
                         self.logger.info(f"User not found, attempting OAuth user creation: {self.user_badge.user_identifier}")
-                        # Récupérer les données utilisateur depuis l'authenticator
-                        user_data = getattr(self, '_oauth_user_data', {})
+                        user_data = getattr(self, "_oauth_user_data", {})
                         user = await self._oauth_authenticator.create_oauth_user(user_data, repository)
                         if user:
                             self.user = user
@@ -74,14 +71,12 @@ class Passport:
                         else:
                             self.logger.debug(f"No OAuth user creation implemented for: {self.user_badge.user_identifier}")
         else:
-            # NOUVEAU: Pas de provider configuré - créer un utilisateur virtuel OAuth
-            if not self.password_credentials:  # C'est une authentification OAuth sans provider
+            if not self.password_credentials:
                 self.logger.info(f"Creating virtual OAuth user (no provider configured): {self.user_badge.user_identifier}")
-                # Récupérer les rôles par défaut depuis l'authenticator OAuth
                 default_roles = ["ROLE_USER"]
-                if hasattr(self, '_oauth_authenticator'):
-                    default_roles = getattr(self._oauth_authenticator, 'default_roles', default_roles)
-                
+                if hasattr(self, "_oauth_authenticator"):
+                    default_roles = getattr(self._oauth_authenticator, "default_roles", default_roles)
+
                 self.user = self._create_virtual_oauth_user(default_roles)
             else:
                 self.logger.warning("No provider info available, cannot authenticate user.")
@@ -91,7 +86,6 @@ class Passport:
             self.logger.warning("User not found in the database.")
             return False
 
-        # Vérification du mot de passe seulement s'il y a des credentials (pas pour OAuth)
         if self.password_credentials:
             password_hasher = PasswordHasher()
             authenticated = password_hasher.verify(self.password_credentials.raw_password, self.user.password)
@@ -104,24 +98,17 @@ class Passport:
         return True
 
     def _create_virtual_oauth_user(self, default_roles: list = None):
-        """
-        Crée un utilisateur virtuel pour OAuth quand aucun provider n'est configuré
-        """
         from types import SimpleNamespace
-        
+
         if default_roles is None:
             default_roles = ["ROLE_USER"]
-        
-        # Créer un objet utilisateur simple sans base de données
         virtual_user = SimpleNamespace()
-        virtual_user.id = f"oauth_{hash(self.user_badge.user_identifier)}"  # ID unique basé sur l'email
+        virtual_user.id = f"oauth_{hash(self.user_badge.user_identifier)}"
         virtual_user.email = self.user_badge.user_identifier
-        virtual_user.name = self.user_badge.user_identifier.split('@')[0]  # Nom par défaut
-        virtual_user.roles = default_roles  # Utiliser les rôles configurés
+        virtual_user.name = self.user_badge.user_identifier.split("@")[0]
+        virtual_user.roles = default_roles
         virtual_user.provider = "oauth"
-        virtual_user.is_virtual = True  # Marquer comme utilisateur virtuel
-        
+        virtual_user.is_virtual = True
+
         self.logger.info(f"Virtual OAuth user created: {virtual_user.email} with roles {virtual_user.roles}")
         return virtual_user
-
-    # Supprimer l'ancienne méthode _create_oauth_user car elle sera dans l'authenticator

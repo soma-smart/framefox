@@ -90,8 +90,6 @@ class InputValidationProtector:
 
     def _validate_string(self, value: str, field_name: str, threats: List[str], context: str) -> tuple[str, List[str]]:
         """Smart string validation based on context."""
-        original_value = value
-
         if len(value) > 50000:
             threats.append(f"OVERSIZED_INPUT:{field_name}")
             value = value[:50000]
