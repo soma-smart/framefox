@@ -7,7 +7,7 @@ Github: https://github.com/soma-smart/framefox
 ----------------------------
 Author: BOUMAZA Rayen & LEUROND Raphael
 Github: https://github.com/RayenBou
-Github: https://github.com/Vasulvius 
+Github: https://github.com/Vasulvius
 """
 
 

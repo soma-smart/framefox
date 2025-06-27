@@ -1,15 +1,16 @@
 from datetime import datetime
 
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import (
-    AbstractDatabaseCommand,
-)
+from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
 
 
 class CreateMigrationCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("migration")
+        super().__init__()
         self.alembic_manager = AlembicManager()
+
+    def get_name(self):
+        return "create-migration"
 
     def execute(self):
         """
@@ -22,7 +23,7 @@ class CreateMigrationCommand(AbstractDatabaseCommand):
 
             if not self.driver.database_exists(self.connection_manager.config.database):
                 self.printer.print_msg(
-                    "The database does not exist. Please run 'framefox database create' first.",
+                    "The database does not exist. Please run 'framefox database:create' first.",
                     theme="warning",
                 )
 

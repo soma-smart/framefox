@@ -1,12 +1,10 @@
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import (
-    AbstractDatabaseCommand,
-)
+from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
 
 
 class DowngradeCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("downgrade")
+        super().__init__()
         self.alembic_manager = AlembicManager()
 
     def execute(self, steps: int = 1):
@@ -41,6 +39,4 @@ class DowngradeCommand(AbstractDatabaseCommand):
                 self.printer.print_msg("Failed to revert migrations.", theme="error")
 
         except Exception as e:
-            self.printer.print_msg(
-                f"Error while reverting migrations: {str(e)}", theme="error"
-            )
+            self.printer.print_msg(f"Error while reverting migrations: {str(e)}", theme="error")

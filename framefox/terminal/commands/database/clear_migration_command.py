@@ -1,7 +1,5 @@
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import (
-    AbstractDatabaseCommand,
-)
+from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
 
 """
 Framefox Framework developed by SOMA
@@ -14,8 +12,11 @@ Github: https://github.com/Vasulvius
 
 class ClearMigrationCommand(AbstractDatabaseCommand):
     def __init__(self):
-        super().__init__("clear-migration")
+        super().__init__()
         self.alembic_manager = AlembicManager()
+
+    def get_name(self):
+        return "clear-migration"
 
     def execute(self):
         """
@@ -26,9 +27,7 @@ class ClearMigrationCommand(AbstractDatabaseCommand):
         It will check if the database exists, and if not, it will only clear the migration files.\n
         """
         try:
-            self.printer.print_msg(
-                "Clearing migration files and database references...", theme="info"
-            )
+            self.printer.print_msg("Clearing migration files and database references...", theme="info")
 
             # Check if database exists
             if not self.driver.database_exists(self.connection_manager.config.database):
@@ -42,14 +41,12 @@ class ClearMigrationCommand(AbstractDatabaseCommand):
                 self.printer.print_msg("Migration files cleared", theme="success")
                 return
 
-            # Clear migration table in database using AlembicManager
             table_cleared = self.alembic_manager.clear_alembic_version_table()
             if table_cleared:
                 self.printer.print_msg("Migration table cleared", theme="success")
             else:
                 self.printer.print_msg("Migration table does not exist", theme="info")
 
-            # Clear migration files using AlembicManager
             self.alembic_manager.cleanup_migrations()
             self.alembic_manager.setup_directories()
             self.printer.print_msg("Migration files cleared", theme="success")
