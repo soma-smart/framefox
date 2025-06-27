@@ -1,28 +1,25 @@
-import datetime, json, logging, random, shutil, uuid, traceback
+import datetime
+import json
+import logging
+import random
+import shutil
+import traceback
+import uuid
 from pathlib import Path
 from typing import Dict, List, Optional
+
 from fastapi import Request, Response
 
 from framefox.core.config.settings import Settings
 from framefox.core.debug.profiler.collector.data_collector import DataCollector
-from framefox.core.debug.profiler.collector.exception_data_collector import (
-    ExceptionDataCollector,
-)
+from framefox.core.debug.profiler.collector.exception_data_collector import ExceptionDataCollector
 from framefox.core.debug.profiler.collector.log_data_collector import LogDataCollector
-from framefox.core.debug.profiler.collector.memory_data_collector import (
-    MemoryDataCollector,
-)
-from framefox.core.debug.profiler.collector.request_data_collector import (
-    RequestDataCollector,
-)
-from framefox.core.debug.profiler.collector.route_data_collector import (
-    RouteDataCollector,
-)
+from framefox.core.debug.profiler.collector.memory_data_collector import MemoryDataCollector
+from framefox.core.debug.profiler.collector.request_data_collector import RequestDataCollector
+from framefox.core.debug.profiler.collector.route_data_collector import RouteDataCollector
 from framefox.core.debug.profiler.collector.sql_data_collector import SQLDataCollector
 from framefox.core.debug.profiler.collector.time_data_collector import TimeDataCollector
-from framefox.core.debug.profiler.collector.user_data_collector import (
-    UserDataCollector,
-)
+from framefox.core.debug.profiler.collector.user_data_collector import UserDataCollector
 
 """
 Framefox Framework developed by SOMA
@@ -123,9 +120,7 @@ class Profiler:
             if not self.base_storage_dir.exists():
                 return
 
-            cutoff_date = datetime.datetime.now() - datetime.timedelta(
-                days=self.retention_days
-            )
+            cutoff_date = datetime.datetime.now() - datetime.timedelta(days=self.retention_days)
             cutoff_str = cutoff_date.strftime("%Y-%m-%d")
 
             for date_dir in self.base_storage_dir.iterdir():
@@ -140,9 +135,7 @@ class Profiler:
             keys_to_remove = sorted_keys[: -self.max_profiles_in_memory]
             for key in keys_to_remove:
                 self.profiles_cache.pop(key, None)
-            self.logger.debug(
-                f"Cleaned cache, removed {len(keys_to_remove)} profiles (max: {self.max_profiles_in_memory})"
-            )
+            self.logger.debug(f"Cleaned cache, removed {len(keys_to_remove)} profiles (max: {self.max_profiles_in_memory})")
 
     def _find_oldest_profile(self) -> Optional[Path]:
         if not self.storage_dir.exists():
@@ -176,9 +169,7 @@ class Profiler:
                 return False
 
         if self.sampling_rate < 1.0 and random.random() > self.sampling_rate:
-            self.logger.debug(
-                f"Request skipped due to sampling rate ({self.sampling_rate})"
-            )
+            self.logger.debug(f"Request skipped due to sampling rate ({self.sampling_rate})")
             return False
 
         return True
@@ -291,11 +282,7 @@ class Profiler:
                             "method": profile_data.get("method", ""),
                             "time": profile_data.get("time", ""),
                             "status_code": request_data.get("status_code", 0),
-                            "duration": (
-                                time_data.get("duration", 0)
-                                if isinstance(time_data, dict)
-                                else 0
-                            ),
+                            "duration": (time_data.get("duration", 0) if isinstance(time_data, dict) else 0),
                         }
                         profiles.append(summary)
                         count += 1
@@ -311,9 +298,7 @@ class Profiler:
             if len(files) >= self.max_profiles_per_day:
                 oldest_file = self._find_oldest_profile()
                 if oldest_file and oldest_file.exists():
-                    self.logger.debug(
-                        f"Removing oldest profile {oldest_file.name} (limit: {self.max_profiles_per_day})"
-                    )
+                    self.logger.debug(f"Removing oldest profile {oldest_file.name} (limit: {self.max_profiles_per_day})")
                     oldest_file.unlink()
 
             profile_path = self.storage_dir / f"{token}.json"
@@ -339,42 +324,43 @@ class Profiler:
             "method": request.method,
             "time": datetime.datetime.now().isoformat(),
             "token": token,
-            "is_error_profile": True
+            "is_error_profile": True,
         }
 
         for name, collector in self.collectors.items():
             try:
                 if name == "exception":
                     collector.collect_exception(exception, traceback.format_exc())
-                    
+
                     from fastapi.responses import Response
+
                     fake_response = Response(status_code=500)
                     collector.collect(request, fake_response)
-                    
+
                 elif name == "request":
                     from fastapi.responses import Response
+
                     fake_response = Response(status_code=500)
                     collector.collect(request, fake_response)
-                    
+
                 elif name == "time":
-                    start_time = getattr(request.state, 'request_start_time', datetime.datetime.now().timestamp())
+                    start_time = getattr(request.state, "request_start_time", datetime.datetime.now().timestamp())
                     duration = datetime.datetime.now().timestamp() - start_time
                     collector.duration = duration * 1000
                     collector.collect(request, None)
-                    
+
                 elif name in ["memory", "route", "user", "log"]:
                     try:
                         from fastapi.responses import Response
+
                         fake_response = Response(status_code=500)
                         collector.collect(request, fake_response)
-                    except:
+                    except Exception:
                         pass
-                
+
                 collector_data = collector.get_data()
                 profile_data[name] = collector_data
-                
-         
-                    
+
             except Exception as e:
                 self.logger.error(f"Error collecting data from {name} for error profile: {str(e)}")
 
@@ -384,10 +370,6 @@ class Profiler:
                     collector.reset()
             except Exception as e:
                 self.logger.error(f"Error resetting collector {name}: {str(e)}")
-
-
-     
-            
 
         self.profiles_cache[token] = profile_data
         self._maintain_cache_size()
