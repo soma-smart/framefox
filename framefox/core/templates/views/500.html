@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>404 - Page Not Found | Framefox</title>
+    <title>500 - Internal Server Error | Framefox</title>
     <link rel="icon" href="/static/images/orange_fox.png" type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -54,8 +54,8 @@
       }
 
       .logo-container {
+        margin-left: 5rem;
         margin-bottom: 2rem;
-        animation: logoFloat 3s ease-in-out infinite;
       }
 
       .logo-svg {
@@ -66,13 +66,13 @@
       }
 
       .logo-text {
-        fill: var(--fox-orange);
+        fill: var(--fox-error);
         filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
         transition: fill 0.3s ease;
       }
 
       .logo-svg:hover .logo-text {
-        fill: var(--fox-error);
+        fill: var(--fox-orange);
       }
 
       .error-code {
@@ -89,7 +89,7 @@
         font-size: 1.5rem;
         font-weight: 300;
         font-style: italic;
-        color: var(--fox-orange);
+        color: var(--fox-error);
         margin-bottom: 3rem;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         animation: slideInDown 0.8s ease-out 0.2s both;
@@ -212,16 +212,6 @@
         }
       }
 
-      @keyframes logoFloat {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-      }
-
       @media (max-width: 768px) {
         .main-container {
           padding: 1rem;
@@ -305,7 +295,7 @@
   </head>
   <body>
     <div class="main-container">
-      <div class="error-code">Error 404</div>
+      <div class="error-code">Error 500</div>
 
       <div class="logo-container">
         <svg
@@ -313,29 +303,16 @@
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 1200 300"
         >
-          <text
-            class="logo-text"
-            x="45%"
-            y="50%"
-            dominant-baseline="middle"
-            text-anchor="end"
-            font-family="'Poppins', sans-serif"
-            font-size="150"
-            font-weight="800"
-            font-style="italic"
-          >
-            4
-          </text>
           <image
             href="/static/images/orange_fox.png"
-            x="530"
+            x="200"
             y="65"
             width="150"
             height="150"
           />
           <text
             class="logo-text"
-            x="680"
+            x="370"
             y="50%"
             dominant-baseline="middle"
             text-anchor="start"
@@ -344,16 +321,45 @@
             font-weight="800"
             font-style="italic"
           >
-            4
+            5
+          </text>
+          <text
+            class="logo-text"
+            x="490"
+            y="50%"
+            dominant-baseline="middle"
+            text-anchor="start"
+            font-family="'Poppins', sans-serif"
+            font-size="150"
+            font-weight="800"
+            font-style="italic"
+          >
+            0
+          </text>
+          <text
+            class="logo-text"
+            x="610"
+            y="50%"
+            dominant-baseline="middle"
+            text-anchor="start"
+            font-family="'Poppins', sans-serif"
+            font-size="150"
+            font-weight="800"
+            font-style="italic"
+          >
+            0
           </text>
         </svg>
       </div>
 
-      <p class="slogan">The fox is lost in the woods!</p>
+      <p class="slogan">The fox encountered a technical glitch!</p>
 
       <div class="info-box">
-        <p>The page you're looking for doesn't exist or has been moved.</p>
-        <p>Let's help you find your way back!</p>
+        <p>
+          Something went wrong on our end. Our development team has been
+          notified.
+        </p>
+        <p>Please try refreshing the page or come back later.</p>
       </div>
 
       <div class="buttons">

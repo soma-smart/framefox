@@ -1,8 +1,12 @@
-import hashlib, json, logging, os, time
+import hashlib
+import json
+import logging
+import os
+import time
 from pathlib import Path
 
-from fastapi.exceptions import HTTPException
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2.exceptions import TemplateNotFound, TemplateSyntaxError, UndefinedError
 
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.form.extension.form_extension import FormExtension
@@ -18,57 +22,124 @@ Github: https://github.com/RayenBou
 
 
 class TemplateRenderer:
-    """
-    Template rendering service for the Framefox framework.
-    
-    Provides Jinja2-based template rendering with custom filters, globals,
-    and memory profiling capabilities. Handles both user and framework templates,
-    manages template context, and provides utility functions for web templates.
-    """
-    
     def __init__(self):
         self.container = ServiceContainer()
-        self.logging = logging.getLogger("TEMPLATE_RENDERER")
+        self.logger = logging.getLogger("TEMPLATE_RENDERER")
         self.settings = self.container.get_by_name("Settings")
+
         self.user_template_dir = self.settings.template_dir
         self.framework_template_dir = Path(__file__).parent / "views"
-        self.public_path = (
-            self.settings.public_path
-            if hasattr(self.settings, "public_path")
-            else "public"
-        )
+        self.public_path = getattr(self.settings, "public_path", "public")
+
+        self._setup_jinja_environment()
+        self._register_filters()
+        self._register_globals()
+
+    def _setup_jinja_environment(self):
         self.env = Environment(
-            loader=FileSystemLoader(
-                [self.user_template_dir, str(self.framework_template_dir)]
-            ),
+            loader=FileSystemLoader([self.user_template_dir, str(self.framework_template_dir)]),
             undefined=StrictUndefined,
         )
-        form_extension = FormExtension(self.env)
-        self.env.globals["url_for"] = self.url_for
-        self.env.globals["get_flash_messages"] = self.get_flash_messages
-        self.env.globals["current_user"] = self.get_current_user
-        self.env.globals["asset"] = self.asset
-        self.env.globals["dump"] = self._dump_function
-        self.env.globals["request"] = self.get_current_request
-        self.env.globals["csrf_token"] = self.get_csrf_token
 
-        self._register_filters(self.env)
+        FormExtension(self.env)
 
-    def _register_filters(self, env):
-        env.filters["relation_display"] = self._relation_display_filter
-        env.filters["date"] = self._date_filter
-        env.filters["format_date"] = self._format_date_filter
-        env.filters["filesizeformat"] = self._filesize_format_filter
-        env.filters["json_encode"] = self._json_encode_filter
+    def _register_globals(self):
+        globals_map = {
+            "url_for": self.url_for,
+            "get_flash_messages": self.get_flash_messages,
+            "current_user": self.get_current_user,
+            "asset": self.asset,
+            "dump": self._dump_function,
+            "request": self.get_current_request,
+            "csrf_token": self.get_csrf_token,
+        }
 
-        env.filters["split"] = self._split_filter
-        env.filters["last"] = self._last_filter
-        env.filters["lower"] = self._lower_filter
-        env.filters["format_number"] = self._format_number_filter
-        env.filters["min"] = self._min_filter
-        env.filters["max"] = self._max_filter
-        env.filters["time"] = self._time_filter
-        env.filters["slice"] = self._slice_filter
+        for name, func in globals_map.items():
+            self.env.globals[name] = func
+
+    def _register_filters(self):
+        filters_map = {
+            "relation_display": self._relation_display_filter,
+            "date": self._date_filter,
+            "format_date": self._format_date_filter,
+            "time": self._time_filter,
+            "filesizeformat": self._filesize_format_filter,
+            "format_number": self._format_number_filter,
+            "min": self._min_filter,
+            "max": self._max_filter,
+            "split": self._split_filter,
+            "last": self._last_filter,
+            "lower": self._lower_filter,
+            "slice": self._slice_filter,
+            "json_encode": self._json_encode_filter,
+        }
+
+        for name, filter_func in filters_map.items():
+            self.env.filters[name] = filter_func
+
+    def render(self, template_name: str, context: dict = None) -> str:
+        if context is None:
+            context = {}
+
+        if "request" not in context:
+            request = self.get_current_request()
+            if request:
+                context["request"] = request
+
+        memory_collector = self._start_template_profiling(template_name)
+        start_time = time.time()
+
+        try:
+            template = self.env.get_template(template_name)
+            result = template.render(**context)
+
+            self._end_template_profiling(memory_collector, template_name, start_time)
+
+            return result
+
+        except (TemplateNotFound, TemplateSyntaxError, UndefinedError):
+            if memory_collector and hasattr(memory_collector, "end_template_measurement"):
+                memory_collector.end_template_measurement()
+
+            self.logger.error(f"Template error in {template_name}")
+            raise
+
+        except Exception as e:
+            if memory_collector and hasattr(memory_collector, "end_template_measurement"):
+                memory_collector.end_template_measurement()
+
+            self.logger.error(f"Unexpected template rendering error in {template_name}: {str(e)}")
+            raise
+
+    def _start_template_profiling(self, template_name: str):
+        try:
+            from framefox.core.debug.profiler.profiler import Profiler
+
+            profiler = Profiler()
+            if profiler.is_enabled():
+                memory_collector = profiler.get_collector("memory")
+                if memory_collector and hasattr(memory_collector, "start_template_measurement"):
+                    memory_collector.start_template_measurement()
+                    return memory_collector
+        except Exception:
+            pass
+        return None
+
+    def _end_template_profiling(self, memory_collector, template_name: str, start_time: float):
+        if not memory_collector:
+            return
+
+        try:
+            end_time = time.time()
+            render_time_ms = (end_time - start_time) * 1000
+
+            if hasattr(memory_collector, "end_template_measurement"):
+                template_memory = memory_collector.end_template_measurement()
+
+                if hasattr(memory_collector, "add_template_metrics"):
+                    memory_collector.add_template_metrics(template_memory, render_time_ms)
+        except Exception:
+            pass
 
     def get_csrf_token(self) -> str:
         try:
@@ -81,9 +152,7 @@ class TemplateRenderer:
 
             return csrf_token
         except Exception as e:
-            import logging
-
-            logging.getLogger("CSRF").error(f"Error generating CSRF token: {e}")
+            self.logger.error(f"Error generating CSRF token: {e}")
             return ""
 
     def url_for(self, name: str, **params) -> str:
@@ -91,133 +160,51 @@ class TemplateRenderer:
             router = self.container.get_by_name("Router")
             return str(router.url_path_for(name, **params))
         except Exception as e:
-            print(f"Error generating URL for route '{name}': {str(e)}")
+            self.logger.error(f"Error generating URL for route '{name}': {str(e)}")
             return "#"
 
     def get_current_request(self):
         try:
             return RequestStack.get_request()
-        except Exception as e:
-            print(f"Error retrieving current request: {str(e)}")
+        except Exception:
             return None
 
     def get_flash_messages(self):
-        session = self.container.get_by_name("Session")
-        flash_bag = session.get_flash_bag()
-        return flash_bag.get_for_template()
-
-    def render(self, template_name: str, context: dict = {}) -> str:
-        if "request" not in context:
-            request = self.get_current_request()
-            if request:
-                context["request"] = request
-
-        start_time = time.time()
-        
-        memory_collector = None
         try:
-            from framefox.core.debug.profiler.profiler import Profiler
-            profiler = Profiler()
-            if profiler.is_enabled():
-                memory_collector = profiler.get_collector("memory")
-                if memory_collector:
-                    if hasattr(memory_collector, 'start_template_measurement'):
-                        memory_collector.start_template_measurement()
-                        self.logging.debug(f"Started memory measurement for template: {template_name}")
+            session = self.container.get_by_name("Session")
+            flash_bag = session.get_flash_bag()
+            return flash_bag.get_for_template()
         except Exception as e:
-            self.logging.debug(f"Could not start memory measurement: {e}")
+            self.logger.error(f"Error retrieving flash messages: {e}")
+            return {}
 
+    def get_current_user(self):
         try:
-            template = self.env.get_template(template_name)
-            result = template.render(**context)
-            
-            end_time = time.time()
-            render_time_ms = (end_time - start_time) * 1000
-            
-            if memory_collector and hasattr(memory_collector, 'end_template_measurement'):
-                template_memory = memory_collector.end_template_measurement()
-                
-                if hasattr(memory_collector, 'add_template_metrics'):
-                    memory_collector.add_template_metrics(template_memory, render_time_ms)
-                    self.logging.debug(f"Template {template_name}: {template_memory:.2f}MB, {render_time_ms:.2f}ms")
-                
-            return result
-            
-        except Exception as e:
-            if memory_collector and hasattr(memory_collector, 'end_template_measurement'):
-                memory_collector.end_template_measurement()
-                
-            self.logging.error(f"Template rendering error: {str(e)}")
-            if self.settings.is_debug:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"An error occurred while rendering the template: {template_name}. Error: {str(e)}",
-                )
+            user_provider = self.container.get_by_name("UserProvider")
+            return user_provider.get_current_user()
+        except Exception:
+            return None
+
+    def asset(self, path: str, versioning: bool = True) -> str:
+        path = path.lstrip("/")
+        base_url = getattr(self.settings, "base_url", "")
+        asset_url = f"{base_url}/{path}"
+
+        if versioning:
+            file_path = os.path.join(self.public_path, path)
+            if os.path.exists(file_path):
+                timestamp = os.path.getmtime(file_path)
+                version = hashlib.md5(str(timestamp).encode()).hexdigest()[:8]
+                asset_url += f"?v={version}"
             else:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Internal Server Error: Please try again later.",
-                )
+                asset_url += f"?v={int(time.time())}"
 
-    def _max_filter(self, value, max_value=None):
-        try:
-            if max_value is None:
-                if isinstance(value, (list, tuple)) and value:
-                    return max(value)
-                return value
-            else:
-                return max(float(value), float(max_value))
-        except (ValueError, TypeError):
-            return value
+        return asset_url
 
-    def _min_filter(self, value, min_value=None):
-        try:
-            if min_value is None:
-                if isinstance(value, (list, tuple)) and value:
-                    return min(value)
-                return value
-            else:
-                return min(float(value), float(min_value))
-        except (ValueError, TypeError):
-            return value
+    def _dump_function(self, obj):
+        import pprint
 
-    def _split_filter(self, value, delimiter=","):
-        if not value:
-            return []
-        return value.split(delimiter)
-
-    def _last_filter(self, value):
-        if not value or not isinstance(value, (list, tuple)):
-            return ""
-        return value[-1] if value else ""
-
-    def _lower_filter(self, value):
-        if value is None:
-            return ""
-        return str(value).lower()
-
-    def _json_encode_filter(self, value):
-        try:
-            return json.dumps(value)
-        except TypeError:
-            return json.dumps(str(value))
-
-    def _filesize_format_filter(self, size):
-        if size is None:
-            return "0 B"
-
-        try:
-            size = float(size)
-        except (ValueError, TypeError):
-            return str(size)
-
-        for unit in ["B", "KB", "MB", "GB", "TB"]:
-            if size < 1024.0:
-                if unit == "B":
-                    return f"{int(size)} {unit}"
-                return f"{size:.2f} {unit}"
-            size /= 1024.0
-        return f"{size:.2f} PB"
+        return pprint.pformat(obj, depth=3)
 
     def _relation_display_filter(self, value):
         if value is None:
@@ -258,78 +245,22 @@ class TemplateRenderer:
 
         try:
             return value.strftime(format)
-        except:
+        except Exception:
             return str(value)
 
     def _format_date_filter(self, value, format="%d/%m/%Y %H:%M"):
         return self._date_filter(value, format)
-
-    def get_current_user(self):
-        try:
-            user_provider = self.container.get_by_name("UserProvider")
-            return user_provider.get_current_user()
-        except Exception as e:
-            print(f"Error retrieving current user: {str(e)}")
-            return None
-
-    def asset(self, path: str, versioning: bool = True) -> str:
-        path = path.lstrip("/")
-        base_url = self.settings.base_url if hasattr(self.settings, "base_url") else ""
-        asset_url = f"{base_url}/{path}"
-
-        if versioning:
-            file_path = os.path.join(self.public_path, path)
-            if os.path.exists(file_path):
-                timestamp = os.path.getmtime(file_path)
-                version = hashlib.md5(str(timestamp).encode()).hexdigest()[:8]
-                asset_url += f"?v={version}"
-            else:
-                import time
-
-                asset_url += f"?v={int(time.time())}"
-
-        return asset_url
-
-    def _dump_function(self, obj):
-        import pprint
-
-        return pprint.pformat(obj, depth=3)
-
-    def _format_number_filter(
-        self, value, decimal_places=2, decimal_separator=",", thousand_separator=" "
-    ):
-        if value is None:
-            return "0"
-
-        try:
-            value = float(value)
-        except (ValueError, TypeError):
-            return str(value)
-
-        format_string = "{:,.%df}" % decimal_places
-        formatted = format_string.format(value)
-
-        if thousand_separator != "," or decimal_separator != ".":
-            parts = formatted.split(".")
-            if len(parts) == 2:
-                formatted = (
-                    thousand_separator.join(parts[0].split(","))
-                    + decimal_separator
-                    + parts[1]
-                )
-            else:
-                formatted = thousand_separator.join(formatted.split(","))
-
-        return formatted
 
     def _time_filter(self, value, include_ms=True):
         try:
             value = float(value)
         except (TypeError, ValueError):
             return str(value) + " ms"
+
         seconds, milliseconds = divmod(value, 1000)
         minutes, seconds = divmod(seconds, 60)
         hours, minutes = divmod(minutes, 60)
+
         if hours > 0:
             if include_ms:
                 return f"{int(hours)}h {int(minutes)}min {int(seconds)}s {int(milliseconds)}ms"
@@ -345,6 +276,81 @@ class TemplateRenderer:
         else:
             return f"{int(milliseconds)} ms"
 
+    def _filesize_format_filter(self, size):
+        if size is None:
+            return "0 B"
+
+        try:
+            size = float(size)
+        except (ValueError, TypeError):
+            return str(size)
+
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
+            if size < 1024.0:
+                if unit == "B":
+                    return f"{int(size)} {unit}"
+                return f"{size:.2f} {unit}"
+            size /= 1024.0
+        return f"{size:.2f} PB"
+
+    def _format_number_filter(self, value, decimal_places=2, decimal_separator=",", thousand_separator=" "):
+        if value is None:
+            return "0"
+
+        try:
+            value = float(value)
+        except (ValueError, TypeError):
+            return str(value)
+
+        format_string = "{:,.%df}" % decimal_places
+        formatted = format_string.format(value)
+
+        if thousand_separator != "," or decimal_separator != ".":
+            parts = formatted.split(".")
+            if len(parts) == 2:
+                formatted = thousand_separator.join(parts[0].split(",")) + decimal_separator + parts[1]
+            else:
+                formatted = thousand_separator.join(formatted.split(","))
+
+        return formatted
+
+    def _min_filter(self, value, min_value=None):
+        try:
+            if min_value is None:
+                if isinstance(value, (list, tuple)) and value:
+                    return min(value)
+                return value
+            else:
+                return min(float(value), float(min_value))
+        except (ValueError, TypeError):
+            return value
+
+    def _max_filter(self, value, max_value=None):
+        try:
+            if max_value is None:
+                if isinstance(value, (list, tuple)) and value:
+                    return max(value)
+                return value
+            else:
+                return max(float(value), float(max_value))
+        except (ValueError, TypeError):
+            return value
+
+    def _split_filter(self, value, delimiter=","):
+        if not value:
+            return []
+        return str(value).split(delimiter)
+
+    def _last_filter(self, value):
+        if not value or not isinstance(value, (list, tuple)):
+            return ""
+        return value[-1] if value else ""
+
+    def _lower_filter(self, value):
+        if value is None:
+            return ""
+        return str(value).lower()
+
     def _slice_filter(self, value, start, length=None):
         try:
             if length:
@@ -352,3 +358,9 @@ class TemplateRenderer:
             return str(value)[start:]
         except (ValueError, TypeError):
             return value
+
+    def _json_encode_filter(self, value):
+        try:
+            return json.dumps(value)
+        except TypeError:
+            return json.dumps(str(value))

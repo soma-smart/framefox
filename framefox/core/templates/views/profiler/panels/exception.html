@@ -1,258 +1,673 @@
-<div class="profiler-panel">
-  <h2>Exception Details</h2>
+<div class="profiler-panel exception-panel">
+  {% if data.has_exception %} {% set exc = data.exception %}
 
-  {% if data.has_exception %} {% if data.is_python_exception %}
-  <div class="exception-summary python-exception">
-    <div class="exception-type-badge python">Python Exception</div>
-    <div class="exception-message">
-      {{ data.exception.class }}: {{ data.exception.message }}
-    </div>
-    <div class="exception-metadata">
-      <span
-        >In {{ data.exception.get('file', 'Unknown') }} line {{
-        data.exception.get('line', 'Unknown') }}</span
-      >
+  <div class="exception-header">
+    <h1 class="exception-title">
+      <span class="exception-badge">
+        {% if exc.get('is_framefox_exception', false) %} Framefox Exception {%
+        else %} System Exception {% endif %}
+      </span>
+      {{ exc.get('class', 'Unknown') }}
+    </h1>
+    <p class="exception-subtitle">
+      <span class="error-code">[{{ exc.get('code', 'UNKNOWN') }}]</span>
+      {{ exc.get('message', 'No message available') }}
+    </p>
+  </div>
+
+  <div class="panel-section">
+    <h2>🚨 Error Details</h2>
+    <div class="error-message-box {{ exc.get('category', 'general') }}">
+      <strong>{{ exc.get('class', 'Unknown') }}:</strong> {{ exc.get('message',
+      'No message available') }}
     </div>
   </div>
 
-  <div class="stack-trace">
-    <h3>Stack Trace</h3>
-    <pre>{{ data.exception.trace }}</pre>
-  </div>
+  {% if exc.get('context') and exc.context|length > 0 %}
+  <div class="panel-section">
+    <h2>💡 Context & Solutions</h2>
 
-  {% elif data.is_http_error %}
-  <div class="exception-summary http-error">
-    <div class="exception-type-badge http">HTTP Error</div>
-    <div class="exception-message">
-      {{ data.exception.class }}: {{ data.exception.message }}
+    {% if exc.context.get('suggestion') %}
+    <div class="solutions-section">
+      <h3>Quick Solution</h3>
+      <ul>
+        <li>{{ exc.context.suggestion }}</li>
+      </ul>
     </div>
-    <div class="exception-metadata">
-      <span>{{ data.exception.method }} {{ data.exception.path }}</span>
-      {% if data.exception.client_ip %}
-      <span class="client-info">from {{ data.exception.client_ip }}</span>
-      {% endif %}
+    {% endif %} {% if exc.context.get('fix_command') %}
+    <div class="solutions-section">
+      <h3>Fix Command</h3>
+      <ul>
+        <li>Run this command: <code>{{ exc.context.fix_command }}</code></li>
+      </ul>
     </div>
-  </div>
+    {% endif %}
 
-  <div class="http-error-details">
-    <h3>Request Details</h3>
-    <table class="error-details-table">
+    <table class="panel-table">
+      {% if exc.context.get('table_name') %}
       <tr>
-        <th>Status Code</th>
+        <th>Missing Table</th>
+        <td><code>{{ exc.context.table_name }}</code></td>
+      </tr>
+      {% endif %} {% if exc.context.get('constraint') %}
+      <tr>
+        <th>Database Constraint</th>
+        <td><code>{{ exc.context.constraint }}</code></td>
+      </tr>
+      {% endif %} {% if exc.context.get('field') %}
+      <tr>
+        <th>Invalid Field</th>
         <td>
-          <span class="status-code-badge status-{{ data.status_code }}"
-            >{{ data.status_code }}</span
+          <code>{{ exc.context.field }}</code>
+          {% if exc.context.get('validation_message') %}
+          <br /><small>{{ exc.context.validation_message }}</small>
+          {% endif %} {% if exc.context.get('invalid_value') %}
+          <br /><small
+            ><strong>Value:</strong> {{ exc.context.invalid_value }}</small
           >
+          {% endif %}
         </td>
       </tr>
+      {% endif %} {% if exc.context.get('template_name') %}
       <tr>
-        <th>Method</th>
-        <td>{{ data.exception.method }}</td>
+        <th>Template</th>
+        <td><code>{{ exc.context.template_name }}</code></td>
       </tr>
+      {% endif %} {% if exc.context.get('error_details') %}
       <tr>
-        <th>URL</th>
-        <td>{{ data.exception.url }}</td>
+        <th>Error Details</th>
+        <td>{{ exc.context.error_details }}</td>
       </tr>
+      {% endif %} {% if exc.context.get('resource') %}
       <tr>
-        <th>Path</th>
-        <td>{{ data.exception.path }}</td>
+        <th>Resource</th>
+        <td>
+          <code>{{ exc.context.resource }}</code>
+          {% if exc.context.get('action') %}
+          <br /><small><strong>Action:</strong> {{ exc.context.action }}</small>
+          {% endif %}
+        </td>
       </tr>
-      {% if data.exception.user_agent %}
+      {% endif %} {% if exc.context.get('token_type') %}
       <tr>
-        <th>User Agent</th>
-        <td class="user-agent">{{ data.exception.user_agent }}</td>
+        <th>Token Type</th>
+        <td><code>{{ exc.context.token_type }}</code></td>
       </tr>
-      {% endif %} {% if data.exception.referer %}
+      {% endif %} {% if exc.context.get('filename') %}
       <tr>
-        <th>Referer</th>
-        <td>{{ data.exception.referer }}</td>
+        <th>File</th>
+        <td>
+          <code>{{ exc.context.filename }}</code>
+          {% if exc.context.get('upload_reason') %}
+          <br /><small
+            ><strong>Reason:</strong> {{ exc.context.upload_reason }}</small
+          >
+          {% endif %} {% if exc.context.get('actual_size') and
+          exc.context.get('max_size') %}
+          <br /><small
+            ><strong>Size:</strong> {{ exc.context.actual_size }} bytes (max: {{
+            exc.context.max_size }} bytes)</small
+          >
+          {% endif %}
+        </td>
+      </tr>
+      {% endif %} {% if exc.context.get('operation') %}
+      <tr>
+        <th>Operation</th>
+        <td>
+          <code>{{ exc.context.operation }}</code>
+          {% if exc.context.get('timeout_seconds') %}
+          <br /><small
+            ><strong>Timeout:</strong> {{ exc.context.timeout_seconds }}
+            seconds</small
+          >
+          {% endif %}
+        </td>
+      </tr>
+      {% endif %} {% if exc.context.get('rate_limit') %}
+      <tr>
+        <th>Rate Limit</th>
+        <td>
+          {{ exc.context.rate_limit }} requests {% if
+          exc.context.get('time_window') %} per {{ exc.context.time_window }} {%
+          endif %}
+        </td>
+      </tr>
+      {% endif %} {% if exc.context.get('status_code') %}
+      <tr>
+        <th>HTTP Status</th>
+        <td><span class="status-code">{{ exc.context.status_code }}</span></td>
+      </tr>
+      {% endif %} {% if exc.context.get('error_count') %}
+      <tr>
+        <th>Total Errors</th>
+        <td><strong>{{ exc.context.error_count }}</strong></td>
       </tr>
       {% endif %}
-      <tr>
-        <th>Client IP</th>
-        <td>{{ data.exception.client_ip }}</td>
-      </tr>
     </table>
-  </div>
 
-  <div class="error-suggestions">
-    <h3>💡 Possible Solutions</h3>
-    {% if data.status_code == 404 %}
-    <ul>
-      <li>Check if the route is properly defined in your controller</li>
-      <li>Verify the URL pattern matches your route decorator</li>
-      <li>Ensure the controller is registered and discoverable</li>
-      <li>Check for typos in the URL path</li>
-    </ul>
-    {% elif data.status_code == 500 %}
-    <ul>
-      <li>Check application logs for detailed error information</li>
-      <li>Verify database connectivity if applicable</li>
-      <li>Check for missing dependencies or configuration</li>
-      <li>Review recent code changes that might cause issues</li>
-    </ul>
-    {% elif data.status_code == 405 %}
-    <ul>
-      <li>
-        Check if the HTTP method (GET, POST, etc.) is allowed for this route
-      </li>
-      <li>Verify the route decorator includes the correct methods</li>
-      <li>Ensure the form method matches the route configuration</li>
-    </ul>
+    {% if exc.context.get('validation_errors') %}
+    <div class="info-grid">
+      <div class="panel-section">
+        <h3>🔍 Validation Errors</h3>
+        <table class="panel-table">
+          {% for field, errors in exc.context.validation_errors.items() %}
+          <tr>
+            <th>{{ field }}</th>
+            <td>
+              <ul style="margin: 0; padding-left: 20px">
+                {% for error in errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
     {% endif %}
   </div>
+  {% endif %}
 
+  <div class="info-grid">
+    <div class="panel-section">
+      <h3>🌐 Location Information</h3>
+      <table class="panel-table">
+        <tr>
+          <th>File</th>
+          <td>
+            <code>
+              {% if exc.get('file') and exc.file != 'Unknown' %} {% set
+              file_path = exc.file %} {% if '/' in file_path %} {{
+              file_path.split('/')[-1] }} {% else %} {{ file_path }} {% endif %}
+              {% else %} Unknown {% endif %}
+            </code>
+          </td>
+        </tr>
+        {% if exc.get('line') and exc.line != 0 %}
+        <tr>
+          <th>Line</th>
+          <td><code>{{ exc.line }}</code></td>
+        </tr>
+        {% endif %}
+        <tr>
+          <th>Exception Type</th>
+          <td>
+            {% if exc.get('is_framefox_exception', false) %}
+            <span class="badge framefox">Framefox Exception</span>
+            {% else %}
+            <span class="badge system">System Exception</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Category</th>
+          <td>
+            <span class="category-badge {{ exc.get('category', 'general') }}"
+              >{{ exc.get('category', 'general').title() }}</span
+            >
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  {% if data.get('is_python_exception', false) and exc.get('trace') %}
+  <div class="panel-section">
+    <div class="stacktrace-header">
+      <h3>🔍 Stack Trace</h3>
+      <button class="copy-button" onclick="copyStackTrace()" id="copyBtn">
+        <span id="copyIcon">📋</span>
+        <span id="copyText">Copy</span>
+      </button>
+    </div>
+    <pre class="stacktrace-container" id="stacktrace">{{ exc.trace }}</pre>
+  </div>
+  {% endif %} {% if exc.get('original_class') and exc.original_class !=
+  exc.get('class') %}
+  <div class="info-grid">
+    <div class="panel-section">
+      <h3>🔄 Original Exception</h3>
+      <table class="panel-table">
+        <tr>
+          <th>Original Type</th>
+          <td><code>{{ exc.original_class }}</code></td>
+        </tr>
+        <tr>
+          <th>Original Message</th>
+          <td>{{ exc.get('original_message', 'No original message') }}</td>
+        </tr>
+        <tr>
+          <th>Transformed To</th>
+          <td><code>{{ exc.get('class', 'Unknown') }}</code></td>
+        </tr>
+      </table>
+    </div>
+  </div>
   {% endif %} {% else %}
-  <p class="no-exception">✅ No exception was thrown during this request.</p>
+  <div class="no-exception">
+    <div style="text-align: center; padding: 40px; color: #28a745">
+      <i
+        class="fas fa-check-circle"
+        style="font-size: 3em; margin-bottom: 15px; display: block"
+      ></i>
+      <h2>✅ No Exceptions</h2>
+      <p>No exceptions occurred during this request.</p>
+    </div>
+  </div>
   {% endif %}
 </div>
 
 <style>
-  .exception-summary {
-    background-color: #f9f9f9;
-    border-left: 4px solid #e74c3c;
-    padding: 15px;
+  .exception-panel {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+  }
+
+  .exception-header {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
     margin-bottom: 20px;
     position: relative;
+    overflow: hidden;
   }
 
-  .exception-summary.http-error {
-    border-left-color: #f39c12;
-    background-color: #fef9e7;
+  .exception-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  .exception-type-badge {
-    position: absolute;
-    top: -8px;
-    right: 15px;
+  .exception-subtitle {
+    opacity: 0.9;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .exception-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .error-code {
+    background-color: rgba(255, 255, 255, 0.2);
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+
+  .panel-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .panel-section h2 {
+    color: #444;
+    border-bottom: 2px solid #f4bf5f;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    margin-top: 0;
+  }
+
+  .panel-section h3 {
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 18px;
+  }
+
+  .panel-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .panel-table th,
+  .panel-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .panel-table th {
+    background-color: #f0f0f0;
+    width: 30%;
+    font-weight: bold;
+  }
+
+  .error-message-box {
+    padding: 15px;
+    border-radius: 6px;
+    margin: 10px 0;
+    border-left: 4px solid;
+    word-wrap: break-word;
+  }
+
+  .error-message-box.database {
+    background: #fff3cd;
+    border-left-color: #856404;
+    color: #856404;
+  }
+
+  .error-message-box.authentication {
+    background: #f8d7da;
+    border-left-color: #721c24;
+    color: #721c24;
+  }
+
+  .error-message-box.validation {
+    background: #d1ecf1;
+    border-left-color: #0c5460;
+    color: #0c5460;
+  }
+
+  .error-message-box.template {
+    background: #e2e3e5;
+    border-left-color: #6c757d;
+    color: #6c757d;
+  }
+
+  .error-message-box.http {
+    background: #f1c0c7;
+    border-left-color: #a94442;
+    color: #a94442;
+  }
+
+  .error-message-box.file {
+    background: #ffeaa7;
+    border-left-color: #d68910;
+    color: #d68910;
+  }
+
+  .error-message-box.service {
+    background: #fadbd8;
+    border-left-color: #cb4335;
+    color: #cb4335;
+  }
+
+  .error-message-box.configuration {
+    background: #d5dbdb;
+    border-left-color: #566573;
+    color: #566573;
+  }
+
+  .error-message-box.general {
+    background: #f8f9fa;
+    border-left-color: #6c757d;
+    color: #6c757d;
+  }
+
+  .solutions-section {
+    background-color: #e8f5e8;
+    border: 1px solid #c3e6c3;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .solutions-section h3 {
+    margin-top: 0;
+    color: #2d5a2d;
+    border-bottom: 1px solid #c3e6c3;
+  }
+
+  .solutions-section ul {
+    margin-bottom: 0;
+  }
+
+  .solutions-section li {
+    margin-bottom: 8px;
+    color: #2d5a2d;
+    line-height: 1.5;
+  }
+
+  .solutions-section code {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  .status-code {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+  }
+
+  .badge.framefox {
+    background: #28a745;
+    color: white;
+  }
+
+  .badge.system {
+    background: #dc3545;
+    color: white;
+  }
+
+  .category-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
     font-weight: bold;
     text-transform: uppercase;
   }
 
-  .exception-type-badge.python {
-    background-color: #e74c3c;
-    color: white;
+  .category-badge.database {
+    background: #fff3cd;
+    color: #856404;
   }
 
-  .exception-type-badge.http {
-    background-color: #f39c12;
-    color: white;
+  .category-badge.authentication {
+    background: #f8d7da;
+    color: #721c24;
   }
 
-  .exception-message {
-    font-size: 18px;
-    color: #e74c3c;
-    font-weight: bold;
-    margin-bottom: 10px;
+  .category-badge.validation {
+    background: #d1ecf1;
+    color: #0c5460;
   }
 
-  .http-error .exception-message {
+  .category-badge.template {
+    background: #e2e3e5;
+    color: #6c757d;
+  }
+
+  .category-badge.http {
+    background: #f1c0c7;
+    color: #a94442;
+  }
+
+  .category-badge.file {
+    background: #ffeaa7;
     color: #d68910;
   }
 
-  .exception-metadata {
-    color: #666;
-    font-size: 14px;
+  .category-badge.service {
+    background: #fadbd8;
+    color: #cb4335;
   }
 
-  .client-info {
-    margin-left: 10px;
-    font-style: italic;
+  .category-badge.configuration {
+    background: #d5dbdb;
+    color: #566573;
   }
 
-  .stack-trace {
-    background-color: #f5f5f5;
-    padding: 15px;
-    border-radius: 4px;
-    margin-bottom: 20px;
+  .category-badge.general {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
   }
 
-  .stack-trace pre {
-    margin: 0;
-    white-space: pre-wrap;
-    font-family: monospace;
-    font-size: 13px;
-    line-height: 1.5;
+  .stacktrace-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .copy-button {
+    background-color: #f4bf5f;
     color: #333;
-  }
-
-  .http-error-details {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-  }
-
-  .error-details-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .error-details-table th,
-  .error-details-table td {
+    border: none;
     padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid #e9ecef;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 
-  .error-details-table th {
-    background-color: #f1f3f4;
-    font-weight: bold;
-    width: 150px;
+  .copy-button:hover {
+    background-color: #e5a94d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  .status-code-badge {
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-weight: bold;
+  .copy-button.copied {
+    background-color: #28a745;
     color: white;
   }
 
-  .status-code-badge.status-404 {
-    background-color: #f39c12;
-  }
-
-  .status-code-badge.status-500 {
-    background-color: #e74c3c;
-  }
-
-  .user-agent {
-    font-family: monospace;
-    font-size: 12px;
-    word-break: break-all;
-  }
-
-  .error-suggestions {
-    background-color: #e8f5e8;
-    border: 1px solid #c3e6c3;
-    border-radius: 4px;
-    padding: 15px;
-  }
-
-  .error-suggestions h3 {
-    margin-top: 0;
-    color: #2d5a2d;
-  }
-
-  .error-suggestions ul {
-    margin-bottom: 0;
-  }
-
-  .error-suggestions li {
-    margin-bottom: 5px;
-    color: #2d5a2d;
-  }
-
-  .no-exception {
-    color: #27ae60;
-    font-weight: bold;
-    text-align: center;
+  .stacktrace-container {
+    background-color: #2d3748;
+    color: #e2e8f0;
     padding: 20px;
-    background-color: #e8f5e8;
-    border: 1px solid #c3e6c3;
-    border-radius: 4px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    border: 1px solid #4a5568;
+    margin: 0;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .copy-button:focus {
+    outline: 2px solid #f4bf5f;
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgba(244, 191, 95, 0.3);
+    color: #333;
+  }
+
+  .stacktrace-container .highlight {
+    background-color: rgba(255, 255, 0, 0.2);
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .exception-panel {
+      font-size: 14px;
+    }
+
+    .exception-title {
+      font-size: 1.3em;
+    }
+
+    .panel-section {
+      padding: 15px;
+    }
+
+    .stacktrace-container {
+      font-size: 0.8em;
+      padding: 15px;
+    }
   }
 </style>
+
+<script>
+  function copyStackTrace() {
+    const stacktrace = document.getElementById("stacktrace");
+    if (!stacktrace) return;
+
+    const copyBtn = document.getElementById("copyBtn");
+    const copyIcon = document.getElementById("copyIcon");
+    const copyText = document.getElementById("copyText");
+
+    navigator.clipboard
+      .writeText(stacktrace.textContent)
+      .then(() => {
+        copyBtn.classList.add("copied");
+        copyIcon.textContent = "✓";
+        copyText.textContent = "Copied!";
+
+        setTimeout(() => {
+          copyBtn.classList.remove("copied");
+          copyIcon.textContent = "📋";
+          copyText.textContent = "Copy";
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error("Could not copy text: ", err);
+
+        const range = document.createRange();
+        range.selectNode(stacktrace);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+
+        copyText.textContent = "Select & Copy";
+        setTimeout(() => {
+          copyText.textContent = "Copy";
+        }, 2000);
+      });
+  }
+</script>
