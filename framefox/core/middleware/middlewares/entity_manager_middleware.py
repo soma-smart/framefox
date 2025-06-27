@@ -5,7 +5,7 @@ from framefox.core.orm.entity_manager import EntityManager
 """
 Framefox Framework developed by SOMA
 Github: https://github.com/soma-smart/framefox
----------------------------- 
+----------------------------
 Author: BOUMAZA Rayen
 Github: https://github.com/RayenBou
 """
@@ -39,7 +39,7 @@ class EntityManagerMiddleware:
 
             if response and 200 <= response.get("status", 500) < 300:
                 entity_manager.commit()
-        except Exception as e:
+        except Exception:
 
             entity_manager.rollback()
             raise

@@ -1,4 +1,5 @@
 from fastapi.middleware.cors import CORSMiddleware
+
 from framefox.core.config.settings import Settings
 
 """
