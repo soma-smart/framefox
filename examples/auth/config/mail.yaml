@@ -1,0 +1,8 @@
+mail:
+  url: "${MAIL_URL}"
+  templates_dir: "templates/emails"
+  queue:
+    enabled: true
+    max_size: 100
+    retry_interval: 300
+    max_retries: 3
