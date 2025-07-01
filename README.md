@@ -393,3 +393,12 @@ Your feedback shapes Framefox's future! Contact us on LinkedIn to:
 
 This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
 
+## Star History
+
+<a href="https://www.star-history.com/#soma-smart/framefox&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=soma-smart/framefox&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=soma-smart/framefox&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=soma-smart/framefox&type=Date" />
+ </picture>
+</a>
