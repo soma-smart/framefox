@@ -10,7 +10,10 @@ from framefox.core.debug.exception.auth_exception import (
     InvalidTokenError,
     TokenExpiredError,
 )
-from framefox.core.debug.exception.base_exception import ConfigurationException, FramefoxException
+from framefox.core.debug.exception.base_exception import (
+    ConfigurationException,
+    FramefoxException,
+)
 from framefox.core.debug.exception.database_exception import (
     DatabaseConnectionError,
     DatabaseException,
@@ -35,9 +38,22 @@ from framefox.core.debug.exception.http_exception import (
     UnauthorizedError,
     UnprocessableEntityError,
 )
-from framefox.core.debug.exception.service_exception import ExternalServiceError, RateLimitExceededError, ServiceException, TimeoutError
-from framefox.core.debug.exception.template_exception import TemplateException, TemplateNotFoundError, TemplateRenderError
-from framefox.core.debug.exception.validation_exception import MultipleValidationErrors, ValidationError, ValidationException
+from framefox.core.debug.exception.service_exception import (
+    ExternalServiceError,
+    RateLimitExceededError,
+    ServiceException,
+    TimeoutError,
+)
+from framefox.core.debug.exception.template_exception import (
+    TemplateException,
+    TemplateNotFoundError,
+    TemplateRenderError,
+)
+from framefox.core.debug.exception.validation_exception import (
+    MultipleValidationErrors,
+    ValidationError,
+    ValidationException,
+)
 from framefox.core.debug.profiler.collector.data_collector import DataCollector
 
 """
@@ -147,11 +163,20 @@ class ExceptionDataCollector(DataCollector):
             return text
 
         text = re.sub(r"\$2[aby]\$\d+\$[A-Za-z0-9./]{53}", "[HASHED_PASSWORD]", text)
-        text = re.sub(r"\$argon2[id]\$[^,]*,[^,]*,[^,]*\$[A-Za-z0-9+/=]*", "[HASHED_PASSWORD]", text)
+        text = re.sub(
+            r"\$argon2[id]\$[^,]*,[^,]*,[^,]*\$[A-Za-z0-9+/=]*",
+            "[HASHED_PASSWORD]",
+            text,
+        )
         text = re.sub(r"\$scrypt\$[^$]*\$[^$]*\$[A-Za-z0-9+/=]*", "[HASHED_PASSWORD]", text)
         text = re.sub(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "[EMAIL]", text)
         text = re.sub(r"\[parameters: \([^)]*\)\]", "[parameters: [SANITIZED]]", text)
-        text = re.sub(r'(api[_-]?key|token|secret)["\s]*[:=]["\s]*[A-Za-z0-9+/=]{10,}', r"\1: [REDACTED]", text, flags=re.IGNORECASE)
+        text = re.sub(
+            r'(api[_-]?key|token|secret)["\s]*[:=]["\s]*[A-Za-z0-9+/=]{10,}',
+            r"\1: [REDACTED]",
+            text,
+            flags=re.IGNORECASE,
+        )
 
         return text
 
@@ -160,7 +185,15 @@ class ExceptionDataCollector(DataCollector):
         lines = full_traceback.split("\n")
 
         filtered_lines = []
-        skip_patterns = ["/site-packages/", "/lib/python", "/starlette/", "/fastapi/", "/uvicorn/", "/middleware/base.py", "/routing.py"]
+        skip_patterns = [
+            "/site-packages/",
+            "/lib/python",
+            "/starlette/",
+            "/fastapi/",
+            "/uvicorn/",
+            "/middleware/base.py",
+            "/routing.py",
+        ]
 
         for line in lines:
             if line.strip().startswith(("Traceback", "sqlalchemy.exc.", "sqlite3.")):
@@ -207,17 +240,50 @@ class ExceptionDataCollector(DataCollector):
                 }
             )
         elif isinstance(exc, DatabaseIntegrityError):
-            context.update({"constraint": exc.constraint, "suggestion": "Check for duplicate values or constraint violations"})
+            context.update(
+                {
+                    "constraint": exc.constraint,
+                    "suggestion": "Check for duplicate values or constraint violations",
+                }
+            )
         elif isinstance(exc, ValidationError):
-            context.update({"field": exc.field, "validation_message": exc.validation_message, "invalid_value": exc.value})
+            context.update(
+                {
+                    "field": exc.field,
+                    "validation_message": exc.validation_message,
+                    "invalid_value": exc.value,
+                }
+            )
         elif isinstance(exc, MultipleValidationErrors):
-            context.update({"validation_errors": exc.errors, "error_count": sum(len(field_errors) for field_errors in exc.errors.values())})
+            context.update(
+                {
+                    "validation_errors": exc.errors,
+                    "error_count": sum(len(field_errors) for field_errors in exc.errors.values()),
+                }
+            )
         elif isinstance(exc, AuthorizationError):
-            context.update({"resource": exc.resource, "action": exc.action, "suggestion": "Check user permissions and roles"})
+            context.update(
+                {
+                    "resource": exc.resource,
+                    "action": exc.action,
+                    "suggestion": "Check user permissions and roles",
+                }
+            )
         elif isinstance(exc, TokenExpiredError):
-            context.update({"token_type": exc.token_type, "suggestion": "Please log in again to refresh your session"})
+            context.update(
+                {
+                    "token_type": exc.token_type,
+                    "suggestion": "Please log in again to refresh your session",
+                }
+            )
         elif isinstance(exc, FileUploadError):
-            context.update({"filename": exc.filename, "upload_reason": exc.reason, "suggestion": "Check file format and size requirements"})
+            context.update(
+                {
+                    "filename": exc.filename,
+                    "upload_reason": exc.reason,
+                    "suggestion": "Check file format and size requirements",
+                }
+            )
         elif isinstance(exc, FileSizeError):
             context.update(
                 {
@@ -236,9 +302,20 @@ class ExceptionDataCollector(DataCollector):
                 }
             )
         elif isinstance(exc, RateLimitExceededError):
-            context.update({"rate_limit": exc.limit, "time_window": exc.window, "suggestion": "Wait before making more requests"})
+            context.update(
+                {
+                    "rate_limit": exc.limit,
+                    "time_window": exc.window,
+                    "suggestion": "Wait before making more requests",
+                }
+            )
         elif isinstance(exc, TemplateNotFoundError):
-            context.update({"template_name": exc.template_name, "suggestion": f"Create template file: {exc.template_name}"})
+            context.update(
+                {
+                    "template_name": exc.template_name,
+                    "suggestion": f"Create template file: {exc.template_name}",
+                }
+            )
         elif isinstance(exc, TemplateRenderError):
             context.update(
                 {
@@ -264,13 +341,13 @@ class ExceptionDataCollector(DataCollector):
 
         self.exception = {
             "class": transformed_exception.__class__.__name__,
-            "message": transformed_exception.message if hasattr(transformed_exception, "message") else str(transformed_exception),
+            "message": (transformed_exception.message if hasattr(transformed_exception, "message") else str(transformed_exception)),
             "original_class": exception.__class__.__name__,
             "original_message": str(exception),
             "code": getattr(transformed_exception, "error_code", "UNKNOWN"),
             "trace": sanitized_traceback,
             "file": str(exception_file) if exception_file else "Unknown",
-            "line": int(exception_line) if isinstance(exception_line, (int, str)) and str(exception_line).isdigit() else 0,
+            "line": (int(exception_line) if isinstance(exception_line, (int, str)) and str(exception_line).isdigit() else 0),
             "category": exception_category,
             "is_framefox_exception": isinstance(transformed_exception, FramefoxException),
             "context": exception_context or {},
@@ -307,7 +384,10 @@ class ExceptionDataCollector(DataCollector):
                 "line": 0,
                 "category": "http",
                 "is_framefox_exception": False,
-                "context": {"status_code": status_code, "suggestion": "Check the request URL and parameters"},
+                "context": {
+                    "status_code": status_code,
+                    "suggestion": "Check the request URL and parameters",
+                },
             }
 
     def _get_exception_file(self, exception):

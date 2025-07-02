@@ -58,12 +58,26 @@ class SQLDataCollector(DataCollector):
                         query_info = self._parse_sql_message(message, record)
                         if query_info:
                             self.collector.add_query(
-                                query_info["query"], timestamp, query_info.get("parameters"), query_info.get("duration")
+                                query_info["query"],
+                                timestamp,
+                                query_info.get("parameters"),
+                                query_info.get("duration"),
                             )
 
             def _is_sql_query(self, message):
                 """Check if the message is a SQL query."""
-                sql_keywords = ["SELECT", "INSERT", "UPDATE", "DELETE", "BEGIN", "COMMIT", "ROLLBACK", "CREATE", "ALTER", "DROP"]
+                sql_keywords = [
+                    "SELECT",
+                    "INSERT",
+                    "UPDATE",
+                    "DELETE",
+                    "BEGIN",
+                    "COMMIT",
+                    "ROLLBACK",
+                    "CREATE",
+                    "ALTER",
+                    "DROP",
+                ]
                 message_upper = message.upper()
                 return any(keyword in message_upper for keyword in sql_keywords)
 
@@ -87,13 +101,20 @@ class SQLDataCollector(DataCollector):
                         if duration_match:
                             duration = float(duration_match.group(1)) * 1000
 
-                    return {"query": query.strip(), "parameters": parameters, "duration": duration}
+                    return {
+                        "query": query.strip(),
+                        "parameters": parameters,
+                        "duration": duration,
+                    }
                 except Exception:
                     return None
 
         profiler_handler = ProfilerSQLHandler(self)
 
-        sql_loggers = [logging.getLogger("sqlalchemy.engine.Engine"), logging.getLogger("sqlmodel")]
+        sql_loggers = [
+            logging.getLogger("sqlalchemy.engine.Engine"),
+            logging.getLogger("sqlmodel"),
+        ]
 
         for logger in sql_loggers:
             logger.addHandler(profiler_handler)

@@ -60,7 +60,14 @@ class InvalidFormatError(ValidationException):
 class ValueRangeError(ValidationException):
     """Raised when value is outside allowed range"""
 
-    def __init__(self, field: str, value: Any, min_val: Any = None, max_val: Any = None, original_error=None):
+    def __init__(
+        self,
+        field: str,
+        value: Any,
+        min_val: Any = None,
+        max_val: Any = None,
+        original_error=None,
+    ):
         self.field = field
         self.value = value
         self.min_val = min_val

@@ -12,11 +12,22 @@ from fastapi import Request, Response
 
 from framefox.core.config.settings import Settings
 from framefox.core.debug.profiler.collector.data_collector import DataCollector
-from framefox.core.debug.profiler.collector.exception_data_collector import ExceptionDataCollector
+from framefox.core.debug.profiler.collector.exception_data_collector import (
+    ExceptionDataCollector,
+)
 from framefox.core.debug.profiler.collector.log_data_collector import LogDataCollector
-from framefox.core.debug.profiler.collector.memory_data_collector import MemoryDataCollector
-from framefox.core.debug.profiler.collector.request_data_collector import RequestDataCollector
-from framefox.core.debug.profiler.collector.route_data_collector import RouteDataCollector
+from framefox.core.debug.profiler.collector.memory_data_collector import (
+    MemoryDataCollector,
+)
+from framefox.core.debug.profiler.collector.request_data_collector import (
+    RequestDataCollector,
+)
+from framefox.core.debug.profiler.collector.route_data_collector import (
+    RouteDataCollector,
+)
+from framefox.core.debug.profiler.collector.sentry_data_collector import (
+    SentryDataCollector,
+)
 from framefox.core.debug.profiler.collector.sql_data_collector import SQLDataCollector
 from framefox.core.debug.profiler.collector.time_data_collector import TimeDataCollector
 from framefox.core.debug.profiler.collector.user_data_collector import UserDataCollector
@@ -91,6 +102,7 @@ class Profiler:
         self.register_collector(ExceptionDataCollector())
         self.register_collector(LogDataCollector())
         self.register_collector(UserDataCollector())
+        self.register_collector(SentryDataCollector())
 
         self._setup_storage_directory()
         self._cleanup_old_profiles()
@@ -344,7 +356,11 @@ class Profiler:
                     collector.collect(request, fake_response)
 
                 elif name == "time":
-                    start_time = getattr(request.state, "request_start_time", datetime.datetime.now().timestamp())
+                    start_time = getattr(
+                        request.state,
+                        "request_start_time",
+                        datetime.datetime.now().timestamp(),
+                    )
                     duration = datetime.datetime.now().timestamp() - start_time
                     collector.duration = duration * 1000
                     collector.collect(request, None)
