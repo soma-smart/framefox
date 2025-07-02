@@ -29,7 +29,14 @@ class WebSocket:
         handlers (Optional[List], optional): List of handler instances for connection, message, and disconnection events. Defaults to None.
     """
 
-    def __init__(self, path: str, name: str, room: Optional[str] = None, auto_manage: bool = True, handlers: Optional[List] = None):
+    def __init__(
+        self,
+        path: str,
+        name: str,
+        room: Optional[str] = None,
+        auto_manage: bool = True,
+        handlers: Optional[List] = None,
+    ):
         self.path = path
         self.name = name
         self.room = room
@@ -63,7 +70,11 @@ class WebSocket:
 
             params = [
                 inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
-                inspect.Parameter("websocket", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=FastAPIWebSocket),
+                inspect.Parameter(
+                    "websocket",
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    annotation=FastAPIWebSocket,
+                ),
             ]
             wrapper.__signature__ = inspect.Signature(params)
 
@@ -83,7 +94,11 @@ class WebSocket:
             if param_name == "self":
                 new_params.append(param)
                 break
-        websocket_param = inspect.Parameter("websocket", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=FastAPIWebSocket)
+        websocket_param = inspect.Parameter(
+            "websocket",
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            annotation=FastAPIWebSocket,
+        )
         new_params.append(websocket_param)
         return inspect.Signature(new_params)
 
