@@ -3,6 +3,7 @@ import logging.config
 from pathlib import Path
 
 from framefox.core.config.settings import Settings
+from framefox.core.logging.formatter.clean_file_formatter import CleanFileFormatter
 from framefox.core.logging.formatter.colored_sql_formatter import ColoredSQLFormatter
 from framefox.core.logging.formatter.sqlmodel_formatter import SQLModelFormatter
 
@@ -29,6 +30,15 @@ class Logger:
         self.settings = Settings()
         self.configure_logging()
         self.logger = logging.getLogger("Application")
+        if self.settings.sentry_enabled:
+            try:
+                from framefox.core.debug.sentry.sentry_manager import SentryManager
+
+                self.sentry_manager = SentryManager()
+            except ImportError:
+                pass
+        else:
+            self.sentry_manager = None
 
     def configure_logging(self):
         """Configure logging based on application settings and debug mode"""
@@ -99,7 +109,8 @@ class Logger:
             },
         }
 
-        file_formatter = {
+        clean_file_formatter = {
+            "()": CleanFileFormatter,
             "format": "[%(levelname)s][%(asctime)s][%(name)s] %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         }
@@ -123,7 +134,7 @@ class Logger:
                 "colored_server": color_formatter_server,
                 "colored_sql": color_formatter_sql,
                 "colored_exception": color_formatter_exception,
-                "file": file_formatter,
+                "clean_file": clean_file_formatter,
                 "file_sql": file_sql_formatter,
             },
             "handlers": {
@@ -142,7 +153,6 @@ class Logger:
                     "formatter": "colored_sql",
                     "level": "INFO",
                 },
-                # ✅ HANDLER SPÉCIAL POUR LES EXCEPTIONS
                 "console_exception": {
                     "class": "logging.StreamHandler",
                     "formatter": "colored_exception",
@@ -150,7 +160,7 @@ class Logger:
                 },
                 "app_file": {
                     "class": "logging.handlers.RotatingFileHandler",
-                    "formatter": "file_sql",
+                    "formatter": "clean_file",
                     "level": "INFO",
                     "filename": app_log_file,
                     "maxBytes": max_bytes,
@@ -264,6 +274,21 @@ class Logger:
                     "propagate": False,
                 },
                 "FileNotFoundError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "EnvironmentVariableNotFoundError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "ConfigurationFileNotFoundError": {
+                    "handlers": ["console_exception", "app_file"],
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "InvalidConfigurationError": {
                     "handlers": ["console_exception", "app_file"],
                     "level": "ERROR",
                     "propagate": False,
