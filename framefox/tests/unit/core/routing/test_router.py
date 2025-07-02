@@ -63,8 +63,6 @@ class TestRouter:
         assert router.app == mock_app
         assert isinstance(router._routes, dict)
 
-
-
     def test_url_path_for_existing_route(self, router):
         """Test URL generation for an existing route"""
         Router._routes = {"test_route": "/users/{id}/profile"}

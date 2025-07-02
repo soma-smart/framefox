@@ -3,7 +3,7 @@ tasks:
   # Worker configuration
   type: database # Worker type (can be 'database', 'rabbitmq')
   # Transport URL for RabbitMQ (used when type is 'rabbitmq')
-  task_transport_url: ${RABBITMQ_URL}
+  # task_transport_url: ${RABBITMQ_URL}
 
   worker:
     concurrency: 5 # Number of simultaneous tasks

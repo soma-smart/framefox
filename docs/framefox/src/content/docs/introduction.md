@@ -246,13 +246,13 @@ Encapsulates data access logic and provides a uniform interface for accessing da
 ```python
 # Abstract repository defining the interface
 class AbstractRepository(ABC):
-    async def find(self, id: int) -> Optional[T]:
+    def find(self, id) -> Optional[T]:
         pass
-    
-    async def find_all(self) -> List[T]:
+    def find_by(self, criteria, order_by=None, limit=None, offset=None) -> List[T]
         pass
-    
-    async def save(self, entity: T) -> T:
+    def find_one_by(self, criteria) -> Optional[T]:
+        pass
+    def find_all(self) -> List[T]:
         pass
 
 # Concrete implementation

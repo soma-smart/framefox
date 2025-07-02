@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
 
 """
 Framefox Framework developed by SOMA

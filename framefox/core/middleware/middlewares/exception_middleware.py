@@ -13,7 +13,10 @@ from framefox.core.debug.exception.auth_exception import (
     InvalidTokenError,
     TokenExpiredError,
 )
-from framefox.core.debug.exception.base_exception import ConfigurationException, FramefoxException
+from framefox.core.debug.exception.base_exception import (
+    ConfigurationException,
+    FramefoxException,
+)
 from framefox.core.debug.exception.database_exception import (
     DatabaseConnectionError,
     DatabaseException,
@@ -39,19 +42,35 @@ from framefox.core.debug.exception.http_exception import (
     UnauthorizedError,
     UnprocessableEntityError,
 )
-from framefox.core.debug.exception.service_exception import ExternalServiceError, RateLimitExceededError, ServiceException, TimeoutError
+from framefox.core.debug.exception.service_exception import (
+    ExternalServiceError,
+    RateLimitExceededError,
+    ServiceException,
+    TimeoutError,
+)
+from framefox.core.debug.exception.settings_exception import (
+    ConfigurationFileNotFoundError,
+    EnvironmentVariableNotFoundError,
+    InvalidConfigurationError,
+    SettingsException,
+)
 from framefox.core.debug.exception.template_exception import (
     TemplateException,
     TemplateNotFoundError,
     TemplateRenderError,
     TemplateSyntaxError,
 )
-from framefox.core.debug.exception.validation_exception import MultipleValidationErrors, ValidationError, ValidationException
+from framefox.core.debug.exception.validation_exception import (
+    MultipleValidationErrors,
+    ValidationError,
+    ValidationException,
+)
+from framefox.core.debug.sentry.sentry_manager import SentryManager
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.templates.template_renderer import TemplateRenderer
 
 
-class DebugExceptionMiddleware:
+class ExceptionMiddleware:
     """Enhanced middleware for comprehensive exception handling"""
 
     def __init__(self, app):
@@ -60,6 +79,7 @@ class DebugExceptionMiddleware:
         self.settings = Settings()
         self.logger = logging.getLogger("Application")
         self.template_renderer = self.container.get(TemplateRenderer)
+        self.sentry_manager = SentryManager()
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -72,6 +92,29 @@ class DebugExceptionMiddleware:
         except Exception as exc:
             transformed_exc = self._transform_exception(exc)
             request.state.exception = transformed_exc
+
+            # Send to Sentry if enabled
+            if self.sentry_manager.is_enabled():
+                try:
+                    # Add request context
+                    self.sentry_manager.set_context(
+                        "request",
+                        {
+                            "url": str(request.url),
+                            "method": request.method,
+                            "headers": dict(request.headers),
+                            "path": request.url.path,
+                        },
+                    )
+
+                    # Add framework context
+                    self.sentry_manager.set_tag("framework", "framefox")
+                    self.sentry_manager.set_tag("exception_type", type(transformed_exc).__name__)
+
+                    # Capture the exception
+                    self.sentry_manager.capture_exception(transformed_exc)
+                except Exception as sentry_error:
+                    self.logger.error(f"Failed to send exception to Sentry: {sentry_error}")
 
             try:
                 from framefox.core.debug.profiler.profiler import Profiler
@@ -248,14 +291,12 @@ class DebugExceptionMiddleware:
         try:
             if isinstance(user_exc, FramefoxException):
                 exception_name = type(user_exc).__name__
-                colored_exception = f"\033[91m{exception_name}\033[0m"
-                log_message = f"{colored_exception}: {user_exc.message}"
+                log_message = f"{user_exc.message}"
                 exception_logger = logging.getLogger(exception_name)
                 exception_logger.error(log_message)
             else:
                 exception_name = type(user_exc).__name__
-                colored_exception = f"\033[91m{exception_name}\033[0m"
-                log_message = f"{colored_exception}: {str(user_exc)}"
+                log_message = f"{str(user_exc)}"
                 exception_logger = logging.getLogger(exception_name)
                 exception_logger.error(log_message)
         except Exception as log_error:
@@ -267,11 +308,20 @@ class DebugExceptionMiddleware:
             return text
 
         text = re.sub(r"\$2[aby]\$\d+\$[A-Za-z0-9./]{53}", "[HASHED_PASSWORD]", text)
-        text = re.sub(r"\$argon2[id]\$[^,]*,[^,]*,[^,]*\$[A-Za-z0-9+/=]*", "[HASHED_PASSWORD]", text)
+        text = re.sub(
+            r"\$argon2[id]\$[^,]*,[^,]*,[^,]*\$[A-Za-z0-9+/=]*",
+            "[HASHED_PASSWORD]",
+            text,
+        )
         text = re.sub(r"\$scrypt\$[^$]*\$[^$]*\$[A-Za-z0-9+/=]*", "[HASHED_PASSWORD]", text)
         text = re.sub(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "[EMAIL]", text)
         text = re.sub(r"\[parameters: \([^)]*\)\]", "[parameters: [SANITIZED]]", text)
-        text = re.sub(r'(api[_-]?key|token|secret)["\s]*[:=]["\s]*[A-Za-z0-9+/=]{10,}', r"\1: [REDACTED]", text, flags=re.IGNORECASE)
+        text = re.sub(
+            r'(api[_-]?key|token|secret)["\s]*[:=]["\s]*[A-Za-z0-9+/=]{10,}',
+            r"\1: [REDACTED]",
+            text,
+            flags=re.IGNORECASE,
+        )
 
         return text
 
@@ -281,7 +331,15 @@ class DebugExceptionMiddleware:
         lines = full_traceback.split("\n")
 
         filtered_lines = []
-        skip_patterns = ["/site-packages/", "/lib/python", "/starlette/", "/fastapi/", "/uvicorn/", "/middleware/base.py", "/routing.py"]
+        skip_patterns = [
+            "/site-packages/",
+            "/lib/python",
+            "/starlette/",
+            "/fastapi/",
+            "/uvicorn/",
+            "/middleware/base.py",
+            "/routing.py",
+        ]
 
         for line in lines:
             if line.strip().startswith(("Traceback", "sqlalchemy.exc.", "sqlite3.")):
@@ -320,7 +378,12 @@ class DebugExceptionMiddleware:
         }
 
         if isinstance(exc, TableNotFoundError):
-            response_data.update({"suggestion": "Run 'framefox database create' to set up the database", "table_name": exc.table_name})
+            response_data.update(
+                {
+                    "suggestion": "Run 'framefox database create' to set up the database",
+                    "table_name": exc.table_name,
+                }
+            )
         elif isinstance(exc, ValidationError):
             response_data.update({"field": exc.field, "validation_message": exc.validation_message})
         elif isinstance(exc, MultipleValidationErrors):
@@ -384,6 +447,8 @@ class DebugExceptionMiddleware:
             return "template"
         elif isinstance(exc, FileException):
             return "file"
+        elif isinstance(exc, SettingsException):
+            return "configuration"
         elif isinstance(exc, ConfigurationException):
             return "configuration"
         else:
@@ -403,17 +468,50 @@ class DebugExceptionMiddleware:
                 }
             )
         elif isinstance(exc, DatabaseIntegrityError):
-            context.update({"constraint": exc.constraint, "suggestion": "Check for duplicate values or constraint violations"})
+            context.update(
+                {
+                    "constraint": exc.constraint,
+                    "suggestion": "Check for duplicate values or constraint violations",
+                }
+            )
         elif isinstance(exc, ValidationError):
-            context.update({"field": exc.field, "validation_message": exc.validation_message, "invalid_value": exc.value})
+            context.update(
+                {
+                    "field": exc.field,
+                    "validation_message": exc.validation_message,
+                    "invalid_value": exc.value,
+                }
+            )
         elif isinstance(exc, MultipleValidationErrors):
-            context.update({"validation_errors": exc.errors, "error_count": sum(len(field_errors) for field_errors in exc.errors.values())})
+            context.update(
+                {
+                    "validation_errors": exc.errors,
+                    "error_count": sum(len(field_errors) for field_errors in exc.errors.values()),
+                }
+            )
         elif isinstance(exc, AuthorizationError):
-            context.update({"resource": exc.resource, "action": exc.action, "suggestion": "Check user permissions and roles"})
+            context.update(
+                {
+                    "resource": exc.resource,
+                    "action": exc.action,
+                    "suggestion": "Check user permissions and roles",
+                }
+            )
         elif isinstance(exc, TokenExpiredError):
-            context.update({"token_type": exc.token_type, "suggestion": "Please log in again to refresh your session"})
+            context.update(
+                {
+                    "token_type": exc.token_type,
+                    "suggestion": "Please log in again to refresh your session",
+                }
+            )
         elif isinstance(exc, FileUploadError):
-            context.update({"filename": exc.filename, "upload_reason": exc.reason, "suggestion": "Check file format and size requirements"})
+            context.update(
+                {
+                    "filename": exc.filename,
+                    "upload_reason": exc.reason,
+                    "suggestion": "Check file format and size requirements",
+                }
+            )
         elif isinstance(exc, FileSizeError):
             context.update(
                 {
@@ -431,10 +529,22 @@ class DebugExceptionMiddleware:
                     "suggestion": "Try again later or check network connectivity",
                 }
             )
+
         elif isinstance(exc, RateLimitExceededError):
-            context.update({"rate_limit": exc.limit, "time_window": exc.window, "suggestion": "Wait before making more requests"})
+            context.update(
+                {
+                    "rate_limit": exc.limit,
+                    "time_window": exc.window,
+                    "suggestion": "Wait before making more requests",
+                }
+            )
         elif isinstance(exc, TemplateNotFoundError):
-            context.update({"template_name": exc.template_name, "suggestion": f"Create template file: {exc.template_name}"})
+            context.update(
+                {
+                    "template_name": exc.template_name,
+                    "suggestion": f"Create template file: {exc.template_name}",
+                }
+            )
         elif isinstance(exc, TemplateRenderError):
             context.update(
                 {
@@ -443,7 +553,32 @@ class DebugExceptionMiddleware:
                     "suggestion": "Check template syntax and variable names",
                 }
             )
-
+        elif isinstance(exc, EnvironmentVariableNotFoundError):
+            context.update(
+                {
+                    "variable_name": exc.variable_name,
+                    "config_file": exc.config_file,
+                    "suggestion": f"Add '{exc.variable_name}=your_value' to your .env file or set it as an environment variable",
+                    "is_config_error": True,
+                }
+            )
+        elif isinstance(exc, ConfigurationFileNotFoundError):
+            context.update(
+                {
+                    "config_path": exc.config_path,
+                    "suggestion": "Ensure the configuration directory exists and contains valid YAML files",
+                    "is_config_error": True,
+                }
+            )
+        elif isinstance(exc, InvalidConfigurationError):
+            context.update(
+                {
+                    "config_file": exc.config_file,
+                    "config_reason": exc.reason,
+                    "suggestion": "Check the YAML syntax and configuration format",
+                    "is_config_error": True,
+                }
+            )
         return context
 
     async def _render_production_error_page(self, request: Request, exc: Exception) -> HTMLResponse:
@@ -469,7 +604,11 @@ class DebugExceptionMiddleware:
                 "error_type": "Invalid Input",
             }
         elif isinstance(exc, (NotFoundError, FileNotFoundError, TemplateNotFoundError)):
-            error_context = {"request": request, "error_message": "The requested resource was not found.", "error_type": "Not Found"}
+            error_context = {
+                "request": request,
+                "error_message": "The requested resource was not found.",
+                "error_type": "Not Found",
+            }
         else:
             error_context = {
                 "request": request,
@@ -576,7 +715,12 @@ class DebugExceptionMiddleware:
     def _parse_traceback_for_source_info(self, traceback_str: str) -> dict:
         """Parse clean traceback for user code information"""
         if not traceback_str:
-            return {"file": "Unknown", "full_file": "Unknown", "line": "Unknown", "function": "Unknown"}
+            return {
+                "file": "Unknown",
+                "full_file": "Unknown",
+                "line": "Unknown",
+                "function": "Unknown",
+            }
 
         lines = traceback_str.split("\n")
 
@@ -598,8 +742,18 @@ class DebugExceptionMiddleware:
                         else:
                             function_name = "Unknown"
 
-                        return {"file": file_path.split("/")[-1], "full_file": file_path, "line": line_number, "function": function_name}
+                        return {
+                            "file": file_path.split("/")[-1],
+                            "full_file": file_path,
+                            "line": line_number,
+                            "function": function_name,
+                        }
                     except Exception:
                         continue
 
-        return {"file": "Unknown", "full_file": "Unknown", "line": "Unknown", "function": "Unknown"}
+        return {
+            "file": "Unknown",
+            "full_file": "Unknown",
+            "line": "Unknown",
+            "function": "Unknown",
+        }

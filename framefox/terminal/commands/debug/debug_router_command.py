@@ -122,7 +122,12 @@ class DebugRouterCommand(AbstractCommand):
             return str(type_annotation)
 
     def _display_routes_table(self, console: Console, routes_data: list):
-        table = Table(show_header=True, header_style="bold orange3", show_lines=True, box=box.ROUNDED)
+        table = Table(
+            show_header=True,
+            header_style="bold orange3",
+            show_lines=True,
+            box=box.ROUNDED,
+        )
         table.add_column("Path", style="cyan", no_wrap=True)
         table.add_column("HTTP", style="green")
         table.add_column("Controller", style="yellow")

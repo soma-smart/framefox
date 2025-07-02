@@ -41,7 +41,12 @@ class ConfigCommand(AbstractCommand):
     def _display_environment_variables(self, console: Console):
         """Display environment variables section"""
         console.print()
-        console.print(Panel.fit("[bold orange1]Environment Variables[/bold orange1]", border_style="orange1"))
+        console.print(
+            Panel.fit(
+                "[bold orange1]Environment Variables[/bold orange1]",
+                border_style="orange1",
+            )
+        )
 
         # Get Framefox-related environment variables
         framefox_env_vars = self._get_framefox_env_vars()
@@ -66,7 +71,12 @@ class ConfigCommand(AbstractCommand):
     def _display_yaml_configurations(self, console: Console):
         """Display YAML configuration files section"""
         console.print()
-        console.print(Panel.fit("[bold orange1]YAML Configuration Files[/bold orange1]", border_style="orange1"))
+        console.print(
+            Panel.fit(
+                "[bold orange1]YAML Configuration Files[/bold orange1]",
+                border_style="orange1",
+            )
+        )
 
         config_dir = Path("config")
         if not config_dir.exists():
@@ -158,7 +168,12 @@ class ConfigCommand(AbstractCommand):
     def _display_configuration_summary(self, console: Console):
         """Display a summary of the configuration"""
         console.print()
-        console.print(Panel.fit("[bold orange1]Configuration Summary[/bold orange1]", border_style="orange1"))
+        console.print(
+            Panel.fit(
+                "[bold orange1]Configuration Summary[/bold orange1]",
+                border_style="orange1",
+            )
+        )
 
         # Count environment variables
         framefox_env_vars = self._get_framefox_env_vars()
@@ -216,7 +231,16 @@ class ConfigCommand(AbstractCommand):
 
     def _mask_sensitive_value(self, key: str, value: str) -> str:
         """Mask sensitive configuration values"""
-        sensitive_keys = ["password", "secret", "key", "token", "api_key", "database_url", "mail_url", "rabbitmq_url"]
+        sensitive_keys = [
+            "password",
+            "secret",
+            "key",
+            "token",
+            "api_key",
+            "database_url",
+            "mail_url",
+            "rabbitmq_url",
+        ]
 
         key_lower = key.lower()
         if any(sensitive in key_lower for sensitive in sensitive_keys):

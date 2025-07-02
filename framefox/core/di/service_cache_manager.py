@@ -122,11 +122,21 @@ class ServiceCacheManager:
                     self._logger.debug(f"Failed to process cache item {item}: {e}")
                     continue
 
-            return {"version": "1.0", "timestamp": time.time(), "services": services, "scan_timestamp": time.time()}
+            return {
+                "version": "1.0",
+                "timestamp": time.time(),
+                "services": services,
+                "scan_timestamp": time.time(),
+            }
 
         except Exception as e:
             self._logger.error(f"Failed to create cache snapshot: {e}")
-            return {"version": "1.0", "timestamp": time.time(), "services": [], "scan_timestamp": time.time()}
+            return {
+                "version": "1.0",
+                "timestamp": time.time(),
+                "services": [],
+                "scan_timestamp": time.time(),
+            }
 
     def load_services_from_cache(self, cache_data: Dict[str, Any], registry, scanned_modules: set) -> bool:
         try:
@@ -191,7 +201,11 @@ class ServiceCacheManager:
                             return True
 
             core_path = Path(__file__).parent.parent
-            critical_files = ["controller/abstract_controller.py", "routing/router.py", "di/service_container.py"]
+            critical_files = [
+                "controller/abstract_controller.py",
+                "routing/router.py",
+                "di/service_container.py",
+            ]
 
             for critical_file in critical_files:
                 file_path = core_path / critical_file

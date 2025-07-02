@@ -10,8 +10,12 @@ import jwt
 from fastapi import Request
 
 from framefox.core.request.session.session import Session
-from framefox.core.security.authenticator.abstract_authenticator import AbstractAuthenticator
-from framefox.core.security.authenticator.oauth_authenticator_interface import OAuthAuthenticatorInterface
+from framefox.core.security.authenticator.abstract_authenticator import (
+    AbstractAuthenticator,
+)
+from framefox.core.security.authenticator.oauth_authenticator_interface import (
+    OAuthAuthenticatorInterface,
+)
 from framefox.core.security.passport.passport import Passport
 from framefox.core.security.passport.user_badge import UserBadge
 
@@ -103,7 +107,10 @@ class AbstractOAuthAuthenticator(AbstractAuthenticator, OAuthAuthenticatorInterf
             user_data = await self.get_user_data_from_provider(token_data["access_token"])
 
             passport = Passport(
-                user_badge=UserBadge(user_data["email"]), password_credentials=None, csrf_token_badge=None, provider_info=None
+                user_badge=UserBadge(user_data["email"]),
+                password_credentials=None,
+                csrf_token_badge=None,
+                provider_info=None,
             )
 
             passport._oauth_authenticator = self

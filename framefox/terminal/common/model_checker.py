@@ -266,7 +266,9 @@ class ModelChecker:
                 entity_class_name = ClassNameManager.snake_to_pascal(entity_name)
                 entity_class = getattr(entity_module, entity_class_name)
 
-                from framefox.terminal.common.sql_model_inspector import SQLModelInspector
+                from framefox.terminal.common.sql_model_inspector import (
+                    SQLModelInspector,
+                )
 
                 properties = SQLModelInspector.get_entity_properties(entity_class)
                 return properties

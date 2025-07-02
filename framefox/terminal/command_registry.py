@@ -121,7 +121,10 @@ class CommandRegistry:
             command_modules = {}
             for cmd_id, cmd_class in self.commands.items():
                 if hasattr(cmd_class, "__module__") and hasattr(cmd_class, "__name__"):
-                    command_modules[cmd_id] = {"module": cmd_class.__module__, "class_name": cmd_class.__name__}
+                    command_modules[cmd_id] = {
+                        "module": cmd_class.__module__,
+                        "class_name": cmd_class.__name__,
+                    }
 
             cache_data = {
                 "command_groups": self.command_groups,
@@ -267,7 +270,14 @@ class CommandRegistry:
                 if base_name.startswith(namespace):
                     command_name = base_name[len(namespace) :]
                 else:
-                    prefixes_to_remove = ["create", "debug", "mock", "cache", "database", "server"]
+                    prefixes_to_remove = [
+                        "create",
+                        "debug",
+                        "mock",
+                        "cache",
+                        "database",
+                        "server",
+                    ]
                     for prefix in prefixes_to_remove:
                         if base_name.startswith(prefix):
                             command_name = base_name[len(prefix) :]

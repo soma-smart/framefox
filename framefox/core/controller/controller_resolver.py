@@ -4,6 +4,13 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, Type
 
+from framefox.core.debug.exception.controller_exception import (
+    ControllerDependencyError,
+    ControllerInstantiationError,
+    ControllerModuleError,
+    ControllerNotFoundError,
+    DuplicateControllerError,
+)
 from framefox.core.di.service_container import ServiceContainer
 
 """
@@ -21,6 +28,7 @@ class ControllerResolver:
         self._logger = logging.getLogger("CONTROLLER")
         self._controller_cache: Dict[str, Type] = {}
         self._controller_paths = self._discover_controller_paths()
+        self._controller_name_to_class: Dict[str, Type] = {}
 
     def _discover_controller_paths(self) -> Dict[str, Path]:
         paths = {}
@@ -32,9 +40,41 @@ class ControllerResolver:
                     if controller_name.endswith("_controller"):
                         controller_name = controller_name[:-11]
                     paths[controller_name] = file
+
+                    try:
+                        rel_path = file.relative_to(Path("src")).with_suffix("")
+                        module_name = f"src.{rel_path.as_posix().replace('/', '.')}"
+                        module = importlib.import_module(module_name)
+
+                        for name, obj in inspect.getmembers(module):
+                            if inspect.isclass(obj) and name.endswith("Controller") and obj.__module__ == module_name:
+
+                                generated_name = name.replace("Controller", "").lower()
+
+                                if generated_name in self._controller_name_to_class:
+                                    existing_class = self._controller_name_to_class[generated_name]
+                                    if existing_class != obj:
+                                        raise DuplicateControllerError(
+                                            generated_name,
+                                            [existing_class.__module__, obj.__module__],
+                                        )
+
+                                self._controller_name_to_class[generated_name] = obj
+                    except ImportError as e:
+                        raise ControllerModuleError(f"src.{rel_path.as_posix().replace('/', '.')}", e)
+                    except Exception:
+                        pass
+
         return paths
 
     def resolve_controller(self, controller_name: str) -> Any:
+        # D'abord vérifier dans le cache des noms mappés
+        if controller_name in self._controller_name_to_class:
+            controller_class = self._controller_name_to_class[controller_name]
+            if controller_class not in self._controller_cache.values():
+                self._controller_cache[controller_name] = controller_class
+            return self._create_controller_instance(controller_class)
+
         if controller_name in self._controller_cache:
             controller_class = self._controller_cache[controller_name]
             return self._create_controller_instance(controller_class)
@@ -44,14 +84,31 @@ class ControllerResolver:
             self._controller_cache[controller_name] = controller_class
             return self._create_controller_instance(controller_class)
 
-        raise Exception(f"Controller {controller_name} not found")
+        searched_paths = [path for path in self._controller_paths.values()]
+        raise ControllerNotFoundError(controller_name, searched_paths)
 
     def _load_controller_class(self, controller_name: str) -> Optional[Type]:
-        if controller_name not in self._controller_paths:
-            return None
 
+        if controller_name in self._controller_paths:
+            return self._load_from_path(self._controller_paths[controller_name])
+
+        controller_dir = Path("src/controller")
+        if controller_dir.exists():
+            for file in controller_dir.rglob("*.py"):
+                if file.name == "__init__.py":
+                    continue
+
+                controller_class = self._load_from_path(file)
+                if controller_class:
+
+                    generated_name = controller_class.__name__.replace("Controller", "").lower()
+                    if generated_name == controller_name:
+                        return controller_class
+
+        return None
+
+    def _load_from_path(self, file_path: Path) -> Optional[Type]:
         try:
-            file_path = self._controller_paths[controller_name]
             rel_path = file_path.relative_to(Path("src")).with_suffix("")
             module_name = f"src.{rel_path.as_posix().replace('/', '.')}"
             module = importlib.import_module(module_name)
@@ -59,8 +116,10 @@ class ControllerResolver:
             for name, obj in inspect.getmembers(module):
                 if inspect.isclass(obj) and name.endswith("Controller") and obj.__module__ == module_name:
                     return obj
+        except ImportError as e:
+            raise ControllerModuleError(module_name, e)
         except Exception as e:
-            self._logger.warning(f"Failed to load controller {controller_name}: {e}")
+            self._logger.warning(f"Failed to load controller from {file_path}: {e}")
 
         return None
 
@@ -69,8 +128,7 @@ class ControllerResolver:
             dependencies = self._resolve_controller_dependencies(controller_class)
             return controller_class(*dependencies)
         except Exception as e:
-            self._logger.warning(f"Failed to resolve dependencies for {controller_class.__name__}: {e}")
-            return controller_class()
+            raise ControllerInstantiationError(controller_class.__name__, str(e), e)
 
     def _resolve_controller_dependencies(self, controller_class: Type) -> list:
         dependencies = []
@@ -84,11 +142,15 @@ class ControllerResolver:
                     try:
                         dependency = self._container.get(param.annotation)
                         dependencies.append(dependency)
-                    except:
+                    except Exception as e:
                         if param.default != inspect.Parameter.empty:
                             dependencies.append(param.default)
+                        else:
+                            raise ControllerDependencyError(controller_class.__name__, param_name, e)
                 elif param.default != inspect.Parameter.empty:
                     dependencies.append(param.default)
+        except ControllerDependencyError:
+            raise
         except Exception:
             pass
 

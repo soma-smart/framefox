@@ -11,9 +11,39 @@ Alright, let's create your first Framefox project! We're going to build GameVaul
 
 <Steps>
 
-1. **Install Framefox** ⚡
+1. **Create your project** ⚡
 
-   First, let's install Framefox. If you haven't already, follow the [installation guide](/framefox/installation):
+   First, let's create our GameVault project:
+
+   ```bash title="Create and initialize project"
+   # Create project directory
+   mkdir gamevault
+   cd gamevault
+   ```
+
+2. **Set up your environment** 🐍
+
+   Let's create a virtual environment as recommended in the [installation guide](/framefox/installation#installation):
+
+   ```bash title="Create virtual environment"
+   # Create a virtual environment
+   python -m venv venv
+
+   # Activate it (on Linux/Mac)
+   source venv/bin/activate
+
+   # Or on Windows
+   venv\Scripts\activate
+   ```
+
+   :::note[What's a virtual environment?]
+   Think of it as a separate room for your project. All the Python packages you install stay in this room and don't mess with other projects. Smart!
+   :::
+3. **Install Framefox** 🚀
+
+
+   Now, let's install Framefox. If you haven't already, follow the [installation guide](/framefox/installation):
+   framefox init
 
    ```bash title="Install Framefox"
    # Install Framefox
@@ -25,17 +55,8 @@ Alright, let's create your first Framefox project! We're going to build GameVaul
    ```bash title="Install with uv (faster)"
    uv add framefox
    ```
-
-2. **Create your project** 🚀
-
-   Now let's create our GameVault project:
-
-   ```bash title="Create and initialize project"
-   # Create project directory
-   mkdir gamevault
-   cd gamevault
-
-   # Initialize Framefox project
+   And then, 
+   ```bash
    framefox init
    ```
 
@@ -50,27 +71,7 @@ Alright, let's create your first Framefox project! We're going to build GameVaul
    - And much more!
    :::
 
-3. **Set up your environment** 🐍
 
-   Let's create a virtual environment as recommended in the [installation guide](/framefox/installation#installation):
-
-   ```bash title="Create virtual environment"
-   # Create a virtual environment
-   python -m venv venv
-
-   # Activate it (on Linux/Mac)
-   source venv/bin/activate
-
-   # Or on Windows
-   venv\Scripts\activate
-
-   # Install dependencies
-   pip install -r requirements.txt
-   ```
-
-   :::note[What's a virtual environment?]
-   Think of it as a separate room for your project. All the Python packages you install stay in this room and don't mess with other projects. Smart!
-   :::
 
 4. **Configure the database** 🗄️
 

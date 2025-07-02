@@ -5,9 +5,13 @@ from fastapi import Request
 from fastapi.responses import Response
 
 from framefox.core.request.session.session_interface import SessionInterface
-from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
 from framefox.core.security.handlers.firewall_utils import FirewallUtils
-from framefox.core.security.handlers.security_context_handler import SecurityContextHandler
+from framefox.core.security.handlers.security_context_handler import (
+    SecurityContextHandler,
+)
 from framefox.core.security.protector.time_attack_protector import TimingAttackProtector
 from framefox.core.security.token_manager import TokenManager
 from framefox.core.security.token_storage import TokenStorage
@@ -69,13 +73,21 @@ class OAuthCallbackHandler:
             if passport:
                 return self._handle_oauth_success(passport, firewall_name, authenticator)
             else:
-                return self._handle_oauth_failure(request, authenticator, firewall_name, "OAuth authentication failed. Please try again.")
+                return self._handle_oauth_failure(
+                    request,
+                    authenticator,
+                    firewall_name,
+                    "OAuth authentication failed. Please try again.",
+                )
 
         except Exception as e:
             error_message = f"OAuth callback error: {str(e)}"
             self.logger.error(error_message)
             return self._handle_oauth_failure(
-                request, authenticator, firewall_name, "An error occurred during authentication. Please try again."
+                request,
+                authenticator,
+                firewall_name,
+                "An error occurred during authentication. Please try again.",
             )
 
     def _handle_oauth_success(self, passport, firewall_name: str, authenticator: AuthenticatorInterface) -> Response:
@@ -98,7 +110,11 @@ class OAuthCallbackHandler:
         return response
 
     def _handle_oauth_failure(
-        self, request: Request, authenticator: AuthenticatorInterface, firewall_name: str, error_message: str
+        self,
+        request: Request,
+        authenticator: AuthenticatorInterface,
+        firewall_name: str,
+        error_message: str,
     ) -> Response:
         self.utils.log_oauth_event("auth_failure", firewall_name, error_message)
 

@@ -9,7 +9,11 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Type, get_type_hints
 
-from framefox.core.debug.exception.di_exception import CircularDependencyError, ServiceInstantiationError, ServiceNotFoundError
+from framefox.core.debug.exception.di_exception import (
+    CircularDependencyError,
+    ServiceInstantiationError,
+    ServiceNotFoundError,
+)
 from framefox.core.di.service_cache_manager import ServiceCacheManager
 from framefox.core.di.service_config import ServiceConfig
 from framefox.core.di.service_definition import ServiceDefinition
@@ -108,10 +112,14 @@ class ServiceContainer:
     def _register_core_factories(self):
         """Register core factories before registry freeze."""
         try:
-            from framefox.core.di.factory.entity_manager_factory import EntityManagerFactory
+            from framefox.core.di.factory.entity_manager_factory import (
+                EntityManagerFactory,
+            )
 
             self._factory_manager.register_factory(EntityManagerFactory())
-            from framefox.core.di.factory.pydantic_model_factory import PydanticModelFactory
+            from framefox.core.di.factory.pydantic_model_factory import (
+                PydanticModelFactory,
+            )
 
             self._factory_manager.register_factory(PydanticModelFactory())
             self._logger.debug("Core factories registered successfully")
@@ -225,12 +233,21 @@ class ServiceContainer:
 
         core_path = Path(__file__).resolve().parent.parent
         self._setup_exclusions()
-        self._scan_for_service_definitions(core_path, "framefox.core", self._excluded_directories, self._excluded_modules)
+        self._scan_for_service_definitions(
+            core_path,
+            "framefox.core",
+            self._excluded_directories,
+            self._excluded_modules,
+        )
 
         self._src_paths = self._find_source_paths()
         for src_path in self._src_paths:
             for subdir in src_path.iterdir():
-                if subdir.is_dir() and subdir.name not in ["controller", "controllers", "__pycache__"]:
+                if subdir.is_dir() and subdir.name not in [
+                    "controller",
+                    "controllers",
+                    "__pycache__",
+                ]:
                     self._scan_for_service_definitions(subdir, f"src.{subdir.name}", [], [])
 
         self._save_initial_cache()
@@ -339,7 +356,15 @@ class ServiceContainer:
         """Check if a directory should be excluded from scanning."""
         dir_name = path.name.lower()
 
-        always_exclude = {"__pycache__", ".pytest_cache", ".mypy_cache", "node_modules", "venv", "env", ".env"}
+        always_exclude = {
+            "__pycache__",
+            ".pytest_cache",
+            ".mypy_cache",
+            "node_modules",
+            "venv",
+            "env",
+            ".env",
+        }
 
         if dir_name in always_exclude:
             return True
@@ -566,10 +591,9 @@ class ServiceContainer:
             self._instances[service_class] = instance
             self._resolution_cache[service_class] = instance
             return instance
-
         except Exception as e:
             self._logger.error(f"Failed to create service {service_class.__name__}: {e}")
-            raise ServiceInstantiationError(f"Cannot create service {service_class.__name__}: {e}") from e
+            raise ServiceInstantiationError(service_class, e)
         finally:
             self._circular_detection.discard(service_class)
 
@@ -716,7 +740,12 @@ class ServiceContainer:
 
                 for src_path in self._src_paths:
                     if src_path.exists():
-                        self._scan_for_service_definitions(src_path, "src", self._excluded_directories, self._excluded_modules)
+                        self._scan_for_service_definitions(
+                            src_path,
+                            "src",
+                            self._excluded_directories,
+                            self._excluded_modules,
+                        )
 
                 self._src_scanned = True
                 self._src_scan_in_progress = False
@@ -814,6 +843,19 @@ class ServiceContainer:
             self._logger.warning(f"Multiple services found for tag '{tag}': {', '.join(service_names)}. Returning first.")
 
         return self.get(definitions[0].service_class)
+
+    def get_by_tag_prefix(self, prefix: str):
+        """
+        Returns all services for which at least one tag starts with the given prefix.
+        """
+        services = []
+        for definition in self._registry.get_all_definitions().values():
+            for tag in getattr(definition, "tags", []):
+                if tag.startswith(prefix):
+                    service = self.get(definition.service_class)
+                    if service not in services:
+                        services.append(service)
+        return services
 
     def get_all_by_tag(self, tag: str) -> List[Any]:
         """Return all services associated with a tag."""

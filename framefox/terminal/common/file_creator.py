@@ -37,9 +37,9 @@ class FileCreator:
         template = env.get_template(template)
         code = template.render(data)
         if format == "py":
-            output_file = f"{path}{name}.py"
+            output_file = os.path.join(path, f"{name}.py")
         else:
-            output_file = f"{path}/{name}"
+            output_file = os.path.join(path, name)
         with open(output_file, "w") as file:
             file.write(code)
 

@@ -4,7 +4,9 @@ from typing import Dict, Optional
 from fastapi import Request
 from fastapi.responses import JSONResponse, Response
 
-from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
 from framefox.core.security.handlers.firewall_utils import FirewallUtils
 from framefox.core.security.protector.time_attack_protector import TimingAttackProtector
 
@@ -75,7 +77,12 @@ class JWTAuthenticationHandler:
 
         return None
 
-    def _handle_jwt_failure(self, request: Request, authenticator: AuthenticatorInterface, error_message: str) -> Response:
+    def _handle_jwt_failure(
+        self,
+        request: Request,
+        authenticator: AuthenticatorInterface,
+        error_message: str,
+    ) -> Response:
         client_ip = getattr(request.client, "host", "unknown")
         self.logger.warning(f"JWT authentication failed for {request.url.path} from {client_ip}: {error_message}")
 

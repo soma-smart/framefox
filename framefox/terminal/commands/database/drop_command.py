@@ -1,6 +1,8 @@
 from rich.prompt import Confirm
 
-from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
 
 
 class DropCommand(AbstractDatabaseCommand):

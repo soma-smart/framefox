@@ -1,8 +1,14 @@
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
-from framefox.terminal.utils.database.database_schema_analyzer import DatabaseSchemaAnalyzer
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
+from framefox.terminal.utils.database.database_schema_analyzer import (
+    DatabaseSchemaAnalyzer,
+)
 from framefox.terminal.utils.database.diagram_file_generator import DiagramFileGenerator
-from framefox.terminal.utils.database.mermaid_diagram_generator import MermaidDiagramGenerator
+from framefox.terminal.utils.database.mermaid_diagram_generator import (
+    MermaidDiagramGenerator,
+)
 
 """
 Framefox Framework developed by SOMA

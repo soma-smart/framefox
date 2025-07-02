@@ -166,7 +166,10 @@ class DisplayManager:
 
         # Always add star-us command if it exists
         if star_us_command:
-            run_table.add_row(Text("star-us", style="bold yellow"), "⭐ Star the Framefox project on GitHub")
+            run_table.add_row(
+                Text("star-us", style="bold yellow"),
+                "⭐ Star the Framefox project on GitHub",
+            )
 
         # Only add init command if project is not initialized
         if not project_exists and init_command:

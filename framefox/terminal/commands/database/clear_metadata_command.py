@@ -4,7 +4,9 @@ import sys
 from sqlalchemy.orm import clear_mappers
 from sqlmodel import SQLModel
 
-from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
 
 """
 Framefox Framework developed by SOMA

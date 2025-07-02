@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from framefox.core.config.settings import Settings
+from framefox.core.debug.exception.settings_exception import SettingsException
+from framefox.core.debug.handler.startup_error_handler import StartupErrorHandler
 from framefox.core.events.event_dispatcher import dispatcher
 from framefox.core.logging.logger import Logger
 from framefox.core.middleware.middleware_manager import MiddlewareManager
@@ -43,6 +45,8 @@ class Kernel:
             self._configure_app()
             self._initialized = True
 
+        except SettingsException as e:
+            StartupErrorHandler.handle_configuration_error(e)
         except Exception as e:
             self._logger.error(f"Failed to initialize Kernel: {e}")
             raise RuntimeError(f"Kernel initialization failed: {e}") from e

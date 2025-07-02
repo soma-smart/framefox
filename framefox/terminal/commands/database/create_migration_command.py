@@ -1,7 +1,9 @@
 from datetime import datetime
 
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
 
 
 class CreateMigrationCommand(AbstractDatabaseCommand):

@@ -34,7 +34,9 @@ class WorkerServiceProvider:
         if broker_type == "rabbitmq":
 
             from framefox.core.task.broker.rabbitmq_broker import RabbitMQBroker
-            from framefox.core.task.transport.rabbitmq_transport import RabbitMQTransport
+            from framefox.core.task.transport.rabbitmq_transport import (
+                RabbitMQTransport,
+            )
 
             task_transport = settings.task_transport_url
             transport = RabbitMQTransport(entity_manager_interface, task_transport)

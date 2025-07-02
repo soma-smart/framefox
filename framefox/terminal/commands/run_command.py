@@ -66,7 +66,10 @@ class RunCommand(AbstractCommand):
         current_port = initial_port
 
         while self._is_port_in_use(current_port) and current_port < initial_port + self.MAX_PORT_SEARCH_ATTEMPTS:
-            self.printer.print_msg(f"Port {current_port} already in use, trying {current_port + 1}...", theme="warning")
+            self.printer.print_msg(
+                f"Port {current_port} already in use, trying {current_port + 1}...",
+                theme="warning",
+            )
             current_port += 1
 
         return current_port
@@ -85,7 +88,17 @@ class RunCommand(AbstractCommand):
 
     def _start_uvicorn_server(self, port: int) -> int:
         try:
-            uvicorn_cmd = ["uvicorn", "main:app", "--reload", "--reload-delay", "0.5", "--reload-dir", "src", "--port", str(port)]
+            uvicorn_cmd = [
+                "uvicorn",
+                "main:app",
+                "--reload",
+                "--reload-delay",
+                "0.5",
+                "--reload-dir",
+                "src",
+                "--port",
+                str(port),
+            ]
 
             process = subprocess.run(uvicorn_cmd)
             return process.returncode

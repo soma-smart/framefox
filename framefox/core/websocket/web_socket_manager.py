@@ -59,7 +59,13 @@ class WebSocketManager:
         self.logger = logging.getLogger("WEBSOCKET_MANAGER")
         WebSocketManager._initialized = True
 
-    async def connect(self, websocket: WebSocket, connection_id: str, user_id: Optional[str] = None, room: Optional[str] = None) -> bool:
+    async def connect(
+        self,
+        websocket: WebSocket,
+        connection_id: str,
+        user_id: Optional[str] = None,
+        room: Optional[str] = None,
+    ) -> bool:
         try:
             await websocket.accept()
 

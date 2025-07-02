@@ -1,7 +1,9 @@
 from typing import Dict, Type
 
 from framefox.core.config.settings import Settings
-from framefox.core.debug.exception.database_exception import UnsupportedDatabaseDriverError
+from framefox.core.debug.exception.database_exception import (
+    UnsupportedDatabaseDriverError,
+)
 from framefox.core.orm.driver.database_config import DatabaseConfig
 from framefox.core.orm.driver.database_driver import DatabaseDriver
 from framefox.core.orm.driver.mysql_driver import MySQLDriver

@@ -11,6 +11,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.routing import APIRouter
 
 from framefox.core.controller.controller_resolver import ControllerResolver
+from framefox.core.debug.exception.controller_exception import ControllerException
 from framefox.core.di.service_container import ServiceContainer
 from framefox.core.templates.template_renderer import TemplateRenderer
 
@@ -207,9 +208,16 @@ class Router:
 
     def _process_method_route(self, method, method_func, controller_class, router, endpoint) -> bool:
         """Process a method to create routes, returns True if route was created"""
-        if not hasattr(method_func, "route_info") or method_func.__name__.startswith("_"):
-            return False
+        if hasattr(method_func, "route_info") and not method_func.__name__.startswith("_"):
+            return self._process_route_info(method_func, controller_class, router, endpoint)
 
+        if hasattr(method_func, "webhook_info") and not method_func.__name__.startswith("_"):
+            return self._process_webhook_info(method_func, controller_class, router, endpoint)
+
+        return False
+
+    def _process_route_info(self, method_func, controller_class, router, endpoint) -> bool:
+        """Process regular route info"""
         try:
             route = method_func.route_info
             Router._routes[route["name"]] = route["path"]
@@ -231,6 +239,30 @@ class Router:
             return True
         except Exception as e:
             self.logger.error(f"Failed to process route for method {method_func.__name__}: {e}")
+            return False
+
+    def _process_webhook_info(self, method_func, controller_class, router, endpoint) -> bool:
+        """Process webhook info"""
+        try:
+            webhook = method_func.webhook_info
+            Router._routes[webhook["name"]] = webhook["path"]
+
+            controller_tag = controller_class.__name__.replace("Controller", "").title()
+            webhook_tags = [f"{controller_tag} Webhooks"]
+
+            for http_method in webhook["methods"]:
+                router.add_api_route(
+                    path=webhook["path"],
+                    endpoint=endpoint,
+                    name=f"{webhook['name']}_{http_method.lower()}",
+                    methods=[http_method],
+                    tags=webhook_tags,
+                    operation_id=f"{webhook['name']}_{http_method.lower()}_webhook",
+                )
+
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to process webhook for method {method_func.__name__}: {e}")
             return False
 
     def _create_lazy_endpoint(self, method_name: str, original_method, lazy_factory):
@@ -278,7 +310,6 @@ class Router:
             return lazy_endpoint
 
         except Exception as e:
-            self.logger.error(f"Failed to create lazy endpoint for {method_name}: {e}")
             raise
 
     def _discover_controller_classes(self, module_name: str) -> List[Type]:

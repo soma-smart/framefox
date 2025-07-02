@@ -94,7 +94,6 @@ class Form:
                         field.errors.append(str(e))
 
     def _apply_data_to_model(self):
-        """Applies form data to the model."""
         for name, field in self.fields.items():
             if hasattr(self.data, name) and field.is_submitted():
                 value = field.get_value()
@@ -104,7 +103,6 @@ class Form:
                 setattr(self.data, name, value)
 
     def assign_data(self, data: Dict[str, Any]) -> None:
-        """Assigns data to form fields."""
         for name, field in self.fields.items():
             if name in data:
                 field.set_value(data[name])
