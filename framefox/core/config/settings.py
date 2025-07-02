@@ -5,6 +5,11 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
+from framefox.core.debug.exception.settings_exception import (
+    ConfigurationFileNotFoundError,
+    EnvironmentVariableNotFoundError,
+    InvalidConfigurationError,
+)
 from framefox.core.mail.mail_url_parser import MailUrlParser
 from framefox.core.orm.database_url_parser import DatabaseUrlParser
 
@@ -36,19 +41,17 @@ class Settings:
         Initializes the Settings object and loads configurations from the specified folder.
 
         Raises:
-            Exception: If the configuration files cannot be loaded.
+            ConfigurationFileNotFoundError: If the configuration files cannot be loaded.
         """
         if os.path.exists(env_path):
             load_dotenv(dotenv_path=env_path, override=True)
-        else:
-            # print(f"WARNING: .env file not found!")
-            pass
         self.app_env = os.getenv("APP_ENV", "prod")
         self.config = {}
+        self._current_config_file = None
         try:
             self.load_configs("./config")
         except FileNotFoundError as e:
-            raise Exception("Unable to load configuration") from e
+            raise ConfigurationFileNotFoundError("./config", e)
 
     def load_configs(self, config_folder):
         """
@@ -58,19 +61,29 @@ class Settings:
             config_folder (str): The path to the folder containing the configuration files.
 
         Raises:
-            FileNotFoundError: If the configuration folder does not exist.
+            ConfigurationFileNotFoundError: If the configuration folder does not exist.
+            InvalidConfigurationError: If a configuration file has invalid YAML format.
         """
         config_path = Path(config_folder).resolve()
         if not os.path.exists(config_path):
-            raise FileNotFoundError(f"""Configuration file '{config_folder}' does not exist""")
+            raise ConfigurationFileNotFoundError(str(config_path))
 
         for filename in os.listdir(config_path):
             if filename.endswith(".yaml") or filename.endswith(".yml"):
                 file_path = os.path.join(config_path, filename)
-                with open(file_path, "r") as file:
-                    config_data = yaml.safe_load(file)
-                    config_data = self.replace_env_variables(config_data)
-                    self.merge_dicts(self.config, config_data)
+                self._current_config_file = filename
+
+                try:
+                    with open(file_path, "r") as file:
+                        config_data = yaml.safe_load(file)
+                        config_data = self.replace_env_variables(config_data)
+                        self.merge_dicts(self.config, config_data)
+                except yaml.YAMLError as e:
+                    raise InvalidConfigurationError(filename, f"Invalid YAML format: {str(e)}", e)
+                except Exception as e:
+                    raise InvalidConfigurationError(filename, f"Error processing file: {str(e)}", e)
+                finally:
+                    self._current_config_file = None
 
     def merge_dicts(self, base, new):
         """
@@ -98,6 +111,9 @@ class Settings:
 
         Returns:
             The configuration data with environment variables replaced by their values.
+
+        Raises:
+            EnvironmentVariableNotFoundError: If a referenced environment variable is not defined.
         """
         if isinstance(data, dict):
             return {k: self.replace_env_variables(v) for k, v in data.items()}
@@ -116,10 +132,17 @@ class Settings:
             match (re.Match): A regex match object containing the environment variable name.
 
         Returns:
-            The value of the environment variable or an empty string if the variable does not exist.
+            The value of the environment variable.
+
+        Raises:
+            EnvironmentVariableNotFoundError: If the environment variable is not defined.
         """
         var_name = match.group(1)
-        value = os.getenv(var_name, "")
+        value = os.getenv(var_name)
+
+        if value is None:
+            raise EnvironmentVariableNotFoundError(var_name, self._current_config_file)
+
         return value
 
     def get_param(self, param_path: str, default=None):
@@ -257,6 +280,40 @@ class Settings:
             print("WARNING: Using default session secret key. This is insecure for production environments.")
         return secret_key or "default_secret"
 
+    @property
+    def session_redis_enabled(self) -> bool:
+        """Returns True if Redis session storage is enabled and configured"""
+        redis_config = self.config.get("application", {}).get("session", {}).get("redis")
+        if not redis_config:
+            return False
+
+        url = self.session_redis_url
+        return bool(url and url.strip() and not url.startswith("${"))
+
+    @property
+    def session_redis_url(self) -> str:
+        """Returns the Redis URL for session storage"""
+        redis_config = self.config.get("application", {}).get("session", {}).get("redis")
+        if not redis_config:
+            return ""
+        return redis_config.get("url", "")
+
+    @property
+    def session_redis_prefix(self) -> str:
+        """Returns the Redis key prefix for sessions"""
+        redis_config = self.config.get("application", {}).get("session", {}).get("redis")
+        if not redis_config:
+            return "session:"
+        return redis_config.get("prefix", "session:")
+
+    @property
+    def session_redis_db(self) -> int:
+        """Returns the Redis database number for sessions"""
+        redis_config = self.config.get("application", {}).get("session", {}).get("redis")
+        if not redis_config:
+            return 0
+        return int(redis_config.get("db", 0))
+
     # ------------------------------ cookie ------------------------------
 
     @property
@@ -371,6 +428,52 @@ class Settings:
     def logging_backup_count(self) -> int:
         """Returns the number of backup log files"""
         return int(self.config.get("debug", {}).get("logging", {}).get("backup_count", 5))
+
+    @property
+    def sentry_enabled(self) -> bool:
+        """Returns True if Sentry is enabled and configured"""
+        # Vérifier si la section sentry existe dans la config
+        sentry_config = self.config.get("debug", {}).get("sentry")
+        if not sentry_config:
+            return False
+
+        dsn = self.sentry_dsn
+        return bool(dsn and dsn.strip() and not dsn.startswith("${"))
+
+    # ------------------------------- sentry ------------------------------
+    @property
+    def sentry_dsn(self) -> str:
+        """Returns the Sentry DSN URL"""
+        sentry_config = self.config.get("debug", {}).get("sentry")
+        if not sentry_config:
+            return ""
+        return sentry_config.get("dsn", "")
+
+    @property
+    def sentry_environment(self) -> str:
+        """Returns the Sentry environment"""
+        sentry_config = self.config.get("debug", {}).get("sentry")
+        if not sentry_config:
+            return self.app_env
+        return sentry_config.get("environment", self.app_env)
+
+    @property
+    def sentry_sample_rate(self) -> float:
+        """Returns the Sentry error sampling rate"""
+        sentry_config = self.config.get("debug", {}).get("sentry")
+        if not sentry_config:
+            return 1.0
+        rate = float(sentry_config.get("sample_rate", 1.0))
+        return max(0.0, min(1.0, rate))
+
+    @property
+    def sentry_traces_sample_rate(self) -> float:
+        """Returns the Sentry performance monitoring sampling rate"""
+        sentry_config = self.config.get("debug", {}).get("sentry")
+        if not sentry_config:
+            return 0.0
+        rate = float(sentry_config.get("traces_sample_rate", 0.0))
+        return max(0.0, min(1.0, rate))
 
     # ------------------------------ mail ------------------------------
 
