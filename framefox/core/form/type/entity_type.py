@@ -70,27 +70,39 @@ class EntityType(AbstractFormType):
         return choices
 
     def transform_to_model(self, value: Any) -> Any:
-        """Transforms the form value into an entity or list of entities."""
         if not value:
             return [] if self.options.get("multiple") else None
 
+        entity_class = self.get_repository().model if self.get_repository() else None
+        if self.options.get("multiple"):
+            if isinstance(value, list) and value and entity_class and isinstance(value[0], entity_class):
+                return value
+        else:
+            if entity_class and isinstance(value, entity_class):
+                return value
         repository = self.get_repository()
         if not repository:
             return value
+
+        def get_entity_from_id(id):
+            try:
+                return repository.find(int(id))
+            except Exception:
+                return repository.find_one_by({"id": int(id)})
 
         if self.options.get("multiple"):
             if isinstance(value, list):
                 entities = []
                 for id in value:
                     if id:
-                        entity = repository.find({"id": int(id)})
+                        entity = get_entity_from_id(id)
                         if entity:
                             entities.append(entity)
                 return entities
-            entity = repository.find({"id": int(value)}) if value else None
+            entity = get_entity_from_id(value) if value else None
             return [entity] if entity else []
         else:
-            return repository.find({"id": int(value)}) if value else None
+            return get_entity_from_id(value) if value else None
 
     def transform_to_view(self, value: Any) -> Any:
         """Transforms the entity or list of entities into form value(s)."""

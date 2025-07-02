@@ -40,7 +40,9 @@ class FormField:
         except Exception as e:
             self.errors.append(str(e))
 
-    def get_value(self) -> Any:
+    def get_value(self):
+        if hasattr(self.type, "transform_to_model"):
+            return self.type.transform_to_model(self.value)
         return self.value
 
     def validate(self) -> bool:
