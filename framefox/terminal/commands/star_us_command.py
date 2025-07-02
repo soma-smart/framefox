@@ -70,7 +70,12 @@ class StarUsCommand(AbstractCommand):
                 theme="info",
             )
 
-            check_result = subprocess.run(["gh", "api", "user/starred/soma-smart/framefox"], capture_output=True, text=True, timeout=10)
+            check_result = subprocess.run(
+                ["gh", "api", "user/starred/soma-smart/framefox"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
 
             if check_result.returncode == 0:
                 self.printer.print_msg(
@@ -84,7 +89,10 @@ class StarUsCommand(AbstractCommand):
                 return True
 
             star_result = subprocess.run(
-                ["gh", "api", "-X", "PUT", "user/starred/soma-smart/framefox"], capture_output=True, text=True, timeout=10
+                ["gh", "api", "-X", "PUT", "user/starred/soma-smart/framefox"],
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
 
             if star_result.returncode == 0:

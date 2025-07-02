@@ -167,7 +167,7 @@ class CreateCrudCommand(AbstractCommand):
         }
 
         # Créer le répertoire des formulaires si nécessaire
-        form_types_dir = "src/form"
+        form_types_dir = "src/form/"
         os.makedirs(form_types_dir, exist_ok=True)
 
         # Générer le fichier FormType

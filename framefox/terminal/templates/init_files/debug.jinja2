@@ -10,4 +10,8 @@ debug:
     file_path: "var/log/app.log"
     max_size: 10 # Maximum file size
     backup_count: 5 # Number of backup files
-
+  # sentry:
+  #   dsn: "${SENTRY_DSN}" # Sentry DSN URL (Add SENTRY_DSN to your .env file)
+  #   environment: "${APP_ENV}" # Environment (dev, prod, staging)
+  #   sample_rate: 1.0 # Error sampling rate (0.0 to 1.0)
+  #   # traces_sample_rate: 0.1 # Performance monitoring sampling rate

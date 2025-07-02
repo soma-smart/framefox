@@ -1,4 +1,5 @@
 from framefox.core.config.settings import Settings
+from framefox.core.debug.exception.settings_exception import SettingsException
 from framefox.terminal.common.printer import Printer
 
 """
@@ -42,5 +43,22 @@ class AbstractCommand:
         raise NotImplementedError("Subclasses must implement this method")
 
     def get_settings(self):
-        """Gets the application settings"""
-        return Settings()
+        """
+        Returns the application settings.
+
+        Returns:
+            Settings: The application settings object.
+        """
+        try:
+            return Settings()
+        except SettingsException as e:
+            from framefox.core.debug.handler.startup_error_handler import (
+                StartupErrorHandler,
+            )
+
+            StartupErrorHandler.handle_configuration_error(e)
+        except Exception as e:
+            print(f"\n🚫 \033[91mConfiguration Error:\033[0m {e}")
+            import sys
+
+            sys.exit(1)

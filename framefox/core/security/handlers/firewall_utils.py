@@ -8,8 +8,12 @@ from fastapi.responses import JSONResponse, RedirectResponse, Response
 
 from framefox.core.config.settings import Settings
 from framefox.core.security.access_manager import AccessManager
-from framefox.core.security.authenticator.authenticator_interface import AuthenticatorInterface
-from framefox.core.security.protector.input_validation_protector import InputValidationProtector
+from framefox.core.security.authenticator.authenticator_interface import (
+    AuthenticatorInterface,
+)
+from framefox.core.security.protector.input_validation_protector import (
+    InputValidationProtector,
+)
 
 """
 Framefox Framework developed by SOMA
@@ -145,7 +149,10 @@ class FirewallUtils:
             if self.is_jwt_authenticator(authenticator):
                 if self.matches_firewall_pattern(request.url.path, firewall_name):
                     self.logger.debug(f"JWT firewall '{firewall_name}' matched for path: {request.url.path}")
-                    return {"firewall_name": firewall_name, "authenticator": authenticator}
+                    return {
+                        "firewall_name": firewall_name,
+                        "authenticator": authenticator,
+                    }
 
         self.logger.debug(f"No JWT firewall pattern matched for path: {request.url.path}")
         return None
@@ -161,7 +168,12 @@ class FirewallUtils:
         except Exception:
             return "unknown"
 
-    def should_apply_oauth_logic(self, request: Request, authenticator: AuthenticatorInterface, firewall_config: Dict) -> bool:
+    def should_apply_oauth_logic(
+        self,
+        request: Request,
+        authenticator: AuthenticatorInterface,
+        firewall_config: Dict,
+    ) -> bool:
         is_oauth_auth = self.is_oauth_authenticator(authenticator)
         oauth_config = firewall_config.get("oauth", {})
 

@@ -54,7 +54,12 @@ class EchoHandler(WebSocketEventHandler):
 
         try:
             message = json.loads(raw_message)
-            echo_message = {"type": "echo", "data": message.get("data"), "message": message.get("data"), "original_message": message}
+            echo_message = {
+                "type": "echo",
+                "data": message.get("data"),
+                "message": message.get("data"),
+                "original_message": message,
+            }
 
             await manager.send_to_connection(connection_id, echo_message)
         except Exception:

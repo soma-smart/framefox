@@ -1,7 +1,9 @@
 from sqlalchemy import text
 
 from framefox.core.config.settings import Settings
-from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
 
 """
 Framefox Framework developed by SOMA

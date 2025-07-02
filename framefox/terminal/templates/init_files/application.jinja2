@@ -6,8 +6,7 @@ application:
 
   controller:
     dir: "src/controller/"
-  profiler:
-    enabled: true # Set to false in production
+    
   cors:
     allow_origins:
       - "http://localhost"
@@ -22,7 +21,10 @@ application:
     name: "session_id"
     file_path: var/session/sessions.db
     secret_key: "${SESSION_SECRET_KEY}"
-
+    # redis:
+    #   url: "${REDIS_URL}" # Redis URL (Add REDIS_URL to your .env file)
+    #   prefix: "session:" # Session key prefix in Redis
+    #   db: 0 # Redis database number
   cookie:
     max_age: 3600 # 1 hour
     secure: true

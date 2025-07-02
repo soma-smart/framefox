@@ -1,6 +1,6 @@
 import contextlib
 import logging
-from typing import Any, Generator, Type
+from typing import Any, Generator, Type, get_args, get_origin
 
 from sqlalchemy.orm.session import object_session
 from sqlmodel import Session, SQLModel
@@ -72,6 +72,22 @@ class EntityManager:
         Adds an entity to the session and identity map.
         If the entity already exists in the session, it merges it.
         """
+
+        for name, prop_type in getattr(entity.__class__, "__annotations__", {}).items():
+            value = getattr(entity, name, None)
+            if value is None:
+                continue
+            if get_origin(prop_type) is list:
+                target_class = get_args(prop_type)[0]
+                repo = self.get_repository(target_class)
+                if repo and isinstance(value, list) and value and isinstance(value[0], (int, str)):
+                    hydrated = [repo.find(v) for v in value if v is not None]
+                    setattr(entity, name, hydrated)
+            elif isinstance(value, (int, str)):
+                repo = self.get_repository(prop_type)
+                if repo:
+                    hydrated = repo.find(value)
+                    setattr(entity, name, hydrated)
         try:
             self.session.add(entity)
         except Exception as e:

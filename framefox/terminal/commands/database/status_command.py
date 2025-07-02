@@ -5,7 +5,9 @@ from rich.table import Table
 from sqlalchemy import create_engine
 
 from framefox.core.orm.migration.alembic_manager import AlembicManager
-from framefox.terminal.commands.database.abstract_database_command import AbstractDatabaseCommand
+from framefox.terminal.commands.database.abstract_database_command import (
+    AbstractDatabaseCommand,
+)
 
 
 class StatusCommand(AbstractDatabaseCommand):

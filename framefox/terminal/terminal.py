@@ -10,7 +10,9 @@ from framefox.terminal.command_registry import CommandRegistry
 from framefox.terminal.typer_config.app_configurator import AppConfigurator
 from framefox.terminal.ui.display_manager import DisplayManager
 from framefox.terminal.ui.error_handler import ErrorHandler
-from framefox.terminal.utils.terminal.command_suggestion_service import CommandSuggestionService
+from framefox.terminal.utils.terminal.command_suggestion_service import (
+    CommandSuggestionService,
+)
 
 """
 Framefox Framework developed by SOMA
