@@ -1,0 +1,34 @@
+# ORM configuration for the application
+
+database:
+  # You can use either the URL format or the detailed configuration
+  # If both are provided, DATABASE_URL environment variable takes precedence,
+  # followed by the url field here, and finally the detailed configuration.
+  
+  # Option 1: Database URL 
+  url: "${DATABASE_URL}" 
+  
+  # Option 2: Detailed configuration (useful for Docker/Kubernetes)
+  # Uncomment and adjust these settings if needed, they will be used
+  # only if no url is specified above or in environment variables
+  # driver: "${DATABASE_DRIVER:-postgresql}"
+  # host: "${DATABASE_HOST:-localhost}"
+  # port: "${DATABASE_PORT:-5432}"
+  # username: "${DATABASE_USER:-framefox}"
+  # password: "${DATABASE_PASSWORD}"
+  # database: "${DATABASE_NAME:-framefoxdb}"
+  # charset: "utf8mb4"
+  
+  # Connection pooling settings (important for production)
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 1800
+  pool_pre_ping: true
+  autocommit: false
+  autoflush: false
+
+  logging:
+    # Controls SQL display in console (dev only)
+    echo_sql: false # true = display in console, false = hide
+    # The profiler ALWAYS collects SQL queries, regardless of this setting

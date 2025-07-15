@@ -1,0 +1,24 @@
+# Configuration of the asynchronous task system
+tasks:
+  # Worker configuration
+  type: database # Worker type (can be 'database', 'rabbitmq')
+  # Transport URL for RabbitMQ (used when type is 'rabbitmq')
+  task_transport_url: ${RABBITMQ_URL}
+
+  worker:
+    concurrency: 5 # Number of simultaneous tasks
+    polling_interval: 5 # Polling interval (seconds)
+    default_queues: # Default queues
+      - default
+
+  # Automatic cleanup configuration
+  cleanup:
+    interval_hours: 24 # Cleanup interval (hours)
+    retention_days: 7 # Retention period for failed tasks (days)
+
+  # Default parameters for tasks
+  defaults:
+    queue: default # Default queue
+    priority: 0 # Default priority (0 = normal)
+    max_retries: 3 # Maximum number of retries
+    retry_delay: 300 # Delay between retries (seconds)
