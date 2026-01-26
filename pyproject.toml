@@ -18,7 +18,7 @@ authors = [
 
 dependencies = [
     "sqlmodel<=0.0.22",
-    "python-multipart<=0.0.20",
+    "python-multipart<=0.0.22",
     "fastapi>=0.115.7,<1.0.0",
     "typer>=0.15.1",
     "uvicorn>=0.34.0",
